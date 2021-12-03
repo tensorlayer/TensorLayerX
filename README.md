@@ -54,7 +54,7 @@ pip3 install
  - hao.dong@pku.edu.cn
  - tensorlayer@gmail.com
 
-# Citing TensorLayerX
+# Citation
 
 If you find TensorLayerX useful for your project, please cite the following papers：
 
