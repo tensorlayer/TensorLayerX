@@ -24,7 +24,7 @@
 
 # TensorLayerX
 
-Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), TensorLayerX is a brand new seperated project for multi-backend propose, this project is designed for 
+Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), TensorLayerX is a brand new seperated project for platform-agnostic propose, this project is designed for 
 
 
 # Examples
