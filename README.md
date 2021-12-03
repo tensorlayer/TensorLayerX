@@ -22,13 +22,12 @@
 
 🇸🇦 TensorLayerX
 
-
-# Design Features
+# TensorLayerX
 
 Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), TensorLayerX is a brand new seperated project for multi-backend propose, this project is designed for 
 
 
-# Extensive Examples
+# Examples
 
 - [Basic Examples]
 - [TLCV]
@@ -47,8 +46,11 @@ pip3 install git+https://github.com/tensorlayer/tensorlayerx.git
 pip3 install
 ```
 
+# Contact
+ - hao.dong@pku.edu.cn
+ - tensorlayer@gmail.com
 
-# Citing TensorLayer
+# Citing TensorLayerX
 
 If you find TensorLayerX useful for your project, please cite the following papers：
 
@@ -70,3 +72,5 @@ If you find TensorLayerX useful for your project, please cite the following pape
   organization={IEEE}
 }
 ```
+
+
