@@ -6,3 +6,15 @@
 🇷🇺 TensorLayerX 
 
 🇸🇦 TensorLayerX
+
+# Quick Start
+
+
+```bash
+# install from pypi
+pip3 install tensorlayerx 
+# install from Github
+pip3 install git+https://github.com/tensorlayer/tensorlayerx.git 
+# install from OpenI
+pip3 install
+```
