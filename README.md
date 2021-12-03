@@ -1,4 +1,19 @@
-# TensorLayerX
+<a href="https://tensorlayer.readthedocs.io/">
+    <div align="center">
+        <img src="images/tlx_logo.png" width="50%" height="30%"/>
+    </div>
+</a>
+
+<!--- [![PyPI Version](https://badge.fury.io/py/tensorlayer.svg)](https://badge.fury.io/py/tensorlayer) --->
+<!--- ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tensorlayer.svg)) --->
+
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/tensorlayer/tensorlayer/master.svg)
+[![Documentation Status](https://readthedocs.org/projects/tensorlayer/badge/)](https://tensorlayer.readthedocs.io/)
+[![Build Status](https://travis-ci.org/tensorlayer/tensorlayer.svg?branch=master)](https://travis-ci.org/tensorlayer/tensorlayer)
+[![Downloads](http://pepy.tech/badge/tensorlayer)](http://pepy.tech/project/tensorlayer)
+[![Downloads](https://pepy.tech/badge/tensorlayer/week)](https://pepy.tech/project/tensorlayer/week)
+[![Docker Pulls](https://img.shields.io/docker/pulls/tensorlayer/tensorlayer.svg)](https://hub.docker.com/r/tensorlayer/tensorlayer/)
+
 🇬🇧 TensorLayerX is a multi-backend AI framework, which can run on almost all operation systems and AI hardwares, and support hybrid-framework programming. [layer list](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)
 
 🇨🇳 TensorLayerX 是一个跨平台开发框架，可以运行在各类操作系统和AI硬件上，并支持混合框架的开发。[支持列表](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)
@@ -10,7 +25,7 @@
 
 # Design Features
 
-Compare with TensorLayer 1.0 and 2.0, TensorLayerX is a brand new seperated project for multi-backend propose, this project is designed for 
+Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), TensorLayerX is a brand new seperated project for multi-backend propose, this project is designed for 
 
 
 # Extensive Examples
