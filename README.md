@@ -45,6 +45,7 @@ pip3 install git+https://github.com/tensorlayer/tensorlayerx.git
 # install from OpenI
 pip3 install
 ```
+- Tutorial
 
 - Discussion: [Slack](https://join.slack.com/t/tensorlayer/shared_invite/enQtODk1NTQ5NTY1OTM5LTQyMGZhN2UzZDBhM2I3YjYzZDBkNGExYzcyZDNmOGQzNmYzNjc3ZjE3MzhiMjlkMmNiMmM3Nzc4ZDY2YmNkMTY) , [QQ-Group] , [WeChat-Group]
 
