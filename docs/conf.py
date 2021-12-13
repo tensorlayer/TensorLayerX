@@ -461,9 +461,9 @@ epub_exclude_files = ['search.html']
 #
 # epub_use_index = True
 
-pygments_style = 'sphinx'
+# pygments_style = 'sphinx'
 
-# html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_rtd_theme"
 # html_theme = "nature"
 # html_theme = "haiku"
 # html_theme = "traditional"
