@@ -1,0 +1,14 @@
+# https://docs.readthedocs.io/en/latest/yaml-config.html
+
+build:
+  image: latest  # For python 3.6
+
+formats:
+    - epub
+    - pdf
+
+python:
+    version: 3.6
+    
+requirements_file: 
+    requirements/requirements_doc.txt
