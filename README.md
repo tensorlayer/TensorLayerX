@@ -1,6 +1,6 @@
 <a href="https://tensorlayer.readthedocs.io/">
     <div align="center">
-        <img src="img/tl_transparent_logo.png" width="50%" height="30%"/>
+        <img src="https://git.openi.org.cn/TensorLayer/tensorlayer3.0/raw/branch/master/img/tl_white_logo.png" width="50%" height="30%"/>
     </div>
 </a>
 
