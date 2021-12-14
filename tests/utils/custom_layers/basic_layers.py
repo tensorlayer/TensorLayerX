@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-import tensorlayer as tl
+import tensorlayerx as tl
 
 __all__ = [
     'activation_module',

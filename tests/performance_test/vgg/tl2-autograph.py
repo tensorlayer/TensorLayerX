@@ -2,7 +2,7 @@ import time
 import os
 import psutil
 import tensorflow as tf
-import tensorlayer as tl
+import tensorlayerx as tl
 from exp_config import random_input_generator, MONITOR_INTERVAL, NUM_ITERS, BATCH_SIZE, LERANING_RATE
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -28,7 +28,7 @@ num_iter = NUM_ITERS
 batch_size = BATCH_SIZE
 train_weights = vgg.trainable_weights
 optimizer = tf.optimizers.Adam(learning_rate=LERANING_RATE)
-loss_object = tl.cost.cross_entropy
+loss_object = tl.losses.cross_entropy
 
 # data generator
 gen = random_input_generator(num_iter, batch_size)

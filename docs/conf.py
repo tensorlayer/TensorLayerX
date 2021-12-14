@@ -19,7 +19,7 @@
 #
 import os, sys, datetime
 sys.path.insert(0, os.path.abspath("../"))  # Important
-sys.path.insert(0, os.path.abspath(os.path.join("..", "tensorlayer")))  # Important
+sys.path.insert(0, os.path.abspath(os.path.join("..", "tensorlayerx")))  # Important
 
 from package_info import __shortversion__
 from package_info import __version__
@@ -74,7 +74,7 @@ autodoc_mock_imports = [
     'h5py',
 
     # TL C++ Packages
-    'tensorlayer.third_party.roi_pooling.roi_pooling.roi_pooling_ops',
+    'tensorlayerx.third_party.roi_pooling.roi_pooling.roi_pooling_ops',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -343,7 +343,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, 'tensorlayer', 'TensorLayer Documentation', [author], 1)]
+man_pages = [(master_doc, 'tensorlayerx', 'TensorLayer Documentation', [author], 1)]
 
 # If true, show URL addresses after external links.
 #

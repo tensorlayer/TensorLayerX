@@ -7,7 +7,7 @@ import unittest
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
-import tensorlayer as tl
+import tensorlayerx as tl
 
 from tests.utils import CustomTestCase
 
@@ -29,14 +29,14 @@ class Simple_MNIST_Test(CustomTestCase):
         network = tl.layers.DenseLayer(network, n_units=100, act=tf.nn.relu, name='relu2')
         network = tl.layers.DropoutLayer(network, keep=0.8, name='drop3')
 
-        # the softmax is implemented internally in tl.cost.cross_entropy(y, y_) to
+        # the softmax is implemented internally in tl.losses.cross_entropy(y, y_) to
         # speed up computation, so we use identity here.
         # see tf.ops.sparse_softmax_cross_entropy_with_logits()
         cls.network = tl.layers.DenseLayer(network, n_units=10, name='output')
 
-        # define cost function and metric.
+        # define losses function and metrics.
         y = cls.network.outputs
-        cls.cost = tl.cost.cross_entropy(y, cls.y_, name='cost')
+        cls.cost = tl.losses.cross_entropy(y, cls.y_, name='losses')
 
         correct_prediction = tf.equal(tf.argmax(y, 1), cls.y_)
 

@@ -5,10 +5,10 @@ import os
 # os.environ['TL_BACKEND'] = 'mindspore'
 os.environ['TL_BACKEND'] = 'paddle'
 
-from tensorlayer.layers import SequentialLayer
-from tensorlayer.layers import Dense
-import tensorlayer as tl
-from tensorlayer.dataflow import Dataset
+from tensorlayerx.layers import SequentialLayer
+from tensorlayerx.layers import Dense
+import tensorlayerx as tl
+from tensorlayerx.dataflow import Dataset
 import numpy as np
 
 layer_list = []
@@ -57,8 +57,8 @@ train_dataset = tl.dataflow.FromGenerator(
     train_dataset, output_types=[tl.float32, tl.int64], column_names=['data', 'label']
 )
 train_loader = tl.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
-metric = tl.metric.Accuracy()
-model = tl.models.Model(network=MLP, loss_fn=tl.cost.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metric)
+metric = tl.metrics.Accuracy()
+model = tl.models.Model(network=MLP, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metric)
 model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=False)
 model.save_weights('./model.npz', format='npz_dict')
 model.load_weights('./model.npz', format='npz_dict')

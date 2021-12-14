@@ -7,12 +7,12 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 
 import time
-from tensorlayer.dataflow import Dataset, Dataloader
-from tensorlayer.vision.transforms import (Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop)
-from tensorlayer.models import TrainOneStep
-from tensorlayer.layers import Module
-import tensorlayer as tl
-from tensorlayer.layers import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
+from tensorlayerx.dataflow import Dataset, Dataloader
+from tensorlayerx.vision.transforms import (Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop)
+from tensorlayerx.models import TrainOneStep
+from tensorlayerx.layers import Module
+import tensorlayerx as tl
+from tensorlayerx.layers import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
 # enable debug logging
 tl.logging.set_verbosity(tl.logging.DEBUG)
 
@@ -71,7 +71,7 @@ shuffle_buffer_size = 128
 train_weights = net.trainable_weights
 optimizer = tl.optimizers.Adam(learning_rate)
 # looking for decay learning rate? see https://github.com/tensorlayer/srgan/blob/master/train.py
-metrics = tl.metric.Accuracy()
+metrics = tl.metrics.Accuracy()
 
 
 
@@ -128,7 +128,7 @@ class WithLoss(Module):
         return loss
 
 
-net_with_loss = WithLoss(net, loss_fn=tl.cost.softmax_cross_entropy_with_logits)
+net_with_loss = WithLoss(net, loss_fn=tl.losses.softmax_cross_entropy_with_logits)
 net_with_train = TrainOneStep(net_with_loss, optimizer, train_weights)
 
 for epoch in range(n_epoch):

@@ -1,34 +1,34 @@
 |TENSORLAYER-LOGO|
 
-TensorLayer3 is a deep learning library designed for researchers and engineers that is compatible with multiple deep learning frameworks such as TensorFlow,
+TensorLayerX is a deep learning library designed for researchers and engineers that is compatible with multiple deep learning frameworks such as TensorFlow,
 MindSpore and PaddlePaddle, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend.
 It provides popular DL and RL modules that can be easily customized and assembled for tackling real-world machine learning problems.
-More details can be found here. TensorLayer3 will support TensorFlow, MindSpore, PaddlePaddle, and PyTorch backends in the future.
+More details can be found here. TensorLayerX will support TensorFlow, MindSpore, PaddlePaddle, and PyTorch backends in the future.
 
 Install
 =======
 
-TensorLayer3 has some prerequisites that need to be installed first, including TensorFlow ,
+TensorLayerX has some prerequisites that need to be installed first, including TensorFlow ,
 MindSpore, PaddlePaddle,numpy and matplotlib.For GPU support CUDA and cuDNN are required.
 
 .. code:: bash
 
     # for last stable version
-    pip install --upgrade tensorlayer3
+    pip install --upgrade tensorlayerX
 
     # for latest release candidate
-    pip install --upgrade --pre tensorlayer3
+    pip install --upgrade --pre tensorlayerX
 
     # if you want to install the additional dependencies, you can also run
-    pip install --upgrade tensorlayer3[all]              # all additional dependencies
-    pip install --upgrade tensorlayer3[extra]            # only the `extra` dependencies
-    pip install --upgrade tensorlayer3[contrib_loggers]  # only the `contrib_loggers` dependencies
+    pip install --upgrade tensorlayerX[all]              # all additional dependencies
+    pip install --upgrade tensorlayerX[extra]            # only the `extra` dependencies
+    pip install --upgrade tensorlayerX[contrib_loggers]  # only the `contrib_loggers` dependencies
 
 Alternatively, you can install the latest or development version by directly pulling from OpenI:
 
 .. code:: bash
 
-    pip3 install git+https://git.openi.org.cn/TensorLayer/tensorlayer3.0.git
+    pip3 install git+https://github.com/tensorlayer/TensorLayerX.git
 
 Containers with CPU support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,12 +59,6 @@ Link <https://github.com/NVIDIA/nvidia-docker>`__
     docker pull tensorlayer/tensorlayer:latest-gpu-py3
     nvidia-docker run -it --rm -p 8888:8888 -p 6006:6006 -e PASSWORD=JUPYTER_NB_PASSWORD tensorlayer/tensorlayer:latest-gpu-py3
 
-Contribute
-==========
-
-Please read the `Contributor
-Guideline <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/CONTRIBUTING.md>`__
-before submitting your PRs.
 
 Cite
 ====
@@ -93,7 +87,7 @@ TensorLayer papers.
 License
 =======
 
-TensorLayer3 is released under the Apache 2.0 license.
+TensorLayerX is released under the Apache 2.0 license.
 
 .. |TENSORLAYER-LOGO| image:: https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/img/tl_transparent_logo.png
-   :target: https://tensorlayer3.readthedocs.io/
+   :target: https://tensorlayerx.readthedocs.io/en/latest/

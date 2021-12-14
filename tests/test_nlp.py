@@ -7,7 +7,7 @@ import unittest
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
-import tensorlayer as tl
+import tensorlayerx as tl
 
 from tensorflow.python.platform import gfile
 from tests.utils import CustomTestCase

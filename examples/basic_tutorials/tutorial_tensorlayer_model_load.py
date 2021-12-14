@@ -7,10 +7,10 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'torch'
 
 
-import tensorlayer as tl
-from tensorlayer.layers import Module
-from tensorlayer.layers import Dense, Dropout, Conv2d, BatchNorm2d, MaxPool2d, Flatten
-from tensorlayer.dataflow import Dataset
+import tensorlayerx as tl
+from tensorlayerx.layers import Module
+from tensorlayerx.layers import Dense, Dropout, Conv2d, BatchNorm2d, MaxPool2d, Flatten
+from tensorlayerx.dataflow import Dataset
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
 

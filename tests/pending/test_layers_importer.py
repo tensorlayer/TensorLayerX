@@ -14,7 +14,7 @@ from tensorflow.contrib.slim.python.slim.nets.inception_v3 import inception_v3_a
 slim = tf.contrib.slim
 keras = tf.keras
 
-import tensorlayer as tl
+import tensorlayerx as tl
 
 from tests.utils import CustomTestCase
 

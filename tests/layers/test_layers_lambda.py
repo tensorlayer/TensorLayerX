@@ -8,7 +8,7 @@ import numpy as np
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
-import tensorlayer as tl
+import tensorlayerx as tl
 
 from tests.utils import CustomTestCase
 
@@ -56,7 +56,7 @@ class Layer_Lambda_Test(CustomTestCase):
         for epoch in range(10):
             with tf.GradientTape() as tape:
                 pred_y = model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, model.trainable_weights))

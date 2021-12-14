@@ -7,7 +7,7 @@ import time
 import numpy as np
 import tensorflow as tf
 
-import tensorlayer as tl
+import tensorlayerx as tl
 from examples.model_zoo.imagenet_classes import class_names
 from examples.model_zoo.vgg import vgg16
 

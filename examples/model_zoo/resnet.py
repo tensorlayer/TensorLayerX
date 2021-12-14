@@ -10,12 +10,12 @@
 
 import os
 
-import tensorlayer as tl
+import tensorlayerx as tl
 
-from tensorlayer import logging
-from tensorlayer.files import (assign_weights, maybe_download_and_extract)
-from tensorlayer.layers import (BatchNorm, Conv2d, Dense, Elementwise, GlobalMeanPool2d, Input, MaxPool2d)
-from tensorlayer.layers import Module, SequentialLayer
+from tensorlayerx import logging
+from tensorlayerx.files import (assign_weights, maybe_download_and_extract)
+from tensorlayerx.layers import (BatchNorm, Conv2d, Dense, Elementwise, GlobalMeanPool2d, Input, MaxPool2d)
+from tensorlayerx.layers import Module, SequentialLayer
 
 __all__ = [
     'ResNet50',

@@ -12,7 +12,7 @@ try:
 except ImportError:
     from distutils.core import (setup, find_packages)
 
-from tensorlayer import (
+from tensorlayerx import (
     __contact_emails__, __contact_names__, __description__, __download_url__, __homepage__, __keywords__, __license__,
     __package_name__, __repository_url__, __version__
 )

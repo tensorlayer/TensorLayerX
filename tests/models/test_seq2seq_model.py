@@ -8,12 +8,12 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import numpy as np
 import tensorflow as tf
-import tensorlayer as tl
+import tensorlayerx as tl
 from tqdm import tqdm
 from sklearn.utils import shuffle
-from tensorlayer.models.seq2seq import Seq2seq
+from tensorlayerx.models.seq2seq import Seq2seq
 from tests.utils import CustomTestCase
-from tensorlayer.cost import cross_entropy_seq
+from tensorlayerx.losses import cross_entropy_seq
 
 
 class Model_SEQ2SEQ_Test(CustomTestCase):

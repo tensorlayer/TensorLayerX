@@ -1,6 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
-# The tensorlayer and tensorflow operators can be mixed
+# The tensorlayerx and tensorflow operators can be mixed
 import os
 os.environ['TL_BACKEND'] = 'tensorflow'
 
@@ -8,10 +8,10 @@ import numpy as np
 import time
 
 import tensorflow as tf
-import tensorlayer as tl
-from tensorlayer.layers import Module
-from tensorlayer.layers import Dense
-from tensorlayer.models import WithGrad
+import tensorlayerx as tl
+from tensorlayerx.layers import Module
+from tensorlayerx.layers import Dense
+from tensorlayerx.models import WithGrad
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
 
@@ -40,7 +40,7 @@ print_freq = 5
 train_weights = MLP.trainable_weights
 optimizer = tl.optimizers.Adam(lr=0.0001)
 
-net_with_grad = WithGrad(network=MLP, loss_fn=tl.cost.softmax_cross_entropy_with_logits, optimizer=optimizer)
+net_with_grad = WithGrad(network=MLP, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer)
 
 for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
     start_time = time.time()
@@ -57,7 +57,7 @@ for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
         train_loss, train_acc, n_iter = 0, 0, 0
         for X_batch, y_batch in tl.iterate.minibatches(X_train, y_train, batch_size, shuffle=False):
             _logits = MLP(X_batch)
-            train_loss += tl.cost.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
+            train_loss += tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
             train_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
             n_iter += 1
         print("   train loss: {}".format(train_loss / n_iter))
