@@ -8,7 +8,7 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 
 
 import tensorlayerx as tl
-from tensorlayerx.layers import Module
+from tensorlayerx.nn import Module
 from tensorlayerx.layers import Dense, Dropout, Conv2d, BatchNorm2d, MaxPool2d, Flatten
 from tensorlayerx.dataflow import Dataset
 

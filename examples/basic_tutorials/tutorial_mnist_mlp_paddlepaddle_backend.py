@@ -6,7 +6,7 @@ import os
 os.environ['TL_BACKEND'] = 'paddle'
 
 import tensorlayerx as tl
-from tensorlayerx.layers import Module
+from tensorlayerx.nn import Module
 from tensorlayerx.layers import Dense, Flatten
 import paddle
 from paddle.io import TensorDataset

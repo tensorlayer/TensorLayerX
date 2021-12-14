@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from collections.abc import Iterable
-from tensorlayerx.layers.core.common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
+from tensorlayerx.nn.common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 import tensorlayerx as tl
-from tensorlayerx.layers.core import Module
+from tensorlayerx.nn import Module
 import numpy as np
 import time
 

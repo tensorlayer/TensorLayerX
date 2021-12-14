@@ -3,8 +3,8 @@
 
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.layers.core import Module
-from tensorlayerx.layers.core import LayerList
+from tensorlayerx.nn import Module
+from tensorlayerx.nn import LayerList
 import numpy as np
 
 __all__ = [

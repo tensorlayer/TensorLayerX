@@ -15,7 +15,7 @@ import tensorlayerx as tl
 from tensorlayerx import logging
 from tensorlayerx.files import (assign_weights, maybe_download_and_extract)
 from tensorlayerx.layers import (BatchNorm, Conv2d, Dense, Elementwise, GlobalMeanPool2d, Input, MaxPool2d)
-from tensorlayerx.layers import Module, SequentialLayer
+from tensorlayerx.nn import Module, SequentialLayer
 
 __all__ = [
     'ResNet50',

@@ -4,7 +4,7 @@
 import tensorflow as tf
 from tensorlayerx import logging
 from tensorlayerx.files import utils
-from tensorlayerx.layers.core import Module
+from tensorlayerx.nn import Module
 
 __all__ = [
     'Lambda',

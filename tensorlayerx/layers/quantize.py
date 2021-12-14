@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from tensorlayerx import logging
-from tensorlayerx.layers.core import Module
+from tensorlayerx.nn import Module
 from tensorlayerx.layers.utils import quantize
 
 __all__ = [

@@ -10,7 +10,7 @@ import time
 from tensorlayerx.dataflow import Dataset, Dataloader
 from tensorlayerx.vision.transforms import (Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop)
 from tensorlayerx.models import TrainOneStep
-from tensorlayerx.layers import Module
+from tensorlayerx.nn import Module
 import tensorlayerx as tl
 from tensorlayerx.layers import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
 # enable debug logging

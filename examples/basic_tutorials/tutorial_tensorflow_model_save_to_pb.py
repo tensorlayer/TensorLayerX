@@ -10,7 +10,7 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 import numpy as np
 import tensorflow as tf
 import tensorlayerx as tl
-from tensorlayerx.layers import Module
+from tensorlayerx.nn import Module
 from tensorlayerx.layers import Dense, Dropout, BatchNorm1d
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 

@@ -6,7 +6,7 @@ os.environ['TL_BACKEND'] = 'paddle'
 
 import time
 import paddle as pd
-from tensorlayerx.layers import Module
+from tensorlayerx.nn import Module
 import tensorlayerx as tl
 from tensorlayerx.dataflow import Dataset, Dataloader
 from tensorlayerx.layers import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)

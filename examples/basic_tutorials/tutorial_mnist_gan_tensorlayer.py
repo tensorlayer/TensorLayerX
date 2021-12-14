@@ -9,7 +9,9 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 import time
 import numpy as np
 import tensorlayerx as tl
-from tensorlayerx.layers import Module, Dense
+from tensorlayerx.nn import Module
+from tensorlayerx.layers import Dense
+
 from tensorlayerx.dataflow import Dataset
 from tensorlayerx.models import TrainOneStep
 

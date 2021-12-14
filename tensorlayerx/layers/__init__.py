@@ -3,7 +3,7 @@
 
 from .activation import *
 from .convolution import *
-from .core import *
+from tensorlayerx.nn import *
 from .dense import *
 from .deprecated import *
 from .dropout import *
