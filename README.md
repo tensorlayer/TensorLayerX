@@ -1,14 +1,14 @@
 <a href="https://tensorlayer.readthedocs.io/">
     <div align="center">
-        <img src="images/tlx_logo.png" width="50%" height="30%"/>
+        <img src="img/tl_transparent_logo.png" width="50%" height="30%"/>
     </div>
 </a>
 
-<!--- [![PyPI Version](https://badge.fury.io/py/tensorlayer.svg)](https://badge.fury.io/py/tensorlayer) --->
+<!--- [![PyPI Version](https://badge.fury.io/py/tensorlayer.svg)](https://pypi.org/project/tensorlayerx/) --->
 <!--- ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tensorlayer.svg)) --->
 
-![GitHub last commit (branch)](https://img.shields.io/github/last-commit/tensorlayer/tensorlayerx/master.svg)
-[![Documentation Status](https://readthedocs.org/projects/tensorlayerx/badge/)](https://tensorlayerx.readthedocs.io/)
+[![GitHub last commit (branch)](https://img.shields.io/github/last-commit/tensorlayer/tensorlayerx/master.svg)](https://github.com/tensorlayer/TensorLayerX)
+[![Documentation Status](https://readthedocs.org/projects/tensorlayerx/badge/)]( https://tensorlayerx.readthedocs.io/en/latest/)
 [![Build Status](https://travis-ci.org/tensorlayer/tensorlayerx.svg?branch=master)](https://travis-ci.org/tensorlayer/tensorlayerx)
 [![Downloads](http://pepy.tech/badge/tensorlayerx)](http://pepy.tech/project/tensorlayerx)
 [![Downloads](https://pepy.tech/badge/tensorlayerx/week)](https://pepy.tech/project/tensorlayerx/week)
