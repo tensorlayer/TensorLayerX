@@ -7,10 +7,10 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
 
-import tensorlayer as tl
-from tensorlayer.layers import Module
-from tensorlayer.layers import Dense, LSTM, Embedding
-from tensorlayer.dataflow import Dataset
+import tensorlayerx as tl
+from tensorlayerx.layers import Module
+from tensorlayerx.layers import Dense, LSTM, Embedding
+from tensorlayerx.dataflow import Dataset
 import numpy as np
 
 X_train, y_train, X_test, y_test = tl.files.load_imdb_dataset('data', nb_words=20000, test_split=0.2)
@@ -68,7 +68,7 @@ train_loader = tl.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuf
 net = ImdbNet()
 train_weights = net.trainable_weights
 optimizer = tl.optimizers.Adam(1e-3)
-metric = tl.metric.Accuracy()
-loss_fn = tl.cost.softmax_cross_entropy_with_logits
+metric = tl.metrics.Accuracy()
+loss_fn = tl.losses.softmax_cross_entropy_with_logits
 model = tl.models.Model(network=net, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
 model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=True)

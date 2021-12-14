@@ -7,7 +7,7 @@ from PIL import Image
 from examples.model_zoo.common import yolo4_input_processing, yolo4_output_processing, \
     result_to_json, read_class_names, draw_boxes_and_labels_to_image_with_json
 from examples.model_zoo.yolo import YOLOv4
-import tensorlayer as tl
+import tensorlayerx as tl
 
 tl.logging.set_verbosity(tl.logging.DEBUG)
 

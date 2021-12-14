@@ -7,7 +7,7 @@ import unittest
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import numpy as np
-import tensorlayer as tl
+import tensorlayerx as tl
 
 from tests.utils import CustomTestCase
 
@@ -65,7 +65,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y, final_state = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -92,7 +92,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y, final_state = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -161,7 +161,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -194,7 +194,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -228,7 +228,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -268,7 +268,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -295,7 +295,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y, final_h, final_c = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -321,7 +321,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y, final_h, final_c = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -348,7 +348,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y, final_h = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -374,7 +374,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y, final_h = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -404,7 +404,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y, r, rfw, rbw = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y2)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y2)
 
             self.assertEqual(
                 r.get_shape().as_list(), [self.batch_size * self.num_steps, self.hidden_size + self.hidden_size + 1]
@@ -438,7 +438,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y, r, rfw, rbw = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y2)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y2)
 
             self.assertEqual(
                 r.get_shape().as_list(), [self.batch_size, self.num_steps, self.hidden_size + self.hidden_size + 1]
@@ -477,7 +477,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -511,7 +511,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -548,7 +548,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y2)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y2)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -698,8 +698,8 @@ class Layer_RNN_Test(CustomTestCase):
         length = tl.layers.retrieve_seq_length_op3(data)
         print(length)
         data = [
-            ['hello', 'world', '', '', ''], ['hello', 'world', 'tensorlayer', '', ''],
-            ['hello', 'world', 'tensorlayer', '2.0', '']
+            ['hello', 'world', '', '', ''], ['hello', 'world', 'tensorlayerx', '', ''],
+            ['hello', 'world', 'tensorlayerx', '2.0', '']
         ]
         data = tf.convert_to_tensor(data, dtype=tf.string)
         length = tl.layers.retrieve_seq_length_op3(data, pad_val='')
@@ -724,8 +724,8 @@ class Layer_RNN_Test(CustomTestCase):
     def test_target_mask_op(self):
         fail_flag = False
         data = [
-            ['hello', 'world', '', '', ''], ['hello', 'world', 'tensorlayer', '', ''],
-            ['hello', 'world', 'tensorlayer', '2.0', '']
+            ['hello', 'world', '', '', ''], ['hello', 'world', 'tensorlayerx', '', ''],
+            ['hello', 'world', 'tensorlayerx', '2.0', '']
         ]
         try:
             tl.layers.target_mask_op(data, pad_val='')
@@ -894,7 +894,7 @@ class Layer_RNN_Test(CustomTestCase):
         for epoch in range(50):
             with tf.GradientTape() as tape:
                 pred_y = rnn_model(self.data_x)
-                loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, rnn_model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, rnn_model.trainable_weights))
@@ -909,12 +909,12 @@ class Layer_RNN_Test(CustomTestCase):
         rnn_model2 = CustomisedModel()
         rnn_model2.eval()
         pred_y = rnn_model2(self.data_x)
-        loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+        loss = tl.losses.mean_squared_error(pred_y, self.data_y)
         print("MODEL INIT loss %f" % (loss))
 
         rnn_model2.load_weights(filename)
         pred_y = rnn_model2(self.data_x)
-        loss = tl.cost.mean_squared_error(pred_y, self.data_y)
+        loss = tl.losses.mean_squared_error(pred_y, self.data_y)
         print("MODEL RESTORE W loss %f" % (loss))
 
         import os

@@ -7,10 +7,10 @@ import os
 os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
 
-import tensorlayer as tl
-from tensorlayer.layers import Module
-from tensorlayer.layers import Dense, Dropout
-from tensorlayer.dataflow import Dataset
+import tensorlayerx as tl
+from tensorlayerx.layers import Module
+from tensorlayerx.layers import Dense, Dropout
+from tensorlayerx.dataflow import Dataset
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
 
@@ -53,8 +53,8 @@ print_freq = 2
 
 train_weights = MLP.trainable_weights
 optimizer = tl.optimizers.Momentum(0.05, 0.9)
-metric = tl.metric.Accuracy()
-loss_fn = tl.cost.softmax_cross_entropy_with_logits
+metric = tl.metrics.Accuracy()
+loss_fn = tl.losses.softmax_cross_entropy_with_logits
 train_dataset = mnistdataset(data=X_train, label=y_train)
 train_dataset = tl.dataflow.FromGenerator(
     train_dataset, output_types=[tl.float32, tl.int64], column_names=['data', 'label']

@@ -7,7 +7,7 @@ import unittest
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
-import tensorlayer as tl
+import tensorlayerx as tl
 
 from tests.utils import CustomTestCase
 
@@ -29,9 +29,9 @@ class Layer_Pooling_Test(CustomTestCase):
 
         cls.network = tl.layers.DenseLayer(cls.network, n_units=10, name='output')
 
-        # define cost function and metric.
+        # define losses function and metrics.
         cls.y = cls.network.outputs
-        cls.cost = tl.cost.cross_entropy(cls.y, cls.y_, name='cost')
+        cls.cost = tl.losses.cross_entropy(cls.y, cls.y_, name='losses')
 
         correct_prediction = tf.equal(tf.argmax(cls.y, 1), cls.y_)
 

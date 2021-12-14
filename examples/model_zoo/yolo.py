@@ -9,11 +9,11 @@
 """
 
 import numpy as np
-import tensorlayer as tl
-from tensorlayer.layers.activation import Mish
-from tensorlayer.layers import Conv2d, MaxPool2d, BatchNorm2d, ZeroPad2d, UpSampling2d, Concat, Elementwise
-from tensorlayer.layers import Module, SequentialLayer
-from tensorlayer import logging
+import tensorlayerx as tl
+from tensorlayerx.layers.activation import Mish
+from tensorlayerx.layers import Conv2d, MaxPool2d, BatchNorm2d, ZeroPad2d, UpSampling2d, Concat, Elementwise
+from tensorlayerx.layers import Module, SequentialLayer
+from tensorlayerx import logging
 
 __all__ = ['YOLOv4']
 

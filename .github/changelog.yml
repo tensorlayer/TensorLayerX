@@ -4,7 +4,7 @@ include:
   - /^.github\//
   - /^docs\//
   - /^example\//
-  - /^tensorlayer\//
+  - /^tensorlayerx\//
   - /^tests\//
 
   # Python Package Files

@@ -8,10 +8,10 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 
 import time
 import numpy as np
-import tensorlayer as tl
-from tensorlayer.layers import Module, Dense
-from tensorlayer.dataflow import Dataset
-from tensorlayer.models import TrainOneStep
+import tensorlayerx as tl
+from tensorlayerx.layers import Module, Dense
+from tensorlayerx.dataflow import Dataset
+from tensorlayerx.models import TrainOneStep
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
 
@@ -109,9 +109,9 @@ class WithLossD(Module):
         return loss
 
 
-# loss_fn = tl.cost.sigmoid_cross_entropy
+# loss_fn = tl.losses.sigmoid_cross_entropy
 # optimizer = tl.optimizers.Momentum(learning_rate=5e-4, momentum=0.5)
-loss_fn = tl.cost.mean_squared_error
+loss_fn = tl.losses.mean_squared_error
 optimizer_g = tl.optimizers.Adam(learning_rate=3e-4, beta_1=0.5, beta_2=0.999)
 optimizer_d = tl.optimizers.Adam(learning_rate=3e-4)
 

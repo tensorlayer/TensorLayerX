@@ -31,11 +31,11 @@ import os
 
 import numpy as np
 
-import tensorlayer as tl
-from tensorlayer import logging
-from tensorlayer.files import assign_weights, maybe_download_and_extract
-from tensorlayer.layers import (BatchNorm, Conv2d, Dense, Flatten, Input, SequentialLayer, MaxPool2d)
-from tensorlayer.layers import Module
+import tensorlayerx as tl
+from tensorlayerx import logging
+from tensorlayerx.files import assign_weights, maybe_download_and_extract
+from tensorlayerx.layers import (BatchNorm, Conv2d, Dense, Flatten, Input, SequentialLayer, MaxPool2d)
+from tensorlayerx.layers import Module
 
 __all__ = [
     'VGG',

@@ -1,6 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
-# The tensorlayer and tensorflow operators can be mixed
+# The tensorlayerx and tensorflow operators can be mixed
 import os
 os.environ['TL_BACKEND'] = 'tensorflow'
 
@@ -9,9 +9,9 @@ import numpy as np
 import multiprocessing
 import tensorflow as tf
 
-from tensorlayer.layers import Module
-import tensorlayer as tl
-from tensorlayer.layers import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
+from tensorlayerx.layers import Module
+import tensorlayerx as tl
+from tensorlayerx.layers import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
 
 # enable debug logging
 tl.logging.set_verbosity(tl.logging.DEBUG)
@@ -150,7 +150,7 @@ for epoch in range(n_epoch):
             # compute outputs
             _logits = net(X_batch)
             # compute loss and update model
-            _loss_ce = tl.cost.softmax_cross_entropy_with_logits(_logits, y_batch, name='train_loss')
+            _loss_ce = tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='train_loss')
 
         grad = tape.gradient(_loss_ce, train_weights)
         optimizer.apply_gradients(zip(grad, train_weights))
@@ -170,7 +170,7 @@ for epoch in range(n_epoch):
         val_loss, val_acc, n_iter = 0, 0, 0
         for X_batch, y_batch in test_ds:
             _logits = net(X_batch)  # is_train=False, disable dropout
-            val_loss += tl.cost.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
+            val_loss += tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
             val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
             n_iter += 1
         print("   val loss: {}".format(val_loss / n_iter))
@@ -181,7 +181,7 @@ net.set_eval()
 test_loss, test_acc, n_iter = 0, 0, 0
 for X_batch, y_batch in test_ds:
     _logits = net(X_batch)
-    test_loss += tl.cost.softmax_cross_entropy_with_logits(_logits, y_batch, name='test_loss')
+    test_loss += tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='test_loss')
     test_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
     n_iter += 1
 print("   test loss: {}".format(test_loss / n_iter))

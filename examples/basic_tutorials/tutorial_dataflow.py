@@ -6,11 +6,11 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
 
-import tensorlayer as tl
-from tensorlayer.layers import Module
-from tensorlayer.layers import Dense, Flatten
-from tensorlayer.vision.transforms import Normalize, Compose
-from tensorlayer.dataflow import Dataset, IterableDataset
+import tensorlayerx as tl
+from tensorlayerx.layers import Module
+from tensorlayerx.layers import Dense, Flatten
+from tensorlayerx.vision.transforms import Normalize, Compose
+from tensorlayerx.dataflow import Dataset, IterableDataset
 
 transform = Compose([Normalize(mean=[127.5], std=[127.5], data_format='HWC')])
 

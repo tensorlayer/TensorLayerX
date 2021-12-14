@@ -5,7 +5,7 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import tensorlayer as tl
+import tensorlayerx as tl
 import numpy as np
 
 from tests.utils import CustomTestCase

@@ -20,7 +20,7 @@
 # ======================================================== #
 
 import tensorflow as tf
-import tensorlayer as tl
+import tensorlayerx as tl
 
 x = tf.placeholder(tf.float32, [None, 64])
 net_in = tl.layers.InputLayer(x)

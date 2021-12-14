@@ -9,12 +9,12 @@ from mindspore import ParameterTuple
 from mindspore.nn import Momentum, WithLossCell
 
 import numpy as np
-import tensorlayer as tl
+import tensorlayerx as tl
 import mindspore as ms
 import tensorflow as tf
 import time
-from tensorlayer.layers import Module
-from tensorlayer.layers import Dense
+from tensorlayerx.layers import Module
+from tensorlayerx.layers import Dense
 import mindspore.nn as nn
 
 

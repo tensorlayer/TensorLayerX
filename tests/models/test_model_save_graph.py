@@ -8,9 +8,9 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import numpy as np
 import tensorflow as tf
-import tensorlayer as tl
-from tensorlayer.layers import *
-from tensorlayer.models import *
+import tensorlayerx as tl
+from tensorlayerx.layers import *
+from tensorlayerx.models import *
 
 from tests.utils import CustomTestCase
 
@@ -94,7 +94,7 @@ class Model_Save_with_weights(CustomTestCase):
                     ## compute outputs
                     _logits = MLP(X_batch)  # alternatively, you can use MLP(x, is_train=True) and remove MLP.train()
                     ## compute loss and update model
-                    _loss = tl.cost.cross_entropy(_logits, y_batch, name='train_loss')
+                    _loss = tl.losses.cross_entropy(_logits, y_batch, name='train_loss')
 
                 grad = tape.gradient(_loss, train_weights)
                 optimizer.apply_gradients(zip(grad, train_weights))
@@ -104,7 +104,7 @@ class Model_Save_with_weights(CustomTestCase):
         val_loss, val_acc, n_iter = 0, 0, 0
         for X_batch, y_batch in tl.iterate.minibatches(X_val, y_val, batch_size, shuffle=False):
             _logits = MLP(X_batch)  # is_train=False, disable dropout
-            val_loss += tl.cost.cross_entropy(_logits, y_batch, name='eval_loss')
+            val_loss += tl.losses.cross_entropy(_logits, y_batch, name='eval_loss')
             val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
             n_iter += 1
         print("   val loss: {}".format(val_loss / n_iter))
@@ -132,7 +132,7 @@ class Model_Load_with_weights_and_train(CustomTestCase):
         val_loss, val_acc, n_iter = 0, 0, 0
         for X_batch, y_batch in tl.iterate.minibatches(X_val, y_val, batch_size, shuffle=False):
             _logits = MLP(X_batch)  # is_train=False, disable dropout
-            val_loss += tl.cost.cross_entropy(_logits, y_batch, name='eval_loss')
+            val_loss += tl.losses.cross_entropy(_logits, y_batch, name='eval_loss')
             val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
             n_iter += 1
         print("   val loss: {}".format(val_loss / n_iter))
@@ -149,7 +149,7 @@ class Model_Load_with_weights_and_train(CustomTestCase):
                     ## compute outputs
                     _logits = MLP(X_batch)  # alternatively, you can use MLP(x, is_train=True) and remove MLP.train()
                     ## compute loss and update model
-                    _loss = tl.cost.cross_entropy(_logits, y_batch, name='train_loss')
+                    _loss = tl.losses.cross_entropy(_logits, y_batch, name='train_loss')
 
                 grad = tape.gradient(_loss, train_weights)
                 optimizer.apply_gradients(zip(grad, train_weights))

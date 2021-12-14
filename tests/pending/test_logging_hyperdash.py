@@ -9,9 +9,9 @@ import time
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
-import tensorlayer as tl
+import tensorlayerx as tl
 
-from tensorlayer.logging.contrib import hyperdash as hd
+from tensorlayerx.logging.contrib import hyperdash as hd
 
 from tests.utils import CustomTestCase
 
@@ -50,7 +50,7 @@ class TL_Logger_Test(CustomTestCase):
                 for epoch, accuracy in enumerate([10, 30, 50, 70, 80, 90, 95, 100]):
                     tl.logging.debug("Epoch %d - Accuracy %d%%" % (epoch + 1, accuracy))
 
-                    # Record a numerical performance metric
+                    # Record a numerical performance metrics
                     exp.metric(name="accuracy", value=accuracy)
 
                     time.sleep(0.1)
@@ -71,7 +71,7 @@ class TL_Logger_Test(CustomTestCase):
                 for epoch, accuracy in enumerate([10, 30, 50, 70, 80, 90, 95, 100]):
                     tl.logging.debug("Epoch %d - Accuracy %d%%" % (epoch + 1, accuracy))
 
-                    # Record a numerical performance metric
+                    # Record a numerical performance metrics
                     exp.metric(name="accuracy", value=accuracy)
 
                     time.sleep(0.1)
@@ -96,7 +96,7 @@ class TL_Logger_Test(CustomTestCase):
                 for epoch, accuracy in enumerate([10, 30, 50, 70, 80, 90, 95, 100]):
                     tl.logging.debug("Epoch %d - Accuracy %d%%" % (epoch + 1, accuracy))
 
-                    # Record a numerical performance metric
+                    # Record a numerical performance metrics
                     exp.metric(name="accuracy", value=accuracy)
 
                     time.sleep(0.1)
@@ -122,7 +122,7 @@ class TL_Logger_Test(CustomTestCase):
                 for epoch, accuracy in enumerate([10, 30, 50, 70, 80, 90, 95, 100]):
                     tl.logging.debug("Epoch %d - Accuracy %d%%" % (epoch + 1, accuracy))
 
-                    # Record a numerical performance metric
+                    # Record a numerical performance metrics
                     exp.metric(name="accuracy", value=accuracy)
 
                     time.sleep(0.1)

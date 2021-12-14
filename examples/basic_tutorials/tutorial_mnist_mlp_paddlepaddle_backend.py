@@ -1,13 +1,13 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
-# The tensorlayer and Paddle operators can be mixed
+# The tensorlayerx and Paddle operators can be mixed
 
 import os
 os.environ['TL_BACKEND'] = 'paddle'
 
-import tensorlayer as tl
-from tensorlayer.layers import Module
-from tensorlayer.layers import Dense, Flatten
+import tensorlayerx as tl
+from tensorlayerx.layers import Module
+from tensorlayerx.layers import Dense, Flatten
 import paddle
 from paddle.io import TensorDataset
 
@@ -42,9 +42,9 @@ train_loader = paddle.io.DataLoader(traindataset, batch_size=64, shuffle=True)
 net = MLP()
 
 optimizer = tl.optimizers.Adam(learning_rate=0.001)
-metric = tl.metric.Accuracy()
+metric = tl.metrics.Accuracy()
 model = tl.models.Model(
-    network=net, loss_fn=tl.cost.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metric
+    network=net, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metric
 )
 model.train(n_epoch=2, train_dataset=train_loader, print_freq=5, print_train_batch=True)
 model.save_weights('./model_mlp.npz', format='npz_dict')

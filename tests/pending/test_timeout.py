@@ -9,7 +9,7 @@ import unittest
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
-import tensorlayer as tl
+import tensorlayerx as tl
 
 from tests.utils import WindowsError
 from tests.utils import TimeoutError

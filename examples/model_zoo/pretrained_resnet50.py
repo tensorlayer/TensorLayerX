@@ -7,7 +7,7 @@ ResNet50 for ImageNet using TL models
 
 import time
 import numpy as np
-import tensorlayer as tl
+import tensorlayerx as tl
 from examples.model_zoo.imagenet_classes import class_names
 from examples.model_zoo.resnet import ResNet50
 

@@ -1,16 +1,16 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
-# The tensorlayer and tensorflow operators can be mixed
+# The tensorlayerx and tensorflow operators can be mixed
 import os
 os.environ['TL_BACKEND'] = 'paddle'
 
 import time
 import paddle as pd
-from tensorlayer.layers import Module
-import tensorlayer as tl
-from tensorlayer.dataflow import Dataset, Dataloader
-from tensorlayer.layers import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
-from tensorlayer.vision.transforms import (Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop)
+from tensorlayerx.layers import Module
+import tensorlayerx as tl
+from tensorlayerx.dataflow import Dataset, Dataloader
+from tensorlayerx.layers import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
+from tensorlayerx.vision.transforms import (Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop)
 # enable debug logging
 tl.logging.set_verbosity(tl.logging.DEBUG)
 
@@ -64,7 +64,7 @@ n_epoch = 500
 learning_rate = 0.0001
 print_freq = 5
 shuffle_buffer_size = 128
-metrics = tl.metric.Accuracy()
+metrics = tl.metrics.Accuracy()
 
 train_weights = net.trainable_weights
 optimizer = tl.optimizers.Adam(learning_rate)

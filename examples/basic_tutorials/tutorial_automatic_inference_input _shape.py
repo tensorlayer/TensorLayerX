@@ -6,9 +6,9 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 import numpy as np
 import time
 import tensorflow as tf
-import tensorlayer as tl
-from tensorlayer.layers import Module
-from tensorlayer.layers import Dense, Dropout, BatchNorm1d
+import tensorlayerx as tl
+from tensorlayerx.layers import Module
+from tensorlayerx.layers import Dense, Dropout, BatchNorm1d
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
 
@@ -58,7 +58,7 @@ for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
             ## compute outputs
             _logits = MLP(X_batch)
             ## compute loss and update model
-            _loss = tl.cost.softmax_cross_entropy_with_logits(_logits, y_batch, name='train_loss')
+            _loss = tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='train_loss')
         grad = tape.gradient(_loss, train_weights)
         optimizer.apply_gradients(zip(grad, train_weights))
 
@@ -68,7 +68,7 @@ for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
         train_loss, train_acc, n_iter = 0, 0, 0
         for X_batch, y_batch in tl.iterate.minibatches(X_train, y_train, batch_size, shuffle=False):
             _logits = MLP(X_batch)
-            train_loss += tl.cost.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
+            train_loss += tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
             train_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
             n_iter += 1
         print("   train loss: {}".format(train_loss / n_iter))
@@ -77,7 +77,7 @@ for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
         val_loss, val_acc, n_iter = 0, 0, 0
         for X_batch, y_batch in tl.iterate.minibatches(X_val, y_val, batch_size, shuffle=False):
             _logits = MLP(X_batch)  # is_train=False, disable dropout
-            val_loss += tl.cost.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
+            val_loss += tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
             val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
             n_iter += 1
         print("   val loss: {}".format(val_loss / n_iter))
@@ -88,7 +88,7 @@ MLP.set_eval()
 test_loss, test_acc, n_iter = 0, 0, 0
 for X_batch, y_batch in tl.iterate.minibatches(X_test, y_test, batch_size, shuffle=False):
     _logits = MLP(X_batch, foo=1)
-    test_loss += tl.cost.softmax_cross_entropy_with_logits(_logits, y_batch, name='test_loss')
+    test_loss += tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='test_loss')
     test_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
     n_iter += 1
 print("   test foo=1 loss: {}".format(test_loss / n_iter))
