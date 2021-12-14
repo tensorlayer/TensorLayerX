@@ -29,7 +29,7 @@ Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), TensorLa
 
 # Examples
 
-- [Basic Examples]
+- [Basic Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples)
 - [TLCV]
 
 
