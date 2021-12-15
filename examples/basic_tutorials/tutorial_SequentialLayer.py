@@ -5,7 +5,7 @@ import os
 # os.environ['TL_BACKEND'] = 'mindspore'
 os.environ['TL_BACKEND'] = 'paddle'
 
-from tensorlayerx.layers import SequentialLayer
+from tensorlayerx.core import SequentialLayer
 from tensorlayerx.layers import Dense
 import tensorlayerx as tl
 from tensorlayerx.dataflow import Dataset

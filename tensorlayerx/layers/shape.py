@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from tensorlayerx import logging
-from tensorlayerx.layers.core import Module
+from tensorlayerx.core import Module
 import tensorlayerx as tl
 
 __all__ = [

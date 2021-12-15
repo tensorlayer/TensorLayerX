@@ -13,7 +13,7 @@ import tensorlayerx as tl
 import mindspore as ms
 import tensorflow as tf
 import time
-from tensorlayerx.layers import Module
+from tensorlayerx.core import Module
 from tensorlayerx.layers import Dense
 import mindspore.nn as nn
 

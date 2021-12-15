@@ -3,7 +3,7 @@
 
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.layers.core import Module
+from tensorlayerx.core import Module
 
 __all__ = [
     'QuanDenseWithBN',

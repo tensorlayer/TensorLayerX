@@ -9,7 +9,7 @@ import time
 
 import tensorflow as tf
 import tensorlayerx as tl
-from tensorlayerx.layers import Module
+from tensorlayerx.core import Module
 from tensorlayerx.layers import Dense
 from tensorlayerx.models import WithGrad
 
