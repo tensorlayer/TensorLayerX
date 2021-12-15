@@ -34,8 +34,8 @@ import numpy as np
 import tensorlayerx as tl
 from tensorlayerx import logging
 from tensorlayerx.files import assign_weights, maybe_download_and_extract
-from tensorlayerx.layers import (BatchNorm, Conv2d, Dense, Flatten, Input, SequentialLayer, MaxPool2d)
-from tensorlayerx.layers import Module
+from tensorlayerx.layers import (BatchNorm, Conv2d, Dense, Flatten, Input, MaxPool2d)
+from tensorlayerx.core import Module, SequentialLayer
 
 __all__ = [
     'VGG',

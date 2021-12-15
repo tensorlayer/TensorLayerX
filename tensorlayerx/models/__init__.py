@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .core import Model
-from .core import WithLoss
-from .core import WithGrad
-from .core import TrainOneStep
+from .train import Model
+from .train import WithLoss
+from .train import WithGrad
+from .train import TrainOneStep

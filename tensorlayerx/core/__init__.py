@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from tensorlayerx.backend import BACKEND
+from .common import _save_standard_weights_dict, _load_standard_weights_dict, _save_weights, _load_weights
 
 if BACKEND == 'mindspore':
     from .core_mindspore import *

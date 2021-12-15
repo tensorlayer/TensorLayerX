@@ -8,7 +8,7 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'paddle'
 
 import tensorlayerx as tl
-from tensorlayerx.layers import Module
+from tensorlayerx.core import Module
 from tensorlayerx.layers import Dense, LSTM, Embedding
 from tensorlayerx.dataflow import Dataset
 import numpy as np
