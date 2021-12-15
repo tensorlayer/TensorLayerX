@@ -720,8 +720,7 @@ class LayerList(Module):
 
     Examples
     ---------
-    >>> from tensorlayerx.nn import Module, LayerList
-    >>> from tensorlayerx.layers import Dense
+    >>> from tensorlayerx.layers import Module, LayerList, Dense
     >>> import tensorlayerx as tl
     >>> d1 = Dense(n_units=800, act=tl.ReLU, in_channels=784, name='Dense1')
     >>> d2 = Dense(n_units=800, act=tl.ReLU, in_channels=800, name='Dense2')
