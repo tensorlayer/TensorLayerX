@@ -7,7 +7,7 @@ import numpy as np
 import time
 import tensorflow as tf
 import tensorlayerx as tl
-from tensorlayerx.nn import Module
+from tensorlayerx.layers import Module
 from tensorlayerx.layers import Dense, Dropout, BatchNorm1d
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))

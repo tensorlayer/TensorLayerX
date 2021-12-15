@@ -3,7 +3,7 @@
 
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.nn import Module
+from tensorlayerx.layers.core import Module
 
 __all__ = [
     'DorefaDense',

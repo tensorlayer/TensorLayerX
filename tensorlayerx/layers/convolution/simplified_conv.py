@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from tensorlayerx.nn import Module
+from tensorlayerx.layers.core import Module
 import tensorlayerx as tl
 from tensorlayerx import logging
 

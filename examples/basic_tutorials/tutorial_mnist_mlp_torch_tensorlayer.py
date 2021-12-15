@@ -10,8 +10,7 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 
 import tensorlayerx as tl
-from tensorlayerx.nn import Module
-from tensorlayerx.layers import Dense
+from tensorlayerx.layers import Module, Dense
 
 # Download training data from open datasets.
 training_data = datasets.FashionMNIST(

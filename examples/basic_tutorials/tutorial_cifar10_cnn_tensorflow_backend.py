@@ -9,7 +9,7 @@ import numpy as np
 import multiprocessing
 import tensorflow as tf
 
-from tensorlayerx.nn import Module
+from tensorlayerx.layers import Module
 import tensorlayerx as tl
 from tensorlayerx.layers import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
 

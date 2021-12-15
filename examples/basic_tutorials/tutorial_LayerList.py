@@ -6,7 +6,7 @@ import os
 # os.environ['TL_BACKEND'] = 'mindspore'
 os.environ['TL_BACKEND'] = 'paddle'
 
-from tensorlayerx.nn import Module, LayerList, Dense
+from tensorlayerx.layers import Module, LayerList, Dense
 import tensorlayerx as tl
 
 d1 = Dense(n_units=800, act=tl.ReLU, in_channels=784, name='Dense1')
