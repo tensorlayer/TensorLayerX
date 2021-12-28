@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow as tf
 import tensorlayerx as tl
 from tensorlayerx.layers import *
-from tensorlayerx.models import *
+from tensorlayerx.model import *
 
 from tests.utils import CustomTestCase
 
@@ -62,8 +62,8 @@ class Nested_VGG(Model):
 
     def __init__(self):
         super(Nested_VGG, self).__init__()
-        self.vgg1 = tl.models.vgg16()
-        self.vgg2 = tl.models.vgg16()
+        self.vgg1 = tl.model.vgg16()
+        self.vgg2 = tl.model.vgg16()
 
     def forward(self, x):
         pass
@@ -256,12 +256,12 @@ class Model_Save_Test(CustomTestCase):
         # simple modellayer
         ni = tl.layers.Input([10, 4])
         nn = tl.layers.Dense(n_units=3, name='dense1')(ni)
-        modellayer = tl.models.Model(inputs=ni, outputs=nn, name='modellayer').as_layer()
+        modellayer = tl.model.Model(inputs=ni, outputs=nn, name='modellayer').as_layer()
 
         # nested layerlist with modellayer
         inputs = tl.layers.Input([10, 5])
         layer1 = tl.layers.LayerList([tl.layers.Dense(n_units=4, name='dense1'), modellayer])(inputs)
-        model = tl.models.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
+        model = tl.model.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
 
         model.save_weights("layerlist.h5")
         tar_weight = model.get_layer(index=-1)[0].all_weights[0]

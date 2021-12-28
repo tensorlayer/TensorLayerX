@@ -228,7 +228,7 @@ class Module(Cell):
         Examples
         --------
         >>> import tensorlayerx as tl
-        >>> net = tl.models.vgg16()
+        >>> net = tl.model.vgg16()
         >>> net.eval()
         # do evaluation
 

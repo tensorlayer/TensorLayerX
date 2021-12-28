@@ -234,7 +234,7 @@ class TensorHub(object):
             params_id_list = pc.distinct('params_id')
             n_params = len(params_id_list)
             if n_params != 1:
-                print("     Note that there are {} models match the kwargs".format(n_params))
+                print("     Note that there are {} model match the kwargs".format(n_params))
             return network
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()

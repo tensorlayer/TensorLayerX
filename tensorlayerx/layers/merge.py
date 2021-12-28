@@ -88,7 +88,7 @@ class Elementwise(Module):
 
     Examples
     --------
-    >>> class CustomModel(tl.models.Model):
+    >>> class CustomModel(tl.model.Model):
     >>>     def __init__(self):
     >>>         super(CustomModel, self).__init__(name="custom")
     >>>         self.dense1 = tl.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu1_1')

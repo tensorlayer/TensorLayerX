@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 import tensorlayerx as tl
 from tensorlayerx.layers import *
-from tensorlayerx.models import *
+from tensorlayerx.model import *
 
 from tests.utils import CustomTestCase
 
@@ -87,7 +87,7 @@ class Model_Save_with_weights(CustomTestCase):
         for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
             print("epoch = ", epoch)
 
-            for X_batch, y_batch in tl.iterate.minibatches(X_train, y_train, batch_size, shuffle=True):
+            for X_batch, y_batch in tensorlayerx.utils.iterate.minibatches(X_train, y_train, batch_size, shuffle=True):
                 MLP.train()  # enable dropout
 
                 with tf.GradientTape() as tape:
@@ -102,7 +102,7 @@ class Model_Save_with_weights(CustomTestCase):
         MLP.eval()
 
         val_loss, val_acc, n_iter = 0, 0, 0
-        for X_batch, y_batch in tl.iterate.minibatches(X_val, y_val, batch_size, shuffle=False):
+        for X_batch, y_batch in tensorlayerx.utils.iterate.minibatches(X_val, y_val, batch_size, shuffle=False):
             _logits = MLP(X_batch)  # is_train=False, disable dropout
             val_loss += tl.losses.cross_entropy(_logits, y_batch, name='eval_loss')
             val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
@@ -130,7 +130,7 @@ class Model_Load_with_weights_and_train(CustomTestCase):
         optimizer = tf.optimizers.Adam(lr=0.0001)
         X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
         val_loss, val_acc, n_iter = 0, 0, 0
-        for X_batch, y_batch in tl.iterate.minibatches(X_val, y_val, batch_size, shuffle=False):
+        for X_batch, y_batch in tensorlayerx.utils.iterate.minibatches(X_val, y_val, batch_size, shuffle=False):
             _logits = MLP(X_batch)  # is_train=False, disable dropout
             val_loss += tl.losses.cross_entropy(_logits, y_batch, name='eval_loss')
             val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
@@ -142,7 +142,7 @@ class Model_Load_with_weights_and_train(CustomTestCase):
         for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
             print("epoch = ", epoch)
 
-            for X_batch, y_batch in tl.iterate.minibatches(X_train, y_train, batch_size, shuffle=True):
+            for X_batch, y_batch in tensorlayerx.utils.iterate.minibatches(X_train, y_train, batch_size, shuffle=True):
                 MLP.train()  # enable dropout
 
                 with tf.GradientTape() as tape:
@@ -209,7 +209,7 @@ class Vgg_LayerList_test(CustomTestCase):
         print("##### begin testing save_graph, load_graph, including LayerList #####")
 
     def test_save(self):
-        M1 = tl.models.vgg16(mode='static')
+        M1 = tl.model.vgg16(mode='static')
         print("Model config = \n", M1.config)
         print("Model = \n", M1)
         M1.save(filepath="vgg.hdf5", save_weights=False)
@@ -257,9 +257,9 @@ class Lambda_layer_test(CustomTestCase):
     def test_lambda_layer_no_para_no_args(self):
         x = tl.layers.Input([8, 3], name='input')
         y = tl.layers.Lambda(lambda x: 2 * x, name='lambda')(x)
-        M1 = tl.models.Model(x, y)
+        M1 = tl.model.Model(x, y)
         M1.save("lambda_no_para_no_args.hdf5")
-        M2 = tl.models.Model.load("lambda_no_para_no_args.hdf5")
+        M2 = tl.model.Model.load("lambda_no_para_no_args.hdf5")
         print(M1)
         print(M2)
         M1.eval()
@@ -281,9 +281,9 @@ class Lambda_layer_test(CustomTestCase):
 
         x = tl.layers.Input([8, 3], name='input')
         y = tl.layers.Lambda(customize_func, fn_args={'foo': 3}, name='lambda')(x)
-        M1 = tl.models.Model(x, y)
+        M1 = tl.model.Model(x, y)
         M1.save("lambda_no_para_with_args.hdf5")
-        M2 = tl.models.Model.load("lambda_no_para_with_args.hdf5")
+        M2 = tl.model.Model.load("lambda_no_para_with_args.hdf5")
         print(M1)
         print(M2)
         M1.eval()
@@ -311,7 +311,7 @@ class Lambda_layer_test(CustomTestCase):
         # in order to compile keras model and get trainable_variables of the keras model
         _ = perceptron(np.random.random(input_shape).astype(np.float32))
         plambdalayer = tl.layers.Lambda(perceptron, perceptron.trainable_variables)(in_2)
-        M2 = tl.models.Model(inputs=in_2, outputs=plambdalayer)
+        M2 = tl.model.Model(inputs=in_2, outputs=plambdalayer)
 
         M2.save('M2_keras.hdf5')
         M4 = Model.load('M2_keras.hdf5')
@@ -343,7 +343,7 @@ class Lambda_layer_test(CustomTestCase):
         # in order to compile keras model and get trainable_variables of the keras model
         _ = denselayer(np.random.random(input_shape).astype(np.float32))
         dlambdalayer = tl.layers.Lambda(denselayer, denselayer.trainable_variables)(in_1)
-        M1 = tl.models.Model(inputs=in_1, outputs=dlambdalayer)
+        M1 = tl.model.Model(inputs=in_1, outputs=dlambdalayer)
 
         M1.save('M1_keras.hdf5')
         M3 = Model.load('M1_keras.hdf5')
@@ -456,7 +456,7 @@ class ElementWise_lambda_test(CustomTestCase):
     #     kerasinput1 = tf.keras.layers.Input(shape=(100, ))
     #     kerasinput2 = tf.keras.layers.Input(shape=(100, ))
     #     kerasconcate = tf.keras.layers.concatenate(inputs=[kerasinput1, kerasinput2])
-    #     kerasmodel = tf.keras.models.Model(inputs=[kerasinput1, kerasinput2], outputs=kerasconcate)
+    #     kerasmodel = tf.keras.model.Model(inputs=[kerasinput1, kerasinput2], outputs=kerasconcate)
     #     _ = kerasmodel([np.random.random([100,]).astype(np.float32), np.random.random([100,]).astype(np.float32)])
     #
     #     input1 = tl.layers.Input([100, 1])

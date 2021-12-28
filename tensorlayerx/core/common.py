@@ -97,7 +97,7 @@ def _save_weights(net, file_path, format=None):
     >>> net = vgg16()
     >>> optimizer = tl.optimizers.Adam(learning_rate=0.001)
     >>> metrics = tl.metrics.Accuracy()
-    >>> model = tl.models.Model(network=net, loss_fn=tl.losses.cross_entropy, optimizer=optimizer, metrics=metrics)
+    >>> model = tl.model.Model(network=net, loss_fn=tl.losses.cross_entropy, optimizer=optimizer, metrics=metrics)
     >>> model.save_weights('./model.h5')
     ...
     >>> model.load_weights('./model.h5')
@@ -171,7 +171,7 @@ def _load_weights(net, file_path, format=None, in_order=True, skip=False):
     >>> net = vgg16()
     >>> optimizer = tl.optimizers.Adam(learning_rate=0.001)
     >>> metrics = tl.metrics.Accuracy()
-    >>> model = tl.models.Model(network=net, loss_fn=tl.losses.cross_entropy, optimizer=optimizer, metrics=metrics)
+    >>> model = tl.model.Model(network=net, loss_fn=tl.losses.cross_entropy, optimizer=optimizer, metrics=metrics)
     >>> model.load_weights('./model_graph.h5', in_order=False, skip=True) # load weights by name, skipping mismatch
     >>> model.load_weights('./model_eager.h5') # load sequentially
 

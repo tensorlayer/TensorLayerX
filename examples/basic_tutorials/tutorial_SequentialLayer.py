@@ -58,7 +58,7 @@ train_dataset = tl.dataflow.FromGenerator(
 )
 train_loader = tl.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
 metric = tl.metrics.Accuracy()
-model = tl.models.Model(network=MLP, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metric)
+model = tl.model.Model(network=MLP, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metric)
 model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=False)
 model.save_weights('./model.npz', format='npz_dict')
 model.load_weights('./model.npz', format='npz_dict')

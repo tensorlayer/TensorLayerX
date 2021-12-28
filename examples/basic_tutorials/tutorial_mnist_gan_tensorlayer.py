@@ -12,7 +12,7 @@ import tensorlayerx as tl
 from tensorlayerx.core import Module
 from tensorlayerx.layers import Dense
 from tensorlayerx.dataflow import Dataset
-from tensorlayerx.models import TrainOneStep
+from tensorlayerx.model import TrainOneStep
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
 

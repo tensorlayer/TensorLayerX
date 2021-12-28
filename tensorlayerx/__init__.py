@@ -9,7 +9,6 @@ from .backend import *
 # from .dataflow import *
 
 import os
-from distutils.version import LooseVersion
 
 from tensorlayerx.package_info import (
     VERSION, __contact_emails__, __contact_names__, __description__, __download_url__, __homepage__, __keywords__,
@@ -23,11 +22,11 @@ if 'TENSORLAYER_PACKAGE_BUILDING' not in os.environ:
     from tensorlayerx import decorators
     from tensorlayerx import files
     from tensorlayerx import initializers
-    from tensorlayerx import iterate
+    from .utils import iterate
     from tensorlayerx import layers
     from tensorlayerx import lazy_imports
     from tensorlayerx import logging
-    from tensorlayerx import models
+    from tensorlayerx import model
     from tensorlayerx import optimizers
     # from tensorlayerx import rein
     # from tensorlayerx import utils

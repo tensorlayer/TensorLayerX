@@ -334,7 +334,7 @@ def static_graph2net(model_config):
         model_outputs = []
         for outputs_tensor in outputs_tensors:
             model_outputs.append(layer_dict[outputs_tensor])
-    from tensorlayerx.models import Model
+    from tensorlayerx.model import Model
     M = Model(inputs=model_inputs, outputs=model_outputs, name=model_name)
     logging.info("[*] Load graph finished")
     return M
@@ -2728,7 +2728,7 @@ def _save_weights_to_hdf5_group(f, layers):
 
     for layer in layers:
         g = f.create_group(layer.name)
-        if isinstance(layer, tl.models.Model):
+        if isinstance(layer, tl.model.Model):
             _save_weights_to_hdf5_group(g, layer.all_layers)
         elif isinstance(layer, tl.layers.ModelLayer):
             _save_weights_to_hdf5_group(g, layer.model.all_layers)
@@ -2770,7 +2770,7 @@ def _load_weights_from_hdf5_group_in_order(f, layers):
     for idx, name in enumerate(layer_names):
         g = f[name]
         layer = layers[idx]
-        if isinstance(layer, tl.models.Model):
+        if isinstance(layer, tl.model.Model):
             _load_weights_from_hdf5_group_in_order(g, layer.all_layers)
         elif isinstance(layer, tl.layers.ModelLayer):
             _load_weights_from_hdf5_group_in_order(g, layer.model.all_layers)
@@ -2816,7 +2816,7 @@ def _load_weights_from_hdf5_group(f, layers, skip=False):
         else:
             g = f[name]
             layer = layer_index[name]
-            if isinstance(layer, tl.models.Model):
+            if isinstance(layer, tl.model.Model):
                 _load_weights_from_hdf5_group(g, layer.all_layers, skip)
             elif isinstance(layer, tl.layers.ModelLayer):
                 _load_weights_from_hdf5_group(g, layer.model.all_layers, skip)

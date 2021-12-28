@@ -13,7 +13,7 @@ if gpus:
 tl.logging.set_verbosity(tl.logging.DEBUG)
 
 # get the whole model
-vgg = tl.models.vgg16()
+vgg = tl.model.vgg16()
 
 # system monitor
 info = psutil.virtual_memory()

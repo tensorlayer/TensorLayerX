@@ -11,7 +11,7 @@ import tensorflow as tf
 import tensorlayerx as tl
 from tqdm import tqdm
 from sklearn.utils import shuffle
-from tensorlayerx.models.seq2seq import Seq2seq
+from tensorlayerx.model.seq2seq import Seq2seq
 from tests.utils import CustomTestCase
 from tensorlayerx.losses import cross_entropy_seq
 
@@ -59,8 +59,8 @@ class Model_SEQ2SEQ_Test(CustomTestCase):
             model_.train()
             trainX, trainY = shuffle(self.trainX, self.trainY)
             total_loss, n_iter = 0, 0
-            for X, Y in tqdm(tl.iterate.minibatches(inputs=trainX, targets=trainY, batch_size=self.batch_size,
-                                                    shuffle=False), total=self.n_step,
+            for X, Y in tqdm(tensorlayerx.utils.iterate.minibatches(inputs=trainX, targets=trainY, batch_size=self.batch_size,
+                                                                    shuffle=False), total=self.n_step,
                              desc='Epoch[{}/{}]'.format(epoch + 1, self.num_epochs), leave=False):
 
                 dec_seq = Y[:, :-1]

@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 import tensorlayerx as tl
 from tensorlayerx.layers import *
-from tensorlayerx.models import *
+from tensorlayerx.model import *
 
 from tests.utils import CustomTestCase
 

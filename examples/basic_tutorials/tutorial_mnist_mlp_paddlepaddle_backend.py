@@ -43,7 +43,7 @@ net = MLP()
 
 optimizer = tl.optimizers.Adam(learning_rate=0.001)
 metric = tl.metrics.Accuracy()
-model = tl.models.Model(
+model = tl.model.Model(
     network=net, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metric
 )
 model.train(n_epoch=2, train_dataset=train_loader, print_freq=5, print_train_batch=True)

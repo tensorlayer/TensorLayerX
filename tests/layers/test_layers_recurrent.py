@@ -54,7 +54,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn, rnn_state = rnnlayer(inputs)
         outputs = tl.layers.Dense(n_units=1)(rnn)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn_state[0]])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn_state[0]])
         print(rnn_model)
 
         optimizer = tf.optimizers.Adam(learning_rate=0.01)
@@ -81,7 +81,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn, rnn_state = rnnlayer(inputs)
         outputs = tl.layers.Dense(n_units=1)(rnn)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn_state[0]])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn_state[0]])
         print(rnn_model)
 
         optimizer = tf.optimizers.Adam(learning_rate=0.01)
@@ -109,7 +109,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn = rnnlayer(inputs)
         outputs = tl.layers.Dense(n_units=1)(rnn)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn])
         print(rnn_model)
 
         rnn_model.eval()
@@ -127,7 +127,7 @@ class Layer_RNN_Test(CustomTestCase):
             return_seq_2d=False, return_last_state=False
         )
         rnn = rnnlayer(inputs)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=rnn)
+        rnn_model = tl.model.Model(inputs=inputs, outputs=rnn)
         print(rnn_model)
 
         rnn_model.eval()
@@ -138,7 +138,7 @@ class Layer_RNN_Test(CustomTestCase):
 
     def test_basic_simplernn_dynamic(self):
 
-        class CustomisedModel(tl.models.Model):
+        class CustomisedModel(tl.model.Model):
 
             def __init__(self):
                 super(CustomisedModel, self).__init__()
@@ -171,7 +171,7 @@ class Layer_RNN_Test(CustomTestCase):
 
     def test_basic_simplernn_dynamic_class(self):
 
-        class CustomisedModel(tl.models.Model):
+        class CustomisedModel(tl.model.Model):
 
             def __init__(self):
                 super(CustomisedModel, self).__init__()
@@ -204,7 +204,7 @@ class Layer_RNN_Test(CustomTestCase):
 
     def test_basic_simplernn_dynamic_2(self):
 
-        class CustomisedModel(tl.models.Model):
+        class CustomisedModel(tl.model.Model):
 
             def __init__(self):
                 super(CustomisedModel, self).__init__()
@@ -238,7 +238,7 @@ class Layer_RNN_Test(CustomTestCase):
 
     def test_basic_simplernn_dynamic_3(self):
 
-        class CustomisedModel(tl.models.Model):
+        class CustomisedModel(tl.model.Model):
 
             def __init__(self):
                 super(CustomisedModel, self).__init__()
@@ -285,7 +285,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn, rnn_state = rnnlayer(inputs)
         outputs = tl.layers.Dense(n_units=1)(rnn)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn_state[0], rnn_state[1]])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn_state[0], rnn_state[1]])
         print(rnn_model)
 
         optimizer = tf.optimizers.Adam(learning_rate=0.01)
@@ -311,7 +311,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn, rnn_state = rnnlayer(inputs)
         outputs = tl.layers.Dense(n_units=1)(rnn)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn_state[0], rnn_state[1]])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn_state[0], rnn_state[1]])
         print(rnn_model)
 
         optimizer = tf.optimizers.Adam(learning_rate=0.01)
@@ -338,7 +338,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn, rnn_state = rnnlayer(inputs)
         outputs = tl.layers.Dense(n_units=1)(rnn)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn_state[0]])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn_state[0]])
         print(rnn_model)
 
         optimizer = tf.optimizers.Adam(learning_rate=0.01)
@@ -364,7 +364,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn, rnn_state = rnnlayer(inputs)
         outputs = tl.layers.Dense(n_units=1)(rnn)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn_state[0]])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn_state[0]])
         print(rnn_model)
 
         optimizer = tf.optimizers.Adam(learning_rate=0.01)
@@ -393,7 +393,7 @@ class Layer_RNN_Test(CustomTestCase):
         rnn, rnn_fw_state, rnn_bw_state = rnnlayer(inputs)
         dense = tl.layers.Dense(n_units=1)(rnn)
         outputs = tl.layers.Reshape([-1, self.num_steps])(dense)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn, rnn_fw_state[0], rnn_bw_state[0]])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn, rnn_fw_state[0], rnn_bw_state[0]])
         print(rnn_model)
 
         optimizer = tf.optimizers.Adam(learning_rate=0.01)
@@ -427,7 +427,7 @@ class Layer_RNN_Test(CustomTestCase):
         din = tl.layers.Reshape([-1, self.hidden_size + self.hidden_size + 1])(rnn)
         dense = tl.layers.Dense(n_units=1)(din)
         outputs = tl.layers.Reshape([-1, self.num_steps])(dense)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn, rnn_fw_state[0], rnn_bw_state[0]])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn, rnn_fw_state[0], rnn_bw_state[0]])
         print(rnn_model)
 
         optimizer = tf.optimizers.Adam(learning_rate=0.01)
@@ -451,7 +451,7 @@ class Layer_RNN_Test(CustomTestCase):
 
     def test_basic_birnn_grucell(self):
 
-        class CustomisedModel(tl.models.Model):
+        class CustomisedModel(tl.model.Model):
 
             def __init__(self):
                 super(CustomisedModel, self).__init__()
@@ -499,7 +499,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn2 = rnnlayer2(rnn1)
         outputs = tl.layers.Dense(n_units=1)(rnn2)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=outputs)
+        rnn_model = tl.model.Model(inputs=inputs, outputs=outputs)
         print(rnn_model)
 
         optimizer = tf.optimizers.Adam(learning_rate=0.01)
@@ -536,7 +536,7 @@ class Layer_RNN_Test(CustomTestCase):
         rnn2 = rnnlayer2(rnn)
         dense = tl.layers.Dense(n_units=1)(rnn2)
         outputs = tl.layers.Reshape([-1, self.num_steps])(dense)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=outputs)
+        rnn_model = tl.model.Model(inputs=inputs, outputs=outputs)
         print(rnn_model)
 
         optimizer = tf.optimizers.Adam(learning_rate=0.01)
@@ -565,7 +565,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn = rnnlayer(inputs)
         outputs = tl.layers.Dense(n_units=1)(rnn)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn])
         print(rnn_model)
 
         rnn_model.train()
@@ -591,7 +591,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn = rnnlayer(inputs)
         outputs = tl.layers.Dense(n_units=1)(rnn)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn])
         print(rnn_model)
 
         rnn_model.train()
@@ -618,7 +618,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn = rnnlayer(inputs)
         outputs = tl.layers.Dense(n_units=1)(rnn)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn])
         print(rnn_model)
 
         rnn_model.train()
@@ -645,7 +645,7 @@ class Layer_RNN_Test(CustomTestCase):
         )
         rnn = rnnlayer(inputs)
         outputs = tl.layers.Dense(n_units=1)(rnn)
-        rnn_model = tl.models.Model(inputs=inputs, outputs=[outputs, rnn])
+        rnn_model = tl.model.Model(inputs=inputs, outputs=[outputs, rnn])
         print(rnn_model)
 
         rnn_model.train()
@@ -840,7 +840,7 @@ class Layer_RNN_Test(CustomTestCase):
         data = [[[1], [2], [0], [0], [0]], [[1], [2], [3], [0], [0]], [[1], [2], [6], [1], [1]]]
         data = tf.convert_to_tensor(data, dtype=tf.float32)
 
-        class DynamicRNNExample(tl.models.Model):
+        class DynamicRNNExample(tl.model.Model):
 
             def __init__(self):
                 super(DynamicRNNExample, self).__init__()
@@ -872,7 +872,7 @@ class Layer_RNN_Test(CustomTestCase):
 
     def test_dynamic_rnn_with_fake_data(self):
 
-        class CustomisedModel(tl.models.Model):
+        class CustomisedModel(tl.model.Model):
 
             def __init__(self):
                 super(CustomisedModel, self).__init__()

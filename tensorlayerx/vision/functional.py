@@ -1,12 +1,49 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from __future__ import absolute_import, division, print_function
 import numpy as np
-from numpy import sin, cos, tan
 import math
 import numbers
 import importlib
+import cv2
+from tensorlayerx.backend.ops import convert_to_tensor
 
+__all__ = [
+    'central_crop',
+    'to_tensor',
+    'crop',
+    'pad',
+    'resize',
+    'transpose',
+    'hwc_to_chw',
+    'chw_to_hwc',
+    'rgb_to_hsv',
+    'hsv_to_rgb',
+    'rgb_to_gray',
+    'adjust_brightness',
+    'adjust_contrast',
+    'adjust_hue',
+    'adjust_saturation',
+    'normalize',
+    'hflip',
+    'vflip',
+    'padtoboundingbox',
+    'standardize',
+    'rotate',
+    'random_brightness',
+    'random_contrast',
+    'random_saturation',
+    'random_hue',
+    'random_crop',
+    'random_resized_crop',
+    'random_vflip',
+    'random_hflip',
+    'random_rotation',
+    'random_shear',
+    'random_shift',
+    'random_zoom',
+    'random_affine',
+]
 
 def try_import(module_name):
     """Try importing a module, with an informative error message on failure."""
@@ -29,8 +66,27 @@ def try_import(module_name):
         ).format(module_name, install_name)
         raise ImportError(err_msg)
 
+def random_factor(factor, name, center=1, bound=(0, float('inf')), non_negative=True):
+    if isinstance(factor, numbers.Number):
+        if factor < 0:
+            raise ValueError('The input value of {} cannot be negative.'.format(name))
+        factor = [center - factor, center + factor]
+        if non_negative:
+            factor[0] = max(0, factor[0])
+    elif isinstance(factor, (tuple, list)) and len(factor) == 2:
+        if not bound[0] <= factor[0] <= factor[1] <= bound[1]:
+            raise ValueError(
+                "Please check your value range of {} is valid and "
+                "within the bound {}.".format(name, bound)
+            )
+    else:
+        raise TypeError("Input of {} should be either a single value, or a list/tuple of " "length 2.".format(name))
+    factor = np.random.uniform(factor[0], factor[1])
+    return factor
+
 
 def crop(image, offset_height, offset_width, target_height, target_width):
+
     image_height, image_width = image.shape[0:2]
     if offset_width < 0:
         raise ValueError('offset_width must be >0.')
@@ -48,7 +104,7 @@ def crop(image, offset_height, offset_width, target_height, target_width):
     return image[offset_height:offset_height + target_height, offset_width:offset_width + target_width]
 
 
-def center_crop(image, size, central_fraction):
+def central_crop(image, size, central_fraction):
 
     image_height, image_width = image.shape[0:2]
     if size is not None:
@@ -99,7 +155,6 @@ def pad(image, padding, padding_value, mode):
     channels = image.shape[-1]
     if isinstance(padding_value, numbers.Number):
         padding_value = (padding_value, ) * channels
-    cv2 = try_import('cv2')
     _cv2_pad_from_str = {
         'constant': cv2.BORDER_CONSTANT,
         'edge': cv2.BORDER_REPLICATE,
@@ -124,7 +179,6 @@ def resize(image, size, method):
     if not (isinstance(size, int) or (isinstance(size, (list, tuple)) and len(size) == 2)):
         raise TypeError('Size should be a single number or a list/tuple (h, w) of length 2.' 'Got {}.'.format(size))
 
-    cv2 = try_import('cv2')
     _cv2_interp_from_str = {
         'nearest': cv2.INTER_NEAREST,
         'bilinear': cv2.INTER_LINEAR,
@@ -184,21 +238,19 @@ def chw_to_hwc(image):
 
 def rgb_to_hsv(image):
 
-    cv2 = try_import('cv2')
+
     image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     return image
 
 
 def hsv_to_rgb(image):
 
-    cv2 = try_import('cv2')
     image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
     return image
 
 
 def rgb_to_gray(image, num_output_channels):
 
-    cv2 = try_import('cv2')
 
     if num_output_channels == 1:
         image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)[:, :, np.newaxis]
@@ -213,7 +265,6 @@ def rgb_to_gray(image, num_output_channels):
 def adjust_brightness(image, brightness_factor):
     if brightness_factor < 0:
         raise ValueError('brightness_factor ({}) is not non-negative.'.format(brightness_factor))
-    cv2 = try_import('cv2')
 
     table = np.array([i * brightness_factor for i in range(0, 256)]).clip(0, 255).astype('uint8')
 
@@ -238,7 +289,7 @@ def adjust_contrast(image, contrast_factor):
     """
     if contrast_factor < 0:
         raise ValueError('contrast_factor ({}) is not non-negative.'.format(contrast_factor))
-    cv2 = try_import('cv2')
+
 
     table = np.array([(i - 127) * contrast_factor + 127 for i in range(0, 256)]).clip(0, 255).astype('uint8')
     if len(image.shape) == 3 and image.shape[2] == 1:
@@ -271,7 +322,6 @@ def adjust_hue(image, hue_factor):
     """
     if not (-0.5 <= hue_factor <= 0.5):
         raise ValueError('hue_factor ({}) is not in [-0.5, 0.5].'.format(hue_factor))
-    cv2 = try_import('cv2')
 
     dtype = image.dtype
     image = image.astype(np.uint8)
@@ -302,7 +352,6 @@ def adjust_saturation(image, saturation_factor):
     """
     if saturation_factor < 0:
         raise ValueError('saturation_factor ({}) is not non-negative.'.format(saturation_factor))
-    cv2 = try_import('cv2')
 
     dtype = image.dtype
     image = image.astype(np.float32)
@@ -323,7 +372,6 @@ def hflip(image):
         np.array:  Horizontall flipped image.
 
     """
-    cv2 = try_import('cv2')
 
     return cv2.flip(image, 1)
 
@@ -338,7 +386,6 @@ def vflip(image):
         np.array:  Vertically flipped image.
 
     """
-    cv2 = try_import('cv2')
 
     if len(image.shape) == 3 and image.shape[2] == 1:
         return cv2.flip(image, 0)[:, :, np.newaxis]
@@ -414,7 +461,6 @@ def rotate(img, angle, interpolation, expand, center, fill):
         np.array: Rotated image.
 
     """
-    cv2 = try_import('cv2')
     _cv2_interp_from_str = {
         'nearest': cv2.INTER_NEAREST,
         'bilinear': cv2.INTER_LINEAR,
@@ -422,14 +468,7 @@ def rotate(img, angle, interpolation, expand, center, fill):
         'bicubic': cv2.INTER_CUBIC,
         'lanczos': cv2.INTER_LANCZOS4
     }
-    h, w, c = img.shape
-    if isinstance(fill, numbers.Number):
-        fill = (fill, ) * c
-    elif not (isinstance(fill, (list, tuple)) and len(fill) == c):
-        raise ValueError(
-            'If fill should be a single number or a list/tuple with length of image channels.'
-            'But got {}'.format(fill)
-        )
+    h, w = img.shape[0:2]
 
     if center is None:
         center = (w / 2.0, h / 2.0)
@@ -513,7 +552,6 @@ def get_affine_matrix(center, angle, translate, scale, shear):
 
 def random_shear(image, degrees, interpolation, fill):
 
-    cv2 = try_import('cv2')
     _cv2_interp_from_str = {
         'nearest': cv2.INTER_NEAREST,
         'bilinear': cv2.INTER_LINEAR,
@@ -522,14 +560,7 @@ def random_shear(image, degrees, interpolation, fill):
         'lanczos': cv2.INTER_LANCZOS4
     }
 
-    h, w, c = image.shape
-    if isinstance(fill, numbers.Number):
-        fill = (fill, ) * c
-    elif not (isinstance(fill, (list, tuple)) and len(fill) == c):
-        raise ValueError(
-            'If fill should be a single number or a list/tuple with length of image channels.'
-            'But got {}'.format(fill)
-        )
+    h, w = image.shape[0:2]
 
     center = (w / 2.0, h / 2.0)
     shear = [-np.random.uniform(degrees[0], degrees[1]), -np.random.uniform(degrees[2], degrees[3])]
@@ -546,7 +577,6 @@ def random_shear(image, degrees, interpolation, fill):
 
 def random_shift(image, shift, interpolation, fill):
 
-    cv2 = try_import('cv2')
     _cv2_interp_from_str = {
         'nearest': cv2.INTER_NEAREST,
         'bilinear': cv2.INTER_LINEAR,
@@ -555,14 +585,7 @@ def random_shift(image, shift, interpolation, fill):
         'lanczos': cv2.INTER_LANCZOS4
     }
 
-    h, w, c = image.shape
-    if isinstance(fill, numbers.Number):
-        fill = (fill, ) * c
-    elif not (isinstance(fill, (list, tuple)) and len(fill) == c):
-        raise ValueError(
-            'If fill should be a single number or a list/tuple with length of image channels.'
-            'But got {}'.format(fill)
-        )
+    h, w = image.shape[0:2]
     hrg = shift[0]
     wrg = shift[1]
     tx = -np.random.uniform(-hrg, hrg) * w
@@ -580,7 +603,7 @@ def random_shift(image, shift, interpolation, fill):
 
 
 def random_zoom(image, zoom, interpolation, fill):
-    cv2 = try_import('cv2')
+
     _cv2_interp_from_str = {
         'nearest': cv2.INTER_NEAREST,
         'bilinear': cv2.INTER_LINEAR,
@@ -589,14 +612,7 @@ def random_zoom(image, zoom, interpolation, fill):
         'lanczos': cv2.INTER_LANCZOS4
     }
 
-    h, w, c = image.shape
-    if isinstance(fill, numbers.Number):
-        fill = (fill, ) * c
-    elif not (isinstance(fill, (list, tuple)) and len(fill) == c):
-        raise ValueError(
-            'If fill should be a single number or a list/tuple with length of image channels.'
-            'But got {}'.format(fill)
-        )
+    h, w = image.shape[0:2]
 
     scale = 1 / np.random.uniform(zoom[0], zoom[1])
     center = (w / 2.0, h / 2.0)
@@ -612,7 +628,7 @@ def random_zoom(image, zoom, interpolation, fill):
 
 
 def random_affine(image, degrees, shift, zoom, shear, interpolation, fill):
-    cv2 = try_import('cv2')
+
     _cv2_interp_from_str = {
         'nearest': cv2.INTER_NEAREST,
         'bilinear': cv2.INTER_LINEAR,
@@ -620,14 +636,7 @@ def random_affine(image, degrees, shift, zoom, shear, interpolation, fill):
         'bicubic': cv2.INTER_CUBIC,
         'lanczos': cv2.INTER_LANCZOS4
     }
-    h, w, c = image.shape
-    if isinstance(fill, numbers.Number):
-        fill = (fill, ) * c
-    elif not (isinstance(fill, (list, tuple)) and len(fill) == c):
-        raise ValueError(
-            'If fill should be a single number or a list/tuple with length of image channels.'
-            'But got {}'.format(fill)
-        )
+    h, w = image.shape[0:2]
     center = (w / 2.0, h / 2.0)
 
     angle = -float(np.random.uniform(degrees[0], degrees[1]))
@@ -662,3 +671,167 @@ def random_affine(image, degrees, shift, zoom, shear, interpolation, fill):
                               borderValue=fill)[:, :, np.newaxis]
     else:
         return cv2.warpAffine(image, matrix, (w, h), flags=_cv2_interp_from_str[interpolation], borderValue=fill)
+
+def normalize(image, mean, std, data_format):
+
+    if data_format == 'CHW':
+        mean = np.asarray(mean, dtype=np.float32).reshape((-1, 1, 1))
+        std  = np.asarray(std, dtype=np.float32).reshape((-1, 1, 1))
+    else:
+        mean = np.asarray(mean, dtype=np.float32).reshape((1, 1, -1))
+        std  = np.asarray(std, dtype=np.float32).reshape((1, 1, -1))
+
+    image = (image - mean) / std
+    return image
+
+def standardize(image):
+
+    image = np.asarray(image, dtype=np.float32)
+    num_piexls = np.asarray(np.size(image),dtype=np.float32)
+    mean = np.mean(image, dtype=np.float32)
+    stddev = np.std(image, dtype=np.float32)
+    min_stddev = 1.0 / np.sqrt(num_piexls)
+    adjusted_stddev = np.maximum(stddev, min_stddev)
+    return (image - mean) / adjusted_stddev
+
+def random_brightness(image, brightness_factor):
+
+    brightness_factor = random_factor(brightness_factor, name = 'brightness')
+    return adjust_brightness(image, brightness_factor)
+
+def random_contrast(image, contrast_factor):
+
+    contrast_factor = random_factor(contrast_factor, name = 'contrast')
+    return adjust_contrast(image, contrast_factor)
+
+def random_saturation(image, saturation_factor):
+
+    saturation_factor = random_factor(saturation_factor, name='saturation')
+    return adjust_saturation(image, saturation_factor)
+
+def random_hue(image, hue_factor):
+
+    hue_factor = random_factor(hue_factor, name='hue', center=0, bound=(-0.5, 0.5), non_negative=False)
+    return adjust_hue(image, hue_factor)
+
+
+def random_crop(image, size, padding, pad_if_needed, fill, padding_mode):
+
+    if isinstance(size, int):
+        size = (size, size)
+    elif isinstance(size, (tuple, list)) and len(size) == 2:
+        size = tuple(size)
+    else:
+        raise ValueError('Size should be a int or a list/tuple with length of 2. But got {}'.format(size))
+
+    if padding is not None:
+        image = pad(image, padding, fill, padding_mode)
+
+    h, w = image.shape[0:2]
+
+    if pad_if_needed and w < size[1]:
+        image = pad(image, (size[1] - w, 0), fill, padding_mode)
+    if pad_if_needed and h < size[0]:
+        image = pad(image, (0, size[0] - h), fill, padding_mode)
+
+    h, w = image.shape[0:2]
+    target_height, target_width = size
+    if h < target_height or w < target_width:
+        raise ValueError(
+            'Crop size {} should be smaller than input image size {}. '.format((target_height, target_width), (h, w))
+        )
+    offset_height = np.random.randint(0, h - target_height)
+    offset_width = np.random.randint(0, w - target_width)
+
+    return crop(image, offset_height, offset_width, target_height, target_width)
+
+def random_resized_crop(image, size, scale, ratio, interpolation):
+    if isinstance(size, int):
+        size = (size, size)
+    elif isinstance(size, (list, tuple)) and len(size) == 2:
+        size = tuple(size)
+    else:
+        raise TypeError('Size should be a int or a list/tuple with length of 2.' 'But got {}.'.format(size))
+    if not (isinstance(scale, (list, tuple)) and len(scale) == 2):
+        raise TypeError('Scale should be a list/tuple with length of 2.' 'But got {}.'.format(scale))
+    if not (isinstance(ratio, (list, tuple)) and len(ratio) == 2):
+        raise TypeError('Scale should be a list/tuple with length of 2.' 'But got {}.'.format(ratio))
+
+    if (scale[0] > scale[1]) or (ratio[0] > ratio[1]):
+        raise ValueError("Scale and ratio should be of kind (min, max)")
+
+    def get_params(img, scale, ratio):
+        height, width = img.shape[0:2]
+        area = height * width
+        log_ratio = np.log(ratio)
+        for _ in range(10):
+            target_area = area * np.random.uniform(scale[0], scale[1])
+            aspect_ratio =np.exp(np.random.uniform(log_ratio[0], log_ratio[1]))
+            w = int(round(np.sqrt(target_area * aspect_ratio)))
+            h = int(round(np.sqrt(target_area / aspect_ratio)))
+
+            if 0 < w <= width and 0 < h <= height:
+                i = np.random.randint(0, height - h + 1, size=(1, ))
+                j = np.random.randint(0, width - w + 1, size=(1, ))
+                return i, j, h, w
+
+        # Fallback to central crop
+        in_ratio = float(width) / float(height)
+        if in_ratio < min(ratio):
+            w = width
+            h = int(round(w / min(ratio)))
+        elif in_ratio > max(ratio):
+            h = height
+            w = int(round(h * max(ratio)))
+        else:  # whole image
+            w = width
+            h = height
+        i = (height - h) // 2
+        j = (width - w) // 2
+        return i, j, h, w
+
+    i, j, h, w = get_params(image, scale, ratio)
+    image = crop(image, i, j, h, w)
+    image = resize(image, size, interpolation)
+    return image
+
+def random_vflip(image, prob):
+    if np.random.random() < prob:
+        return vflip(image)
+    return image
+
+def random_hflip(image, prob):
+    if np.random.random() < prob:
+        return hflip(image)
+    return image
+
+def random_rotation(image, degrees, interpolation, expand, center, fill):
+    if isinstance(degrees, numbers.Number):
+        if degrees < 0:
+            raise ValueError('If degrees is a single number, it must be positive.' 'But got {}'.format(degrees))
+        degrees = (-degrees, degrees)
+    elif not (isinstance(degrees, (list, tuple)) and len(degrees) == 2):
+        raise ValueError('If degrees is a list/tuple, it must be length of 2.' 'But got {}'.format(degrees))
+    else:
+        if degrees[0] > degrees[1]:
+            raise ValueError('if degrees is a list/tuple, it should be (min, max).')
+
+    angle = float(np.random.uniform(float(degrees[0]), float(degrees[1])))
+    return rotate(image, angle, interpolation, expand, center, fill)
+
+def to_tensor(image, data_format):
+    if data_format not in ['CHW', 'HWC']:
+        raise ValueError('data_format should be CHW or HWC. Got {}'.format(
+            data_format))
+
+    if image.ndim == 2:
+        image = image[:, :, None]
+
+    if data_format == 'CHW':
+        image = transpose(image, order = (2, 0 ,1))
+
+    if image.dtype == np.int:
+        image = np.asarray(image, dtype=np.float32 )/ 255.
+
+    image = convert_to_tensor(image)
+    return image

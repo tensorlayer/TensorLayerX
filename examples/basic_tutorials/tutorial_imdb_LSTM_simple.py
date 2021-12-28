@@ -70,5 +70,5 @@ train_weights = net.trainable_weights
 optimizer = tl.optimizers.Adam(1e-3)
 metric = tl.metrics.Accuracy()
 loss_fn = tl.losses.softmax_cross_entropy_with_logits
-model = tl.models.Model(network=net, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
+model = tl.model.Model(network=net, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
 model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=True)

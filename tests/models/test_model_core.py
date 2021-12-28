@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow as tf
 import tensorlayerx as tl
 from tensorlayerx.layers import *
-from tensorlayerx.models import *
+from tensorlayerx.model import *
 
 from tests.utils import CustomTestCase
 
@@ -354,7 +354,7 @@ class Model_Core_Test(CustomTestCase):
             def __init__(self):
                 super(my_model, self).__init__()
                 self.dense = Dense(64, in_channels=3)
-                self.vgg = tl.models.vgg16()
+                self.vgg = tl.model.vgg16()
 
             def forward(self, x):
                 return x
@@ -409,7 +409,7 @@ class Model_Core_Test(CustomTestCase):
             def __init__(self):
                 super(my_model, self).__init__()
                 self.dense = Dense(64)
-                self.vgg = tl.models.vgg16()
+                self.vgg = tl.model.vgg16()
 
             def forward(self, x):
                 return x

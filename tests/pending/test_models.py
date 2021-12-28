@@ -21,7 +21,7 @@ class VGG_Model_Test(CustomTestCase):
             # - Classify ImageNet classes with VGG16, see `tutorial_models_vgg16.py <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_models_vgg16.py>__`
             x = tf.placeholder(tf.float32, [None, 224, 224, 3])
             # get the whole model
-            vgg1 = tl.models.VGG16(x)
+            vgg1 = tl.model.VGG16(x)
             # restore pre-trained VGG parameters
             # sess = tf.InteractiveSession()
             # vgg.restore_params(sess)
@@ -35,7 +35,7 @@ class VGG_Model_Test(CustomTestCase):
             # - Extract features with VGG16 and Train a classifier with 100 classes
             x = tf.placeholder(tf.float32, [None, 224, 224, 3])
             # get VGG without the last layer
-            vgg2 = tl.models.VGG16(x, end_with='fc2_relu')
+            vgg2 = tl.model.VGG16(x, end_with='fc2_relu')
 
             cls.vgg2_layers = vgg2.all_layers
             cls.vgg2_params = vgg2.all_params
@@ -57,7 +57,7 @@ class VGG_Model_Test(CustomTestCase):
             # - Reuse model
             x = tf.placeholder(tf.float32, [None, 224, 224, 3])
             # get VGG without the last layer
-            vgg3 = tl.models.VGG16(x, end_with='fc2_relu')
+            vgg3 = tl.model.VGG16(x, end_with='fc2_relu')
             # reuse the parameters of vgg1 with different input
             # restore pre-trained VGG parameters (as they share parameters, we don’t need to restore vgg2)
             # sess = tf.InteractiveSession()
@@ -97,7 +97,7 @@ class VGG_Model_Test(CustomTestCase):
         with self.assertNotRaises(Exception):
             with self.vgg3_graph.as_default():
                 x = tf.placeholder(tf.float32, [None, 224, 224, 3])
-                _ = tl.models.VGG16(x, end_with='fc2_relu', reuse=True)
+                _ = tl.model.VGG16(x, end_with='fc2_relu', reuse=True)
 
 
 if __name__ == '__main__':

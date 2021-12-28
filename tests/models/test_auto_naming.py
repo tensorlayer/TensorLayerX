@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow as tf
 import tensorlayerx as tl
 from tensorlayerx.layers import *
-from tensorlayerx.models import *
+from tensorlayerx.model import *
 
 from tests.utils import CustomTestCase
 
@@ -230,7 +230,7 @@ class Auto_Naming_Test(CustomTestCase):
                 [tl.layers.Dense(n_units=4, name='dense1'),
                  tl.layers.Dense(n_units=3, name='dense1')]
             )(inputs)
-            model = tl.models.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
+            model = tl.model.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
             print([w.name for w in model.all_weights])
             test_flag = False
         except Exception as e:
@@ -256,7 +256,7 @@ class Auto_Naming_Test(CustomTestCase):
 
             inputs = tl.layers.Input([10, 5])
             model_layer = tl.layers.ModelLayer(inner_model())(inputs)
-            model = tl.models.Model(inputs=inputs, outputs=model_layer, name='modellayermodel')
+            model = tl.model.Model(inputs=inputs, outputs=model_layer, name='modellayermodel')
             print(model)
             print([w.name for w in model.all_weights])
             test_flag = False
@@ -272,7 +272,7 @@ class Auto_Naming_Test(CustomTestCase):
                 [tl.layers.Dense(n_units=4, name='dense1'),
                  tl.layers.Dense(n_units=3, name='dense1')]
             )(inputs)
-            model = tl.models.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
+            model = tl.model.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
             print([w.name for w in model.all_weights])
             self.fail("Fail to detect duplicate name in layerlist")
         except Exception as e:

@@ -187,7 +187,7 @@ class Model:
         >>> net = vgg16()
         >>> optimizer = tl.optimizers.Adam(learning_rate=0.001)
         >>> metrics = tl.metrics.Accuracy()
-        >>> model = tl.models.Model(network=net, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metrics)
+        >>> model = tl.model.Model(network=net, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metrics)
         >>> model.save_weights('./model.h5')
         ...
         >>> model.load_weights('./model.h5')
@@ -232,7 +232,7 @@ class Model:
         >>> net = vgg16()
         >>> optimizer = tl.optimizers.Adam(learning_rate=0.001)
         >>> metrics = tl.metrics.Accuracy()
-        >>> model = tl.models.Model(network=net, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metrics)
+        >>> model = tl.model.Model(network=net, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metrics)
         >>> model.load_weights('./model_graph.h5', in_order=False, skip=True) # load weights by name, skipping mismatch
         >>> model.load_weights('./model_eager.h5') # load sequentially
 
@@ -479,7 +479,7 @@ class WithLoss(Module):
     >>> import tensorlayerx as tl
     >>> net = vgg16()
     >>> loss_fn = tl.losses.softmax_cross_entropy_with_logits
-    >>> net_with_loss = tl.models.WithLoss(net, loss_fn)
+    >>> net_with_loss = tl.model.WithLoss(net, loss_fn)
 
     """
 
@@ -644,7 +644,7 @@ class WithGrad(object):
     >>> net = vgg16()
     >>> loss_fn = tl.losses.softmax_cross_entropy_with_logits
     >>> optimizer = tl.optimizers.Adam(learning_rate=1e-3)
-    >>> net_with_grad = tl.models.WithGrad(net, loss_fn, optimizer)
+    >>> net_with_grad = tl.model.WithGrad(net, loss_fn, optimizer)
     >>> inputs, labels = tl.layers.Input((128, 784), dtype=tl.float32), tl.layers.Input((128, 1), dtype=tl.int32)
     >>> net_with_grad(inputs, labels)
 
@@ -686,8 +686,8 @@ class TrainOneStep(object):
     >>> train_weights = net.trainable_weights
     >>> loss_fn = tl.losses.softmax_cross_entropy_with_logits
     >>> optimizer = tl.optimizers.Adam(learning_rate=1e-3)
-    >>> net_with_loss = tl.models.WithLoss(net, loss_fn)
-    >>> train_one_step = tl.models.TrainOneStep(net_with_loss, optimizer, train_weights)
+    >>> net_with_loss = tl.model.WithLoss(net, loss_fn)
+    >>> train_one_step = tl.model.TrainOneStep(net_with_loss, optimizer, train_weights)
     >>> inputs, labels = tl.layers.Input((128, 784), dtype=tl.float32), tl.layers.Input((128, 1), dtype=tl.int32)
     >>> train_one_step(inputs, labels)
 

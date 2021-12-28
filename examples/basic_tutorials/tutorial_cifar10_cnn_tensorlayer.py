@@ -9,7 +9,7 @@ os.environ['TL_BACKEND'] = 'paddle'
 import time
 from tensorlayerx.dataflow import Dataset, Dataloader
 from tensorlayerx.vision.transforms import (Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop)
-from tensorlayerx.models import TrainOneStep
+from tensorlayerx.model import TrainOneStep
 from tensorlayerx.core import Module
 import tensorlayerx as tl
 from tensorlayerx.layers import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
