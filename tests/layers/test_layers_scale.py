@@ -23,18 +23,18 @@ class Layer_Scale_Test(CustomTestCase):
 
     def test_scale(self):
 
-        class model(tl.layers.Module):
+        class model(tensorlayerx.layers.Module):
             def __init__(self):
                 super(model, self).__init__()
-                self.dense = tl.layers.Dense(n_units=10)
-                self.scalelayer = tl.layers.Scale(init_scale=0.5)
+                self.dense = tensorlayerx.layers.Dense(n_units=10)
+                self.scalelayer = tensorlayerx.layers.Scale(init_scale=0.5)
 
             def forward(self, inputs):
                 output1 = self.dense(inputs)
                 output2 = self.scalelayer(output1)
                 return output1, output2
 
-        input = tl.layers.Input((8, 3), init=tl.initializers.random_normal())
+        input = tensorlayerx.layers.Input((8, 3), init=tl.initializers.random_normal())
         net = model()
         net.set_train()
         dout, fout = net(input)

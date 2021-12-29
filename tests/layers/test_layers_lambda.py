@@ -34,12 +34,12 @@ class Layer_Lambda_Test(CustomTestCase):
         # in order to get trainable_variables of keras
         _ = perceptron(np.random.random([100, 5]).astype(np.float32))
 
-        class CustomizeModel(tl.layers.Module):
+        class CustomizeModel(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tl.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tl.layers.Lambda(perceptron, perceptron.trainable_variables)
+                self.dense = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tensorlayerx.layers.Lambda(perceptron, perceptron.trainable_variables)
 
             def forward(self, x):
                 z = self.dense(x)
@@ -73,12 +73,12 @@ class Layer_Lambda_Test(CustomTestCase):
             else:
                 return tf.identity(x)
 
-        class CustomizeModel(tl.layers.Module):
+        class CustomizeModel(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tl.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tl.layers.Lambda(customize_func, fn_weights=[], fn_args={'foo': 0})
+                self.dense = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tensorlayerx.layers.Lambda(customize_func, fn_weights=[], fn_args={'foo': 0})
 
             def forward(self, x, bar):
                 z = self.dense(x)
@@ -108,12 +108,12 @@ class Layer_Lambda_Test(CustomTestCase):
         def customize_fn(x):
             return x + a
 
-        class CustomizeModel(tl.layers.Module):
+        class CustomizeModel(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tl.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tl.layers.Lambda(customize_fn, fn_weights=[a])
+                self.dense = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tensorlayerx.layers.Lambda(customize_fn, fn_weights=[a])
 
             def forward(self, x):
                 z = self.dense(x)
@@ -129,12 +129,12 @@ class Layer_Lambda_Test(CustomTestCase):
 
     def test_lambda_func_without_args(self):
 
-        class CustomizeModel(tl.layers.Module):
+        class CustomizeModel(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tl.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tl.layers.Lambda(lambda x: 2 * x)
+                self.dense = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tensorlayerx.layers.Lambda(lambda x: 2 * x)
 
             def forward(self, x):
                 z = self.dense(x)
@@ -153,14 +153,14 @@ class Layer_Lambda_Test(CustomTestCase):
         def customize_func(noise, mean, std, foo=42):
             return mean + noise * tf.exp(std * 0.5) + foo
 
-        class CustomizeModel(tl.layers.Module):
+        class CustomizeModel(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense1 = tl.layers.Dense(in_channels=1, n_units=5)
-                self.dense2 = tl.layers.Dense(in_channels=1, n_units=5)
-                self.dense3 = tl.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tl.layers.ElementwiseLambda(customize_func, fn_args={'foo': 1024})
+                self.dense1 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
+                self.dense2 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
+                self.dense3 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tensorlayerx.layers.ElementwiseLambda(customize_func, fn_args={'foo': 1024})
 
             def forward(self, x, bar=None):
                 noise = self.dense1(x)
@@ -186,14 +186,14 @@ class Layer_Lambda_Test(CustomTestCase):
         def customize_func(noise, mean, std):
             return mean + noise * tf.exp(std * 0.5)
 
-        class CustomizeModel(tl.layers.Module):
+        class CustomizeModel(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense1 = tl.layers.Dense(in_channels=1, n_units=5)
-                self.dense2 = tl.layers.Dense(in_channels=1, n_units=5)
-                self.dense3 = tl.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tl.layers.ElementwiseLambda(customize_func, fn_weights=[])
+                self.dense1 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
+                self.dense2 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
+                self.dense3 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tensorlayerx.layers.ElementwiseLambda(customize_func, fn_weights=[])
 
             def forward(self, x):
                 noise = self.dense1(x)

@@ -6,7 +6,6 @@ import unittest
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorlayerx as tl
-from tensorlayerx.layers import *
 
 from tests.utils import CustomTestCase
 
@@ -20,7 +19,7 @@ class Layer_Stack_Test(CustomTestCase):
         cls.inputs_shape = [cls.batch_size, 10]
 
         cls.ni = Input(cls.inputs_shape, name='input_layer')
-        class model(tl.layers.Module):
+        class model(tensorlayerx.layers.Module):
             def __init__(self):
                 super(model, self).__init__()
                 self.a = Dense(n_units=5)
@@ -68,7 +67,7 @@ class Layer_UnStack_Test(CustomTestCase):
         cls.layer1 = UnStack(axis=1)
         cls.n1 = cls.layer1(a)
 
-        class model(tl.layers.Module):
+        class model(tensorlayerx.layers.Module):
             def __init__(self):
                 super(model, self).__init__()
                 self.a = Dense(n_units=5)

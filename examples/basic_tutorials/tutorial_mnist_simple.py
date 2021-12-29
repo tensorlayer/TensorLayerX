@@ -8,7 +8,7 @@ os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
 
 import tensorlayerx as tl
-from tensorlayerx.core import Module
+from tensorlayerx.nn import Module
 from tensorlayerx.layers import Dense, Dropout
 from tensorlayerx.dataflow import Dataset
 

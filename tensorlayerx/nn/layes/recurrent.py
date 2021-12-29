@@ -4,7 +4,7 @@
 import numpy as np
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.backend.ops.load_backend import BACKEND
+from tensorlayerx.backend.load_backend import BACKEND
 from tensorlayerx.core import Module
 
 __all__ = [

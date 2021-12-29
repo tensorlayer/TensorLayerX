@@ -22,14 +22,14 @@ class Layer_Extend_Test(CustomTestCase):
         pass
 
     def test_expand_dims(self):
-        x = tl.layers.Input([8, 3])
-        expandlayer = tl.layers.ExpandDims(axis=-1)
+        x = tensorlayerx.layers.Input([8, 3])
+        expandlayer = tensorlayerx.layers.ExpandDims(axis=-1)
         y = expandlayer(x)
         self.assertEqual(tl.get_tensor_shape(y), [8, 3, 1])
 
     def test_tile(self):
-        x = tl.layers.Input([8, 3])
-        tilelayer = tl.layers.Tile(multiples=[2, 3])
+        x = tensorlayerx.layers.Input([8, 3])
+        tilelayer = tensorlayerx.layers.Tile(multiples=[2, 3])
         y = tilelayer(x)
         self.assertEqual(tl.get_tensor_shape(y), [16, 9])
 

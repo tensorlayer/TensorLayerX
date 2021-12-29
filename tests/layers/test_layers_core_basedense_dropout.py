@@ -19,28 +19,28 @@ class Layer_Core_Test(CustomTestCase):
         self.batch_size = 8
 
         self.inputs_shape = [self.batch_size, 784]
-        self.input = tl.layers.Input(self.inputs_shape)
-        self.dense1 = tl.layers.Dense(n_units=800, act=tl.ReLU, in_channels=784, name='test_dense')
+        self.input = tensorlayerx.layers.Input(self.inputs_shape)
+        self.dense1 = tensorlayerx.layers.Dense(n_units=800, act=tl.ReLU, in_channels=784, name='test_dense')
         self.n1 = self.dense1(self.input)
 
-        self.dropout1 = tl.layers.Dropout(keep=0.8)
+        self.dropout1 = tensorlayerx.layers.Dropout(keep=0.8)
         self.n2 = self.dropout1(self.n1)
 
-        self.dense2 = tl.layers.Dense(n_units=10, act='relu', b_init=None, in_channels=800)
+        self.dense2 = tensorlayerx.layers.Dense(n_units=10, act='relu', b_init=None, in_channels=800)
         self.n3 = self.dense2(self.n2)
 
-        self.dense3 = tl.layers.Dense(n_units=10, act='relu', b_init=None, in_channels=10)
+        self.dense3 = tensorlayerx.layers.Dense(n_units=10, act='relu', b_init=None, in_channels=10)
         self.n4 = self.dense3(self.n3)
 
-        self.concat = tl.layers.Concat(concat_dim=-1)([self.n2, self.n3])
+        self.concat = tensorlayerx.layers.Concat(concat_dim=-1)([self.n2, self.n3])
 
-        class get_model(tl.layers.Module):
+        class get_model(tensorlayerx.layers.Module):
             def __init__(self):
                 super(get_model, self).__init__()
-                self.layer1 = tl.layers.Dense(n_units=800, act=tl.ReLU, in_channels=784, name='test_dense')
-                self.dp = tl.layers.Dropout(keep=0.8)
-                self.layer2 = tl.layers.Dense(n_units=10, act='relu', b_init=None, in_channels=800)
-                self.layer3 = tl.layers.Dense(n_units=10, act='relu', b_init=None, in_channels=10)
+                self.layer1 = tensorlayerx.layers.Dense(n_units=800, act=tl.ReLU, in_channels=784, name='test_dense')
+                self.dp = tensorlayerx.layers.Dropout(keep=0.8)
+                self.layer2 = tensorlayerx.layers.Dense(n_units=10, act='relu', b_init=None, in_channels=800)
+                self.layer3 = tensorlayerx.layers.Dense(n_units=10, act='relu', b_init=None, in_channels=10)
 
             def forward(self, inputs):
                 z = self.layer1(inputs)

@@ -3,7 +3,7 @@
 
 from tensorlayerx import logging
 from tensorlayerx.core import Module
-from tensorlayerx.layers.utils import quantize
+from tensorlayerx.nn.layes.utils import quantize
 
 __all__ = [
     'Sign',

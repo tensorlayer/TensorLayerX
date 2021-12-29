@@ -43,15 +43,15 @@ if 'TL_BACKEND' in os.environ:
 
 # import backend functions
 if BACKEND == 'tensorflow':
-    from .tensorflow_backend import *
-    from .tensorflow_nn import *
+    # from tensorlayerx.nn.ops.tensorflow_backend import *
+    # from tensorlayerx.nn.ops.tensorflow_nn import *
     import tensorflow as tf
     BACKEND_VERSION = tf.__version__
     sys.stderr.write('Using TensorFlow backend.\n')
 
 elif BACKEND == 'mindspore':
-    from .mindspore_backend import *
-    from .mindspore_nn import *
+    # from tensorlayerx.nn.ops.mindspore_backend import *
+    # from tensorlayerx.nn.ops.mindspore_nn import *
     import mindspore as ms
     BACKEND_VERSION = ms.__version__
     # set context
@@ -65,14 +65,12 @@ elif BACKEND == 'mindspore':
     sys.stderr.write('Using MindSpore backend.\n')
 
 elif BACKEND == 'paddle':
-    from .paddle_backend import *
-    from .paddle_nn import *
+    # from tensorlayerx.nn.ops.paddle_backend import *
+    # from tensorlayerx.nn.ops.paddle_nn import *
     import paddle as pd
     BACKEND_VERSION = pd.__version__
     sys.stderr.write('Using Paddle backend.\n')
 elif BACKEND == 'torch':
-    from .torch_nn import *
-    from .torch_backend import *
     import torch
     BACKEND_VERSION = torch.__version__
     sys.stderr.write('Using PyTorch backend.\n')

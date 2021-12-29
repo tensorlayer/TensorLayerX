@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-import tensorlayerx as tl
 
 from tests.utils.custom_layers.basic_layers import conv_module
 
@@ -55,7 +54,7 @@ def block_inception_a(inputs, scope=None, is_train=False):
             )
 
         with tf.variable_scope('Branch_3'):
-            branch_3 = tl.layers.MeanPool2d(
+            branch_3 = tensorlayerx.layers.MeanPool2d(
                 inputs, filter_size=(3, 3), strides=(1, 1), padding='SAME', name='AvgPool_0a_3x3'
             )
 
@@ -64,7 +63,7 @@ def block_inception_a(inputs, scope=None, is_train=False):
                 is_train=is_train, use_batchnorm=True, activation_fn='ReLU', name='Conv2d_0b_1x1'
             )
 
-        return tl.layers.ConcatLayer([branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer')
+        return tensorlayerx.layers.ConcatLayer([branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer')
 
 
 def block_reduction_a(inputs, scope=None, is_train=False):
@@ -95,9 +94,9 @@ def block_reduction_a(inputs, scope=None, is_train=False):
             )
 
         with tf.variable_scope('Branch_2'):
-            branch_2 = tl.layers.MaxPool2d(inputs, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_1a_3x3')
+            branch_2 = tensorlayerx.layers.MaxPool2d(inputs, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_1a_3x3')
 
-        return tl.layers.ConcatLayer([branch_0, branch_1, branch_2], concat_dim=3, name='concat_layer')
+        return tensorlayerx.layers.ConcatLayer([branch_0, branch_1, branch_2], concat_dim=3, name='concat_layer')
 
 
 def block_inception_b(inputs, scope=None, is_train=False):
@@ -154,7 +153,7 @@ def block_inception_b(inputs, scope=None, is_train=False):
             )
 
         with tf.variable_scope('Branch_3'):
-            branch_3 = tl.layers.MeanPool2d(
+            branch_3 = tensorlayerx.layers.MeanPool2d(
                 inputs, filter_size=(3, 3), strides=(1, 1), padding='SAME', name='AvgPool_0a_3x3'
             )
 
@@ -163,7 +162,7 @@ def block_inception_b(inputs, scope=None, is_train=False):
                 is_train=is_train, use_batchnorm=True, activation_fn='ReLU', name='Conv2d_0b_1x1'
             )
 
-        return tl.layers.ConcatLayer([branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer')
+        return tensorlayerx.layers.ConcatLayer([branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer')
 
 
 def block_reduction_b(inputs, scope=None, is_train=False):
@@ -204,9 +203,9 @@ def block_reduction_b(inputs, scope=None, is_train=False):
             )
 
         with tf.variable_scope('Branch_2'):
-            branch_2 = tl.layers.MaxPool2d(inputs, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_1a_3x3')
+            branch_2 = tensorlayerx.layers.MaxPool2d(inputs, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_1a_3x3')
 
-        return tl.layers.ConcatLayer([branch_0, branch_1, branch_2], concat_dim=3, name='concat_layer')
+        return tensorlayerx.layers.ConcatLayer([branch_0, branch_1, branch_2], concat_dim=3, name='concat_layer')
 
 
 def block_inception_c(inputs, scope=None, is_train=False):
@@ -236,7 +235,7 @@ def block_inception_c(inputs, scope=None, is_train=False):
                 is_train=is_train, use_batchnorm=True, activation_fn='ReLU', name='Conv2d_0c_3x1'
             )
 
-            branch_1 = tl.layers.ConcatLayer([branch_1a, branch_1b], concat_dim=3, name='concat_layer')
+            branch_1 = tensorlayerx.layers.ConcatLayer([branch_1a, branch_1b], concat_dim=3, name='concat_layer')
 
         with tf.variable_scope('Branch_2'):
             branch_2, _ = conv_module(
@@ -264,10 +263,10 @@ def block_inception_c(inputs, scope=None, is_train=False):
                 is_train=is_train, use_batchnorm=True, activation_fn='ReLU', name='Conv2d_0e_3x1'
             )
 
-            branch_2 = tl.layers.ConcatLayer([branch_2a, branch_2b], concat_dim=3, name='concat_layer')
+            branch_2 = tensorlayerx.layers.ConcatLayer([branch_2a, branch_2b], concat_dim=3, name='concat_layer')
 
         with tf.variable_scope('Branch_3'):
-            branch_3 = tl.layers.MeanPool2d(
+            branch_3 = tensorlayerx.layers.MeanPool2d(
                 inputs, filter_size=(3, 3), strides=(1, 1), padding='SAME', name='AvgPool_0a_3x3'
             )
 
@@ -276,4 +275,4 @@ def block_inception_c(inputs, scope=None, is_train=False):
                 is_train=is_train, use_batchnorm=True, activation_fn='ReLU', name='Conv2d_0b_1x1'
             )
 
-        return tl.layers.ConcatLayer([branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer')
+        return tensorlayerx.layers.ConcatLayer([branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer')

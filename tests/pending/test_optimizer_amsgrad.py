@@ -20,14 +20,14 @@ class Layer_Pooling_Test(CustomTestCase):
         cls.y_ = tf.placeholder(tf.int64, shape=[None], name='y_')
 
         # define the network
-        cls.network = tl.layers.InputLayer(cls.x, name='input')
-        cls.network = tl.layers.DropoutLayer(cls.network, keep=0.8, name='drop1')
-        cls.network = tl.layers.DenseLayer(cls.network, 800, tf.nn.relu, name='relu1')
-        cls.network = tl.layers.DropoutLayer(cls.network, keep=0.5, name='drop2')
-        cls.network = tl.layers.DenseLayer(cls.network, 800, tf.nn.relu, name='relu2')
-        cls.network = tl.layers.DropoutLayer(cls.network, keep=0.5, name='drop3')
+        cls.network = tensorlayerx.layers.InputLayer(cls.x, name='input')
+        cls.network = tensorlayerx.layers.DropoutLayer(cls.network, keep=0.8, name='drop1')
+        cls.network = tensorlayerx.layers.DenseLayer(cls.network, 800, tf.nn.relu, name='relu1')
+        cls.network = tensorlayerx.layers.DropoutLayer(cls.network, keep=0.5, name='drop2')
+        cls.network = tensorlayerx.layers.DenseLayer(cls.network, 800, tf.nn.relu, name='relu2')
+        cls.network = tensorlayerx.layers.DropoutLayer(cls.network, keep=0.5, name='drop3')
 
-        cls.network = tl.layers.DenseLayer(cls.network, n_units=10, name='output')
+        cls.network = tensorlayerx.layers.DenseLayer(cls.network, n_units=10, name='output')
 
         # define losses function and metrics.
         cls.y = cls.network.outputs
@@ -54,7 +54,7 @@ class Layer_Pooling_Test(CustomTestCase):
 
             with tf.Session() as sess:
                 # initialize all variables in the session
-                tl.layers.initialize_global_variables(sess)
+                tensorlayerx.layers.initialize_global_variables(sess)
 
                 # print network information
                 self.network.print_params()

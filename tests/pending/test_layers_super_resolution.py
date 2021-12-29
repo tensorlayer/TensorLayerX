@@ -17,9 +17,9 @@ class Layer_Super_Resolution_Test(CustomTestCase):
     @classmethod
     def setUpClass(cls):
         t_signal = tf.placeholder('float32', [10, 100, 4], name='x')
-        n = tl.layers.InputLayer(t_signal, name='in')
-        n = tl.layers.Conv1d(n, n_filter=32, filter_size=3, stride=1, padding='SAME', name='conv1d')
-        net1 = tl.layers.SubpixelConv1d(n, scale=2, name='subpixel')
+        n = tensorlayerx.layers.InputLayer(t_signal, name='in')
+        n = tensorlayerx.layers.Conv1d(n, n_filter=32, filter_size=3, stride=1, padding='SAME', name='conv1d')
+        net1 = tensorlayerx.layers.SubpixelConv1d(n, scale=2, name='subpixel')
 
         net1.print_layers()
         net1.print_params(False)
@@ -31,9 +31,9 @@ class Layer_Super_Resolution_Test(CustomTestCase):
 
         ## 2D
         x = tf.placeholder('float32', [10, 100, 100, 3], name='x')
-        n = tl.layers.InputLayer(x, name='in')
-        n = tl.layers.Conv2d(n, n_filter=32, filter_size=(3, 2), strides=(1, 1), padding='SAME', name='conv2d')
-        net2 = tl.layers.SubpixelConv2d(n, scale=2, name='subpixel2d')
+        n = tensorlayerx.layers.InputLayer(x, name='in')
+        n = tensorlayerx.layers.Conv2d(n, n_filter=32, filter_size=(3, 2), strides=(1, 1), padding='SAME', name='conv2d')
+        net2 = tensorlayerx.layers.SubpixelConv2d(n, scale=2, name='subpixel2d')
 
         net2.print_layers()
         net2.print_params(False)

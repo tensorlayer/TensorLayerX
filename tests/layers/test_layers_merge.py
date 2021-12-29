@@ -24,13 +24,13 @@ class Layer_Merge_Test(CustomTestCase):
 
     def test_concat(self):
 
-        class CustomModel(tl.layers.Module):
+        class CustomModel(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(CustomModel, self).__init__()
-                self.dense1 = tl.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu1_1')
-                self.dense2 = tl.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu2_1')
-                self.concat = tl.layers.Concat(concat_dim=1, name='concat_layer')
+                self.dense1 = tensorlayerx.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu1_1')
+                self.dense2 = tensorlayerx.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu2_1')
+                self.concat = tensorlayerx.layers.Concat(concat_dim=1, name='concat_layer')
 
             def forward(self, inputs):
                 d1 = self.dense1(inputs)
@@ -48,13 +48,13 @@ class Layer_Merge_Test(CustomTestCase):
 
     def test_elementwise(self):
 
-        class CustomModel(tl.layers.Module):
+        class CustomModel(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(CustomModel, self).__init__()
-                self.dense1 = tl.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu1_1')
-                self.dense2 = tl.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu2_1')
-                self.element = tl.layers.Elementwise(combine_fn=tl.minimum, name='minimum', act=None)
+                self.dense1 = tensorlayerx.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu1_1')
+                self.dense2 = tensorlayerx.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu2_1')
+                self.element = tensorlayerx.layers.Elementwise(combine_fn=tl.minimum, name='minimum', act=None)
 
             def forward(self, inputs):
                 d1 = self.dense1(inputs)

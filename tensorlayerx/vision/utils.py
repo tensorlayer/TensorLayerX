@@ -87,4 +87,4 @@ def save_images(images, file_names, path):
     if len(images) != len(file_names):
         raise ValueError(" The number of images should be equal to the number of file names.")
     for i in range(len(file_names)):
-        cv2.imwrite(os.path.join(path, file_names[i]), images[i])
+        cv2.imwrite(os.path.join(path, str(file_names[i])), images[i])

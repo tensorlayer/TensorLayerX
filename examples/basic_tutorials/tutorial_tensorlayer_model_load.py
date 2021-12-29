@@ -9,7 +9,7 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 
 import tensorlayerx as tl
 from tensorlayerx.core import Module
-from tensorlayerx.layers import Dense, Dropout, Conv2d, BatchNorm2d, MaxPool2d, Flatten
+from tensorlayerx.layers import Dense, Dropout, Conv2d, MaxPool2d, Flatten
 from tensorlayerx.dataflow import Dataset
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
@@ -104,6 +104,6 @@ cnn.load_standard_weights('./model.npz', skip=False)
 #  set reshape to True parameter to convert convolution shape.
 # cnn.load_standard_weights('./model.npz', skip=True, reshape=True)
 cnn.set_eval()
-inputs = tl.layers.Input(shape=(10, 28, 28, 3), dtype=tl.float32)
+inputs = tensorlayerx.layers.Input(shape=(10, 28, 28, 3), dtype=tl.float32)
 outputs = cnn(inputs)
 print(outputs)

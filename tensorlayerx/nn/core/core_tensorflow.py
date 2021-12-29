@@ -1,14 +1,13 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .common import str2act, str2init
-from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
+from tensorlayerx.nn.core.common import str2act, str2init
+from tensorlayerx.nn.core.common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from collections import OrderedDict
 import time
 import tensorlayerx as tl
 import tensorflow as tf
-from tensorlayerx.layers.utils import (get_variable_with_initializer)
-from tensorlayerx import logging
+from tensorlayerx.nn.layes.utils import (get_variable_with_initializer)
 
 __all__ = ['Module', 'SequentialLayer', 'LayerList']
 

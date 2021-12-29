@@ -8,7 +8,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import numpy as np
 import tensorflow as tf
 import tensorlayerx as tl
-from tensorlayerx.layers import *
 from tensorlayerx.model import *
 
 from tests.utils import CustomTestCase
@@ -223,8 +222,8 @@ class Model_Save_Test(CustomTestCase):
                 self.inner = Nested_VGG()
                 self.list = LayerList(
                     [
-                        tl.layers.Dense(n_units=4, in_channels=10, name='dense1'),
-                        tl.layers.Dense(n_units=3, in_channels=4, name='dense2')
+                        tensorlayerx.layers.Dense(n_units=4, in_channels=10, name='dense1'),
+                        tensorlayerx.layers.Dense(n_units=3, in_channels=4, name='dense2')
                     ]
                 )
 
@@ -254,13 +253,13 @@ class Model_Save_Test(CustomTestCase):
         print('-' * 20, 'test_layerlist', '-' * 20)
 
         # simple modellayer
-        ni = tl.layers.Input([10, 4])
-        nn = tl.layers.Dense(n_units=3, name='dense1')(ni)
+        ni = tensorlayerx.layers.Input([10, 4])
+        nn = tensorlayerx.layers.Dense(n_units=3, name='dense1')(ni)
         modellayer = tl.model.Model(inputs=ni, outputs=nn, name='modellayer').as_layer()
 
         # nested layerlist with modellayer
-        inputs = tl.layers.Input([10, 5])
-        layer1 = tl.layers.LayerList([tl.layers.Dense(n_units=4, name='dense1'), modellayer])(inputs)
+        inputs = tensorlayerx.layers.Input([10, 5])
+        layer1 = tensorlayerx.layers.LayerList([tensorlayerx.layers.Dense(n_units=4, name='dense1'), modellayer])(inputs)
         model = tl.model.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
 
         model.save_weights("layerlist.h5")

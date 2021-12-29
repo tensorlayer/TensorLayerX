@@ -9,7 +9,6 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor
 
-import tensorlayerx as tl
 from tensorlayerx.core import Module
 from tensorlayerx.layers import Dense
 

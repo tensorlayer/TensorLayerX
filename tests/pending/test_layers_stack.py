@@ -18,18 +18,18 @@ class Layer_Stack_Test(CustomTestCase):
     def setUpClass(cls):
 
         x = tf.placeholder(tf.float32, shape=[None, 30])
-        net_in = tl.layers.InputLayer(x, name='input')
+        net_in = tensorlayerx.layers.InputLayer(x, name='input')
 
-        net_d1 = tl.layers.DenseLayer(net_in, n_units=10, name='dense1')
-        net_d2 = tl.layers.DenseLayer(net_in, n_units=10, name='dense2')
-        net_d3 = tl.layers.DenseLayer(net_in, n_units=10, name='dense3')
+        net_d1 = tensorlayerx.layers.DenseLayer(net_in, n_units=10, name='dense1')
+        net_d2 = tensorlayerx.layers.DenseLayer(net_in, n_units=10, name='dense2')
+        net_d3 = tensorlayerx.layers.DenseLayer(net_in, n_units=10, name='dense3')
 
-        cls.net_stack = tl.layers.StackLayer([net_d1, net_d2, net_d3], axis=1, name='stack')
+        cls.net_stack = tensorlayerx.layers.StackLayer([net_d1, net_d2, net_d3], axis=1, name='stack')
 
         cls.net_stack.print_layers()
         cls.net_stack.print_params(False)
 
-        cls.net_unstack = tl.layers.UnStackLayer(cls.net_stack, axis=1, name='unstack')
+        cls.net_unstack = tensorlayerx.layers.UnStackLayer(cls.net_stack, axis=1, name='unstack')
 
         cls.net_unstack.print_layers()
         cls.net_unstack.print_params(False)

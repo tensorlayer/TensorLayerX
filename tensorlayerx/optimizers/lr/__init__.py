@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function
-from tensorlayerx.backend.ops.load_backend import BACKEND
+from tensorlayerx.backend.load_backend import BACKEND
 
 if BACKEND == 'tensorflow':
     from .tensorflow_lr import *

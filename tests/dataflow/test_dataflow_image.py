@@ -16,9 +16,9 @@ class Dataflow_Image_Test(CustomTestCase):
     @classmethod
     def setUpClass(self):
         self.input_shape = [1, 100, 100, 3]
-        self.input_layer = tl.layers.Input(self.input_shape, name='input_layer')
+        self.input_layer = tensorlayerx.layers.Input(self.input_shape, name='input_layer')
         self.input_shape_1 = [100, 100, 3]
-        self.input_layer_1 = tl.layers.Input(self.input_shape_1, name='input_layer_1')
+        self.input_layer_1 = tensorlayerx.layers.Input(self.input_shape_1, name='input_layer_1')
 
         self.centralcrop_1 = tl.dataflow.image.CentralCrop(self.input_layer, central_fraction=0.5)
         self.centralcrop_2 = tl.dataflow.image.CentralCrop(self.input_layer, size=60)

@@ -6,7 +6,6 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import tensorflow as tf
 import tensorlayerx as tl
 import numpy as np
 
@@ -17,7 +16,7 @@ class Test_Leaky_ReLUs(CustomTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ni = tl.layers.Input(shape=[16, 10])
+        cls.ni = tensorlayerx.layers.Input(shape=[16, 10])
         cls.w_shape = (10, 5)
         cls.eps = 0.0
 
@@ -26,7 +25,7 @@ class Test_Leaky_ReLUs(CustomTestCase):
         pass
 
     def init_dense(self, w_init):
-        return tl.layers.Dense(n_units=self.w_shape[1], in_channels=self.w_shape[0], W_init=w_init)
+        return tensorlayerx.layers.Dense(n_units=self.w_shape[1], in_channels=self.w_shape[0], W_init=w_init)
 
     def test_zeros(self):
         dense = self.init_dense(tl.initializers.zeros())
@@ -71,9 +70,9 @@ class Test_Leaky_ReLUs(CustomTestCase):
         num_in_channels = 3
         num_out_channels = 3
         filter_shape = (5, 5, num_out_channels, num_in_channels)
-        ni = tl.layers.Input(shape=(1, imsize, imsize, num_channels))
+        ni = tensorlayerx.layers.Input(shape=(1, imsize, imsize, num_channels))
         bilinear_init = tl.initializers.deconv2d_bilinear_upsampling_initializer(shape=filter_shape)
-        deconv_layer = tl.layers.DeConv2dLayer(
+        deconv_layer = tensorlayerx.layers.DeConv2dLayer(
             shape=filter_shape, outputs_shape=(1, imsize * rescale_factor, imsize * rescale_factor, num_out_channels),
             strides=(1, rescale_factor, rescale_factor, 1), W_init=bilinear_init, padding='SAME', act=None,
             name='g/h1/decon2d'

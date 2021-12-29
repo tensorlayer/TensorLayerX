@@ -22,17 +22,17 @@ class Simple_MNIST_Test(CustomTestCase):
         cls.y_ = tf.placeholder(tf.int64, shape=[None], name='y_')
 
         # define the network
-        network = tl.layers.InputLayer(cls.x, name='input')
-        network = tl.layers.DropoutLayer(network, keep=0.8, name='drop1')
-        network = tl.layers.DenseLayer(network, n_units=100, act=tf.nn.relu, name='relu1')
-        network = tl.layers.DropoutLayer(network, keep=0.8, name='drop2')
-        network = tl.layers.DenseLayer(network, n_units=100, act=tf.nn.relu, name='relu2')
-        network = tl.layers.DropoutLayer(network, keep=0.8, name='drop3')
+        network = tensorlayerx.layers.InputLayer(cls.x, name='input')
+        network = tensorlayerx.layers.DropoutLayer(network, keep=0.8, name='drop1')
+        network = tensorlayerx.layers.DenseLayer(network, n_units=100, act=tf.nn.relu, name='relu1')
+        network = tensorlayerx.layers.DropoutLayer(network, keep=0.8, name='drop2')
+        network = tensorlayerx.layers.DenseLayer(network, n_units=100, act=tf.nn.relu, name='relu2')
+        network = tensorlayerx.layers.DropoutLayer(network, keep=0.8, name='drop3')
 
         # the softmax is implemented internally in tl.losses.cross_entropy(y, y_) to
         # speed up computation, so we use identity here.
         # see tf.ops.sparse_softmax_cross_entropy_with_logits()
-        cls.network = tl.layers.DenseLayer(network, n_units=10, name='output')
+        cls.network = tensorlayerx.layers.DenseLayer(network, n_units=10, name='output')
 
         # define losses function and metrics.
         y = cls.network.outputs
@@ -63,7 +63,7 @@ class Simple_MNIST_Test(CustomTestCase):
             with tf.Session() as sess:
 
                 # initialize all variables in the session
-                tl.layers.initialize_global_variables(sess)
+                tensorlayerx.layers.initialize_global_variables(sess)
 
                 # print network information
                 self.network.print_params()

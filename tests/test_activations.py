@@ -6,7 +6,6 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import tensorflow as tf
 import tensorlayerx as tl
 
 from tests.utils import CustomTestCase
@@ -37,8 +36,8 @@ class Test_Leaky_ReLUs(CustomTestCase):
 
             self.assertAlmostEqual(computed_output.numpy(), good_output, places=5)
 
-        net = tl.layers.Input([10, 2])
-        net = tl.layers.Dense(n_units=100, act=lambda x: tl.act.lrelu(x, 0.2), name='dense')(net)
+        net = tensorlayerx.layers.Input([10, 2])
+        net = tensorlayerx.layers.Dense(n_units=100, act=lambda x: tl.act.lrelu(x, 0.2), name='dense')(net)
         print(net)
 
     def test_lrelu6(self):
@@ -53,8 +52,8 @@ class Test_Leaky_ReLUs(CustomTestCase):
 
             self.assertAlmostEqual(computed_output.numpy(), good_output, places=5)
 
-        net = tl.layers.Input([10, 2])
-        net = tl.layers.Dense(n_units=100, act=lambda x: tl.act.leaky_relu6(x, 0.2), name='dense')(net)
+        net = tensorlayerx.layers.Input([10, 2])
+        net = tensorlayerx.layers.Dense(n_units=100, act=lambda x: tl.act.leaky_relu6(x, 0.2), name='dense')(net)
         print(net)
 
     def test_ltrelu6(self):
@@ -71,8 +70,8 @@ class Test_Leaky_ReLUs(CustomTestCase):
 
             self.assertAlmostEqual(computed_output.numpy(), good_output, places=5)
 
-        net = tl.layers.Input([10, 200])
-        net = tl.layers.Dense(n_units=100, act=lambda x: tl.act.leaky_twice_relu6(x, 0.2, 0.2), name='dense')(net)
+        net = tensorlayerx.layers.Input([10, 200])
+        net = tensorlayerx.layers.Dense(n_units=100, act=lambda x: tl.act.leaky_twice_relu6(x, 0.2, 0.2), name='dense')(net)
         print(net)
 
     def test_ramp(self):

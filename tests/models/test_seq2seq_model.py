@@ -8,7 +8,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import numpy as np
 import tensorflow as tf
-import tensorlayerx as tl
 from tqdm import tqdm
 from sklearn.utils import shuffle
 from tensorlayerx.model.seq2seq import Seq2seq
@@ -50,7 +49,7 @@ class Model_SEQ2SEQ_Test(CustomTestCase):
             cell_dec=tf.keras.layers.GRUCell,
             n_layer=3,
             n_units=128,
-            embedding_layer=tl.layers.Embedding(vocabulary_size=self.vocab_size, embedding_size=self.embedding_size),
+            embedding_layer=tensorlayerx.layers.Embedding(vocabulary_size=self.vocab_size, embedding_size=self.embedding_size),
         )
 
         optimizer = tf.optimizers.Adam(learning_rate=0.001)

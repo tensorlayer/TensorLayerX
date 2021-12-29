@@ -7,7 +7,7 @@ from tensorflow.python.ops.rnn_cell import LSTMStateTuple
 import tensorlayerx as tl
 from tensorlayerx import logging
 from tensorlayerx.decorators import deprecated, deprecated_alias
-from tensorlayerx.backend.ops.load_backend import BACKEND
+from tensorlayerx.backend.load_backend import BACKEND
 
 __all__ = [
     'cabs',

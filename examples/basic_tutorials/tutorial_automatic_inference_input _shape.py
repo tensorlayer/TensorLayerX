@@ -7,8 +7,8 @@ import numpy as np
 import time
 import tensorflow as tf
 import tensorlayerx as tl
-from tensorlayerx.core import Module
-from tensorlayerx.layers import Dense, Dropout, BatchNorm1d
+from tensorlayerx.nn import Module
+from tensorlayerx.nn import Dense, Dropout, BatchNorm1d
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
 
@@ -41,7 +41,7 @@ class CustomModel(Module):
 MLP = CustomModel()
 # Automatic inference input of shape.
 # If Layer has no input in_channels, init_build(input) must be called to initialize the weights.
-MLP.init_build(tl.layers.Input(shape=(1, 784)))
+MLP.init_build(tl.nn.Input(shape=(1, 784)))
 
 n_epoch = 50
 batch_size = 500

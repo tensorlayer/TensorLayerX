@@ -6,15 +6,14 @@ os.environ['TL_BACKEND'] = 'mindspore'
 
 import time
 import numpy as np
-from tensorlayerx.core import Module
+from tensorlayerx.nn import Module
 import tensorlayerx as tl
-from tensorlayerx.layers import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
+from tensorlayerx.nn import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
 from tensorlayerx.vision.transforms import (Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop, HWC2CHW)
 from tensorlayerx.dataflow import Dataset, Dataloader
-from mindspore.nn import Momentum, WithLossCell, Adam
+from mindspore.nn import WithLossCell, Adam
 from mindspore import ParameterTuple
 import mindspore.nn as nn
-import mindspore as ms
 from mindspore.ops import composite as C
 import mindspore.ops.operations as P
 

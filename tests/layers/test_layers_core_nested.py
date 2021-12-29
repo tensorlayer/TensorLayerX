@@ -23,11 +23,11 @@ class Layer_nested(CustomTestCase):
 
     def test_nested_layer_with_inchannels(cls):
 
-        class MyLayer(tl.layers.Module):
+        class MyLayer(tensorlayerx.layers.Module):
 
             def __init__(self, name=None):
                 super(MyLayer, self).__init__(name=name)
-                self.input_layer = tl.layers.Dense(in_channels=50, n_units=20)
+                self.input_layer = tensorlayerx.layers.Dense(in_channels=50, n_units=20)
                 self.build(None)
                 self._built = True
 
@@ -39,7 +39,7 @@ class Layer_nested(CustomTestCase):
                 output = tl.ops.matmul(inputs, self.W)
                 return output
 
-        class model(tl.layers.Module):
+        class model(tensorlayerx.layers.Module):
 
             def __init__(self, name=None):
                 super(model, self).__init__(name=name)
@@ -48,7 +48,7 @@ class Layer_nested(CustomTestCase):
             def forward(self, inputs):
                 return self.layer(inputs)
 
-        input = tl.layers.Input(shape=(100, 50))
+        input = tensorlayerx.layers.Input(shape=(100, 50))
         model_dynamic = model()
         model_dynamic.set_train()
         cls.assertEqual(model_dynamic(input).shape, (100, 10))

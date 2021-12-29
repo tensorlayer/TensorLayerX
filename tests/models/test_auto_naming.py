@@ -5,10 +5,8 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import numpy as np
 import tensorflow as tf
 import tensorlayerx as tl
-from tensorlayerx.layers import *
 from tensorlayerx.model import *
 
 from tests.utils import CustomTestCase
@@ -225,10 +223,10 @@ class Auto_Naming_Test(CustomTestCase):
         test_flag = True
 
         try:
-            inputs = tl.layers.Input([10, 5])
-            layer1 = tl.layers.LayerList(
-                [tl.layers.Dense(n_units=4, name='dense1'),
-                 tl.layers.Dense(n_units=3, name='dense1')]
+            inputs = tensorlayerx.layers.Input([10, 5])
+            layer1 = tensorlayerx.layers.LayerList(
+                [tensorlayerx.layers.Dense(n_units=4, name='dense1'),
+                 tensorlayerx.layers.Dense(n_units=3, name='dense1')]
             )(inputs)
             model = tl.model.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
             print([w.name for w in model.all_weights])
@@ -248,14 +246,14 @@ class Auto_Naming_Test(CustomTestCase):
 
                 def __init__(self):
                     super(inner_model, self).__init__()
-                    self.layer1 = tl.layers.Dense(n_units=4, in_channels=5, name='dense1')
-                    self.layer2 = tl.layers.Dense(n_units=4, in_channels=4, name='dense1')
+                    self.layer1 = tensorlayerx.layers.Dense(n_units=4, in_channels=5, name='dense1')
+                    self.layer2 = tensorlayerx.layers.Dense(n_units=4, in_channels=4, name='dense1')
 
                 def forward(self, x):
                     return self.layer2(self.layer1(x))
 
-            inputs = tl.layers.Input([10, 5])
-            model_layer = tl.layers.ModelLayer(inner_model())(inputs)
+            inputs = tensorlayerx.layers.Input([10, 5])
+            model_layer = tensorlayerx.layers.ModelLayer(inner_model())(inputs)
             model = tl.model.Model(inputs=inputs, outputs=model_layer, name='modellayermodel')
             print(model)
             print([w.name for w in model.all_weights])
@@ -267,10 +265,10 @@ class Auto_Naming_Test(CustomTestCase):
 
     def test_layerlist(self):
         try:
-            inputs = tl.layers.Input([10, 5])
-            layer1 = tl.layers.LayerList(
-                [tl.layers.Dense(n_units=4, name='dense1'),
-                 tl.layers.Dense(n_units=3, name='dense1')]
+            inputs = tensorlayerx.layers.Input([10, 5])
+            layer1 = tensorlayerx.layers.LayerList(
+                [tensorlayerx.layers.Dense(n_units=4, name='dense1'),
+                 tensorlayerx.layers.Dense(n_units=3, name='dense1')]
             )(inputs)
             model = tl.model.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
             print([w.name for w in model.all_weights])

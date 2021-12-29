@@ -9,7 +9,6 @@ import tensorlayerx as tl
 from tensorlayerx.core import Module
 from tensorlayerx.layers import Dense, Flatten
 import paddle
-from paddle.io import TensorDataset
 
 print('download training data and load training data')
 

@@ -23,15 +23,15 @@ class Layer_Embed_Test(CustomTestCase):
         pass
 
     def test_onehot(self):
-        input = tl.layers.Input([32], dtype=tl.int32)
-        onehot = tl.layers.OneHot(depth=8, on_value=1, off_value=0, axis=-1)
+        input = tensorlayerx.layers.Input([32], dtype=tl.int32)
+        onehot = tensorlayerx.layers.OneHot(depth=8, on_value=1, off_value=0, axis=-1)
         print(onehot)
-        tensor = tl.layers.OneHot(depth=8)(input)
+        tensor = tensorlayerx.layers.OneHot(depth=8)(input)
         self.assertEqual(tensor.get_shape().as_list(), [32, 8])
 
     def test_embed(self):
-        input = tl.layers.Input([8, 100], dtype=tl.int32)
-        embed = tl.layers.Embedding(vocabulary_size=1000, embedding_size=50, name='embed')
+        input = tensorlayerx.layers.Input([8, 100], dtype=tl.int32)
+        embed = tensorlayerx.layers.Embedding(vocabulary_size=1000, embedding_size=50, name='embed')
         print(embed)
         tensor = embed(input)
         self.assertEqual(tensor.get_shape().as_list(), [8, 100, 50])
@@ -39,8 +39,8 @@ class Layer_Embed_Test(CustomTestCase):
     def test_avg_embed(self):
         batch_size = 8
         length = 5
-        input = tl.layers.Input([batch_size, length], dtype=tl.int32)
-        avgembed = tl.layers.AverageEmbedding(vocabulary_size=1000, embedding_size=50, name='avg')
+        input = tensorlayerx.layers.Input([batch_size, length], dtype=tl.int32)
+        avgembed = tensorlayerx.layers.AverageEmbedding(vocabulary_size=1000, embedding_size=50, name='avg')
         print(avgembed)
         tensor = avgembed(input)
         # print(tensor)
@@ -49,9 +49,9 @@ class Layer_Embed_Test(CustomTestCase):
     def test_word2vec_nce(self):
         batch_size = 8
         embedding_size = 50
-        inputs = tl.layers.Input([batch_size], dtype=tl.int32)
-        labels = tl.layers.Input([batch_size, 1], dtype=tl.int32)
-        emb_net = tl.layers.Word2vecEmbedding(
+        inputs = tensorlayerx.layers.Input([batch_size], dtype=tl.int32)
+        labels = tensorlayerx.layers.Input([batch_size, 1], dtype=tl.int32)
+        emb_net = tensorlayerx.layers.Word2vecEmbedding(
             vocabulary_size=10000,
             embedding_size=embedding_size,
             num_sampled=100,
@@ -71,8 +71,8 @@ class Layer_Embed_Test(CustomTestCase):
     def test_word2vec_no_nce(self):
         batch_size = 8
         embedding_size = 50
-        inputs = tl.layers.Input([batch_size], dtype=tl.int32)
-        emb_net = tl.layers.Word2vecEmbedding(
+        inputs = tensorlayerx.layers.Input([batch_size], dtype=tl.int32)
+        emb_net = tensorlayerx.layers.Word2vecEmbedding(
             vocabulary_size=10000,
             embedding_size=embedding_size,
             num_sampled=100,

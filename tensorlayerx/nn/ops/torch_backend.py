@@ -2,49 +2,184 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function
-import paddle as pd
-import paddle.nn as nn
-import numpy as np
-import paddle.nn.functional as F
-from .paddle_nn import nchw_to_nhwc, nhwc_to_nchw, preprocess_2d_format, preprocess_1d_format, preprocess_3d_format
-
-_dtypeDict = [
-    "float16", "float32", "float64", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "bool",
-    "complex64", "complex128"
+from .torch_nn import nchw_to_nhwc, nhwc_to_nchw
+import torch
+import torch.nn.functional as F
+__all__ = [
+    'Variable',
+    'Floor',
+    'Ceil',
+    'matmul',
+    'add',
+    'dtypes',
+    'minimum',
+    'concat',
+    'convert_to_tensor',
+    'convert_to_numpy',
+    'reduce_mean',
+    'reduce_min',
+    'reduce_max',
+    'pad',
+    'stack',
+    'meshgrid',
+    'expand_dims',
+    'tile',
+    'cast',
+    'transpose',
+    'gather_nd',
+    'clip_by_value',
+    'split',
+    'get_tensor_shape',
+    'set_context',
+    'resize',
+    'floor',
+    'gather',
+    'linspace',
+    'add_n',
+    'multiply',
+    'identity',
+    'triu',
+    'tril',
+    'abs',
+    'acos',
+    'acosh',
+    'angle',
+    'argmax',
+    'argmin',
+    'asin',
+    'asinh',
+    'atan',
+    'atanh',
+    'cos',
+    'cosh',
+    'count_nonzero',
+    'cumprod',
+    'cumsum',
+    'equal',
+    'exp',
+    'floormod',
+    'greater',
+    'greater_equal',
+    'is_inf',
+    'is_nan',
+    'l2_normalize',
+    'less',
+    'less_equal',
+    'log',
+    'log_sigmoid',
+    'maximum',
+    'negative',
+    'not_equal',
+    'pow',
+    'real',
+    'reciprocal',
+    'reduce_prod',
+    'reduce_std',
+    'reduce_sum',
+    'reduce_variance',
+    'round',
+    'rsqrt',
+    'segment_mean',
+    'segment_min',
+    'segment_prod',
+    'segment_sum',
+    'sign',
+    'sin',
+    'sinh',
+    'softplus',
+    'square',
+    'squared_difference',
+    'subtract',
+    'tan',
+    'tanh',
+    'any',
+    'all',
+    'logical_and',
+    'logical_not',
+    'logical_xor',
+    'argsort',
+    'bmm',
+    'where',
+    'ones_like',
+    'zeros_like',
+    'squeeze',
+    'unsorted_segment_sum',
+    'unsorted_segment_min',
+    'unsorted_segment_mean',
+    'unsorted_segment_max',
+    'Reshape',
+    'ReduceSum',
+    'ReduceMax',
+    'ReduceMean',
+    'OneHot',
+    'L2Normalize',
+    'NotEqual',
+    'Cast',
+    'ExpandDims',
+    'CountNonzero',
+    'FlattenReshape',
+    'Transpose',
+    'MatMul',
+    'Tile',
+    'Concat',
+    'ZeroPadding1D',
+    'ZeroPadding2D',
+    'ZeroPadding3D',
+    'Stack',
+    'Unstack',
+    'Sign',
+    'Resize',
+    'Pad',
+    'Minimum',
+    'Meshgrid',
+    'BatchToSpace',
+    'DepthToSpace',
 ]
-# TODO NotImplemented
-DType = None
-float16 = "float16"
-float32 = "float32"
-float64 = "float64"
-int8 = "int8"
-int16 = "int16"
-int32 = "int32"
-int64 = "int64"
-uint8 = "uint8"
-uint16 = "uint16"
-uint32 = "uint32"
-uint64 = "uint64"
-bool = "bool"
-complex64 = "complex64"
-complex128 = "complex128"
+_dtypeDict = {
+    'DType': torch.dtype,
+    'float16': torch.float16,
+    'float32': torch.float32,
+    'float64': torch.float64,
+    'int8': torch.int8,
+    'int16': torch.int16,
+    'int32': torch.int32,
+    'int64': torch.int64,
+    'uint8': torch.uint8,
+    'uint16': None,
+    'uint32': None,
+    'uint64': None,
+    'bool': torch.bool,
+    'complex64': torch.complex64,
+    'complex128': torch.complex128
+}
 
-
-def _getter(init_fn, **kwargs):
-    """Return an named eager tensor."""
-    raise NotImplementedError
+DType = torch.dtype
+float16 = torch.float16
+float32 = torch.float32
+float64 = torch.float64
+int8 = torch.int8
+int16 = torch.int16
+int32 = torch.int32
+int64 = torch.int64
+uint8 = torch.uint8
+uint16 = None
+uint32 = None
+uint64 = None
+bool = torch.bool
+complex64 = torch.complex64
+complex128 = torch.complex128
 
 
 def set_context(**kwargs):
-    raise Exception("Using Paddle backend,You don't need to set context")
+    raise Exception("Using TenosrFlow backend,You don't need to set context")
 
 
 def get_tensor_shape(x):
-    return pd.shape(x)
+    return list(x.size())
 
 
 # initializers
-def zeros(shape, dtype="float32"):
+def zeros(shape, dtype=None):
     """
     Creates a tensor with all elements set to zero.
 
@@ -60,10 +195,10 @@ def zeros(shape, dtype="float32"):
         A Tensor with all elements set to zero.
 
     """
-    return pd.zeros(shape=shape, dtype=dtype)
+    raise NotImplementedError
 
 
-def ones(shape, dtype="float32"):
+def ones(shape, dtype=None):
     """
     Creates a tensor with all elements set to ones.
 
@@ -79,10 +214,10 @@ def ones(shape, dtype="float32"):
         A Tensor with all elements set to zero.
 
     """
-    return pd.ones(shape=shape, dtype=dtype)
+    raise NotImplementedError
 
 
-def constant(value, dtype="float32", shape=None):
+def constant(value, dtype=None, shape=None):
     """
     Creates a constant tensor from a tensor-like object.
 
@@ -100,10 +235,10 @@ def constant(value, dtype="float32", shape=None):
         A Constant Tensor.
 
     """
-    return pd.full(fill_value=value, dtype=dtype, shape=shape)
+    raise NotImplementedError
 
 
-def random_uniform(shape, minval=-1.0, maxval=1.0, dtype="float32", seed=0):
+def random_uniform(shape, minval=0, maxval=None, dtype=None, seed=None):
     """
     Outputs random values from a uniform distribution.
 
@@ -118,16 +253,16 @@ def random_uniform(shape, minval=-1.0, maxval=1.0, dtype="float32", seed=0):
     dtype : tensor
         The type of the output: float16, float32, float64, int32, or int64.
     seed : int
-         Used in combination with dragon.random.set_seed to create a reproducible sequence of tensors across multiple calls.
+         Used in combination with tf.random.set_seed to create a reproducible sequence of tensors across multiple calls.
     Returns
     -------
         A tensor of the specified shape filled with random uniform values.
 
     """
-    return pd.uniform(shape=shape, min=minval, max=maxval, dtype=dtype, seed=seed)
+    raise NotImplementedError
 
 
-def random_normal(shape, mean=0.0, stddev=1.0, dtype="float32", seed=None):
+def random_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
     """
     Outputs random values from a normal distribution.
 
@@ -149,10 +284,10 @@ def random_normal(shape, mean=0.0, stddev=1.0, dtype="float32", seed=None):
         A tensor of the specified shape filled with random normal values.
 
     """
-    return pd.normal(mean, stddev, shape)
+    raise NotImplementedError
 
 
-def truncated_normal(shape, mean=0.0, stddev=1.0, dtype="float32", seed=None):
+def truncated_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
     """
     Outputs random values from a truncated normal distribution.
 
@@ -194,53 +329,18 @@ def he_normal(shape, dtype, seed=None):
     -------
         A tensor of the specified shape filled with he normal values.
     """
-    # shape = shape[::-1]
     raise NotImplementedError
 
 
 def xavier_normal(shape, dtype, seed=None):
-    """
-    xavier normal initializer.
-
-    Parameters
-    ----------
-    seed : A Python integer.
-        Used to seed the random generator.
-    shape : tuple
-        A 1-D integer Tensor or Python array. The shape of the output tensor.
-    dtype : tensor
-        The type of the output.
-
-    Returns
-    -------
-        A tensor of the specified shape filled with xavier normal values.
-    """
-
     raise NotImplementedError
 
 
 def xavier_uniform(shape, dtype, seed=None):
-    """
-    xavier uniform initializer.
-
-    Parameters
-    ----------
-    seed : A Python integer.
-        Used to seed the random generator.
-    shape : tuple
-        A 1-D integer Tensor or Python array. The shape of the output tensor.
-    dtype : tensor
-        The type of the output.
-
-    Returns
-    -------
-        A tensor of the specified shape filled with xavier uniform values.
-    """
-
     raise NotImplementedError
 
 
-def Variable(initial_value, name, trainable=None):
+def Variable(initial_value, name, trainable=True):
     """
     Creates a new variable with value initial_value.
 
@@ -259,15 +359,14 @@ def Variable(initial_value, name, trainable=None):
 
 class MatMul(object):
 
-    def __init__(self, transpose_a=False, transpose_b=False):
-        self.transpose_a = transpose_a
-        self.transpose_b = transpose_b
+    def __init__(self):
+        pass
 
     def __call__(self, a, b):
-        return pd.matmul(x=a, y=b, transpose_x=self.transpose_a, transpose_y=self.transpose_b)
+        return torch.matmul(a, b)
 
 
-def matmul(a, b, transpose_a=False, transpose_b=False):
+def matmul(a, b):
     """
     Multiplies matrix a by matrix b, producing a * b.
 
@@ -282,7 +381,7 @@ def matmul(a, b, transpose_a=False, transpose_b=False):
     -------
         A Tensor of the same type as a and b
     """
-    return pd.matmul(x=a, y=b, transpose_x=transpose_a, transpose_y = transpose_b)
+    return torch.matmul(a, b)
 
 
 def add(value, bias):
@@ -296,15 +395,12 @@ def add(value, bias):
         uint8, int8, int16, int32, int64, complex64, complex128, string.
     bias : tensor
         Must have the same type as a
-    name : str
-        A name for the operation
 
     Returns
     -------
         A Tensor. Has the same type as a.
     """
-
-    return pd.add(value, bias)
+    return torch.add(value, bias)
 
 
 def dtypes(dt):
@@ -321,7 +417,7 @@ def dtypes(dt):
     -------
         Data dtypes
     """
-    return dt.dtype
+    raise NotImplementedError
 
 
 class Maximum(object):
@@ -339,7 +435,7 @@ class Minimum(object):
         pass
 
     def __call__(self, x, y):
-        return pd.minimum(x, y)
+        raise NotImplementedError
 
 
 def minimum(x, y):
@@ -352,14 +448,13 @@ def minimum(x, y):
         Must be one of the following types: bfloat16, half, float32, float64, int32, int64.
     y : A Tensor.
         Must have the same type as x.
-    name : str
-        A name for the operation (optional).
 
     Returns
     -------
         A Tensor. Has the same type as x
     """
-    return pd.minimum(x, y)
+
+    raise NotImplementedError
 
 
 class FlattenReshape(object):
@@ -368,7 +463,10 @@ class FlattenReshape(object):
         pass
 
     def __call__(self, inputs):
-        return pd.flatten(x=inputs, start_axis=1, stop_axis=-1)
+        dim = 1
+        for d in get_tensor_shape(inputs)[1:]:
+            dim *= d
+        return torch.reshape(inputs, [-1, dim])
 
 
 class Reshape(object):
@@ -377,7 +475,7 @@ class Reshape(object):
         self.shape = shape
 
     def __call__(self, tensor):
-        return pd.reshape(tensor, shape=self.shape)
+        raise NotImplementedError
 
 
 def reshape(tensor, shape):
@@ -394,7 +492,8 @@ def reshape(tensor, shape):
     -------
         A Tensor. Has the same type as tensor
     """
-    return pd.reshape(tensor, shape)
+
+    raise NotImplementedError
 
 
 class Concat(object):
@@ -404,7 +503,7 @@ class Concat(object):
         self.axis = axis
 
     def __call__(self, values):
-        return pd.concat(values, axis=self.axis)
+        raise NotImplementedError
 
 
 def concat(values, axis):
@@ -421,10 +520,11 @@ def concat(values, axis):
     -------
         A Tensor resulting from concatenation of the input tensors.
     """
-    return pd.concat(values, axis)
+
+    raise NotImplementedError
 
 
-def convert_to_tensor(value, dtype=float32):
+def convert_to_tensor(value, dtype=None):
     """
     Converts the given value to a Tensor.
 
@@ -439,7 +539,8 @@ def convert_to_tensor(value, dtype=float32):
     -------
         A Tensor based on value.
     """
-    return pd.to_tensor(value, dtype=dtype)
+
+    return torch.tensor(value, dtype=dtype)
 
 
 def convert_to_numpy(value):
@@ -459,29 +560,28 @@ def sqrt(x):
     -------
         A Tensor. Has the same type as x.
     """
-    return pd.sqrt(x)
+    raise NotImplementedError
 
 
 class ReduceSum(object):
 
-    def __init__(self, axis=None, keepdims=False):
+    def __init__(self, axis=None):
         self.axis = axis
-        self.keepdims = keepdims
 
-    def construct(self, input):
-        return pd.sum(input, axis=self.axis, keepdim=self.keepdims)
+    def __call__(self, input):
+        raise NotImplementedError
 
 
 class ReduceMean(object):
 
-    def __init__(self, axis=None, keepdims=False):
+    def __init__(self, axis):
         self.axis = axis
-        self.keepdims = keepdims
+
     def __call__(self, inputs):
-        return pd.mean(inputs, axis=self.axis, keepdim=self.keepdims)
+        raise NotImplementedError
 
 
-def reduce_mean(input_tensor, axis=None, keepdims=False):
+def reduce_mean(input_tensor, axis=None):
     """
     Computes the mean of elements across dimensions of a tensor.
 
@@ -489,7 +589,7 @@ def reduce_mean(input_tensor, axis=None, keepdims=False):
     ----------
     input_tensor : tensor
         The tensor to reduce. Should have numeric type.
-    axis : int
+    axis : list
         The dimensions to reduce. If None (the default), reduces all dimensions.
         Must be in the range [-rank(input_tensor), rank(input_tensor)).
     name : str
@@ -500,20 +600,19 @@ def reduce_mean(input_tensor, axis=None, keepdims=False):
         The reduced tensor.
     """
 
-    return pd.mean(input_tensor, axis, keepdim = keepdims)
+    raise NotImplementedError
 
 
 class ReduceMax(object):
 
-    def __init__(self, axis=None, keepdims=False):
+    def __init__(self, axis):
         self.axis = axis
-        self.keepdims = keepdims
 
     def __call__(self, inputs):
-        return pd.max(inputs, axis=self.axis, keepdim=self.keepdims)
+        raise NotImplementedError
 
 
-def reduce_max(input_tensor, axis=None, keepdims=False):
+def reduce_max(input_tensor, axis=None):
     """
     Computes the maximum of elements across dimensions of a tensor.
 
@@ -532,10 +631,10 @@ def reduce_max(input_tensor, axis=None, keepdims=False):
         The reduced tensor.
     """
 
-    return pd.max(input_tensor, axis, keepdim=keepdims)
+    raise NotImplementedError
 
 
-def reduce_min(input_tensor, axis=None, keepdims=False):
+def reduce_min(input_tensor, axis=None):
     """
     Computes the minimum of elements across dimensions of a tensor.
 
@@ -553,7 +652,8 @@ def reduce_min(input_tensor, axis=None, keepdims=False):
     -------
         The reduced tensor.
     """
-    return pd.min(input_tensor, axis,keepdim=keepdims)
+
+    raise NotImplementedError
 
 
 class Pad(object):
@@ -561,38 +661,12 @@ class Pad(object):
     def __init__(self, paddings, mode="REFLECT", constant_values=0):
         if mode not in ['CONSTANT', 'REFLECT', 'SYMMETRIC']:
             raise Exception("Unsupported mode: {}".format(mode))
-        if mode == 'SYMMETRIC':
-            raise NotImplementedError
         self.paddings = paddings
-        self.mode = mode.lower()
+        self.mode = mode
         self.constant_values = constant_values
 
     def __call__(self, x):
-        if len(x.shape) == 3:
-            data_format = 'NLC'
-            self.paddings = self.correct_paddings(len(x.shape), self.paddings, data_format)
-        elif len(x.shape) == 4:
-            data_format = 'NHWC'
-            self.paddings = self.correct_paddings(len(x.shape), self.paddings, data_format)
-        elif len(x.shape) == 5:
-            data_format = 'NDHWC'
-            self.paddings = self.correct_paddings(len(x.shape), self.paddings, data_format)
-        else:
-            raise NotImplementedError('Please check the input shape.')
-        return pd.nn.functional.pad(x, self.paddings, self.mode, value=self.constant_values, data_format=data_format)
-
-    def correct_paddings(self, in_shape, paddings, data_format):
-        if in_shape == 3 and data_format == 'NLC':
-            correct_output = [paddings[1][0], paddings[1][1]]
-        elif in_shape == 4 and data_format == 'NHWC':
-            correct_output = [paddings[2][0], paddings[2][1], paddings[1][0], paddings[1][1]]
-        elif in_shape == 5 and data_format == 'NDHWC':
-            correct_output = [
-                paddings[3][0], paddings[3][1], paddings[2][0], paddings[2][1], paddings[1][0], paddings[1][1]
-            ]
-        else:
-            raise NotImplementedError('Does not support channels first')
-        return correct_output
+        raise NotImplementedError
 
 
 def pad(tensor, paddings, mode='CONSTANT', constant_values=0):
@@ -603,8 +677,8 @@ def pad(tensor, paddings, mode='CONSTANT', constant_values=0):
     ----------
     tensor : tensor
         A Tensor.
-    paddings : tuple
-        A tuple of type int32.
+    paddings : tensor
+        A Tensor of type int32.
     mode : str
         One of "CONSTANT", "REFLECT", or "SYMMETRIC" (case-insensitive)
     constant_values : int
@@ -614,7 +688,7 @@ def pad(tensor, paddings, mode='CONSTANT', constant_values=0):
     -------
         A Tensor. Has the same type as tensor.
     """
-    return Pad(paddings, mode, constant_values)(tensor)
+    raise NotImplementedError
 
 
 class Unstack(object):
@@ -624,16 +698,16 @@ class Unstack(object):
         self.num = num
 
     def __call__(self, values):
-        return pd.unstack(values, self.axis, self.num)
+        raise NotImplementedError
 
 
 class Stack(object):
 
-    def __init__(self, axis):
+    def __init__(self, axis=0):
         self.axis = axis
 
     def __call__(self, values):
-        return pd.stack(values, self.axis)
+        raise NotImplementedError
 
 
 def stack(values, axis=0):
@@ -642,7 +716,7 @@ def stack(values, axis=0):
 
     Parameters
     ----------
-    values : list or tuple
+    values : list
         A list of Tensor objects with the same shape and type.
     axis : int
         An int. The axis to stack along. Defaults to the first dimension.
@@ -652,7 +726,8 @@ def stack(values, axis=0):
     -------
         A stacked Tensor with the same type as values.
     """
-    return pd.stack(values, axis=axis)
+
+    raise NotImplementedError
 
 
 class Meshgrid(object):
@@ -662,7 +737,7 @@ class Meshgrid(object):
         self.index = indexing
 
     def __call__(self, inputs):
-        return pd.meshgrid(inputs)
+        raise NotImplementedError
 
 
 def meshgrid(*args, **kwargs):
@@ -681,7 +756,7 @@ def meshgrid(*args, **kwargs):
         A list of N Tensors with rank N.
     """
 
-    return pd.meshgrid(*args, **kwargs)
+    raise NotImplementedError
 
 
 def range(start, limit=None, delta=1, dtype=None):
@@ -705,7 +780,8 @@ def range(start, limit=None, delta=1, dtype=None):
     -------
         An 1-D Tensor of type dtype.
     """
-    return pd.arange(start, step=delta)
+
+    raise NotImplementedError
 
 
 class ExpandDims(object):
@@ -714,8 +790,7 @@ class ExpandDims(object):
         self.axis = axis
 
     def __call__(self, input):
-
-        return pd.unsqueeze(input, axis=self.axis)
+        raise NotImplementedError
 
 
 def expand_dims(input, axis):
@@ -735,7 +810,7 @@ def expand_dims(input, axis):
         A Tensor with the same data as input, but its shape has an additional dimension of size 1 added.
     """
 
-    return pd.unsqueeze(input, axis)
+    raise NotImplementedError
 
 
 class Tile(object):
@@ -744,7 +819,7 @@ class Tile(object):
         pass
 
     def __call__(self, input, multiples):
-        return pd.tile(input, multiples)
+        raise NotImplementedError
 
 
 def tile(input, multiples):
@@ -763,7 +838,8 @@ def tile(input, multiples):
     -------
         A Tensor. Has the same type as input.
     """
-    return pd.tile(input, multiples)
+
+    raise NotImplementedError
 
 
 class Cast(object):
@@ -771,8 +847,8 @@ class Cast(object):
     def __init__(self, dtype):
         self.dtype = dtype
 
-    def __call__(self, input):
-        return pd.cast(input, self.dtype)
+    def __call__(self, x):
+        raise NotImplementedError
 
 
 def cast(x, dtype):
@@ -791,18 +867,18 @@ def cast(x, dtype):
     -------
         A Tensor or SparseTensor or IndexedSlices with same shape as x and same type as dtype.
     """
-    return pd.cast(x, dtype)
+
+    raise NotImplementedError
 
 
 class Transpose(object):
 
     def __init__(self, perm, conjugate=False):
         self.perm = perm
-        if conjugate:
-            raise ("The conjugate Parameters not supported")
+        self.conjugate = conjugate
 
     def __call__(self, a):
-        return pd.transpose(a, self.perm)
+        raise NotImplementedError
 
 
 def transpose(a, perm=None, conjugate=False):
@@ -813,17 +889,17 @@ def transpose(a, perm=None, conjugate=False):
     ----------
     a : tensor
         A Tensor.
-    perm : int
+    perm : list / int
         A permutation of the dimensions of a.
     conjugate : bool
-        Setting it to True is mathematically equivalent to ms.math.conj(ms.transpose(input)).
+        Setting it to True is mathematically equivalent to tf.math.conj(tf.transpose(input)).
 
     Returns
     -------
         A transposed Tensor.
     """
 
-    return pd.transpose(a, perm)
+    raise NotImplementedError
 
 
 def gather_nd(params, indices, batch_dims=0):
@@ -844,7 +920,7 @@ def gather_nd(params, indices, batch_dims=0):
         A Tensor. Has the same type as params.
     """
 
-    return pd.gather_nd(params, indices)
+    raise NotImplementedError
 
 
 def clip_by_value(t, clip_value_min, clip_value_max):
@@ -865,7 +941,7 @@ def clip_by_value(t, clip_value_min, clip_value_max):
         A clipped Tensor or IndexedSlices.
     """
 
-    return pd.clip(t, clip_value_min, clip_value_max)
+    raise NotImplementedError
 
 
 def split(value, num_or_size_splits, axis=0, num=None):
@@ -876,7 +952,7 @@ def split(value, num_or_size_splits, axis=0, num=None):
     ----------
     value : tensor
         The Tensor to split.
-    num_or_size_splits : list or tuple
+    num_or_size_splits : list
         Either an integer indicating the number of splits along split_dim or a 1-D integer Tensor or
         Python list containing the sizes of each output tensor along split_dim.
     axis : int
@@ -888,56 +964,57 @@ def split(value, num_or_size_splits, axis=0, num=None):
     -------
         Tensor objects resulting from splitting value.
     """
-    pd.split(value, num_or_size_splits, axis)
+
+    raise NotImplementedError
 
 
 class Floor(object):
 
     def __call__(self, x):
-        return pd.floor(x)
+        raise NotImplementedError
 
 
 def floor(x):
-    return pd.floor(x)
+    raise NotImplementedError
 
 
-def gather(params, indices, axis = None):
-
-    return pd.gather(params, indices, axis)
+def gather(params, indices):
+    raise NotImplementedError
 
 
 def linspace(start, stop, num):
-    return pd.linspace(start, stop, num)
+    raise NotImplementedError
 
 
 def slice(inputs, starts, sizes):
-    return pd.slice(inputs, starts=starts, ends=sizes)
+    raise NotImplementedError
 
 
 def add_n(inputs):
-    return pd.add_n(inputs)
+    raise NotImplementedError
 
 
 class OneHot(object):
 
-    def __init__(self, axis=-1, depth=1, on_value=1.0, off_value=0.0, dtype="float32"):
+    def __init__(self, depth, on_value, off_value, axis, dtype):
         self.depth = depth
+        self.on_value = on_value
+        self.off_value = off_value
+        self.axis = axis
         self.dtype = dtype
 
-    def __call__(self, indices):
-        output = pd.nn.functional.one_hot(indices, self.depth)
-        return output
+    def __call__(self, inputs):
+        raise NotImplementedError
 
 
 class L2Normalize(object):
 
     def __init__(self, axis=None, epsilon=1e-12):
-        super(L2Normalize, self).__init__()
         self.axis = axis
         self.epsilon = epsilon
 
-    def __call__(self, input):
-        return pd.nn.functional.normalize(x=input, p=2, axis=self.axis, epsilon=self.epsilon)
+    def __call__(self, input, *args, **kwargs):
+        raise NotImplementedError
 
 
 class EmbeddingLookup(object):
@@ -946,22 +1023,18 @@ class EmbeddingLookup(object):
         self.max_norm = max_norm
 
     def __call__(self, params, ids):
-        return F.embedding(ids, params)
+        raise NotImplementedError
 
 
 class NCELoss(object):
 
     def __init__(self, num_true=1, sampled_values=None, remove_accidental_hits=False):
-        super(NCELoss, self).__init__()
         self.num_true = num_true
         self.sampled_values = sampled_values
         self.remove_accidental_hits = remove_accidental_hits
 
     def __call__(self, weights, biases, labels, inputs, num_sampled, num_classes):
-        # TODO need to be updated
-        if weights or biases is not None:
-            raise NotImplementedError("Only Xavier initialization is supported.")
-        return pd.static.nn.nce(input=inputs, label=labels, num_total_classes=num_classes)
+        raise NotImplementedError
 
 
 class NotEqual(object):
@@ -970,68 +1043,60 @@ class NotEqual(object):
         pass
 
     def __call__(self, x, y):
-        return pd.not_equal(x, y)
+        raise NotImplementedError
 
 
 class CountNonzero(object):
 
-    def __init__(self, keepdims=False, dtype="int64"):
+    def __init__(self, keepdims=None, dtype=None):
         self.keepdims = keepdims
+        self.dtype = dtype
 
     def __call__(self, input, axis=None):
-        return pd.nonzero(input, as_tuple=self.keepdims)
+        raise NotImplementedError
 
 
 class Resize:
 
     def __init__(self, scale, method, antialias=False, data_format='channels_last'):
-        if method not in ['nearest', 'linear', 'bilinear']:
-            raise ('Current resize does not support this method.')
         self.method = method
         self.antialias = antialias
         self.scale = scale
-        self.data_format, _ = preprocess_2d_format(data_format, None)
+        self.data_format = data_format
 
     def __call__(self, inputs):
-        output_size = [int(inputs.shape[1] * self.scale[0]), int(inputs.shape[2] * self.scale[1])]
-        out = F.interpolate(
-            inputs, size=output_size, mode=self.method, data_format=self.data_format, align_corners=self.antialias
-        )
-        return out
+        raise NotImplementedError
 
 
 def resize(inputs, output_size, method, antialias):
-    return Resize(output_size, method, antialias)(inputs)
+    raise NotImplementedError
 
 
 class ZeroPadding1D(object):
 
     def __init__(self, padding):
-        padding = ((0, 0), padding, (0, 0))
-        self.pad = Pad(paddings=padding)
+        raise NotImplementedError
 
     def __call__(self, inputs):
-        return self.pad(inputs)
+        raise NotImplementedError
 
 
 class ZeroPadding2D(object):
 
     def __init__(self, padding):
-        padding = ((0, 0), padding[0], padding[1], (0, 0))
-        self.pad = Pad(paddings=padding)
+        raise NotImplementedError
 
     def __call__(self, inputs):
-        return self.pad(inputs)
+        raise NotImplementedError
 
 
 class ZeroPadding3D(object):
 
     def __init__(self, padding):
-        padding = ((0, 0), padding[0], padding[1], padding[2], (0, 0))
-        self.pad = Pad(paddings=padding)
+        raise NotImplementedError
 
     def __call__(self, inputs):
-        return self.pad(inputs)
+        raise NotImplementedError
 
 
 class Sign(object):
@@ -1040,25 +1105,25 @@ class Sign(object):
         pass
 
     def __call__(self, x):
-        return pd.sign(x)
+        raise NotImplementedError
 
 
 class Ceil(object):
 
     def __call__(self, x):
-        return pd.ceil(x)
+        raise NotImplementedError
 
 
 def ceil(x):
-    return pd.ceil(x)
+    raise NotImplementedError
 
 
 def multiply(x, y):
-    return pd.multiply(x, y)
+    raise NotImplementedError
 
 
 def divide(x, y):
-    return pd.divide(x, y)
+    raise NotImplementedError
 
 
 def identity(x):
@@ -1068,8 +1133,8 @@ def identity(x):
 class BatchToSpace(object):
 
     def __init__(self, block_size, crops):
-        super(BatchToSpace, self).__init__()
-        pass
+        self.bolock_size = block_size
+        self.crops = crops
 
     def __call__(self, input_x):
         raise NotImplementedError
@@ -1079,211 +1144,192 @@ class DepthToSpace(object):
 
     def __init__(self, block_size, data_format='NHWC'):
         self.block_size = block_size
-        self.data_format, _ = preprocess_2d_format(data_format, None)
+        self.data_format = data_format
 
     def __call__(self, input):
-
-        return pd.nn.functional.pixel_shuffle(input, self.block_size, self.data_format)
+        raise NotImplementedError
 
 
 def triu(data, diagonal=0):
-
-    return pd.triu(data, diagonal)
+    raise NotImplementedError
 
 
 def tril(data, diagonal=0):
-
-    return pd.tril(data, diagonal)
+    raise NotImplementedError
 
 
 def abs(x):
-
-    return pd.abs(x)
+    return torch.abs(x)
 
 
 def acos(x):
-
-    return pd.acos(x)
-
-
-def angle(x):
-    x_np = convert_to_numpy(x)
-    return convert_to_tensor(np.angle(x_np))
+    return torch.acos(x)
 
 
 def acosh(x):
-    return pd.log(x + pd.sqrt(pd.pow(x, 2) - 1))
+    return torch.acosh(x)
+
+
+def angle(x):
+    return torch.angle(x)
 
 
 def argmax(x, axis=None, dtype='int64'):
-    return pd.argmax(x, axis=axis, dtype=dtype)
+    return torch.argmax(x, dim=axis)
 
 
 def argmin(x, axis=None, dtype='int64'):
-    return pd.argmin(x, axis=axis, dtype=dtype)
+    return torch.argmin(x, dim=axis)
 
 
 def asin(x):
-    return pd.asin(x)
+    return torch.asin(x)
 
 
 def asinh(x):
-    return pd.log(x + pd.sqrt(pd.pow(x, 2) + 1))
+    return torch.asinh(x)
 
 
 def atan(x):
-    return pd.atan(x)
+    return torch.atan(x)
 
 
 def atanh(x):
-    return 0.5 * pd.log(pd.divide((1.0 + x), (1.0 - x)))
+    return torch.atanh(x)
 
 
 def cos(x):
-    return pd.cos(x)
+    return torch.cos(x)
 
 
 def cosh(x):
-    return pd.cosh(x)
+    return torch.cosh(x)
 
 
 def count_nonzero(x, axis=None, keepdims=None, dtype="int64"):
-    _nonzero = pd.nonzero(x, as_tuple=True)
-    if axis == None:
-        return pd.prod(pd.shape(_nonzero[0]))
-    x_n = convert_to_numpy(x)
-    if isinstance(axis, list):
-        axis = tuple(axis)
-    non_zero = np.count_nonzero(x_n, axis=axis)
-    return convert_to_tensor(non_zero)
+    return torch.count_nonzero(x, dim=axis)
 
 
 def cumprod(x, axis=0, exclusive=False, reverse=False):
-    x = convert_to_numpy(x)
-    prod = np.cumprod(x, axis=axis)
-    return convert_to_tensor(prod)
+    return torch.cumprod(x, dim=axis)
 
 
 def cumsum(x, axis=0, exclusive=False, reverse=False):
-    return pd.cumsum(x, axis=axis)
+    return torch.cumsum(x, dim=axis)
 
 
 def equal(x, y):
-    return pd.equal(x, y)
+    return torch.equal(x, y)
 
 
 def exp(x):
-    return pd.exp(x)
+    return torch.exp(x)
 
 
 def floordiv(x, y):
-    return pd.floor_divide(x, y)
+    return torch.floor_divide(x, y)
 
 
 def floormod(x, y):
-    return pd.floor_mod(x, y)
+    return torch.fmod(x, y)
 
 
 def greater(x, y):
-    return pd.greater_than(x, y)
+    return torch.greater(x, y)
 
 
 def greater_equal(x, y):
-    return pd.greater_equal(x, y)
+    return torch.greater_equal(x, y)
 
 
 def is_inf(x):
-    return pd.isinf(x)
+    return torch.isinf(x)
 
 
 def is_nan(x):
-    return pd.isnan(x)
+    return torch.isnan(x)
 
 
 def l2_normalize(x, axis=None, eps=1e-12):
-    return pd.divide(x, pd.sqrt(pd.max(pd.sum(pd.pow(x, 2), axis=axis))))
+    if axis == None:
+        return torch.divide(x, torch.sqrt(torch.max(torch.sum(torch.pow(x, 2)))))
+    return torch.divide(x, torch.sqrt(torch.max(torch.sum(torch.pow(x, 2), dim=axis))))
 
 
 def less(x, y):
-    return pd.less_than(x, y)
+    return torch.less(x, y)
 
 
 def less_equal(x, y):
-    return pd.less_equal(x, y)
+    return torch.less_equal(x, y)
 
 
 def log(x):
-    return pd.log(x)
+    return torch.log(x)
 
 
 def log_sigmoid(x):
-    return pd.log(1 / (1 + pd.exp(-x)))
+    return torch.log(1 / (1 + torch.exp(-x)))
 
 
 def maximum(x, y):
-    return pd.maximum(x, y)
+    return torch.maximum(x, y)
 
 
 def negative(x):
-    return -x
+    return torch.negative(x)
 
 
 def not_equal(x, y):
-    return pd.not_equal(x, y)
+    return torch.not_equal(x, y)
 
 
 def pow(x, y):
-    return pd.pow(x, y)
+    return torch.pow(x, y)
 
 
 def real(x):
-    return pd.real(x)
+    return torch.real(x)
 
 
 def reciprocal(x):
-    return pd.reciprocal(x)
+    return torch.reciprocal(x)
 
 
 def reduce_prod(x, axis=None, keepdims=False):
-
-    return pd.prod(x, axis= axis, keepdim=keepdims)
+    raise NotImplementedError
 
 
 def reduce_std(x, axis=None, keepdims=False):
-
-    return pd.std(x , axis = axis, keepdim = keepdims)
+    raise NotImplementedError
 
 
 def reduce_sum(x, axis=None, keepdims=False):
-
-    return pd.sum(x, axis=axis, keepdim=keepdims)
+    raise NotImplementedError
 
 
 def reduce_variance(x, axis=None, keepdims=False):
-
-    return pd.var(x, axis=axis, keepdim = keepdims)
+    raise NotImplementedError
 
 
 def round(x):
-
-    return pd.round(x)
+    raise NotImplementedError
 
 
 def rsqrt(x):
-    return pd.rsqrt(x)
+    raise NotImplementedError
 
 
 def segment_max(x, segment_ids):
-
-    return pd.incubate.segment_max(x, segment_ids)
+    raise NotImplementedError
 
 
 def segment_mean(x, segment_ids):
-    return pd.incubate.segment_mean(x, segment_ids)
+    raise NotImplementedError
 
 
 def segment_min(x, segment_ids):
-    return pd.incubate.segment_min(x, segment_ids)
+    raise NotImplementedError
 
 
 def segment_prod(x, segment_ids):
@@ -1291,23 +1337,23 @@ def segment_prod(x, segment_ids):
 
 
 def segment_sum(x, segment_ids):
-    return pd.incubate.segment_sum(x, segment_ids)
+    raise NotImplementedError
 
 
 def sigmoid(x):
-    return pd.nn.functional.sigmoid(x)
+    raise NotImplementedError
 
 
 def sign(x):
-    return pd.sign(x)
+    raise NotImplementedError
 
 
 def sin(x):
-    return pd.sin(x)
+    raise NotImplementedError
 
 
 def sinh(x):
-    return pd.sinh(x)
+    raise NotImplementedError
 
 
 def softplus(x):
@@ -1324,23 +1370,24 @@ def softplus(x):
         A Tensor. Has the same type as features.
     """
 
+    # Computes softplus: (1/b) * log(1 + exp(features*b)) ; b=1
     return F.softplus(x)
 
 
 def square(x):
-    return pd.square(x)
+    raise NotImplementedError
 
 
 def squared_difference(x, y):
-    return pd.square(x-y)
+    raise NotImplementedError
 
 
 def subtract(x, y):
-    return pd.subtract(x, y)
+    raise NotImplementedError
 
 
 def tan(x):
-    return pd.tan(x)
+    raise NotImplementedError
 
 
 def tanh(x):
@@ -1361,63 +1408,51 @@ def tanh(x):
 
 
 def any(x, axis=None, keepdims=False):
-
-    return pd.any(x, axis=axis, keepdim=keepdims)
+    raise NotImplementedError
 
 
 def all(x, axis=None, keepdims=False):
-
-    return pd.all(x, axis=axis, keepdim=keepdims)
+    raise NotImplementedError
 
 
 def logical_and(x, y):
-
-    return pd.logical_and(x, y)
+    raise NotImplementedError
 
 
 def logical_or(x, y):
-
-    return pd.logical_or(x, y)
+    raise NotImplementedError
 
 
 def logical_not(x):
-
-    return pd.logical_not(x)
+    raise NotImplementedError
 
 
 def logical_xor(x, y):
-
-    return pd.logical_xor(x, y)
+    raise NotImplementedError
 
 
 def argsort(x, axis=-1, descending=False):
-
-    return pd.argsort(x, axis = axis, descending = descending)
+    raise NotImplementedError
 
 
 def bmm(x, y):
-
-    return pd.bmm(x, y)
+    raise NotImplementedError
 
 
 def where(condition, x, y):
-
-    return pd.where(condition, x, y)
+    raise NotImplementedError
 
 
 def ones_like(x, dtype=None):
-
-    return pd.ones_like(x, dtype)
+    raise NotImplementedError
 
 
 def zeros_like(x, dtype=None):
-
-    return pd.zeros(x, dtype)
+    raise NotImplementedError
 
 
 def squeeze(x, axis=None):
-
-    return pd.squeeze(x, axis)
+    raise NotImplementedError
 
 def unsorted_segment_sum(x, segment_ids, num_segments):
     raise NotImplementedError
@@ -1427,7 +1462,6 @@ def unsorted_segment_mean(x, segment_ids, num_segments):
 
 def unsorted_segment_min(x, segment_ids, num_segments):
     raise NotImplementedError
-
 
 def unsorted_segment_max(x, segment_ids, num_segments):
     raise NotImplementedError

@@ -19,10 +19,10 @@ class Layer_BinaryDense_Test(CustomTestCase):
         self.batch_size = 4
         self.inputs_shape = [self.batch_size, 10]
 
-        self.ni = tl.layers.Input(self.inputs_shape, name='input_layer')
-        self.layer1 = tl.layers.BinaryDense(n_units=5)
+        self.ni = tensorlayerx.layers.Input(self.inputs_shape, name='input_layer')
+        self.layer1 = tensorlayerx.layers.BinaryDense(n_units=5)
 
-        self.layer2 = tl.layers.BinaryDense(n_units=5, in_channels=10)
+        self.layer2 = tensorlayerx.layers.BinaryDense(n_units=5, in_channels=10)
 
         self.n1 = self.layer1(self.ni)
         self.n2 = self.layer2(self.ni)
@@ -48,9 +48,9 @@ class Layer_DorefaDense_Test(CustomTestCase):
         self.batch_size = 4
         self.inputs_shape = [self.batch_size, 10]
 
-        self.ni = tl.layers.Input(self.inputs_shape, name='input_layer')
-        self.layer1 = tl.layers.DorefaDense(n_units=5)
-        self.layer2 = tl.layers.DorefaDense(n_units=5, in_channels=10)
+        self.ni = tensorlayerx.layers.Input(self.inputs_shape, name='input_layer')
+        self.layer1 = tensorlayerx.layers.DorefaDense(n_units=5)
+        self.layer2 = tensorlayerx.layers.DorefaDense(n_units=5, in_channels=10)
 
         self.n1 = self.layer1(self.ni)
         self.n2 = self.layer2(self.ni)
@@ -74,10 +74,10 @@ class Layer_DropconnectDense_Test(CustomTestCase):
         self.batch_size = 4
         self.inputs_shape = [self.batch_size, 10]
 
-        self.ni = tl.layers.Input(self.inputs_shape, name='input_layer')
-        self.layer1 = tl.layers.DropconnectDense(n_units=5, keep=1.0)
+        self.ni = tensorlayerx.layers.Input(self.inputs_shape, name='input_layer')
+        self.layer1 = tensorlayerx.layers.DropconnectDense(n_units=5, keep=1.0)
 
-        self.layer2 = tl.layers.DropconnectDense(n_units=5, in_channels=10, keep=0.01)
+        self.layer2 = tensorlayerx.layers.DropconnectDense(n_units=5, in_channels=10, keep=0.01)
 
         self.n1 = self.layer1(self.ni)
         self.n2 = self.layer2(self.ni)
@@ -101,10 +101,10 @@ class Layer_QuanDense_Test(CustomTestCase):
         self.batch_size = 4
         self.inputs_shape = [self.batch_size, 10]
 
-        self.ni = tl.layers.Input(self.inputs_shape, name='input_layer')
-        self.layer1 = tl.layers.QuanDense(n_units=5)
+        self.ni = tensorlayerx.layers.Input(self.inputs_shape, name='input_layer')
+        self.layer1 = tensorlayerx.layers.QuanDense(n_units=5)
 
-        self.layer2 = tl.layers.QuanDense(n_units=5, in_channels=10)
+        self.layer2 = tensorlayerx.layers.QuanDense(n_units=5, in_channels=10)
 
         self.n1 = self.layer1(self.ni)
         self.n2 = self.layer2(self.ni)
@@ -129,8 +129,8 @@ class Layer_QuanDenseWithBN_Test(CustomTestCase):
         self.inputs_shape = [self.batch_size, 10]
 
         self.inputs = tl.initializers.TruncatedNormal()(shape=self.inputs_shape)
-        self.layer1 = tl.layers.QuanDenseWithBN(n_units=5)
-        self.layer2 = tl.layers.QuanDenseWithBN(n_units=5, in_channels=10)
+        self.layer1 = tensorlayerx.layers.QuanDenseWithBN(n_units=5)
+        self.layer2 = tensorlayerx.layers.QuanDenseWithBN(n_units=5, in_channels=10)
 
         self.n1 = self.layer1(self.inputs)
         self.n2 = self.layer2(self.inputs)
@@ -154,9 +154,9 @@ class Layer_TernaryDense_Test(CustomTestCase):
         self.batch_size = 4
         self.inputs_shape = [self.batch_size, 10]
 
-        self.inputs = tl.layers.Input(self.inputs_shape, name='input_layer')
-        self.layer1 = tl.layers.TernaryDense(n_units=5)
-        self.layer2 = tl.layers.TernaryDense(n_units=5, in_channels=10)
+        self.inputs = tensorlayerx.layers.Input(self.inputs_shape, name='input_layer')
+        self.layer1 = tensorlayerx.layers.TernaryDense(n_units=5)
+        self.layer2 = tensorlayerx.layers.TernaryDense(n_units=5, in_channels=10)
 
         self.n1 = self.layer1(self.inputs)
         self.n2 = self.layer2(self.inputs)

@@ -1,12 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .common import str2act, str2init
-from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
+from tensorlayerx.nn.core.common import str2act, str2init
+from tensorlayerx.nn.core.common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from mindspore.nn import Cell
 import tensorlayerx as tl
 from collections import OrderedDict
-from abc import abstractmethod
 from mindspore import log as logger
 import inspect
 from mindspore import context

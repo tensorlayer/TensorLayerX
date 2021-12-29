@@ -16,8 +16,8 @@ class Layer_Shape_Test(CustomTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.data = tl.layers.Input(shape=(8, 4, 3), init=tl.initializers.random_normal())
-        cls.imgdata = tl.layers.Input(shape=(2, 16, 16, 8), init=tl.initializers.random_normal())
+        cls.data = tensorlayerx.layers.Input(shape=(8, 4, 3), init=tl.initializers.random_normal())
+        cls.imgdata = tensorlayerx.layers.Input(shape=(2, 16, 16, 8), init=tl.initializers.random_normal())
 
     @classmethod
     def tearDownClass(cls):
@@ -25,11 +25,11 @@ class Layer_Shape_Test(CustomTestCase):
 
     def test_flatten(self):
 
-        class CustomizeModel(tl.layers.Module):
+        class CustomizeModel(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.flatten = tl.layers.Flatten()
+                self.flatten = tensorlayerx.layers.Flatten()
 
             def forward(self, x):
                 return self.flatten(x)
@@ -42,13 +42,13 @@ class Layer_Shape_Test(CustomTestCase):
 
     def test_reshape(self):
 
-        class CustomizeModel(tl.layers.Module):
+        class CustomizeModel(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.reshape1 = tl.layers.Reshape(shape=(8, 12))
-                self.reshape2 = tl.layers.Reshape(shape=(-1, 12))
-                self.reshape3 = tl.layers.Reshape(shape=())
+                self.reshape1 = tensorlayerx.layers.Reshape(shape=(8, 12))
+                self.reshape2 = tensorlayerx.layers.Reshape(shape=(-1, 12))
+                self.reshape3 = tensorlayerx.layers.Reshape(shape=())
 
             def forward(self, x):
                 return self.reshape1(x), self.reshape2(x), self.reshape3(x[0][0][0])
@@ -65,20 +65,20 @@ class Layer_Shape_Test(CustomTestCase):
 
     def test_transpose(self):
 
-        class CustomizeModel(tl.layers.Module):
+        class CustomizeModel(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.transpose1 = tl.layers.Transpose()
-                self.transpose2 = tl.layers.Transpose([2, 1, 0])
-                self.transpose3 = tl.layers.Transpose([0, 2, 1])
-                self.transpose4 = tl.layers.Transpose(conjugate=True)
+                self.transpose1 = tensorlayerx.layers.Transpose()
+                self.transpose2 = tensorlayerx.layers.Transpose([2, 1, 0])
+                self.transpose3 = tensorlayerx.layers.Transpose([0, 2, 1])
+                self.transpose4 = tensorlayerx.layers.Transpose(conjugate=True)
 
             def forward(self, x):
                 return self.transpose1(x), self.transpose2(x), self.transpose3(x), self.transpose4(x)
 
-        real = tl.layers.Input(shape=(8, 4, 3), init=tl.initializers.random_normal())
-        comp = tl.layers.Input(shape=(8, 4, 3), init=tl.initializers.random_normal())
+        real = tensorlayerx.layers.Input(shape=(8, 4, 3), init=tl.initializers.random_normal())
+        comp = tensorlayerx.layers.Input(shape=(8, 4, 3), init=tl.initializers.random_normal())
         import tensorflow as tf
         complex_data = tf.dtypes.complex(real, comp)
         model = CustomizeModel()
@@ -103,11 +103,11 @@ class Layer_Shape_Test(CustomTestCase):
 
     def test_shuffle(self):
 
-        class CustomizeModel(tl.layers.Module):
+        class CustomizeModel(tensorlayerx.layers.Module):
 
             def __init__(self, x):
                 super(CustomizeModel, self).__init__()
-                self.shuffle = tl.layers.Shuffle(x)
+                self.shuffle = tensorlayerx.layers.Shuffle(x)
 
             def forward(self, x):
                 return self.shuffle(x)

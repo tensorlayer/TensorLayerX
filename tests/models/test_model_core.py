@@ -8,7 +8,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import numpy as np
 import tensorflow as tf
 import tensorlayerx as tl
-from tensorlayerx.layers import *
 from tensorlayerx.model import *
 
 from tests.utils import CustomTestCase
@@ -165,7 +164,7 @@ class Model_Core_Test(CustomTestCase):
         self.assertEqual(model_basic.is_train, False)
 
         # test as_layer
-        self.assertIsInstance(model_basic.as_layer(), tl.layers.Layer)
+        self.assertIsInstance(model_basic.as_layer(), tensorlayerx.layers.Layer)
         self.assertIsNotNone(model_basic._model_layer)
 
         # test print
@@ -367,7 +366,7 @@ class Model_Core_Test(CustomTestCase):
     def test_get_layer(self):
         print('-' * 20, 'test_get_layer', '-' * 20)
         model_basic = basic_dynamic_model()
-        self.assertIsInstance(model_basic.get_layer('conv2'), tl.layers.Conv2d)
+        self.assertIsInstance(model_basic.get_layer('conv2'), tensorlayerx.layers.Conv2d)
         try:
             model_basic.get_layer('abc')
         except Exception as e:
@@ -379,8 +378,8 @@ class Model_Core_Test(CustomTestCase):
             print(e)
 
         model_basic = basic_static_model()
-        self.assertIsInstance(model_basic.get_layer('conv2'), tl.layers.Conv2d)
-        self.assertIsInstance(model_basic.get_layer(index=2), tl.layers.MaxPool2d)
+        self.assertIsInstance(model_basic.get_layer('conv2'), tensorlayerx.layers.Conv2d)
+        self.assertIsInstance(model_basic.get_layer(index=2), tensorlayerx.layers.MaxPool2d)
         print([w.name for w in model_basic.get_layer(index=-1).all_weights])
         try:
             model_basic.get_layer('abc')

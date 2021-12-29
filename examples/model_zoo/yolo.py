@@ -10,7 +10,7 @@
 
 import numpy as np
 import tensorlayerx as tl
-from tensorlayerx.layers.activation import Mish
+from tensorlayerx.layers import Mish
 from tensorlayerx.layers import Conv2d, MaxPool2d, BatchNorm2d, ZeroPad2d, UpSampling2d, Concat, Elementwise
 from tensorlayerx.core import Module, SequentialLayer
 from tensorlayerx import logging

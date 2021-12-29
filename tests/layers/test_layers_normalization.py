@@ -7,7 +7,6 @@ import unittest
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorlayerx as tl
-from tensorlayerx.layers import *
 from tests.utils import CustomTestCase
 
 
@@ -43,7 +42,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
         n3_b = BatchNorm(name='test_bn3d')(nn_3)
         cls.n3_b = n3_b
 
-        class bn_0d_model(tl.layers.Module):
+        class bn_0d_model(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(bn_0d_model, self).__init__()
@@ -66,7 +65,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
         cls.n0 = n0
 
-        class bn_0d_model(tl.layers.Module):
+        class bn_0d_model(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(bn_0d_model, self).__init__(name='test_bn_0d_model')
@@ -88,7 +87,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
         cls.n1 = n1
 
-        class bn_1d_model(tl.layers.Module):
+        class bn_1d_model(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(bn_1d_model, self).__init__(name='test_bn_1d_model')
@@ -110,7 +109,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
         cls.n2 = n2
 
-        class bn_2d_model(tl.layers.Module):
+        class bn_2d_model(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(bn_2d_model, self).__init__(name='test_bn_2d_model')
@@ -132,7 +131,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
         cls.n3 = n3
 
-        class bn_3d_model(tl.layers.Module):
+        class bn_3d_model(tensorlayerx.layers.Module):
 
             def __init__(self):
                 super(bn_3d_model, self).__init__(name='test_bn_3d_model')

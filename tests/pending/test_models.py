@@ -43,7 +43,7 @@ class VGG_Model_Test(CustomTestCase):
             print("TYPE:", type(vgg2))
 
             # add one more layer
-            _ = tl.layers.DenseLayer(vgg2, n_units=100, name='out')
+            _ = tensorlayerx.layers.DenseLayer(vgg2, n_units=100, name='out')
             # initialize all parameters
             # sess = tf.InteractiveSession()
             # tl.layers.initialize_global_variables(sess)
@@ -51,7 +51,7 @@ class VGG_Model_Test(CustomTestCase):
             # vgg.restore_params(sess)
             # train your own classifier (only update the last layer)
 
-            cls.vgg2_train_params = tl.layers.get_variables_with_name('out')
+            cls.vgg2_train_params = tensorlayerx.layers.get_variables_with_name('out')
 
         with tf.Graph().as_default() as graph:
             # - Reuse model

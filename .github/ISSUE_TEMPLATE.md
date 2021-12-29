@@ -23,9 +23,9 @@ import tensorflow as tf
 import tensorlayerx as tl
 
 x = tf.placeholder(tf.float32, [None, 64])
-net_in = tl.layers.InputLayer(x)
+net_in = tensorlayerx.layers.InputLayer(x)
 
-net = tl.layers.DenseLayer(net_in, n_units=25, act=tf.nn.relu, name='relu1')
+net = tensorlayerx.layers.DenseLayer(net_in, n_units=25, act=tf.nn.relu, name='relu1')
 
 print("Output Shape:", net.outputs.get_shape().as_list()) ### Output Shape: [None, 25]
 

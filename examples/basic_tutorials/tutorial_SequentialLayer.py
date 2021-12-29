@@ -9,7 +9,6 @@ from tensorlayerx.core import SequentialLayer
 from tensorlayerx.layers import Dense
 import tensorlayerx as tl
 from tensorlayerx.dataflow import Dataset
-import numpy as np
 
 layer_list = []
 layer_list.append(Dense(n_units=800, act=tl.ReLU, in_channels=784, name='Dense1'))

@@ -9,7 +9,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import numpy as np
 import tensorflow as tf
 import tensorlayerx as tl
-from tensorlayerx.layers import *
 from tensorlayerx.model import *
 
 from tests.utils import CustomTestCase
@@ -255,8 +254,8 @@ class Lambda_layer_test(CustomTestCase):
         print("##### begin testing lambda layer #####")
 
     def test_lambda_layer_no_para_no_args(self):
-        x = tl.layers.Input([8, 3], name='input')
-        y = tl.layers.Lambda(lambda x: 2 * x, name='lambda')(x)
+        x = tensorlayerx.layers.Input([8, 3], name='input')
+        y = tensorlayerx.layers.Lambda(lambda x: 2 * x, name='lambda')(x)
         M1 = tl.model.Model(x, y)
         M1.save("lambda_no_para_no_args.hdf5")
         M2 = tl.model.Model.load("lambda_no_para_no_args.hdf5")
@@ -279,8 +278,8 @@ class Lambda_layer_test(CustomTestCase):
         def customize_func(x, foo=42):  # x is the inputs, foo is an argument
             return foo * x
 
-        x = tl.layers.Input([8, 3], name='input')
-        y = tl.layers.Lambda(customize_func, fn_args={'foo': 3}, name='lambda')(x)
+        x = tensorlayerx.layers.Input([8, 3], name='input')
+        y = tensorlayerx.layers.Lambda(customize_func, fn_args={'foo': 3}, name='lambda')(x)
         M1 = tl.model.Model(x, y)
         M1.save("lambda_no_para_with_args.hdf5")
         M2 = tl.model.Model.load("lambda_no_para_with_args.hdf5")
@@ -301,7 +300,7 @@ class Lambda_layer_test(CustomTestCase):
 
     def test_lambda_layer_keras_model(self):
         input_shape = [100, 5]
-        in_2 = tl.layers.Input(input_shape, name='input')
+        in_2 = tensorlayerx.layers.Input(input_shape, name='input')
         layers = [
             tf.keras.layers.Dense(10, activation=tf.nn.relu),
             tf.keras.layers.Dense(5, activation=tf.nn.sigmoid),
@@ -310,7 +309,7 @@ class Lambda_layer_test(CustomTestCase):
         perceptron = tf.keras.Sequential(layers)
         # in order to compile keras model and get trainable_variables of the keras model
         _ = perceptron(np.random.random(input_shape).astype(np.float32))
-        plambdalayer = tl.layers.Lambda(perceptron, perceptron.trainable_variables)(in_2)
+        plambdalayer = tensorlayerx.layers.Lambda(perceptron, perceptron.trainable_variables)(in_2)
         M2 = tl.model.Model(inputs=in_2, outputs=plambdalayer)
 
         M2.save('M2_keras.hdf5')
@@ -338,11 +337,11 @@ class Lambda_layer_test(CustomTestCase):
 
     def test_lambda_layer_keras_layer(self):
         input_shape = [100, 5]
-        in_1 = tl.layers.Input(input_shape, name='input')
+        in_1 = tensorlayerx.layers.Input(input_shape, name='input')
         denselayer = tf.keras.layers.Dense(10, activation=tf.nn.relu)
         # in order to compile keras model and get trainable_variables of the keras model
         _ = denselayer(np.random.random(input_shape).astype(np.float32))
-        dlambdalayer = tl.layers.Lambda(denselayer, denselayer.trainable_variables)(in_1)
+        dlambdalayer = tensorlayerx.layers.Lambda(denselayer, denselayer.trainable_variables)(in_1)
         M1 = tl.model.Model(inputs=in_1, outputs=dlambdalayer)
 
         M1.save('M1_keras.hdf5')
@@ -380,10 +379,10 @@ class ElementWise_lambda_test(CustomTestCase):
         def func(noise, mean, std, foo=42):
             return mean + noise * tf.exp(std * 0.5) + foo
 
-        noise = tl.layers.Input([100, 1])
-        mean = tl.layers.Input([100, 1])
-        std = tl.layers.Input([100, 1])
-        out = tl.layers.ElementwiseLambda(fn=func, fn_args={'foo': 84}, name='elementwiselambda')([noise, mean, std])
+        noise = tensorlayerx.layers.Input([100, 1])
+        mean = tensorlayerx.layers.Input([100, 1])
+        std = tensorlayerx.layers.Input([100, 1])
+        out = tensorlayerx.layers.ElementwiseLambda(fn=func, fn_args={'foo': 84}, name='elementwiselambda')([noise, mean, std])
         M1 = Model(inputs=[noise, mean, std], outputs=out)
         M1.save("elementwise_npwa.hdf5")
         M2 = Model.load("elementwise_npwa.hdf5")
@@ -405,10 +404,10 @@ class ElementWise_lambda_test(CustomTestCase):
         def func(noise, mean, std, foo=42):
             return mean + noise * tf.exp(std * 0.5) + foo
 
-        noise = tl.layers.Input([100, 1])
-        mean = tl.layers.Input([100, 1])
-        std = tl.layers.Input([100, 1])
-        out = tl.layers.ElementwiseLambda(fn=func, name='elementwiselambda')([noise, mean, std])
+        noise = tensorlayerx.layers.Input([100, 1])
+        mean = tensorlayerx.layers.Input([100, 1])
+        std = tensorlayerx.layers.Input([100, 1])
+        out = tensorlayerx.layers.ElementwiseLambda(fn=func, name='elementwiselambda')([noise, mean, std])
         M1 = Model(inputs=[noise, mean, std], outputs=out)
         M1.save("elementwise_npna.hdf5")
         M2 = Model.load("elementwise_npna.hdf5")
@@ -427,11 +426,11 @@ class ElementWise_lambda_test(CustomTestCase):
 
     def test_elementwise_lambda_func(self):
         # z = mean + noise * tf.exp(std * 0.5)
-        noise = tl.layers.Input([100, 1])
-        mean = tl.layers.Input([100, 1])
-        std = tl.layers.Input([100, 1])
-        out = tl.layers.ElementwiseLambda(fn=lambda x, y, z: x + y * tf.exp(z * 0.5),
-                                          name='elementwiselambda')([noise, mean, std])
+        noise = tensorlayerx.layers.Input([100, 1])
+        mean = tensorlayerx.layers.Input([100, 1])
+        std = tensorlayerx.layers.Input([100, 1])
+        out = tensorlayerx.layers.ElementwiseLambda(fn=lambda x, y, z: x + y * tf.exp(z * 0.5),
+                                                    name='elementwiselambda')([noise, mean, std])
         M1 = Model(inputs=[noise, mean, std], outputs=out)
         M1.save("elementwise_lambda.hdf5")
         M2 = Model.load("elementwise_lambda.hdf5")

@@ -246,7 +246,7 @@ class Transformer(Module):
                 d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout, act=act,
                 layer_norm_eps=layer_norm_eps, batch_first=batch_first
             )
-            encoder_norm = tl.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+            encoder_norm = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
             self.encoder = TransformerEncoder(
                 encoder_layer=encoder_layer, num_layers=num_encoder_layers, norm=encoder_norm
             )
@@ -258,7 +258,7 @@ class Transformer(Module):
                 d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout, act=act,
                 layer_norm_eps=layer_norm_eps, batch_first=batch_first
             )
-            decoder_norm = tl.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+            decoder_norm = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
             self.decoder = TransformerDecoder(
                 decoder_layer=decoder_layer, num_layers=num_decoder_layers, norm=decoder_norm
             )
@@ -513,15 +513,15 @@ class TransformerEncoderLayer(Module):
         self._config.pop("self")
         self._config.pop("__class__", None)
         self.self_attn = MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=batch_first)
-        self.linear1 = tl.layers.Dense(in_channels=d_model, n_units=dim_feedforward)
-        self.dropout1 = tl.layers.Dropout(float(1.0 - dropout))
-        self.linear2 = tl.layers.Dense(in_channels=dim_feedforward, n_units=d_model)
+        self.linear1 = tensorlayerx.layers.Dense(in_channels=d_model, n_units=dim_feedforward)
+        self.dropout1 = tensorlayerx.layers.Dropout(float(1.0 - dropout))
+        self.linear2 = tensorlayerx.layers.Dense(in_channels=dim_feedforward, n_units=d_model)
 
-        self.norm1 = tl.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
-        self.norm2 = tl.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+        self.norm1 = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+        self.norm2 = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
 
-        self.dropout2 = tl.layers.Dropout(float(1.0 - dropout))
-        self.dropout3 = tl.layers.Dropout(float(1.0 - dropout))
+        self.dropout2 = tensorlayerx.layers.Dropout(float(1.0 - dropout))
+        self.dropout3 = tensorlayerx.layers.Dropout(float(1.0 - dropout))
         if act == 'relu':
             self.act = tl.relu
         elif act == 'gelu':
@@ -608,14 +608,14 @@ class TransformerDecoderLayer(Module):
         self._config.pop("__class__", None)  # py3
         self.self_attn = MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=batch_first)
         self.cross_attn = MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=batch_first)
-        self.dropout1 = tl.layers.Dropout(float(1 - dropout))
-        self.dropout2 = tl.layers.Dropout(float(1 - dropout))
-        self.dropout3 = tl.layers.Dropout(float(1 - dropout))
-        self.norm1 = tl.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
-        self.norm2 = tl.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
-        self.norm3 = tl.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
-        self.linear1 = tl.layers.Dense(in_channels=d_model, n_units=dim_feedforward)
-        self.linear2 = tl.layers.Dense(in_channels=dim_feedforward, n_units=d_model)
+        self.dropout1 = tensorlayerx.layers.Dropout(float(1 - dropout))
+        self.dropout2 = tensorlayerx.layers.Dropout(float(1 - dropout))
+        self.dropout3 = tensorlayerx.layers.Dropout(float(1 - dropout))
+        self.norm1 = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+        self.norm2 = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+        self.norm3 = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+        self.linear1 = tensorlayerx.layers.Dense(in_channels=d_model, n_units=dim_feedforward)
+        self.linear2 = tensorlayerx.layers.Dense(in_channels=dim_feedforward, n_units=d_model)
 
         if act == 'relu':
             self.act = tl.relu
