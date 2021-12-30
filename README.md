@@ -28,7 +28,7 @@ Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), TensorLa
 
 Comparison of TensorLayer version
 
-<p align="center"><img src="https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/version.png" width="640"\></p>
+<p align="center"><img src="https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/version.png" width="840"\></p>
 
 🔥TensorLayerX inherits the features of the previous verison, including ***Simplicity***, ***Flexibility*** and ***Zero-cost Abstraction***. ***Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), TensorLayerX supports more backends, such as TensorFlow, MindSpore, PaddlePaddle and PyTorch. It allows users to run the same code on different hardwares like Nvidia-GPU and Huawei-Ascend.*** In addition, more features are ***under development***.
 
@@ -67,11 +67,6 @@ pip3 install tensorflow # if you want to use GPUs, CUDA and CuDNN are required.
 If you want to use MindSpore backend, you should install mindspore>=1.2.1
 ```bash
 pip install https://ms-release.obs.cn-north-4.myhuaweicloud.com/1.2.1/MindSpore/gpu/ubuntu_x86/cuda-10.1/mindspore_gpu-1.2.1-cp37-cp37m-linux_x86_64.whl --trusted-host ms-release.obs.cn-north-4.myhuaweicloud.com -i https://pypi.tuna.tsinghua.edu.cn/simple
-```
-
-If you want to use paddlepaddle backend, you should install paddlepaddle>=2.1.1
-```bash
-python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
 ```
 
 If you want to use paddlepaddle backend, you should install paddlepaddle>=2.1.1
