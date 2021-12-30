@@ -43,7 +43,7 @@ pip3 install tensorlayerx
 # install from Github
 pip3 install git+https://github.com/tensorlayer/tensorlayerx.git 
 # install from OpenI
-pip3 install
+pip3 install git+https://git.openi.org.cn/OpenI/tensorlayerX.git
 ```
 - Tutorial
 
