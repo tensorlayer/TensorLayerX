@@ -7,7 +7,7 @@ from collections import OrderedDict
 import time
 import tensorlayerx as tl
 import tensorflow as tf
-from tensorlayerx.nn.layes.utils import (get_variable_with_initializer)
+from tensorlayerx.nn.layers.utils import (get_variable_with_initializer)
 
 __all__ = ['Module', 'SequentialLayer', 'LayerList']
 

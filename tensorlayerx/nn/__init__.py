@@ -4,5 +4,5 @@
 
 from .core import *
 from . import initializers
-from .layes import *
+from .layers import *
 from . import ops

@@ -18,9 +18,16 @@
 
 🇨🇳 TensorLayerX 是一个跨平台开发框架，可以运行在各类操作系统和AI硬件上，并支持混合框架的开发。目前支持TensorFlow、MindSpore、PaddlePaddle框架常用神经网络层以及算子，PyTorch支持特性正在开发中，[支持列表](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)。
 
-🇷🇺 TensorLayerX 
 
-🇸🇦 TensorLayerX
+<details>
+    <summary>🇷🇺 TensorLayerX</summary>
+input text here.
+</details>
+
+<details>
+    <summary>🇸🇦 TensorLayerX</summary>
+input text here.
+</details>
 
 # TensorLayerX
 
