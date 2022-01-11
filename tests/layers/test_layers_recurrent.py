@@ -854,7 +854,9 @@ class Layer_RNN_Test(CustomTestCase):
             def forward(self, x):
                 z0, s0 = self.rnnlayer(x, sequence_length=None)
                 z1, s1 = self.rnnlayer(x, sequence_length=tensorlayerx.layers.retrieve_seq_length_op3(x))
-                z2, s2 = self.rnnlayer(x, sequence_length=tensorlayerx.layers.retrieve_seq_length_op3(x), initial_state=s1)
+                z2, s2 = self.rnnlayer(
+                    x, sequence_length=tensorlayerx.layers.retrieve_seq_length_op3(x), initial_state=s1
+                )
                 print(z0)
                 print(z1)
                 print(z2)

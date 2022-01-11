@@ -14,18 +14,24 @@ from tensorlayerx.dataflow import Dataset
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
 
+
 class mnistdataset(Dataset):
+
     def __init__(self, data=X_train, label=y_train):
         self.data = data
         self.label = label
+
     def __getitem__(self, index):
         data = self.data[index].astype('float32')
         label = self.label[index].astype('int64')
         return data, label
+
     def __len__(self):
         return len(self.data)
 
+
 class CustomModel(Module):
+
     def __init__(self):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(keep=0.8)
@@ -45,6 +51,7 @@ class CustomModel(Module):
         if foo is not None:
             out = tl.ops.relu(out)
         return out
+
 
 MLP = CustomModel()
 n_epoch = 50

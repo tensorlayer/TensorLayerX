@@ -382,9 +382,11 @@ def load_and_assign_standard_npz(file_path=None, network=None, reshape=False):
         elif tl.BACKEND == 'mindspore':
 
             class Assign_net(Cell):
+
                 def __init__(self, y):
                     super(Assign_net, self).__init__()
                     self.y = y
+
                 def construct(self, x):
                     Assign()(self.y, x)
 
@@ -416,7 +418,9 @@ def check_reshape(weight, shape_weights):
     if len(weight.shape) >= 4 and weight.shape[::-1] == tuple(shape_weights.shape):
         if tl.BACKEND == 'tensorflow':
 
-            raise Warning('Set reshape to True only when importing weights from MindSpore/PyTorch/PaddlePaddle to TensorFlow.')
+            raise Warning(
+                'Set reshape to True only when importing weights from MindSpore/PyTorch/PaddlePaddle to TensorFlow.'
+            )
         if tl.BACKEND == 'torch':
             raise Warning('Set reshape to True only when importing weights from TensorFlow to PyTorch.')
         if tl.BACKEND == 'paddle':

@@ -9,7 +9,9 @@ import numpy as np
 from tensorlayerx.nn import Module
 import tensorlayerx as tl
 from tensorlayerx.nn import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
-from tensorlayerx.vision.transforms import (Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop, HWC2CHW)
+from tensorlayerx.vision.transforms import (
+    Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop, HWC2CHW
+)
 from tensorlayerx.dataflow import Dataset, Dataloader
 from mindspore.nn import WithLossCell, Adam
 from mindspore import ParameterTuple
@@ -25,11 +27,15 @@ class CNN(Module):
 
     def __init__(self):
         super(CNN, self).__init__()
-        self.conv1 = Conv2d(64, (5, 5), (2, 2), b_init=None, name='conv1', in_channels=3, act=tl.ReLU, data_format = 'channels_first')
-        self.bn = BatchNorm2d(num_features=64, act=tl.ReLU, data_format = 'channels_first')
-        self.maxpool1 = MaxPool2d((3, 3), (2, 2), name='pool1', data_format = 'channels_first')
-        self.conv2 = Conv2d(128, (5, 5), (2, 2), act=tl.ReLU, b_init=None, name='conv2', in_channels=64, data_format = 'channels_first')
-        self.maxpool2 = MaxPool2d((3, 3), (2, 2), name='pool2', data_format = 'channels_first')
+        self.conv1 = Conv2d(
+            64, (5, 5), (2, 2), b_init=None, name='conv1', in_channels=3, act=tl.ReLU, data_format='channels_first'
+        )
+        self.bn = BatchNorm2d(num_features=64, act=tl.ReLU, data_format='channels_first')
+        self.maxpool1 = MaxPool2d((3, 3), (2, 2), name='pool1', data_format='channels_first')
+        self.conv2 = Conv2d(
+            128, (5, 5), (2, 2), act=tl.ReLU, b_init=None, name='conv2', in_channels=64, data_format='channels_first'
+        )
+        self.maxpool2 = MaxPool2d((3, 3), (2, 2), name='pool2', data_format='channels_first')
 
         self.flatten = Flatten(name='flatten')
         self.dense1 = Dense(120, act=tl.ReLU, name='dense1relu', in_channels=512)
@@ -57,6 +63,7 @@ shuffle_buffer_size = 128
 # prepare cifar10 data
 X_train, y_train, X_test, y_test = tl.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
 
+
 class make_dataset(Dataset):
 
     def __init__(self, data, label, transforms):
@@ -75,26 +82,29 @@ class make_dataset(Dataset):
 
         return len(self.label)
 
-train_transforms = Compose([
-    RandomCrop(size=[24,24]),
-    RandomFlipHorizontal(),
-    RandomBrightness(brightness_factor=(0.5, 1.5)),
-    RandomContrast(contrast_factor=(0.5, 1.5)),
-    StandardizePerImage(),
-    HWC2CHW()
-])
 
-test_transforms = Compose([
-    Resize(size=(24,24)),
-    StandardizePerImage(),
-    HWC2CHW()
-])
+train_transforms = Compose(
+    [
+        RandomCrop(size=[24, 24]),
+        RandomFlipHorizontal(),
+        RandomBrightness(brightness_factor=(0.5, 1.5)),
+        RandomContrast(contrast_factor=(0.5, 1.5)),
+        StandardizePerImage(),
+        HWC2CHW()
+    ]
+)
+
+test_transforms = Compose([Resize(size=(24, 24)), StandardizePerImage(), HWC2CHW()])
 
 train_dataset = make_dataset(data=X_train, label=y_train, transforms=train_transforms)
 test_dataset = make_dataset(data=X_test, label=y_test, transforms=test_transforms)
 
-train_dataset = tl.dataflow.FromGenerator(train_dataset,output_types=(tl.float32, tl.int64),column_names=['data', 'label'])
-test_dataset = tl.dataflow.FromGenerator(test_dataset,output_types=(tl.float32, tl.int64),column_names=['data', 'label'])
+train_dataset = tl.dataflow.FromGenerator(
+    train_dataset, output_types=(tl.float32, tl.int64), column_names=['data', 'label']
+)
+test_dataset = tl.dataflow.FromGenerator(
+    test_dataset, output_types=(tl.float32, tl.int64), column_names=['data', 'label']
+)
 
 train_dataset = Dataloader(train_dataset, batch_size=batch_size, shuffle=True, shuffle_buffer_size=128)
 test_dataset = Dataloader(test_dataset, batch_size=batch_size)

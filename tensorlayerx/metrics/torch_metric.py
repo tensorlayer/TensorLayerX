@@ -12,6 +12,8 @@ __all__ = [
     'Precision',
     'Recall',
 ]
+
+
 @six.add_metaclass(abc.ABCMeta)
 class Metric(object):
 
@@ -20,18 +22,16 @@ class Metric(object):
 
     @abc.abstractmethod
     def update(self, *args):
-        raise NotImplementedError("function 'update' not implemented in {}.".
-                                  format(self.__class__.__name__))
+        raise NotImplementedError("function 'update' not implemented in {}.".format(self.__class__.__name__))
 
     @abc.abstractmethod
     def result(self):
-        raise NotImplementedError("function 'reset' not implemented in {}.".
-                                  format(self.__class__.__name__))
+        raise NotImplementedError("function 'reset' not implemented in {}.".format(self.__class__.__name__))
 
     @abc.abstractmethod
     def reset(self):
-        raise NotImplementedError("function 'reset' not implemented in {}.".
-                                  format(self.__class__.__name__))
+        raise NotImplementedError("function 'reset' not implemented in {}.".format(self.__class__.__name__))
+
 
 class Accuracy(Metric):
 
@@ -44,15 +44,15 @@ class Accuracy(Metric):
 
         y_pred = torch.argsort(y_pred, dim=-1, descending=True)
         y_pred = y_pred[:, :self.topk]
-        if (len(y_true.shape)==1) or (len(y_true.shape) == 2 and y_true.shape[-1] == 1):
-            y_true = torch.reshape(y_true, (-1,1))
+        if (len(y_true.shape) == 1) or (len(y_true.shape) == 2 and y_true.shape[-1] == 1):
+            y_true = torch.reshape(y_true, (-1, 1))
         elif y_true.shape[-1] != 1:
             y_true = torch.argmax(y_true, dim=-1, keepdim=True)
         correct = y_pred == y_true
         correct = correct.to(torch.float32)
         correct = correct.numpy()
         num_samples = np.prod(np.array(correct.shape[:-1]))
-        for i,k in enumerate(self.topk):
+        for i, k in enumerate(self.topk):
             num_corrects = correct[..., :k].sum()
             self.total[i] += num_corrects
             self.count[i] += num_samples
@@ -60,13 +60,14 @@ class Accuracy(Metric):
     def result(self):
         res = []
         for total, count in zip(self.total, self.count):
-            r = float(total) / count if count>0 else 0.
+            r = float(total) / count if count > 0 else 0.
             res.append(r)
         return res
 
     def reset(self):
         self.total = [0.] * len(self.topk)
         self.count = [0] * len(self.topk)
+
 
 class Auc(object):
 
@@ -91,7 +92,7 @@ class Auc(object):
             raise TypeError("The y_pred must be a numpy array or Tensor.")
 
         for i, label in enumerate(y_true):
-            value = y_pred[i, 1] # positive probability
+            value = y_pred[i, 1]  # positive probability
             bin_idx = int(value * self.num_thresholds)
             assert bin_idx <= self.num_thresholds
             if label:
@@ -113,8 +114,7 @@ class Auc(object):
             tot_neg_prev = tot_neg
             tot_pos += self._stat_pos[idx]
             tot_neg += self._stat_neg[idx]
-            auc += self.trapezoid_area(tot_neg, tot_neg_prev, tot_pos,
-                                       tot_pos_prev)
+            auc += self.trapezoid_area(tot_neg, tot_neg_prev, tot_pos, tot_pos_prev)
             idx -= 1
 
         return auc / tot_pos / tot_neg if tot_pos > 0.0 and tot_neg > 0.0 else 0.0
@@ -155,7 +155,6 @@ class Precision(object):
                     self.tp += 1
                 else:
                     self.fp += 1
-
 
     def result(self):
 
@@ -203,4 +202,3 @@ class Recall(object):
     def reset(self):
         self.tp = 0
         self.fn = 0
-

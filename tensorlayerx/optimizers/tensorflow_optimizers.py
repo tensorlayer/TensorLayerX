@@ -32,6 +32,7 @@ class Adadelta(tf.optimizers.Adadelta):
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
+
     def __init__(self, learning_rate=0.001, rho=0.95, epsilon=1e-07, *args, **kwargs):
         super().__init__(learning_rate, rho, epsilon, *args, **kwargs)
 
@@ -62,6 +63,7 @@ class Adagrad(tf.optimizers.Adagrad):
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
+
     def __init__(self, learning_rate=0.001, rho=0.95, epsilon=1e-07, *args, **kwargs):
         super().__init__(learning_rate, rho, epsilon, *args, **kwargs)
 
@@ -165,10 +167,15 @@ class Ftrl(tf.optimizers.Ftrl):
 
     """
 
-    def __init__(self, learning_rate=0.001, learning_rate_power=-0.5, initial_accumulator_value=0.1, l1_regularization_strength=0.0,
-                 l2_regularization_strength=0.0, beta=0.0, l2_shrinkage_regularization_strength=0.0, **kwargs):
-        super().__init__(learning_rate, learning_rate_power, initial_accumulator_value, l1_regularization_strength,
-                         l2_regularization_strength, beta, l2_shrinkage_regularization_strength, **kwargs)
+    def __init__(
+        self, learning_rate=0.001, learning_rate_power=-0.5, initial_accumulator_value=0.1,
+        l1_regularization_strength=0.0, l2_regularization_strength=0.0, beta=0.0,
+        l2_shrinkage_regularization_strength=0.0, **kwargs
+    ):
+        super().__init__(
+            learning_rate, learning_rate_power, initial_accumulator_value, l1_regularization_strength,
+            l2_regularization_strength, beta, l2_shrinkage_regularization_strength, **kwargs
+        )
 
 
 class Nadam(tf.optimizers.Nadam):
@@ -315,6 +322,7 @@ class Lamb(object):
     - https://tensorflow.google.cn/addons/api_docs/python/tfa/optimizers/LAMB?hl=en
 
     """
+
     def __init__(self):
         raise NotImplementedError('Optimizer that not implemented the Layer-wise Adaptive Moments (LAMB).')
 

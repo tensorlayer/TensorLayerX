@@ -182,9 +182,7 @@ class Module(object):
     def build(self, inputs_shape):
         raise Exception("The build(self, inputs_shape) method must be implemented by inherited class")
 
-    def _get_weights(
-        self, var_name, shape, init=random_normal(), trainable=True, transposed=None, order=False
-    ):
+    def _get_weights(self, var_name, shape, init=random_normal(), trainable=True, transposed=None, order=False):
         """ Get trainable variables. """
 
         weight = get_variable_with_initializer(

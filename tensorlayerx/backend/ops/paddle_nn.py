@@ -197,6 +197,7 @@ def relu(x):
     """
     return F.relu(x)
 
+
 class ELU(object):
 
     def __init__(self, alpha=1.0):
@@ -392,7 +393,7 @@ class BiasAdd(object):
 
     def __init__(self, data_format='channels_last'):
         super(BiasAdd, self).__init__()
-        if data_format in ['channels_first', 'NCL','NCW', 'NCHW', 'NCDHW']:
+        if data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
             self.data_format = 'channels_first'
         elif data_format in ['channels_last', 'NLC', 'NWC', 'NHWC', 'NDHWC']:
             self.data_format = 'channels_last'
@@ -1209,10 +1210,13 @@ class GroupConv2D(object):
             self.dilations = (dilations[1], dilations[2])
         elif self.data_format is 'NCHW':
             self.strides = (strides[2], strides[3])
-            self.dilations  = (dilations[2], dilations[3])
+            self.dilations = (dilations[2], dilations[3])
+
     def __call__(self, inputs, filters):
-        outputs = F.conv2d(inputs, weight=filters, stride=self.strides, padding=self.padding,
-                           dilation=self.dilations, groups=self.groups, data_format=self.data_format)
+        outputs = F.conv2d(
+            inputs, weight=filters, stride=self.strides, padding=self.padding, dilation=self.dilations,
+            groups=self.groups, data_format=self.data_format
+        )
         return outputs
 
 
@@ -1228,10 +1232,14 @@ class SeparableConv1D(object):
         self.data_format, self.padding = preprocess_1d_format(data_format, padding)
 
     def __call__(self, inputs, depthwise_filters, pointwise_filters):
-        outputs = F.conv1d(inputs, weight=depthwise_filters,stride=self.stride,padding=self.padding,dilation=self.dilations,
-                           groups=self.in_channel, data_format=self.data_format)
-        outputs = F.conv1d(outputs, weight=pointwise_filters,stride=1, padding=self.padding, dilation=1, groups=1,
-                           data_format=self.data_format)
+        outputs = F.conv1d(
+            inputs, weight=depthwise_filters, stride=self.stride, padding=self.padding, dilation=self.dilations,
+            groups=self.in_channel, data_format=self.data_format
+        )
+        outputs = F.conv1d(
+            outputs, weight=pointwise_filters, stride=1, padding=self.padding, dilation=1, groups=1,
+            data_format=self.data_format
+        )
         return outputs
 
 
@@ -1248,12 +1256,17 @@ class SeparableConv2D(object):
             self.dilations = (dilations[1], dilations[2])
         elif self.data_format is 'NCHW':
             self.strides = (strides[2], strides[3])
-            self.dilations  = (dilations[2], dilations[3])
+            self.dilations = (dilations[2], dilations[3])
+
     def __call__(self, inputs, depthwise_filters, pointwise_filters):
-        outputs = F.conv2d(inputs, weight=depthwise_filters, stride=self.strides, padding=self.padding,
-                           dilation=self.dilations, groups=self.in_channel, data_format=self.data_format)
-        outputs = F.conv2d(outputs, weight=pointwise_filters, stride=1, padding=self.padding, dilation=1, groups=1,
-                           data_format=self.data_format)
+        outputs = F.conv2d(
+            inputs, weight=depthwise_filters, stride=self.strides, padding=self.padding, dilation=self.dilations,
+            groups=self.in_channel, data_format=self.data_format
+        )
+        outputs = F.conv2d(
+            outputs, weight=pointwise_filters, stride=1, padding=self.padding, dilation=1, groups=1,
+            data_format=self.data_format
+        )
         return outputs
 
 

@@ -8,7 +8,7 @@ from mindspore.common import initializer
 
 __all__ = [
     'Initializer', 'Zeros', 'Ones', 'Constant', 'RandomUniform', 'RandomNormal', 'TruncatedNormal',
-    'deconv2d_bilinear_upsampling_initializer', 'HeNormal', 'XavierNormal','XavierUniform'
+    'deconv2d_bilinear_upsampling_initializer', 'HeNormal', 'XavierNormal', 'XavierUniform'
 ]
 
 
@@ -257,6 +257,7 @@ def deconv2d_bilinear_upsampling_initializer(shape):
     # assign numpy array to constant_initalizer and pass to get_variable
     return Constant(value=weights)
 
+
 class XavierUniform(Initializer):
     """This class implements the Xavier weight initializer from the paper
     by Xavier Glorot and Yoshua Bengio.using a uniform distribution.
@@ -267,6 +268,7 @@ class XavierUniform(Initializer):
         Used to seed the random generator.
 
     """
+
     def __init__(self, seed=None):
         self.seed = seed
 
@@ -275,6 +277,7 @@ class XavierUniform(Initializer):
 
     def get_config(self):
         return {"seed", self.seed}
+
 
 class XavierNormal(Initializer):
     """This class implements the Xavier weight initializer from the paper
@@ -286,6 +289,7 @@ class XavierNormal(Initializer):
         Used to seed the random generator.
 
     """
+
     def __init__(self, seed=None):
         self.seed = seed
 

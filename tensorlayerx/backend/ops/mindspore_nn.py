@@ -217,6 +217,7 @@ class ELU(Cell):
     def construct(self, x):
         return self.elu(x)
 
+
 def elu(x, alpha=1.0):
     """
     Computes exponential linear: `exp(features) - 1` if < 0, `features` otherwise.

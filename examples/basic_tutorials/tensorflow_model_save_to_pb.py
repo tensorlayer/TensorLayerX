@@ -14,6 +14,7 @@ from tensorlayerx.nn import Module
 from tensorlayerx.nn import Dense, Dropout, BatchNorm1d
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 
+
 class CustomModel(Module):
 
     def __init__(self):
@@ -48,18 +49,19 @@ class CustomModel(Module):
     #     return out
 
     @tf.function(experimental_relax_shapes=True)
-    def infer(self,x):
+    def infer(self, x):
         return self.forward(x)
 
-net=CustomModel()
+
+net = CustomModel()
 net.set_eval()
 
 # frozen graph
-input_signature=tf.TensorSpec([None, 784])
-concrete_function=net.infer.get_concrete_function(x=input_signature)
-frozen_graph=convert_variables_to_constants_v2(concrete_function)
-frozen_graph_def=frozen_graph.graph.as_graph_def()
-tf.io.write_graph(graph_or_graph_def=frozen_graph_def,logdir="./",name=f"mlp.pb", as_text=False)
+input_signature = tf.TensorSpec([None, 784])
+concrete_function = net.infer.get_concrete_function(x=input_signature)
+frozen_graph = convert_variables_to_constants_v2(concrete_function)
+frozen_graph_def = frozen_graph.graph.as_graph_def()
+tf.io.write_graph(graph_or_graph_def=frozen_graph_def, logdir="./", name=f"mlp.pb", as_text=False)
 
 # Because frozen graph has been sort of being deprecated by TensorFlow, and SavedModel format is encouraged to use,
 # we would have to use the TensorFlow 1.x function to load the frozen graph from hard drive.

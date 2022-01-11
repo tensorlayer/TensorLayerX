@@ -191,12 +191,15 @@ from .load_backend import unsorted_segment_min
 from .load_backend import unsorted_segment_mean
 from .load_backend import unsorted_segment_max
 
-
-
 # dtype
-from .load_backend import (DType, float16, float32, float64, int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, complex64, complex128)
+from .load_backend import (
+    DType, float16, float32, float64, int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, complex64,
+    complex128
+)
 # initlizers
-from .load_backend import (zeros, ones, constant, random_uniform, random_normal, truncated_normal, he_normal, xavier_normal, xavier_uniform)
+from .load_backend import (
+    zeros, ones, constant, random_uniform, random_normal, truncated_normal, he_normal, xavier_normal, xavier_uniform
+)
 # backend
 from .load_backend import BACKEND
 from .load_backend import BACKEND_VERSION
@@ -231,4 +234,3 @@ from .load_backend import Maximum
 from .load_backend import Meshgrid
 from .load_backend import BatchToSpace
 from .load_backend import DepthToSpace
-

@@ -28,8 +28,7 @@ class Layer_Pooling_Test(CustomTestCase):
         n4 = tensorlayerx.layers.GlobalMaxPool1d(name='test_maxpool1d')(n1)
         n5 = tensorlayerx.layers.GlobalMeanPool1d(name='test_meanpool1d')(n1)
         n16 = tensorlayerx.layers.MaxPool1d(filter_size=3, strides=1, padding='VALID', name='test_maxpool1d')(n1)
-        n17 = tensorlayerx.layers.MeanPool1d(filter_size=3, strides=1, padding='VALID',
-                                             name='test_meanpool1d')(n1)
+        n17 = tensorlayerx.layers.MeanPool1d(filter_size=3, strides=1, padding='VALID', name='test_meanpool1d')(n1)
         n19 = tensorlayerx.layers.AdaptiveMeanPool1d(output_size=44, name='test_adaptivemeanpool1d')(n1)
         n20 = tensorlayerx.layers.AdaptiveMaxPool1d(output_size=44, name='test_adaptivemaxpool1d')(n1)
 
@@ -49,8 +48,10 @@ class Layer_Pooling_Test(CustomTestCase):
         nin_2 = Input(x_2_input_shape, name='test_in2')
 
         n6 = tensorlayerx.layers.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), name='test_conv2d')(nin_2)
-        n7 = tensorlayerx.layers.MaxPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME', name='test_maxpool2d')(n6)
-        n8 = tensorlayerx.layers.MeanPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME', name='test_meanpool2d')(n6)
+        n7 = tensorlayerx.layers.MaxPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME',
+                                           name='test_maxpool2d')(n6)
+        n8 = tensorlayerx.layers.MeanPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME',
+                                            name='test_meanpool2d')(n6)
         n9 = tensorlayerx.layers.GlobalMaxPool2d(name='test_maxpool2d')(n6)
         n10 = tensorlayerx.layers.GlobalMeanPool2d(name='test_meanpool2d')(n6)
         n15 = tensorlayerx.layers.PoolLayer(name='test_pool2d')(n6)
@@ -72,12 +73,14 @@ class Layer_Pooling_Test(CustomTestCase):
         x_3_input_shape = [None, 100, 100, 100, 3]
         nin_3 = Input(x_3_input_shape, name='test_in3')
 
-        n11 = tensorlayerx.layers.MeanPool3d(filter_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME',
-                                             name='test_meanpool3d')(nin_3)
+        n11 = tensorlayerx.layers.MeanPool3d(
+            filter_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME', name='test_meanpool3d'
+        )(nin_3)
         n12 = tensorlayerx.layers.GlobalMaxPool3d(name='test_maxpool3d')(nin_3)
         n13 = tensorlayerx.layers.GlobalMeanPool3d(name='test_meanpool3d')(nin_3)
-        n14 = tensorlayerx.layers.MaxPool3d(filter_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME',
-                                            name='test_maxpool3d')(nin_3)
+        n14 = tensorlayerx.layers.MaxPool3d(
+            filter_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME', name='test_maxpool3d'
+        )(nin_3)
 
         n23 = tensorlayerx.layers.AdaptiveMeanPool3d(output_size=(45, 32, 55), name='test_adaptivemeanpool3d')(nin_3)
         n24 = tensorlayerx.layers.AdaptiveMaxPool3d(output_size=(45, 32, 55), name='test_adaptivemaxpool3d')(nin_3)

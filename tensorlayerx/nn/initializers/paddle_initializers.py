@@ -11,7 +11,7 @@ import paddle
 
 __all__ = [
     'Initializer', 'Zeros', 'Ones', 'Constant', 'RandomUniform', 'RandomNormal', 'TruncatedNormal',
-    'deconv2d_bilinear_upsampling_initializer', 'HeNormal','XavierNormal','XavierUniform'
+    'deconv2d_bilinear_upsampling_initializer', 'HeNormal', 'XavierNormal', 'XavierUniform'
 ]
 
 
@@ -198,6 +198,7 @@ class HeNormal(MSRAInitializer):
     def get_config(self):
         return {"seed", self.seed}
 
+
 class XavierNormal(XavierInitializer):
     """This class implements the Xavier weight initializer from the paper
     by Xavier Glorot and Yoshua Bengio.using a normal distribution.
@@ -210,8 +211,8 @@ class XavierNormal(XavierInitializer):
     """
 
     def __init__(self, seed=0):
-        super(XavierNormal, self).__init__(
-            uniform=False, fan_in=None, fan_out=None, seed=seed)
+        super(XavierNormal, self).__init__(uniform=False, fan_in=None, fan_out=None, seed=seed)
+
 
 class XavierUniform(XavierInitializer):
     """This class implements the Xavier weight initializer from the paper
@@ -223,9 +224,9 @@ class XavierUniform(XavierInitializer):
         Used to seed the random generator.
 
     """
+
     def __init__(self, seed=0):
-        super(XavierUniform, self).__init__(
-            uniform=True, fan_in=None, fan_out=None, seed=seed)
+        super(XavierUniform, self).__init__(uniform=True, fan_in=None, fan_out=None, seed=seed)
 
 
 def deconv2d_bilinear_upsampling_initializer(shape):

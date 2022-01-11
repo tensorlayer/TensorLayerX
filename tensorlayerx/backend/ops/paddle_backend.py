@@ -282,7 +282,7 @@ def matmul(a, b, transpose_a=False, transpose_b=False):
     -------
         A Tensor of the same type as a and b
     """
-    return pd.matmul(x=a, y=b, transpose_x=transpose_a, transpose_y = transpose_b)
+    return pd.matmul(x=a, y=b, transpose_x=transpose_a, transpose_y=transpose_b)
 
 
 def add(value, bias):
@@ -477,6 +477,7 @@ class ReduceMean(object):
     def __init__(self, axis=None, keepdims=False):
         self.axis = axis
         self.keepdims = keepdims
+
     def __call__(self, inputs):
         return pd.mean(inputs, axis=self.axis, keepdim=self.keepdims)
 
@@ -500,7 +501,7 @@ def reduce_mean(input_tensor, axis=None, keepdims=False):
         The reduced tensor.
     """
 
-    return pd.mean(input_tensor, axis, keepdim = keepdims)
+    return pd.mean(input_tensor, axis, keepdim=keepdims)
 
 
 class ReduceMax(object):
@@ -553,7 +554,7 @@ def reduce_min(input_tensor, axis=None, keepdims=False):
     -------
         The reduced tensor.
     """
-    return pd.min(input_tensor, axis,keepdim=keepdims)
+    return pd.min(input_tensor, axis, keepdim=keepdims)
 
 
 class Pad(object):
@@ -901,7 +902,7 @@ def floor(x):
     return pd.floor(x)
 
 
-def gather(params, indices, axis = None):
+def gather(params, indices, axis=None):
 
     return pd.gather(params, indices, axis)
 
@@ -1246,12 +1247,12 @@ def reciprocal(x):
 
 def reduce_prod(x, axis=None, keepdims=False):
 
-    return pd.prod(x, axis= axis, keepdim=keepdims)
+    return pd.prod(x, axis=axis, keepdim=keepdims)
 
 
 def reduce_std(x, axis=None, keepdims=False):
 
-    return pd.std(x , axis = axis, keepdim = keepdims)
+    return pd.std(x, axis=axis, keepdim=keepdims)
 
 
 def reduce_sum(x, axis=None, keepdims=False):
@@ -1261,7 +1262,7 @@ def reduce_sum(x, axis=None, keepdims=False):
 
 def reduce_variance(x, axis=None, keepdims=False):
 
-    return pd.var(x, axis=axis, keepdim = keepdims)
+    return pd.var(x, axis=axis, keepdim=keepdims)
 
 
 def round(x):
@@ -1332,7 +1333,7 @@ def square(x):
 
 
 def squared_difference(x, y):
-    return pd.square(x-y)
+    return pd.square(x - y)
 
 
 def subtract(x, y):
@@ -1392,7 +1393,7 @@ def logical_xor(x, y):
 
 def argsort(x, axis=-1, descending=False):
 
-    return pd.argsort(x, axis = axis, descending = descending)
+    return pd.argsort(x, axis=axis, descending=descending)
 
 
 def bmm(x, y):
@@ -1419,11 +1420,14 @@ def squeeze(x, axis=None):
 
     return pd.squeeze(x, axis)
 
+
 def unsorted_segment_sum(x, segment_ids, num_segments):
     raise NotImplementedError
 
+
 def unsorted_segment_mean(x, segment_ids, num_segments):
     raise NotImplementedError
+
 
 def unsorted_segment_min(x, segment_ids, num_segments):
     raise NotImplementedError

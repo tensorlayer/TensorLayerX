@@ -54,7 +54,7 @@ class Auc(object):
             raise TypeError("The y_pred must be a numpy array or Tensor.")
 
         for i, label in enumerate(y_true):
-            value = y_pred[i, 1] # positive probability
+            value = y_pred[i, 1]  # positive probability
             bin_idx = int(value * self.num_thresholds)
             assert bin_idx <= self.num_thresholds
             if label:
@@ -76,8 +76,7 @@ class Auc(object):
             tot_neg_prev = tot_neg
             tot_pos += self._stat_pos[idx]
             tot_neg += self._stat_neg[idx]
-            auc += self.trapezoid_area(tot_neg, tot_neg_prev, tot_pos,
-                                       tot_pos_prev)
+            auc += self.trapezoid_area(tot_neg, tot_neg_prev, tot_pos, tot_pos_prev)
             idx -= 1
 
         return auc / tot_pos / tot_neg if tot_pos > 0.0 and tot_neg > 0.0 else 0.0

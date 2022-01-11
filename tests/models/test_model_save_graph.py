@@ -382,7 +382,8 @@ class ElementWise_lambda_test(CustomTestCase):
         noise = tensorlayerx.layers.Input([100, 1])
         mean = tensorlayerx.layers.Input([100, 1])
         std = tensorlayerx.layers.Input([100, 1])
-        out = tensorlayerx.layers.ElementwiseLambda(fn=func, fn_args={'foo': 84}, name='elementwiselambda')([noise, mean, std])
+        out = tensorlayerx.layers.ElementwiseLambda(fn=func, fn_args={'foo': 84},
+                                                    name='elementwiselambda')([noise, mean, std])
         M1 = Model(inputs=[noise, mean, std], outputs=out)
         M1.save("elementwise_npwa.hdf5")
         M2 = Model.load("elementwise_npwa.hdf5")
@@ -429,8 +430,9 @@ class ElementWise_lambda_test(CustomTestCase):
         noise = tensorlayerx.layers.Input([100, 1])
         mean = tensorlayerx.layers.Input([100, 1])
         std = tensorlayerx.layers.Input([100, 1])
-        out = tensorlayerx.layers.ElementwiseLambda(fn=lambda x, y, z: x + y * tf.exp(z * 0.5),
-                                                    name='elementwiselambda')([noise, mean, std])
+        out = tensorlayerx.layers.ElementwiseLambda(
+            fn=lambda x, y, z: x + y * tf.exp(z * 0.5), name='elementwiselambda'
+        )([noise, mean, std])
         M1 = Model(inputs=[noise, mean, std], outputs=out)
         M1.save("elementwise_lambda.hdf5")
         M2 = Model.load("elementwise_lambda.hdf5")

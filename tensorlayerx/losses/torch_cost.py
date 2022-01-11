@@ -51,6 +51,7 @@ def softmax_cross_entropy_with_logits(output, target):
 
     raise NotImplementedError("Not Implemented.")
 
+
 def sigmoid_cross_entropy(output, target):
     """Sigmoid cross-entropy operation, see ``tf.ops.sigmoid_cross_entropy_with_logits``.
 
@@ -117,6 +118,7 @@ def mean_squared_error(output, target, is_mean=False, axis=-1, name="mean_square
 
     raise NotImplementedError("Not Implemented.")
 
+
 def normalized_mean_square_error(output, target, axis=-1, name="normalized_mean_squared_error_loss"):
     """Return the TensorFlow expression of normalized mean-square-error of two distributions.
 
@@ -134,6 +136,7 @@ def normalized_mean_square_error(output, target, axis=-1, name="normalized_mean_
     """
 
     raise NotImplementedError("Not Implemented.")
+
 
 def absolute_difference_error(output, target, is_mean=False, axis=-1, name="absolute_difference_error_loss"):
     """Return the TensorFlow expression of absolute difference error (L1) of two batch of data.

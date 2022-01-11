@@ -5,8 +5,17 @@ import torch
 import tensorlayerx as tl
 
 __all__ = [
-    'Initializer', 'Zeros', 'Ones', 'Constant', 'RandomUniform', 'RandomNormal', 'TruncatedNormal',
-    'deconv2d_bilinear_upsampling_initializer', 'HeNormal', 'XavierNormal', 'XavierUniform',
+    'Initializer',
+    'Zeros',
+    'Ones',
+    'Constant',
+    'RandomUniform',
+    'RandomNormal',
+    'TruncatedNormal',
+    'deconv2d_bilinear_upsampling_initializer',
+    'HeNormal',
+    'XavierNormal',
+    'XavierUniform',
 ]
 
 
@@ -228,7 +237,7 @@ class TruncatedNormal(Initializer):
     def _truncated_normal(self, tensor, mean=0, std=0.09):
         with torch.no_grad():
             size = tensor.shape
-            tmp = tensor.new_empty(size + (4,)).normal_()
+            tmp = tensor.new_empty(size + (4, )).normal_()
             valid = (tmp < 2) & (tmp > -2)
             ind = valid.max(-1, keepdim=True)[1]
             tensor.data.copy_(tmp.gather(-1, ind).squeeze(-1))
@@ -298,6 +307,7 @@ class XavierNormal(Initializer):
         Used to seed the random generator.
 
     """
+
     def __init__(self, seed=None):
         self.seed = seed
 
@@ -319,6 +329,7 @@ class XavierUniform(Initializer):
         Used to seed the random generator.
 
     """
+
     def __init__(self, seed=None):
         self.seed = seed
 

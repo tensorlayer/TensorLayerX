@@ -32,7 +32,9 @@ class Layer_Super_Resolution_Test(CustomTestCase):
         ## 2D
         x = tf.placeholder('float32', [10, 100, 100, 3], name='x')
         n = tensorlayerx.layers.InputLayer(x, name='in')
-        n = tensorlayerx.layers.Conv2d(n, n_filter=32, filter_size=(3, 2), strides=(1, 1), padding='SAME', name='conv2d')
+        n = tensorlayerx.layers.Conv2d(
+            n, n_filter=32, filter_size=(3, 2), strides=(1, 1), padding='SAME', name='conv2d'
+        )
         net2 = tensorlayerx.layers.SubpixelConv2d(n, scale=2, name='subpixel2d')
 
         net2.print_layers()

@@ -22,6 +22,7 @@ class Layer_Scale_Test(CustomTestCase):
     def test_scale(self):
 
         class model(tensorlayerx.layers.Module):
+
             def __init__(self):
                 super(model, self).__init__()
                 self.dense = tensorlayerx.layers.Dense(n_units=10)

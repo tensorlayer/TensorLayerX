@@ -24,13 +24,16 @@ class Activation_Layer_Test(CustomTestCase):
 
     def test_prelu_1(self):
         prelulayer = tl.layers.PRelu(channel_shared=True)
+
         class prelu_model(tensorlayerx.nn.Module):
+
             def __init__(self):
                 super(prelu_model, self).__init__()
                 self.prelu = prelulayer
 
             def forward(self, inputs):
                 return self.prelu(inputs)
+
         net = prelu_model()
 
         self.assertTrue(tl.get_tensor_shape(net(self.inputs)), [10, 5])
@@ -47,11 +50,11 @@ class Activation_Layer_Test(CustomTestCase):
 
         self.assertTrue(tl.get_tensor_shape(prelu6), [10, 5])
 
-
     def test_prelu6_2(self):
         prelu6layer = tensorlayerx.layers.PRelu6(channel_shared=True)
 
         class prelu6_model(tensorlayerx.nn.Module):
+
             def __init__(self):
                 super(prelu6_model, self).__init__()
                 self.prelu = prelu6layer
@@ -73,6 +76,7 @@ class Activation_Layer_Test(CustomTestCase):
         ptrelu6layer = tensorlayerx.layers.PTRelu6(in_channels=5)
 
         class ptrelu6_model(tensorlayerx.nn.Module):
+
             def __init__(self):
                 super(ptrelu6_model, self).__init__()
                 self.prelu = ptrelu6layer

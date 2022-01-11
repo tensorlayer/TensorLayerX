@@ -143,7 +143,7 @@ class SubpixelConv2d(Module):
     def __init__(
         self,
         scale=2,
-        data_format = 'channels_last',
+        data_format='channels_last',
         act=None,
         name=None  # 'subpixel_conv2d'
     ):

@@ -91,7 +91,8 @@ class Module(Cell):
         raise Exception("The build(self, inputs_shape) method must be implemented by inherited class")
 
     def _get_weights(
-        self, var_name, shape, init=tensorlayerx.nn.initializers.random_normal(), trainable=True, transposed=False, order=False
+        self, var_name, shape, init=tensorlayerx.nn.initializers.random_normal(), trainable=True, transposed=False,
+        order=False
     ):
         """ Get trainable variables. """
         var_name = self.name + "/" + var_name

@@ -9,6 +9,7 @@ import tensorlayerx
 import tensorlayerx as tl
 from tests.utils import CustomTestCase
 
+
 class Layer_Convolution_2D_Test(CustomTestCase):
 
     @classmethod
@@ -19,14 +20,16 @@ class Layer_Convolution_2D_Test(CustomTestCase):
         self.inputs_shape = [self.batch_size, 10, 10, 16]
         self.input_layer = tensorlayerx.layers.Input(self.inputs_shape, name='input_layer')
 
-        self.offset1 = tensorlayerx.layers.Conv2d(n_filter=18, filter_size=(3, 3), strides=(1, 1), padding='SAME',
-                                                  name='offset1')(self.input_layer)
+        self.offset1 = tensorlayerx.layers.Conv2d(
+            n_filter=18, filter_size=(3, 3), strides=(1, 1), padding='SAME', name='offset1'
+        )(self.input_layer)
         self.init_deformconv1 = tensorlayerx.layers.DeformableConv2d(
             offset_layer=self.offset1, n_filter=32, filter_size=(3, 3), act='relu', name='deformable1'
         )
         self.deformconv1 = self.init_deformconv1(self.input_layer)
-        self.offset2 = tensorlayerx.layers.Conv2d(n_filter=18, filter_size=(3, 3), strides=(1, 1), padding='SAME',
-                                                  name='offset2')(self.deformconv1)
+        self.offset2 = tensorlayerx.layers.Conv2d(
+            n_filter=18, filter_size=(3, 3), strides=(1, 1), padding='SAME', name='offset2'
+        )(self.deformconv1)
         self.deformconv2 = tensorlayerx.layers.DeformableConv2d(
             offset_layer=self.offset2, n_filter=64, filter_size=(3, 3), act='relu', name='deformable2'
         )(self.deformconv1)

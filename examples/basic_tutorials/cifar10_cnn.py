@@ -8,7 +8,9 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 
 import time
 from tensorlayerx.dataflow import Dataset, Dataloader
-from tensorlayerx.vision.transforms import (Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop)
+from tensorlayerx.vision.transforms import (
+    Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop
+)
 from tensorlayerx.model import TrainOneStep
 from tensorlayerx.nn import Module
 import tensorlayerx as tl
@@ -74,7 +76,6 @@ optimizer = tl.optimizers.Adam(learning_rate)
 metrics = tl.metrics.Accuracy()
 
 
-
 class make_dataset(Dataset):
 
     def __init__(self, data, label, transforms):
@@ -93,27 +94,28 @@ class make_dataset(Dataset):
 
         return len(self.label)
 
-train_transforms = Compose([
-    RandomCrop(size=[24,24]),
-    RandomFlipHorizontal(),
-    RandomBrightness(brightness_factor=(0.5, 1.5)),
-    RandomContrast(contrast_factor=(0.5, 1.5)),
-    StandardizePerImage()
-])
 
-test_transforms = Compose([
-    Resize(size=(24,24)),
-    StandardizePerImage()
-])
+train_transforms = Compose(
+    [
+        RandomCrop(size=[24, 24]),
+        RandomFlipHorizontal(),
+        RandomBrightness(brightness_factor=(0.5, 1.5)),
+        RandomContrast(contrast_factor=(0.5, 1.5)),
+        StandardizePerImage()
+    ]
+)
+
+test_transforms = Compose([Resize(size=(24, 24)), StandardizePerImage()])
 
 train_dataset = make_dataset(data=X_train, label=y_train, transforms=train_transforms)
 test_dataset = make_dataset(data=X_test, label=y_test, transforms=test_transforms)
 
-train_dataset = tl.dataflow.FromGenerator(train_dataset,output_types=(tl.float32, tl.int64))
-test_dataset = tl.dataflow.FromGenerator(test_dataset,output_types=(tl.float32, tl.int64))
+train_dataset = tl.dataflow.FromGenerator(train_dataset, output_types=(tl.float32, tl.int64))
+test_dataset = tl.dataflow.FromGenerator(test_dataset, output_types=(tl.float32, tl.int64))
 
 train_dataset = Dataloader(train_dataset, batch_size=batch_size, shuffle=True, shuffle_buffer_size=128)
 test_dataset = Dataloader(test_dataset, batch_size=batch_size)
+
 
 class WithLoss(Module):
 

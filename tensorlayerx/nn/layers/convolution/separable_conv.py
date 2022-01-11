@@ -207,9 +207,8 @@ class SeparableConv2d(Module):
 
     def __init__(
         self, n_filter=32, filter_size=(1, 1), strides=(1, 1), act=None, padding="VALID", data_format="channels_last",
-        dilation_rate=(1, 1), depth_multiplier=1, depthwise_init='truncated_normal',
-        pointwise_init='truncated_normal', b_init='constant',
-        in_channels=None, name=None
+        dilation_rate=(1, 1), depth_multiplier=1, depthwise_init='truncated_normal', pointwise_init='truncated_normal',
+        b_init='constant', in_channels=None, name=None
     ):
         super(SeparableConv2d, self).__init__(name, act=act)
         self.n_filter = n_filter

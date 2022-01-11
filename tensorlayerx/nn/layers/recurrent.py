@@ -596,7 +596,6 @@ class RNN(RNNBase):
         return output, new_states
 
 
-
 class LSTM(RNNBase):
     """Applies a multi-layer long short-term memory (LSTM) RNN to an input sequence.
 
@@ -671,6 +670,7 @@ class LSTM(RNNBase):
 
         output, new_states = self.rnn(input, states)
         return output, new_states
+
 
 class GRU(RNNBase):
     """Applies a multi-layer gated recurrent unit (GRU) RNN to an input sequence.

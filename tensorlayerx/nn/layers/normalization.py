@@ -154,8 +154,8 @@ class BatchNorm(Module):
 
     def build(self, inputs_shape):
         params_shape = [self.num_features] if self.num_features is not None else self._get_param_shape(inputs_shape)
-        self.num_features = self.num_features if self.num_features is not  None else params_shape[0]
-        
+        self.num_features = self.num_features if self.num_features is not None else params_shape[0]
+
         self.beta, self.gamma = None, None
         if self.beta_init:
             self.beta = self._get_weights(var_name="beta", shape=params_shape, init=self.beta_init)

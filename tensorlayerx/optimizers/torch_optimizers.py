@@ -8,6 +8,7 @@ __all__ = ['Adadelta', 'Adagrad', 'Adam', 'Adamax', 'Ftrl', 'Nadam', 'RMSprop', 
 
 
 class Adadelta(object):
+
     def __init__(
         self,
         learning_rate=0.001,
@@ -19,7 +20,6 @@ class Adadelta(object):
         self.epsilon = epsilon
         self.init_optim = False
 
-
     def apply_gradients(self, grads_and_vars=None):
         if not self.init_optim:
             raise AttributeError("Can not apply gradients before zero_grad call.")
@@ -29,14 +29,16 @@ class Adadelta(object):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
-            self.optimizer_adadelta = optimizer.Adadelta(params=weights, lr=self.learn_rate,
-                                                         rho=self.rho, eps=self.epsilon)
+            self.optimizer_adadelta = optimizer.Adadelta(
+                params=weights, lr=self.learn_rate, rho=self.rho, eps=self.epsilon
+            )
             self.init_optim = True
         self.optimizer_adadelta.zero_grad()
         loss.backward()
 
 
 class Adagrad(object):
+
     def __init__(
         self,
         learning_rate=0.001,
@@ -48,7 +50,6 @@ class Adagrad(object):
         self.epsilon = epsilon
         self.init_optim = False
 
-
     def apply_gradients(self, grads_and_vars=None):
         if not self.init_optim:
             raise AttributeError("Can not apply gradients before zero_grad call.")
@@ -58,8 +59,9 @@ class Adagrad(object):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
-            self.optimizer_adagrad = optimizer.Adagrad(params=weights, lr=self.learn_rate,
-                                                       lr_decay=self.initial_accumulator_value)
+            self.optimizer_adagrad = optimizer.Adagrad(
+                params=weights, lr=self.learn_rate, lr_decay=self.initial_accumulator_value
+            )
             self.init_optim = True
         self.optimizer_adagrad.zero_grad()
         loss.backward()
@@ -80,7 +82,6 @@ class Adam(object):
         self.epsilon = epsilon
         self.init_optim = False
 
-
     def apply_gradients(self, grads_and_vars=None):
         if not self.init_optim:
             raise AttributeError("Can not apply gradients before zero_grad call.")
@@ -90,14 +91,16 @@ class Adam(object):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
-            self.optimizer_adam = optimizer.Adam(params=weights, lr=self.learn_rate, betas=(self.beta_1, self.beta_2),
-                                            eps=self.epsilon)
+            self.optimizer_adam = optimizer.Adam(
+                params=weights, lr=self.learn_rate, betas=(self.beta_1, self.beta_2), eps=self.epsilon
+            )
             self.init_optim = True
         self.optimizer_adam.zero_grad()
         loss.backward()
 
 
 class Adamax(object):
+
     def __init__(self, learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-8):
         self.learning_rate = learning_rate
         self.beta_1 = beta_1
@@ -114,14 +117,16 @@ class Adamax(object):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
-            self.optimizer_adamax = optimizer.Adamax(params=weights, lr=self.learning_rate,
-                                                     betas=(self.beta_1, self.beta_2), eps=self.epsilon)
+            self.optimizer_adamax = optimizer.Adamax(
+                params=weights, lr=self.learning_rate, betas=(self.beta_1, self.beta_2), eps=self.epsilon
+            )
             self.init_optim = True
         self.optimizer_adamax.zero_grad()
         loss.backward()
 
 
 class Ftrl(object):
+
     def __init__(self):
         raise NotImplementedError("Ftrl optimizer is not implemented")
 
@@ -133,6 +138,7 @@ class Ftrl(object):
 
 
 class Nadam(object):
+
     def __init__(self):
         raise NotImplementedError("Nadam optimizer is not implemented")
 
@@ -162,8 +168,10 @@ class RMSprop(object):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
-            self.optimizer_rmsprop = optimizer.RMSprop(params=weights, lr=self.learn_rate, alpha=self.rho,
-                                                       eps=self.epsilon, momentum=self.momentum, centered=self.centered)
+            self.optimizer_rmsprop = optimizer.RMSprop(
+                params=weights, lr=self.learn_rate, alpha=self.rho, eps=self.epsilon, momentum=self.momentum,
+                centered=self.centered
+            )
             self.init_optim = True
         self.optimizer_rmsprop.zero_grad()
         loss.backward()

@@ -10,12 +10,13 @@ import torch
 import operator
 from itertools import islice
 
-
 _global_layer_name_dict = {}
 
 __all__ = ['Module', 'SequentialLayer', 'LayerList']
 
+
 class Module(T_Module):
+
     def __init__(self, name=None, act=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -131,7 +132,7 @@ class Module(T_Module):
         else:
             self._trainable_weights = []
             for name, param in self.named_parameters(recurse=True):
-                if param.requires_grad == True:
+                if param.requires_grad ==True:
                     self._trainable_weights.append(param)
         return self._trainable_weights
 

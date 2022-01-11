@@ -57,9 +57,9 @@ class Model_SEQ2SEQ_WITH_ATTENTION_Test(CustomTestCase):
     def test_basic_simpleSeq2Seq(self):
 
         model_ = Seq2seqLuongAttention(
-            hidden_size=128, cell=tf.keras.layers.SimpleRNNCell,
-            embedding_layer=tensorlayerx.layers.Embedding(vocabulary_size=self.vocab_size,
-                                                          embedding_size=self.embedding_size), method='dot'
+            hidden_size=128, cell=tf.keras.layers.SimpleRNNCell, embedding_layer=tensorlayerx.layers.Embedding(
+                vocabulary_size=self.vocab_size, embedding_size=self.embedding_size
+            ), method='dot'
         )
         optimizer = tf.optimizers.Adam(learning_rate=0.001)
 
@@ -67,9 +67,9 @@ class Model_SEQ2SEQ_WITH_ATTENTION_Test(CustomTestCase):
             model_.train()
             trainX, trainY = shuffle(self.trainX, self.trainY)
             total_loss, n_iter = 0, 0
-            for X, Y in tqdm(tensorlayerx.utils.iterate.minibatches(inputs=trainX, targets=trainY, batch_size=self.batch_size,
-                                                                    shuffle=False), total=self.n_step,
-                             desc='Epoch[{}/{}]'.format(epoch + 1, self.num_epochs), leave=False):
+            for X, Y in tqdm(tensorlayerx.utils.iterate.minibatches(inputs=trainX, targets=trainY,
+                                                                    batch_size=self.batch_size, shuffle=False),
+                             total=self.n_step, desc='Epoch[{}/{}]'.format(epoch + 1, self.num_epochs), leave=False):
                 dec_seq = Y[:, :-1]
                 target_seq = Y[:, 1:]
 

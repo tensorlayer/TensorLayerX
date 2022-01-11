@@ -418,8 +418,8 @@ class Model:
                     print("   val acc:  {}".format(val_acc / n_iter))
 
     def th_train(
-            self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
-            print_freq, test_dataset
+        self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
+        print_freq, test_dataset
     ):
         for epoch in range(n_epoch):
             start_time = time.time()
@@ -511,6 +511,7 @@ class GradWrap(Module):
 
 class WithGradMS(Module):
     "Module that returns the gradients."
+
     def __init__(self, network, loss_fn=None, sens=None, optimizer=None):
         super(WithGradMS, self).__init__()
         self.network = network
@@ -531,6 +532,7 @@ class WithGradMS(Module):
 
 
 class WithGradTF(object):
+
     def __init__(self, network, loss_fn=None, optimizer=None):
         self.network = network
         self.loss_fn = loss_fn
@@ -550,6 +552,7 @@ class WithGradTF(object):
 
 
 class WithGradPD(object):
+
     def __init__(self, network, loss_fn=None, optimizer=None):
         self.network = network
         self.loss_fn = loss_fn
@@ -614,6 +617,7 @@ class TrainOneStepWithPD(object):
 
 
 class TrainOneStepWithTH(object):
+
     def __init__(self, net_with_loss, optimizer, train_weights):
         self.net_with_loss = net_with_loss
         self.optimizer = optimizer
@@ -649,6 +653,7 @@ class WithGrad(object):
     >>> net_with_grad(inputs, labels)
 
     """
+
     def __init__(self, network, loss_fn=None, optimizer=None):
         if tl.BACKEND == 'tensorflow':
             self.net_with_grad = WithGradTF(network, loss_fn, optimizer)

@@ -10,6 +10,7 @@ import tensorlayerx as tl
 from tests.utils import CustomTestCase
 from tensorlayerx.nn import Input, Conv1d, BatchNorm, Conv2d, Conv3d, Dense, BatchNorm1d, BatchNorm2d, BatchNorm3d
 
+
 class Laye_BatchNorm_Test(CustomTestCase):
 
     @classmethod
@@ -145,7 +146,6 @@ class Laye_BatchNorm_Test(CustomTestCase):
                 return x
 
         cls.dynamic_3d = bn_3d_model()
-
 
     @classmethod
     def tearDownClass(cls):

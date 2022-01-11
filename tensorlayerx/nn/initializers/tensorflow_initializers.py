@@ -5,8 +5,17 @@ import numpy as np
 import tensorlayerx as tl
 
 __all__ = [
-    'Initializer', 'Zeros', 'Ones', 'Constant', 'RandomUniform', 'RandomNormal', 'TruncatedNormal',
-    'deconv2d_bilinear_upsampling_initializer', 'HeNormal', 'XavierNormal', 'XavierUniform',
+    'Initializer',
+    'Zeros',
+    'Ones',
+    'Constant',
+    'RandomUniform',
+    'RandomNormal',
+    'TruncatedNormal',
+    'deconv2d_bilinear_upsampling_initializer',
+    'HeNormal',
+    'XavierNormal',
+    'XavierUniform',
 ]
 
 
@@ -308,6 +317,7 @@ class XavierNormal(Initializer):
         Used to seed the random generator.
 
     """
+
     def __init__(self, seed=None):
         self.seed = seed
 
@@ -328,6 +338,7 @@ class XavierUniform(Initializer):
         Used to seed the random generator.
 
     """
+
     def __init__(self, seed=None):
         self.seed = seed
 

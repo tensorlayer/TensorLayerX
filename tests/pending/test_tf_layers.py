@@ -24,8 +24,8 @@ class Layer_Convolution_1D_Test(CustomTestCase):
 
                 net1 = tensorlayerx.layers.Conv1d(net, name="Conv1d")  # 2 params
                 net2 = tensorlayerx.layers.SeparableConv1d(net1, name="SeparableConv1d")  # 3 params
-                net3 = tensorlayerx.layers.MaxPool1d(net2, (1,), name="MaxPool1d")  # 0 params
-                net4 = tensorlayerx.layers.MeanPool1d(net3, (1,), name="MeanPool1d")  # 0 params
+                net3 = tensorlayerx.layers.MaxPool1d(net2, (1, ), name="MaxPool1d")  # 0 params
+                net4 = tensorlayerx.layers.MeanPool1d(net3, (1, ), name="MeanPool1d")  # 0 params
 
                 # HAO Test
                 net5 = tensorlayerx.layers.Conv1d(net4, name="Conv1d1")  # 2 params

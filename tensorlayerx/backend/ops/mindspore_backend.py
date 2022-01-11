@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import, division, print_function
 from .mindspore_nn import nchw_to_nhwc, nhwc_to_nchw
-from .mindspore_nn import preprocess_1d_format,preprocess_2d_format,preprocess_3d_format
+from .mindspore_nn import preprocess_1d_format, preprocess_2d_format, preprocess_3d_format
 from mindspore._c_expression.typing import Type
 from mindspore.common import dtype as mstype
 
@@ -710,7 +710,7 @@ def reduce_mean(input_tensor, axis=None, keepdims=False):
 
 class ReduceMax(Cell):
 
-    def __init__(self, axis = None, keepdims=False):
+    def __init__(self, axis=None, keepdims=False):
         super(ReduceMax, self).__init__()
         self.axis = axis
         self.reducemax = P.ReduceMax(keep_dims=keepdims)
@@ -1125,9 +1125,10 @@ def floor(x):
     return op(x)
 
 
-def gather(params, indices, axis = None):
+def gather(params, indices, axis=None):
     op = P.Gather()
     return op(params, indices, axis)
+
 
 def linspace(start, stop, num):
     return NotImplementedError
@@ -1571,6 +1572,7 @@ def segment_max(x, segment_ids):
     num_segments = len(unique(segment_ids))
     return op(x, segment_ids, num_segments)
 
+
 def segment_mean(x, segment_ids):
     raise NotImplementedError
 
@@ -1597,7 +1599,6 @@ def segment_sum(x, segment_ids):
     unique = P.Unique()
     num_segments = len(unique(segment_ids))
     return op(x, segment_ids, num_segments)
-
 
 
 def sigmoid(x):
@@ -1716,7 +1717,7 @@ def bmm(x, y):
 
 
 def where(condition, x, y):
-    return msnp.where(condition,x,y)
+    return msnp.where(condition, x, y)
 
 
 def ones_like(x, dtype=None):
@@ -1731,16 +1732,20 @@ def squeeze(x, axis=None):
     op = P.Squeeze(axis)
     return op(x)
 
+
 def unsorted_segment_sum(x, segment_ids, num_segments):
     op = P.UnsortedSegmentSum()
     return op(x, segment_ids, num_segments)
 
+
 def unsorted_segment_mean(x, segment_ids, num_segments):
     raise NotImplementedError
+
 
 def unsorted_segment_min(x, segment_ids, num_segments):
     op = P.UnsortedSegmentMin()
     return op(x, segment_ids, num_segments)
+
 
 def unsorted_segment_max(x, segment_ids, num_segments):
     op = P.UnsortedSegmentMax()

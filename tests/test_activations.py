@@ -70,7 +70,8 @@ class Test_Leaky_ReLUs(CustomTestCase):
             self.assertAlmostEqual(computed_output.numpy(), good_output, places=5)
 
         net = tensorlayerx.layers.Input([10, 200])
-        net = tensorlayerx.layers.Dense(n_units=100, act=lambda x: tl.act.leaky_twice_relu6(x, 0.2, 0.2), name='dense')(net)
+        net = tensorlayerx.layers.Dense(n_units=100, act=lambda x: tl.act.leaky_twice_relu6(x, 0.2, 0.2),
+                                        name='dense')(net)
         print(net)
 
     def test_ramp(self):

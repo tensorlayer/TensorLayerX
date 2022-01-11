@@ -1186,7 +1186,7 @@ def floor(x):
     return tf.floor(x)
 
 
-def gather(params, indices, axis = None):
+def gather(params, indices, axis=None):
     """Gather slices from params axis axis according to indices.
 
     Parameters
@@ -1213,7 +1213,7 @@ def gather(params, indices, axis = None):
 
 
     """
-    return tf.gather(params, indices, axis = axis)
+    return tf.gather(params, indices, axis=axis)
 
 
 def linspace(start, stop, num):
@@ -3393,6 +3393,7 @@ def squeeze(x, axis=None):
 
     return tf.squeeze(x, axis)
 
+
 def unsorted_segment_sum(x, segment_ids, num_segments):
     """Computes the sum along segments of a tensor.
 
@@ -3421,6 +3422,7 @@ def unsorted_segment_sum(x, segment_ids, num_segments):
 
     return tf.math.unsorted_segment_sum(x, segment_ids, num_segments)
 
+
 def unsorted_segment_mean(x, segment_ids, num_segments):
     """Computes the mean along segments of a tensor.
 
@@ -3448,6 +3450,7 @@ def unsorted_segment_mean(x, segment_ids, num_segments):
     """
 
     return tf.math.unsorted_segment_mean(x, segment_ids, num_segments)
+
 
 def unsorted_segment_min(x, segment_ids, num_segments):
     """Computes the min along segments of a tensor.

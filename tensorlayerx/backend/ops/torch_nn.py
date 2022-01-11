@@ -355,7 +355,7 @@ class Dropout(object):
         self.seed = seed
 
     def __call__(self, inputs):
-        return F.dropout(inputs, p=(1-self.keep))
+        return F.dropout(inputs, p=(1 - self.keep))
 
 
 class BiasAdd(object):
@@ -478,10 +478,8 @@ def same_padding(input, weight, strides, dilations):
         out_rows = (input_rows + strides[0] - 1) // strides[0]
         out_cols = (input_cols + strides[1] - 1) // strides[1]
 
-        padding_rows = max(0, (out_rows - 1) * strides[0] +
-                           (filter_rows - 1) * dilations[0] + 1 - input_rows)
-        padding_cols = max(0, (out_cols - 1) * strides[1] +
-                           (filter_cols - 1) * dilations[1] + 1 - input_cols)
+        padding_rows = max(0, (out_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - input_rows)
+        padding_cols = max(0, (out_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - input_cols)
 
         rows_odd = (padding_rows % 2 != 0)
         cols_odd = (padding_cols % 2 != 0)
@@ -500,18 +498,14 @@ def same_padding(input, weight, strides, dilations):
         out_cols = (input_cols + strides[1] - 1) // strides[1]
         out_depth = (input_depth + strides[2] - 1) // strides[2]
 
-        padding_rows = max(0, (out_rows - 1) * strides[0] +
-                           (filter_rows - 1) * dilations[0] + 1 - input_rows)
-        padding_cols = max(0, (out_cols - 1) * strides[1] +
-                           (filter_cols - 1) * dilations[1] + 1 - input_cols)
-        padding_depth = max(0, (out_depth - 1) * strides[2] +
-                            (filter_depth - 1) * dilations[2] + 1 - input_depth)
+        padding_rows = max(0, (out_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - input_rows)
+        padding_cols = max(0, (out_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - input_cols)
+        padding_depth = max(0, (out_depth - 1) * strides[2] + (filter_depth - 1) * dilations[2] + 1 - input_depth)
 
         rows_odd = (padding_rows % 2 != 0)
         cols_odd = (padding_cols % 2 != 0)
         depth_odd = (padding_depth % 2 != 0)
         return rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth
-
 
 
 class Conv2D(object):
@@ -539,10 +533,10 @@ class Conv2D(object):
         if rows_odd or cols_odd:
             input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd)])
 
-        return F.conv2d(input, weight, bias, self.strides,
-                        padding=(padding_rows // 2, padding_cols // 2),
-                        dilation=self.dilations, groups=groups)
-
+        return F.conv2d(
+            input, weight, bias, self.strides, padding=(padding_rows // 2, padding_cols // 2), dilation=self.dilations,
+            groups=groups
+        )
 
 
 def conv2d(input, filters, strides, padding, data_format='NHWC', dilations=None):
@@ -729,17 +723,17 @@ class MaxPool(object):
             # TODO The fill value for maxpool is -INF.
             input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)], 'constant', float('-inf'))
 
-        return F.max_pool2d(input, self.ksize , self.strides,
-                        padding=(padding_rows // 2, padding_cols // 2))
+        return F.max_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2))
 
     def maxpool3d_same_padding(self, input):
-        rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(input, self.ksize,
-                                                                                                self.strides, (1, 1, 1))
+        rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(
+            input, self.ksize, self.strides, (1, 1, 1)
+        )
         if rows_odd or cols_odd:
             input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), int(depth_odd)])
-            return F.max_pool3d(input, self.ksize, self.strides,
-                                padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2))
-
+            return F.max_pool3d(
+                input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
+            )
 
 
 def max_pool(input, ksize, strides, padding, data_format=None):

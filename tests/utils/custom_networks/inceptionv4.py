@@ -77,7 +77,9 @@ class InceptionV4_Network(object):
             # 147 x 147 x 64
             with tf.variable_scope('Mixed_3a'):
                 with tf.variable_scope('Branch_0'):
-                    branch_0 = tensorlayerx.layers.MaxPool2d(net, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_0a_3x3')
+                    branch_0 = tensorlayerx.layers.MaxPool2d(
+                        net, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_0a_3x3'
+                    )
 
                 with tf.variable_scope('Branch_1'):
                     branch_1, _ = conv_module(
@@ -139,7 +141,9 @@ class InceptionV4_Network(object):
                     )
 
                 with tf.variable_scope('Branch_1'):
-                    branch_1 = tensorlayerx.layers.MaxPool2d(net, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_1a_3x3')
+                    branch_1 = tensorlayerx.layers.MaxPool2d(
+                        net, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_1a_3x3'
+                    )
 
                 net = tensorlayerx.layers.ConcatLayer([branch_0, branch_1], concat_dim=3)
 
@@ -182,7 +186,9 @@ class InceptionV4_Network(object):
                     )
 
                     # 1 x 1 x 1536
-                    net = tensorlayerx.layers.DropoutLayer(net, keep=0.8, is_fix=True, is_train=is_train, name='Dropout_1b')
+                    net = tensorlayerx.layers.DropoutLayer(
+                        net, keep=0.8, is_fix=True, is_train=is_train, name='Dropout_1b'
+                    )
                     net = tensorlayerx.layers.FlattenLayer(net, name='PreLogitsFlatten')
 
                     # 1536

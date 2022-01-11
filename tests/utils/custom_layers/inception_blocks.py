@@ -63,7 +63,9 @@ def block_inception_a(inputs, scope=None, is_train=False):
                 is_train=is_train, use_batchnorm=True, activation_fn='ReLU', name='Conv2d_0b_1x1'
             )
 
-        return tensorlayerx.layers.ConcatLayer([branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer')
+        return tensorlayerx.layers.ConcatLayer(
+            [branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer'
+        )
 
 
 def block_reduction_a(inputs, scope=None, is_train=False):
@@ -94,7 +96,9 @@ def block_reduction_a(inputs, scope=None, is_train=False):
             )
 
         with tf.variable_scope('Branch_2'):
-            branch_2 = tensorlayerx.layers.MaxPool2d(inputs, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_1a_3x3')
+            branch_2 = tensorlayerx.layers.MaxPool2d(
+                inputs, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_1a_3x3'
+            )
 
         return tensorlayerx.layers.ConcatLayer([branch_0, branch_1, branch_2], concat_dim=3, name='concat_layer')
 
@@ -162,7 +166,9 @@ def block_inception_b(inputs, scope=None, is_train=False):
                 is_train=is_train, use_batchnorm=True, activation_fn='ReLU', name='Conv2d_0b_1x1'
             )
 
-        return tensorlayerx.layers.ConcatLayer([branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer')
+        return tensorlayerx.layers.ConcatLayer(
+            [branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer'
+        )
 
 
 def block_reduction_b(inputs, scope=None, is_train=False):
@@ -203,7 +209,9 @@ def block_reduction_b(inputs, scope=None, is_train=False):
             )
 
         with tf.variable_scope('Branch_2'):
-            branch_2 = tensorlayerx.layers.MaxPool2d(inputs, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_1a_3x3')
+            branch_2 = tensorlayerx.layers.MaxPool2d(
+                inputs, (3, 3), strides=(2, 2), padding='VALID', name='MaxPool_1a_3x3'
+            )
 
         return tensorlayerx.layers.ConcatLayer([branch_0, branch_1, branch_2], concat_dim=3, name='concat_layer')
 
@@ -275,4 +283,6 @@ def block_inception_c(inputs, scope=None, is_train=False):
                 is_train=is_train, use_batchnorm=True, activation_fn='ReLU', name='Conv2d_0b_1x1'
             )
 
-        return tensorlayerx.layers.ConcatLayer([branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer')
+        return tensorlayerx.layers.ConcatLayer(
+            [branch_0, branch_1, branch_2, branch_3], concat_dim=3, name='concat_layer'
+        )

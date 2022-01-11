@@ -18,7 +18,6 @@ MLP = SequentialLayer(layer_list)
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
 
-
 # def generator_train():
 #     inputs = X_train
 #     targets = y_train
@@ -26,6 +25,7 @@ X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(sha
 #         raise AssertionError("The length of inputs and targets should be equal")
 #     for _input, _target in zip(inputs, targets):
 #         yield (_input, np.array(_target))
+
 
 class mnistdataset(Dataset):
 
@@ -43,6 +43,7 @@ class mnistdataset(Dataset):
 
         return len(self.data)
 
+
 n_epoch = 50
 batch_size = 128
 print_freq = 2
@@ -57,7 +58,9 @@ train_dataset = tl.dataflow.FromGenerator(
 )
 train_loader = tl.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
 metric = tl.metrics.Accuracy()
-model = tl.model.Model(network=MLP, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metric)
+model = tl.model.Model(
+    network=MLP, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metric
+)
 model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=False)
 model.save_weights('./model.npz', format='npz_dict')
 model.load_weights('./model.npz', format='npz_dict')

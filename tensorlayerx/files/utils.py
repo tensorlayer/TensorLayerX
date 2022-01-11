@@ -34,7 +34,6 @@ if tl.BACKEND == 'tensorflow':
     from tensorflow.python import pywrap_tensorflow
     import tensorflow as tf
 
-
     @keras_export('keras.model.save_model')
     def save_keras_model(model):
         # f.attrs['keras_model_config'] = json.dumps(
@@ -53,7 +52,6 @@ if tl.BACKEND == 'tensorflow':
             }, default=serialization.get_json_type
         ).encode('utf8')
 
-
     @keras_export('keras.model.load_model')
     def load_keras_model(model_config):
 
@@ -65,6 +63,7 @@ if tl.BACKEND == 'tensorflow':
         model = model_config_lib.model_from_config(model_config, custom_objects=custom_objects)
 
         return model
+
 
 if tl.BACKEND == 'mindspore':
     from mindspore.ops.operations import Assign
@@ -162,7 +161,6 @@ def str2func(s):
 #     saved_file.update({"config": network.config})
 #
 #     return saved_file
-
 
 # @keras_export('keras.model.save_model')
 # def save_keras_model(model):
@@ -2192,8 +2190,8 @@ def load_and_assign_npz_dict(name='model.npz', network=None, skip=False):
         raise Exception("Duplication in model npz_dict %s" % name)
 
     if tl.BACKEND == 'torch':
-        net_weights_name = [n for n,v in network.named_parameters()]
-        torch_weights_dict = {n:v for n,v in network.named_parameters()}
+        net_weights_name = [n for n, v in network.named_parameters()]
+        torch_weights_dict = {n: v for n, v in network.named_parameters()}
     else:
         net_weights_name = [w.name for w in network.all_weights]
 

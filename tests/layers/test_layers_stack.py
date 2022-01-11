@@ -20,7 +20,9 @@ class Layer_Stack_Test(CustomTestCase):
         cls.inputs_shape = [cls.batch_size, 10]
 
         cls.ni = Input(cls.inputs_shape, name='input_layer')
+
         class model(tensorlayerx.nn.Module):
+
             def __init__(self):
                 super(model, self).__init__()
                 self.a = Dense(n_units=5)
@@ -42,7 +44,6 @@ class Layer_Stack_Test(CustomTestCase):
         net.set_train()
         cls.inputs = Input(cls.inputs_shape)
         cls.n2 = net(cls.inputs)
-
 
     @classmethod
     def tearDownClass(cls):
@@ -69,6 +70,7 @@ class Layer_UnStack_Test(CustomTestCase):
         cls.n1 = cls.layer1(a)
 
         class model(tensorlayerx.nn.Module):
+
             def __init__(self):
                 super(model, self).__init__()
                 self.a = Dense(n_units=5)
@@ -78,7 +80,6 @@ class Layer_UnStack_Test(CustomTestCase):
                 output1 = self.a(inputs)
                 output = self.unstack(output1)
                 return output
-
 
         cls.inputs = Input(cls.inputs_shape)
         net = model()

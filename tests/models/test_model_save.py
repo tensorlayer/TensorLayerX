@@ -259,7 +259,8 @@ class Model_Save_Test(CustomTestCase):
 
         # nested layerlist with modellayer
         inputs = tensorlayerx.layers.Input([10, 5])
-        layer1 = tensorlayerx.layers.LayerList([tensorlayerx.layers.Dense(n_units=4, name='dense1'), modellayer])(inputs)
+        layer1 = tensorlayerx.layers.LayerList([tensorlayerx.layers.Dense(n_units=4, name='dense1'),
+                                                modellayer])(inputs)
         model = tl.model.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
 
         model.save_weights("layerlist.h5")

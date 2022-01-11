@@ -6,7 +6,6 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'paddle'
 # os.environ['TL_BACKEND'] = 'torch'
 
-
 import tensorlayerx as tl
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Dense, Dropout, Conv2d, MaxPool2d, Flatten
@@ -14,18 +13,24 @@ from tensorlayerx.dataflow import Dataset
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
 
+
 class mnistdataset(Dataset):
+
     def __init__(self, data=X_train, label=y_train):
         self.data = data
         self.label = label
+
     def __getitem__(self, index):
         data = self.data[index].astype('float32')
         label = self.label[index].astype('int64')
         return data, label
+
     def __len__(self):
         return len(self.data)
 
+
 class CustomModel(Module):
+
     def __init__(self):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(keep=0.8)
@@ -45,6 +50,7 @@ class CustomModel(Module):
         if foo is not None:
             out = tl.ops.relu(out)
         return out
+
 
 class CNN(Module):
 
@@ -71,7 +77,7 @@ class CNN(Module):
 
     def forward(self, x):
         z = self.conv1(x)
-        print("conv1 outputs:", z[1,:,:,1])
+        print("conv1 outputs:", z[1, :, :, 1])
         z = self.maxpool1(z)
         print("maxpool outputs:", z[1, :, :, 1])
         z = self.conv2(z)
@@ -83,6 +89,7 @@ class CNN(Module):
         z = self.dense2(z)
         z = self.dense3(z)
         return z
+
 
 # TODO The MLP model was saved to the standard npz_dict format after training at the TensorFlow backend
 #  and imported into TensorFlow/PyTorch/PaddlePaddle/MindSpore.

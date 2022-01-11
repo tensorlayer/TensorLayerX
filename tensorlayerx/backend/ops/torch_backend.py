@@ -1325,14 +1325,18 @@ def zeros_like(x, dtype=None):
 def squeeze(x, axis=None):
     raise NotImplementedError
 
+
 def unsorted_segment_sum(x, segment_ids, num_segments):
     raise NotImplementedError
+
 
 def unsorted_segment_mean(x, segment_ids, num_segments):
     raise NotImplementedError
 
+
 def unsorted_segment_min(x, segment_ids, num_segments):
     raise NotImplementedError
+
 
 def unsorted_segment_max(x, segment_ids, num_segments):
     raise NotImplementedError

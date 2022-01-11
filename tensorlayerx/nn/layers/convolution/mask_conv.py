@@ -8,6 +8,7 @@ from tensorlayerx.nn.core import Module
 
 __all__ = ['MaskedConv3d']
 
+
 class MaskedConv3d(Module):
     """ MaskedConv3D.
         Reference:
@@ -54,19 +55,12 @@ class MaskedConv3d(Module):
         >>> print(tensor)
 
         """
-    def __init__(self,
-                 mask_type,
-                 n_filter,
-                 filter_size=(3, 3, 3),
-                 strides=(1, 1, 1),
-                 dilation_rate = (1, 1, 1),
-                 padding='SAME',
-                 act=None,
-                 in_channels=None,
-                 data_format='channels_last',
-                 kernel_initializer='he_normal',
-                 bias_initializer='zeros',
-                 name=None):
+
+    def __init__(
+        self, mask_type, n_filter, filter_size=(3, 3, 3), strides=(1, 1, 1), dilation_rate=(1, 1, 1), padding='SAME',
+        act=None, in_channels=None, data_format='channels_last', kernel_initializer='he_normal',
+        bias_initializer='zeros', name=None
+    ):
         super(MaskedConv3d, self).__init__(name, act)
 
         assert mask_type in {'A', 'B'}
@@ -145,18 +139,19 @@ class MaskedConv3d(Module):
         else:
             mask[:, :, center + (self.mask_type == 'B'):, center, center] = 0.
             mask[:, :, :, center + 1:, center] = 0.
-            mask[:, :, :, :, center+1:] = 0
+            mask[:, :, :, :, center + 1:] = 0
 
         self.mask = tl.ops.convert_to_tensor(mask, tl.float32)
 
-        self.conv3d = tl.ops.Conv3D(strides=self._strides, padding=self.padding, data_format=self._data_format,
-                                    dilations=self._dilation_rate, out_channel=self.n_filter, k_size=self.filter_size)
+        self.conv3d = tl.ops.Conv3D(
+            strides=self._strides, padding=self.padding, data_format=self._data_format, dilations=self._dilation_rate,
+            out_channel=self.n_filter, k_size=self.filter_size
+        )
         self.act_init_flag = False
         if self.act:
             self.act_init_flag = True
 
-
-    def forward(self, inputs): #input：[batch, in_depth, in_height, in_width, in_channels]
+    def forward(self, inputs):  #input：[batch, in_depth, in_height, in_width, in_channels]
         if self._forward_state == False:
             if self._built == False:
                 self.build(tl.get_tensor_shape(inputs))

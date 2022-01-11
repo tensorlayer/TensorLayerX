@@ -60,11 +60,13 @@ print("Using {} device".format(device))
 #         logits = self.linear_relu_stack(x)
 #         return logits
 
+
 class NeuralNetwork(Module):
+
     def __init__(self):
         super(NeuralNetwork, self).__init__()
         self.flatten = nn.Flatten()
-        self.dense1 = Dense(in_channels=28*28, n_units=512)
+        self.dense1 = Dense(in_channels=28 * 28, n_units=512)
         self.dense2 = Dense(in_channels=512, n_units=512)
         self.dense3 = Dense(in_channels=512, n_units=10)
 
@@ -75,10 +77,12 @@ class NeuralNetwork(Module):
         x = self.dense3(x)
         return x
 
+
 model = NeuralNetwork().to(device)
 
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.trainable_weights, lr=1e-3)
+
 
 def train(dataloader, model, loss_fn, optimizer):
     size = len(dataloader.dataset)
@@ -99,6 +103,7 @@ def train(dataloader, model, loss_fn, optimizer):
             loss, current = loss.item(), batch * len(X)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
+
 def test(dataloader, model, loss_fn):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
@@ -113,6 +118,7 @@ def test(dataloader, model, loss_fn):
     test_loss /= num_batches
     correct /= size
     print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+
 
 epochs = 5
 for t in range(epochs):

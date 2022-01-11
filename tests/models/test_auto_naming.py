@@ -225,8 +225,10 @@ class Auto_Naming_Test(CustomTestCase):
         try:
             inputs = tensorlayerx.layers.Input([10, 5])
             layer1 = tensorlayerx.layers.LayerList(
-                [tensorlayerx.layers.Dense(n_units=4, name='dense1'),
-                 tensorlayerx.layers.Dense(n_units=3, name='dense1')]
+                [
+                    tensorlayerx.layers.Dense(n_units=4, name='dense1'),
+                    tensorlayerx.layers.Dense(n_units=3, name='dense1')
+                ]
             )(inputs)
             model = tl.model.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
             print([w.name for w in model.all_weights])
@@ -267,8 +269,10 @@ class Auto_Naming_Test(CustomTestCase):
         try:
             inputs = tensorlayerx.layers.Input([10, 5])
             layer1 = tensorlayerx.layers.LayerList(
-                [tensorlayerx.layers.Dense(n_units=4, name='dense1'),
-                 tensorlayerx.layers.Dense(n_units=3, name='dense1')]
+                [
+                    tensorlayerx.layers.Dense(n_units=4, name='dense1'),
+                    tensorlayerx.layers.Dense(n_units=3, name='dense1')
+                ]
             )(inputs)
             model = tl.model.Model(inputs=inputs, outputs=layer1, name='layerlistmodel')
             print([w.name for w in model.all_weights])

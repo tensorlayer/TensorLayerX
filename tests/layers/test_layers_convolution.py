@@ -27,7 +27,9 @@ class Layer_Convolution_1D_Test(CustomTestCase):
         self.conv1dlayer2 = tensorlayerx.layers.Conv1d(in_channels=32, n_filter=32, filter_size=5, stride=2)
         self.n2 = self.conv1dlayer2(self.n1)
 
-        self.dconv1dlayer1 = tensorlayerx.layers.DeConv1d(n_filter=64, in_channels=32, filter_size=5, name='deconv1dlayer')
+        self.dconv1dlayer1 = tensorlayerx.layers.DeConv1d(
+            n_filter=64, in_channels=32, filter_size=5, name='deconv1dlayer'
+        )
         self.n3 = self.dconv1dlayer1(self.n2)
 
         self.separableconv1d1 = tensorlayerx.layers.SeparableConv1d(in_channels=1, n_filter=16, filter_size=3, stride=2)
@@ -185,10 +187,14 @@ class Layer_Convolution_3D_Test(CustomTestCase):
         self.inputs_shape = [self.batch_size, 20, 20, 20, 3]
         self.input_layer = tensorlayerx.layers.Input(self.inputs_shape, name='input_layer')
 
-        self.conv3dlayer1 = tensorlayerx.layers.Conv3d(n_filter=32, in_channels=3, filter_size=(2, 2, 2), strides=(2, 2, 2))
+        self.conv3dlayer1 = tensorlayerx.layers.Conv3d(
+            n_filter=32, in_channels=3, filter_size=(2, 2, 2), strides=(2, 2, 2)
+        )
         self.n1 = self.conv3dlayer1(self.input_layer)
 
-        self.deconv3dlayer = tensorlayerx.layers.DeConv3d(n_filter=128, in_channels=32, filter_size=(2, 2, 2), strides=(2, 2, 2))
+        self.deconv3dlayer = tensorlayerx.layers.DeConv3d(
+            n_filter=128, in_channels=32, filter_size=(2, 2, 2), strides=(2, 2, 2)
+        )
         self.n2 = self.deconv3dlayer(self.n1)
 
         self.conv3dlayer2 = tensorlayerx.layers.Conv3d(
