@@ -91,7 +91,7 @@ class Module(Cell):
         raise Exception("The build(self, inputs_shape) method must be implemented by inherited class")
 
     def _get_weights(
-        self, var_name, shape, init=tensorlayerx.nn.initializers.random_normal(), trainable=True, transposed=False,
+        self, var_name, shape, init=tl.nn.initializers.random_normal(), trainable=True, transposed=False,
         order=False
     ):
         """ Get trainable variables. """
@@ -438,7 +438,7 @@ class LayerList(Module):
 
     Examples
     ---------
-    >>> from tensorlayerx.layers import Module, LayerList, Dense
+    >>> from tensorlayerx.nn import Module, LayerList, Dense
     >>> import tensorlayerx as tl
     >>> d1 = Dense(n_units=800, act=tl.ReLU, in_channels=784, name='Dense1')
     >>> d2 = Dense(n_units=800, act=tl.ReLU, in_channels=800, name='Dense2')
