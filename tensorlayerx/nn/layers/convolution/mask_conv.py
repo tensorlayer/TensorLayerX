@@ -4,7 +4,7 @@
 import tensorlayerx as tl
 import numpy as np
 from tensorlayerx import logging
-from tensorlayerx.core import Module
+from tensorlayerx.nn.core import Module
 
 __all__ = ['MaskedConv3d']
 

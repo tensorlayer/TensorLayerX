@@ -7,7 +7,8 @@ from tensorflow.python.ops.rnn_cell import LSTMStateTuple
 import tensorlayerx as tl
 from tensorlayerx import logging
 from tensorlayerx.decorators import deprecated, deprecated_alias
-from tensorlayerx.backend.load_backend import BACKEND
+from tensorlayerx.backend.ops.load_backend import BACKEND
+from ..initializers import *
 
 __all__ = [
     'cabs',
@@ -129,7 +130,7 @@ def get_layers_with_name(net, name="", verbose=False):
     return layers
 
 
-def get_variable_with_initializer(scope_name, var_name, shape, init=tl.initializers.random_normal(), trainable=True):
+def get_variable_with_initializer(scope_name, var_name, shape, init=random_normal(), trainable=True):
     # FIXME: documentation needed
     var_name = scope_name + "/" + var_name
     # FIXME: not sure whether this is correct?

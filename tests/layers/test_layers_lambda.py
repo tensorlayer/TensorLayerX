@@ -9,7 +9,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
 import tensorlayerx as tl
-
+import tensorlayerx
 from tests.utils import CustomTestCase
 
 
@@ -34,7 +34,7 @@ class Layer_Lambda_Test(CustomTestCase):
         # in order to get trainable_variables of keras
         _ = perceptron(np.random.random([100, 5]).astype(np.float32))
 
-        class CustomizeModel(tensorlayerx.layers.Module):
+        class CustomizeModel(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
@@ -73,7 +73,7 @@ class Layer_Lambda_Test(CustomTestCase):
             else:
                 return tf.identity(x)
 
-        class CustomizeModel(tensorlayerx.layers.Module):
+        class CustomizeModel(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
@@ -108,7 +108,7 @@ class Layer_Lambda_Test(CustomTestCase):
         def customize_fn(x):
             return x + a
 
-        class CustomizeModel(tensorlayerx.layers.Module):
+        class CustomizeModel(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
@@ -129,7 +129,7 @@ class Layer_Lambda_Test(CustomTestCase):
 
     def test_lambda_func_without_args(self):
 
-        class CustomizeModel(tensorlayerx.layers.Module):
+        class CustomizeModel(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
@@ -153,7 +153,7 @@ class Layer_Lambda_Test(CustomTestCase):
         def customize_func(noise, mean, std, foo=42):
             return mean + noise * tf.exp(std * 0.5) + foo
 
-        class CustomizeModel(tensorlayerx.layers.Module):
+        class CustomizeModel(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
@@ -186,7 +186,7 @@ class Layer_Lambda_Test(CustomTestCase):
         def customize_func(noise, mean, std):
             return mean + noise * tf.exp(std * 0.5)
 
-        class CustomizeModel(tensorlayerx.layers.Module):
+        class CustomizeModel(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()

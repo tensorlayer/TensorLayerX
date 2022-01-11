@@ -1,8 +1,10 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-from .core import *
-from . import initializers
+from .initializers import *
 from .layers import *
-from . import ops
+from .core import *
+
+from . import initializers
+from . import layers
+from . import core

@@ -6,6 +6,7 @@ import tensorlayerx as tl
 from tensorlayerx.files import utils
 from tensorlayerx import logging
 import numpy as np
+from tensorlayerx.nn.initializers import *
 
 if tl.BACKEND == 'mindspore':
     from mindspore.ops.operations import Assign
@@ -24,17 +25,16 @@ _act_dict = {
     "softmax": tl.ops.Softmax
 }
 
-
 _initializers_dict = {
-    "ones": tl.initializers.ones(),
-    "zeros": tl.initializers.zeros(),
-    "constant": tl.initializers.constant(value=0.0),
-    "random_uniform": tl.initializers.random_uniform(minval=-1.0, maxval=1.0),
-    "random_normal": tl.initializers.random_normal(mean=0.0, stddev=0.05),
-    "truncated_normal": tl.initializers.truncated_normal(stddev=0.02),
-    "he_normal": tl.initializers.he_normal(),
-    "xavier_uniform": tl.initializers.XavierUniform(),
-    "xavier_normal": tl.initializers.XavierNormal()
+    "ones": ones(),
+    "zeros": zeros(),
+    "constant": constant(value=0.0),
+    "random_uniform": random_uniform(minval=-1.0, maxval=1.0),
+    "random_normal": random_normal(mean=0.0, stddev=0.05),
+    "truncated_normal": truncated_normal(stddev=0.02),
+    "he_normal": he_normal(),
+    "xavier_uniform": XavierUniform(),
+    "xavier_normal": XavierNormal()
 }
 
 

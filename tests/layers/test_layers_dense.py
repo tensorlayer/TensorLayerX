@@ -4,7 +4,7 @@ import os
 import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
+import tensorlayerx
 import tensorlayerx as tl
 
 from tests.utils import CustomTestCase
@@ -128,7 +128,7 @@ class Layer_QuanDenseWithBN_Test(CustomTestCase):
         self.batch_size = 4
         self.inputs_shape = [self.batch_size, 10]
 
-        self.inputs = tl.initializers.TruncatedNormal()(shape=self.inputs_shape)
+        self.inputs = tensorlayerx.nn.initializers.TruncatedNormal()(shape=self.inputs_shape)
         self.layer1 = tensorlayerx.layers.QuanDenseWithBN(n_units=5)
         self.layer2 = tensorlayerx.layers.QuanDenseWithBN(n_units=5, in_channels=10)
 

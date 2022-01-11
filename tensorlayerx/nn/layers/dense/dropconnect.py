@@ -4,7 +4,7 @@
 import numbers
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.core import Module
+from tensorlayerx.nn.core import Module
 
 __all__ = [
     'DropconnectDense',

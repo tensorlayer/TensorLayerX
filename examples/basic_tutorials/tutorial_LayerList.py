@@ -6,8 +6,7 @@ import os
 # os.environ['TL_BACKEND'] = 'mindspore'
 os.environ['TL_BACKEND'] = 'paddle'
 
-from tensorlayerx.nn import Module, LayerList
-from tensorlayerx.nn import Dense
+from tensorlayerx.nn import Module, LayerList, Dense
 import tensorlayerx as tl
 
 d1 = Dense(n_units=800, act=tl.ReLU, in_channels=784, name='Dense1')
@@ -42,4 +41,4 @@ class model(Module):
 net = model()
 print(net.trainable_weights)
 print(net)
-print(net(tensorlayerx.layers.Input((10, 784))))
+print(net(tl.nn.Input((10, 784))))

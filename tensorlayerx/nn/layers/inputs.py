@@ -3,7 +3,8 @@
 
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.core import Module
+from tensorlayerx.nn.core import Module
+from ..initializers import *
 
 __all__ = ['Input', '_InputLayer']
 
@@ -31,7 +32,7 @@ class _InputLayer(Module):
         self.dtype = dtype
         self.shape_without_none = [_ if _ is not None else 1 for _ in shape]
         if init is None:
-            self.outputs = tl.initializers.ones()(self.shape_without_none, dtype=self.dtype)
+            self.outputs = ones()(self.shape_without_none, dtype=self.dtype)
         else:
             self.outputs = init(self.shape_without_none, dtype=self.dtype)
         self._built = True
@@ -53,7 +54,7 @@ class _InputLayer(Module):
         return self.outputs
 
 
-def Input(shape, init=tl.initializers.ones(), dtype=tl.float32, name=None):
+def Input(shape, init=ones(), dtype=tl.float32, name=None):
     """
     The :class:`Input` class is the starting layer of a neural network.
 

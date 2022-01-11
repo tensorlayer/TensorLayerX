@@ -8,7 +8,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import numpy as np
 import tensorlayerx as tl
-
+import tensorlayerx
 from tests.utils import CustomTestCase
 
 
@@ -24,7 +24,7 @@ class Layer_Merge_Test(CustomTestCase):
 
     def test_concat(self):
 
-        class CustomModel(tensorlayerx.layers.Module):
+        class CustomModel(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(CustomModel, self).__init__()
@@ -48,7 +48,7 @@ class Layer_Merge_Test(CustomTestCase):
 
     def test_elementwise(self):
 
-        class CustomModel(tensorlayerx.layers.Module):
+        class CustomModel(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(CustomModel, self).__init__()

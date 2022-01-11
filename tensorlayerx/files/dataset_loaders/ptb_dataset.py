@@ -36,7 +36,7 @@ def load_ptb_dataset(path='data'):
 
     References
     ---------------
-    - ``tensorflow.models.rnn.ptb import reader``
+    - ``tensorflow.model.rnn.ptb import reader``
     - `Manual download <http://www.fit.vutbr.cz/~imikolov/rnnlm/simple-examples.tgz>`__
 
     Notes

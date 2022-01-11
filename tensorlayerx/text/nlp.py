@@ -630,7 +630,7 @@ def build_vocab(data):
 
     References
     ---------------
-    - `tensorflow.models.rnn.ptb.reader <https://github.com/tensorflow/tensorflow/tree/master/tensorflow/models/rnn/ptb>`_
+    - `tensorflow.model.rnn.ptb.reader <https://github.com/tensorflow/tensorflow/tree/master/tensorflow/models/rnn/ptb>`_
 
     Examples
     --------
@@ -771,7 +771,7 @@ def words_to_word_ids(data=None, word_to_id=None, unk_key='UNK'):
 
     References
     ---------------
-    - `tensorflow.models.rnn.ptb.reader <https://github.com/tensorflow/tensorflow/tree/master/tensorflow/models/rnn/ptb>`__
+    - `tensorflow.model.rnn.ptb.reader <https://github.com/tensorflow/tensorflow/tree/master/tensorflow/models/rnn/ptb>`__
 
     """
     if data is None:
@@ -895,7 +895,7 @@ def basic_tokenizer(sentence, _WORD_SPLIT=re.compile(b"([.,!?\"':;)(])")):
 
     References
     ----------
-    - Code from ``/tensorflow/models/rnn/translation/data_utils.py``
+    - Code from ``/tensorflow/model/rnn/translation/data_utils.py``
 
     """
     words = []
@@ -936,7 +936,7 @@ def create_vocabulary(
 
     References
     ----------
-    - Code from ``/tensorflow/models/rnn/translation/data_utils.py``
+    - Code from ``/tensorflow/model/rnn/translation/data_utils.py``
 
     """
     if _START_VOCAB is None:
@@ -1074,7 +1074,7 @@ def data_to_token_ids(
 
     References
     ----------
-    - Code from ``/tensorflow/models/rnn/translation/data_utils.py``
+    - Code from ``/tensorflow/model/rnn/translation/data_utils.py``
 
     """
     if not gfile.Exists(target_path):
@@ -1137,7 +1137,7 @@ def moses_multi_bleu(hypotheses, references, lowercase=False):
     except Exception:  # pylint: disable=W0702
         tl.logging.info("Unable to fetch multi-bleu.perl script, using local.")
         metrics_dir = os.path.dirname(os.path.realpath(__file__))
-        bin_dir = os.path.abspath(os.path.join(metrics_dir, "../..", "..", "bin"))
+        bin_dir = os.path.abspath(os.path.join(metrics_dir, "..", "..", "bin"))
         multi_bleu_path = os.path.join(bin_dir, "tools/multi-bleu.perl")
 
     # Dump hypotheses and references to tempfiles

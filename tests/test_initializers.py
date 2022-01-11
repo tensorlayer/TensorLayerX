@@ -6,7 +6,6 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import tensorlayerx as tl
 import numpy as np
 
 from tests.utils import CustomTestCase
@@ -28,38 +27,38 @@ class Test_Leaky_ReLUs(CustomTestCase):
         return tensorlayerx.layers.Dense(n_units=self.w_shape[1], in_channels=self.w_shape[0], W_init=w_init)
 
     def test_zeros(self):
-        dense = self.init_dense(tl.initializers.zeros())
+        dense = self.init_dense(tensorlayerx.nn.initializers.zeros())
         self.assertEqual(np.sum(dense.all_weights[0].numpy() - np.zeros(shape=self.w_shape)), self.eps)
         nn = dense(self.ni)
 
     def test_ones(self):
-        dense = self.init_dense(tl.initializers.ones())
+        dense = self.init_dense(tensorlayerx.nn.initializers.ones())
         self.assertEqual(np.sum(dense.all_weights[0].numpy() - np.ones(shape=self.w_shape)), self.eps)
         nn = dense(self.ni)
 
     def test_constant(self):
-        dense = self.init_dense(tl.initializers.constant(value=5.0))
+        dense = self.init_dense(tensorlayerx.nn.initializers.constant(value=5.0))
         self.assertEqual(np.sum(dense.all_weights[0].numpy() - np.ones(shape=self.w_shape) * 5.0), self.eps)
         nn = dense(self.ni)
 
         # test with numpy arr
         arr = np.random.uniform(size=self.w_shape).astype(np.float32)
-        dense = self.init_dense(tl.initializers.constant(value=arr))
+        dense = self.init_dense(tensorlayerx.nn.initializers.constant(value=arr))
         self.assertEqual(np.sum(dense.all_weights[0].numpy() - arr), self.eps)
         nn = dense(self.ni)
 
     def test_RandomUniform(self):
-        dense = self.init_dense(tl.initializers.random_uniform(minval=-0.1, maxval=0.1, seed=1234))
+        dense = self.init_dense(tensorlayerx.nn.initializers.random_uniform(minval=-0.1, maxval=0.1, seed=1234))
         print(dense.all_weights[0].numpy())
         nn = dense(self.ni)
 
     def test_RandomNormal(self):
-        dense = self.init_dense(tl.initializers.random_normal(mean=0.0, stddev=0.1))
+        dense = self.init_dense(tensorlayerx.nn.initializers.random_normal(mean=0.0, stddev=0.1))
         print(dense.all_weights[0].numpy())
         nn = dense(self.ni)
 
     def test_TruncatedNormal(self):
-        dense = self.init_dense(tl.initializers.truncated_normal(mean=0.0, stddev=0.1))
+        dense = self.init_dense(tensorlayerx.nn.initializers.truncated_normal(mean=0.0, stddev=0.1))
         print(dense.all_weights[0].numpy())
         nn = dense(self.ni)
 
@@ -71,7 +70,7 @@ class Test_Leaky_ReLUs(CustomTestCase):
         num_out_channels = 3
         filter_shape = (5, 5, num_out_channels, num_in_channels)
         ni = tensorlayerx.layers.Input(shape=(1, imsize, imsize, num_channels))
-        bilinear_init = tl.initializers.deconv2d_bilinear_upsampling_initializer(shape=filter_shape)
+        bilinear_init = tensorlayerx.nn.initializers.deconv2d_bilinear_upsampling_initializer(shape=filter_shape)
         deconv_layer = tensorlayerx.layers.DeConv2dLayer(
             shape=filter_shape, outputs_shape=(1, imsize * rescale_factor, imsize * rescale_factor, num_out_channels),
             strides=(1, rescale_factor, rescale_factor, 1), W_init=bilinear_init, padding='SAME', act=None,
@@ -80,8 +79,8 @@ class Test_Leaky_ReLUs(CustomTestCase):
         nn = deconv_layer(ni)
 
     def test_config(self):
-        init = tl.initializers.constant(value=5.0)
-        new_init = tl.initializers.Constant.from_config(init.get_config())
+        init = tensorlayerx.nn.initializers.constant(value=5.0)
+        new_init = tensorlayerx.nn.initializers.Constant.from_config(init.get_config())
 
 
 if __name__ == '__main__':

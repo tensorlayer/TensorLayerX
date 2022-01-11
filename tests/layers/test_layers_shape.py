@@ -7,8 +7,6 @@ import numpy as np
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import tensorlayerx as tl
-
 from tests.utils import CustomTestCase
 
 
@@ -16,8 +14,8 @@ class Layer_Shape_Test(CustomTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.data = tensorlayerx.layers.Input(shape=(8, 4, 3), init=tl.initializers.random_normal())
-        cls.imgdata = tensorlayerx.layers.Input(shape=(2, 16, 16, 8), init=tl.initializers.random_normal())
+        cls.data = tensorlayerx.layers.Input(shape=(8, 4, 3), init=tensorlayerx.nn.initializers.random_normal())
+        cls.imgdata = tensorlayerx.layers.Input(shape=(2, 16, 16, 8), init=tensorlayerx.nn.initializers.random_normal())
 
     @classmethod
     def tearDownClass(cls):
@@ -77,8 +75,8 @@ class Layer_Shape_Test(CustomTestCase):
             def forward(self, x):
                 return self.transpose1(x), self.transpose2(x), self.transpose3(x), self.transpose4(x)
 
-        real = tensorlayerx.layers.Input(shape=(8, 4, 3), init=tl.initializers.random_normal())
-        comp = tensorlayerx.layers.Input(shape=(8, 4, 3), init=tl.initializers.random_normal())
+        real = tensorlayerx.layers.Input(shape=(8, 4, 3), init=tensorlayerx.nn.initializers.random_normal())
+        comp = tensorlayerx.layers.Input(shape=(8, 4, 3), init=tensorlayerx.nn.initializers.random_normal())
         import tensorflow as tf
         complex_data = tf.dtypes.complex(real, comp)
         model = CustomizeModel()

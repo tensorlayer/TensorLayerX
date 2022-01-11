@@ -5,7 +5,7 @@ import numpy as np
 from six.moves import xrange
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.core import Module
+from tensorlayerx.nn.core import Module
 
 __all__ = [
     'transformer',
@@ -253,9 +253,9 @@ class SpatialTransformer2dAffine(Module):
             # shape = [inputs_shape[1], 6]
             self.in_channels = inputs_shape[0][-1]  # zsdonghao
             shape = [self.in_channels, 6]
-        self.W = self._get_weights("weights", shape=tuple(shape), init=tl.initializers.Zeros())
+        self.W = self._get_weights("weights", shape=tuple(shape), init=tl.nn.initializers.Zeros())
         identity = np.reshape(np.array([[1, 0, 0], [0, 1, 0]], dtype=np.float32), newshape=(6, ))
-        self.b = self._get_weights("biases", shape=(6, ), init=tl.initializers.Constant(identity))
+        self.b = self._get_weights("biases", shape=(6, ), init=tl.nn.initializers.Constant(identity))
 
     def forward(self, inputs):
         """

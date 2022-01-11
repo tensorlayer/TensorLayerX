@@ -7,7 +7,7 @@ import unittest
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorlayerx as tl
-
+import tensorlayerx
 from tests.utils import CustomTestCase
 
 
@@ -19,7 +19,7 @@ class Layer_Convolution_1D_Test(CustomTestCase):
 
         cls.batch_size = 8
         cls.inputs_shape = [cls.batch_size, 200]
-        cls.input_layer = Input(cls.inputs_shape, name='input_layer')
+        cls.input_layer = tl.layers.Input(cls.inputs_shape, name='input_layer')
 
         cls.dense = tensorlayerx.layers.Dense(n_units=100, act=tl.ReLU, in_channels=200)(cls.input_layer)
 

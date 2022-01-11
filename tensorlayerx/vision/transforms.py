@@ -1,7 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx.vision.functional as F
+import tensorlayerx as tl
+from . import load_vision_backend as F
 import numbers
 import numpy as np
 __all__ = [
@@ -27,7 +28,6 @@ __all__ = [
     'Resize',
     'RgbToHsv',
     'Transpose',
-    'Rotation',
     'RandomRotation',
     'RandomShift',
     'RandomShear',
@@ -54,11 +54,10 @@ class ToTensor(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.ToTensor(data_format='HWC')
+    >>> transform = tl.vision.transforms.ToTensor(data_format='HWC')
     >>> image = transform(image)
     >>> print(image)
 
@@ -92,18 +91,18 @@ class CentralCrop(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
+
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.CentralCrop(size = (50, 50))
+    >>> transform = tl.vision.transforms.CentralCrop(size = (50, 50))
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (50, 50, 3)
 
-    >>> import tensorlayerx as tlx
+
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.CentralCrop(central_fraction=0.5)
+    >>> transform = tl.vision.transforms.CentralCrop(central_fraction=0.5)
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (112, 112, 3)
@@ -130,11 +129,10 @@ class Compose(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.Compose([tlx.vision.transforms.ToTensor(data_format='HWC'),tlx.vision.transforms.CentralCrop(size = 100)])
+    >>> transform = tl.vision.transforms.Compose([tl.vision.transforms.ToTensor(data_format='HWC'),tl.vision.transforms.CentralCrop(size = 100)])
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (100, 100, 3)
@@ -170,11 +168,10 @@ class Crop(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.Crop(top=10, left=10, height=100, width=100)
+    >>> transform = tl.vision.transforms.Crop(top=10, left=10, height=100, width=100)
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (100, 100, 3)
@@ -208,15 +205,14 @@ class Pad(object):
         If a tuple or list of length 3, it is used to fill R, G, B channels respectively. tuple and list only is supported for PIL Image.
         This value is only used when the mode is constant.
     mode : str
-        Type of padding. Default is "constant"."constant", "reflect", "symmetric" , "edge" are supported.
+        Type of padding. Default is "constant"."constant", "reflect", "symmetric" are supported.
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.Pad(padding=10, padding_value=0, mode='constant')
+    >>> transform = tl.vision.transforms.Pad(padding=10, padding_value=0, mode='constant')
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (244, 244, 3)
@@ -230,8 +226,8 @@ class Pad(object):
         self.mode = mode
 
     def __call__(self, image):
-        if self.mode not in ['constant', 'reflect', 'symmetric', 'edge']:
-            raise TypeError("Padding mode should be 'constant',  'reflect', 'symmetric', or 'edge'.")
+        if self.mode not in ['constant', 'reflect', 'symmetric']:
+            raise TypeError("Padding mode should be 'constant',  'reflect', or 'symmetric'.")
         return F.pad(image, self.padding, self.padding_value, self.mode)
 
 
@@ -246,15 +242,14 @@ class Resize(object):
         If size is an int, smaller edge of the image will be matched to this number.
         i.e, if height > width, then image will be rescaled to (size * height / width, size).
     interpolation : str
-        Interpolation method. Default: 'bilinear'. 'nearest', 'bilinear', 'bicubic', 'area' and 'lanczos' are supported.
+        Interpolation method. Default: 'bilinear'. 'nearest', 'bilinear' and 'bicubic' are supported.
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.Resize(size = (100,100), interpolation='bilinear')
+    >>> transform = tl.vision.transforms.Resize(size = (100,100), interpolation='bilinear')
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (100, 100, 3)
@@ -267,7 +262,7 @@ class Resize(object):
         self.interpolation = interpolation
 
     def __call__(self, image):
-        if self.interpolation not in ['nearest', 'bilinear', 'bicubic', 'area', 'lanczos']:
+        if self.interpolation not in ['nearest', 'bilinear', 'bicubic']:
             raise ValueError("This interpolation mode should be 'nearest', 'bilinear' or 'bicubic'")
         return F.resize(image, self.size, self.interpolation)
 
@@ -282,11 +277,10 @@ class Transpose(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.Transpose(order=(2, 0 ,1))
+    >>> transform = tl.vision.transforms.Transpose(order=(2, 0 ,1))
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (3, 224, 224)
@@ -307,11 +301,10 @@ class HWC2CHW(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.HWC2CHW()
+    >>> transform = tl.vision.transforms.HWC2CHW()
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (3, 224, 224)
@@ -328,11 +321,10 @@ class CHW2HWC(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(3, 224, 224) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.CHW2HWC()
+    >>> transform = tl.vision.transforms.CHW2HWC()
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (224, 224, 3)
@@ -349,11 +341,10 @@ class RgbToHsv(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RgbToHsv()
+    >>> transform = tl.vision.transforms.RgbToHsv()
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (224, 224, 3)
@@ -370,11 +361,10 @@ class HsvToRgb(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.HsvToRgb()
+    >>> transform = tl.vision.transforms.HsvToRgb()
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (224, 224, 3)
@@ -396,11 +386,10 @@ class RgbToGray(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RgbToGray(num_output_channels=1)
+    >>> transform = tl.vision.transforms.RgbToGray(num_output_channels=1)
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (224, 224, 1)
@@ -427,11 +416,10 @@ class AdjustBrightness(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.AdjustBrightness(brightness_factor=1)
+    >>> transform = tl.vision.transforms.AdjustBrightness(brightness_factor=1)
     >>> image = transform(image)
     >>> print(image)
 
@@ -456,11 +444,10 @@ class AdjustContrast(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.AdjustContrast(contrast_factor=1)
+    >>> transform = tl.vision.transforms.AdjustContrast(contrast_factor=1)
     >>> image = transform(image)
     >>> print(image)
 
@@ -488,11 +475,10 @@ class AdjustHue(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.AdjustHue(hue_factor=0)
+    >>> transform = tl.vision.transforms.AdjustHue(hue_factor=0)
     >>> image = transform(image)
     >>> print(image)
 
@@ -518,11 +504,10 @@ class AdjustSaturation(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.AdjustSaturation(saturation_factor=1)
+    >>> transform = tl.vision.transforms.AdjustSaturation(saturation_factor=1)
     >>> image = transform(image)
     >>> print(image)
 
@@ -542,11 +527,10 @@ class FlipHorizontal(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.FlipHorizontal()
+    >>> transform = tl.vision.transforms.FlipHorizontal()
     >>> image = transform(image)
     >>> print(image)
 
@@ -562,11 +546,10 @@ class FlipVertical(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.FlipVertical()
+    >>> transform = tl.vision.transforms.FlipVertical()
     >>> image = transform(image)
     >>> print(image)
 
@@ -595,11 +578,10 @@ class PadToBoundingbox(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand( 224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.PadToBoundingbox(top=10, left=10, height=300, width=300, padding_value=0)
+    >>> transform = tl.vision.transforms.PadToBoundingbox(top=10, left=10, height=300, width=300, padding_value=0)
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (300, 300, 3)
@@ -631,11 +613,10 @@ class Normalize(object):
 
     Examples
     ----------
-     With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand( 224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.Normalize(mean = (155.0, 155.0, 155.0), std = (75.0, 75.0, 75.0),data_format='HWC')
+    >>> transform = tl.vision.transforms.Normalize(mean = (155.0, 155.0, 155.0), std = (75.0, 75.0, 75.0),data_format='HWC')
     >>> image = transform(image)
     >>> print(image)
 
@@ -659,11 +640,10 @@ class StandardizePerImage(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand( 224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.StandardizePerImage()
+    >>> transform = tl.vision.transforms.StandardizePerImage()
     >>> image = transform(image)
     >>> print(image)
 
@@ -686,11 +666,10 @@ class RandomBrightness(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomBrightness(brightness_factor=(0.5, 2))
+    >>> transform = tl.vision.transforms.RandomBrightness(brightness_factor=(0.5, 2))
     >>> image = transform(image)
     >>> print(image)
 
@@ -716,11 +695,10 @@ class RandomContrast(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomContrast(contrast_factor=(0.5, 2))
+    >>> transform = tl.vision.transforms.RandomContrast(contrast_factor=(0.5, 2))
     >>> image = transform(image)
     >>> print(image)
 
@@ -747,11 +725,10 @@ class RandomSaturation(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomSaturation(saturation_factor=(0.5, 2))
+    >>> transform = tl.vision.transforms.RandomSaturation(saturation_factor=(0.5, 2))
     >>> image = transform(image)
     >>> print(image)
 
@@ -778,11 +755,10 @@ class RandomHue(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomHue(hue_factor=(-0.5, 0.5))
+    >>> transform = tl.vision.transforms.RandomHue(hue_factor=(-0.5, 0.5))
     >>> image = transform(image)
     >>> print(image)
 
@@ -823,11 +799,10 @@ class RandomCrop(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomCrop(size=50, padding=10, pad_if_needed=False, fill=0, padding_mode='constant')
+    >>> transform = tl.vision.transforms.RandomCrop(size=50, padding=10, pad_if_needed=False, fill=0, padding_mode='constant')
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (70,70,3)
@@ -873,11 +848,10 @@ class RandomResizedCrop(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomResizedCrop(size = (100, 100), scale = (0.08, 1.0), ratio = (3./4.,4./3.), interpolation = 'bilinear')
+    >>> transform = tl.vision.transforms.RandomResizedCrop(size = (100, 100), scale = (0.08, 1.0), ratio = (3./4.,4./3.), interpolation = 'bilinear')
     >>> image = transform(image)
     >>> print(image)
     >>> image shape : (100,100,3)
@@ -906,11 +880,10 @@ class RandomFlipVertical(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomFlipVertical(prob = 0.5)
+    >>> transform = tl.vision.transforms.RandomFlipVertical(prob = 0.5)
     >>> image = transform(image)
     >>> print(image)
 
@@ -935,11 +908,10 @@ class RandomFlipHorizontal(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomFlipHorizontal(prob = 0.5)
+    >>> transform = tl.vision.transforms.RandomFlipHorizontal(prob = 0.5)
     >>> image = transform(image)
     >>> print(image)
 
@@ -978,11 +950,10 @@ class RandomRotation(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomRotation(degrees=30, interpolation='bilinear', expand=False, center=None, fill=0)
+    >>> transform = tl.vision.transforms.RandomRotation(degrees=30, interpolation='bilinear', expand=False, center=None, fill=0)
     >>> image = transform(image)
     >>> print(image)
 
@@ -1019,11 +990,10 @@ class RandomShear(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomShear(shear=30, interpolation='bilinear', fill=0)
+    >>> transform = tl.vision.transforms.RandomShear(shear=30, interpolation='bilinear', fill=0)
     >>> image = transform(image)
     >>> print(image)
 
@@ -1057,11 +1027,10 @@ class RandomShift(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomShift(shift=(0.2, 0.2), interpolation='bilinear', fill=0)
+    >>> transform = tl.vision.transforms.RandomShift(shift=(0.2, 0.2), interpolation='bilinear', fill=0)
     >>> image = transform(image)
     >>> print(image)
 
@@ -1093,11 +1062,10 @@ class RandomZoom(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomZoom(zoom=(0.2, 0.5), interpolation='bilinear', fill=0)
+    >>> transform = tl.vision.transforms.RandomZoom(zoom=(0.2, 0.5), interpolation='bilinear', fill=0)
     >>> image = transform(image)
     >>> print(image)
 
@@ -1146,11 +1114,10 @@ class RandomAffine(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.RandomAffine(degrees=30, shift=(0.2,0.2), zoom=(0.2, 0.5), shear=30, interpolation='bilinear', fill=0)
+    >>> transform = tl.vision.transforms.RandomAffine(degrees=30, shift=(0.2,0.2), zoom=(0.2, 0.5), shear=30, interpolation='bilinear', fill=0)
     >>> image = transform(image)
     >>> print(image)
 
@@ -1236,11 +1203,10 @@ class ColorJitter(object):
 
     Examples
     ----------
-    With TensorLayerX
+    With TensorLayer
 
-    >>> import tensorlayerx as tlx
     >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.ColorJitter(brightness=(1,5), contrast=(1,5), saturation=(1,5), hue=(-0.2,0.2))
+    >>> transform = tl.vision.transforms.ColorJitter(brightness=(1,5), contrast=(1,5), saturation=(1,5), hue=(-0.2,0.2))
     >>> image = transform(image)
     >>> print(image)
 
@@ -1297,48 +1263,3 @@ class ColorJitter(object):
                 image = F.adjust_hue(image, hue_factor)
 
         return image
-
-class Rotation(object):
-    """Randomly change the brightness, contrast, saturation and hue of an image.
-
-    Parameters
-    ----------
-    brightness: float or sequence
-        Brightness adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-brightness_factor), 1+brightness_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
-    contrast: float or sequence
-        Contrast adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-contrast_factor), 1+contrast_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
-    saturation: float or sequence
-        Saturation adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-saturation_factor), 1+saturation_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
-    hue: float or sequence
-        Hue adjustment factor (default=(0, 0)).
-        If it is a float, the factor is uniformly chosen from the range [-hue_factor, hue_factor].
-        If it is a sequence, it should be [min, max] for the range.Should have 0<= hue <= 0.5 or -0.5 <= min <= max <= 0.5.
-
-    Examples
-    ----------
-    With TensorLayerX
-
-    >>> import tensorlayerx as tlx
-    >>> image = (np.random.rand(224, 224, 3) * 255.).astype(np.uint8)
-    >>> transform = tlx.vision.transforms.Rotation(angle = 0, interpolation = 'bilinear', expand = False, center = None, fill = 0)
-    >>> image = transform(image)
-    >>> print(image)
-
-    """
-
-    def __init__(self, angle = 0, interpolation = 'bilinear', expand = False, center = None, fill = 0):
-        self.angel = angle
-        self.interpolation = interpolation
-        self.expand = expand
-        self.center = center
-        self.fill = fill
-
-    def __call__(self, image):
-
-        return F.rotate(image, self.angel, self.interpolation, self.expand, self.center, self.fill)

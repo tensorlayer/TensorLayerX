@@ -5,7 +5,7 @@ import os
 import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
+import tensorlayerx
 import tensorlayerx as tl
 
 from tests.utils import CustomTestCase
@@ -34,7 +34,7 @@ class Layer_Core_Test(CustomTestCase):
 
         self.concat = tensorlayerx.layers.Concat(concat_dim=-1)([self.n2, self.n3])
 
-        class get_model(tensorlayerx.layers.Module):
+        class get_model(tensorlayerx.nn.Module):
             def __init__(self):
                 super(get_model, self).__init__()
                 self.layer1 = tensorlayerx.layers.Dense(n_units=800, act=tl.ReLU, in_channels=784, name='test_dense')

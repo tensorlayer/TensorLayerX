@@ -3,7 +3,7 @@
 
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.core import Module
+from tensorlayerx.nn.core import Module
 
 __all__ = [
     'Scale',
@@ -49,7 +49,7 @@ class Scale(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        self.scale = self._get_weights("scale", shape=[1], init=tl.initializers.constant(value=self.init_scale))
+        self.scale = self._get_weights("scale", shape=[1], init=tl.nn.initializers.constant(value=self.init_scale))
 
     # @tf.function
     def forward(self, inputs):

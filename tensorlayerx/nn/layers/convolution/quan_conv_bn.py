@@ -3,7 +3,7 @@
 
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.core import Module
+from tensorlayerx.nn.core import Module
 from tensorlayerx.backend import BACKEND
 
 __all__ = ['QuanConv2dWithBN']
@@ -177,10 +177,10 @@ class QuanConv2dWithBN(Module):
             self.offset_para = None
 
         self.moving_mean = self._get_weights(
-            "moving_mean", shape=para_bn_shape, init=tl.initializers.constant(1.0), trainable=False
+            "moving_mean", shape=para_bn_shape, init=tl.nn.initializers.constant(1.0), trainable=False
         )
         self.moving_variance = self._get_weights(
-            "moving_variance", shape=para_bn_shape, init=tl.initializers.constant(1.0), trainable=False
+            "moving_variance", shape=para_bn_shape, init=tl.nn.initializers.constant(1.0), trainable=False
         )
 
         self.quan_conv_bn = tl.ops.QuanConvBn(

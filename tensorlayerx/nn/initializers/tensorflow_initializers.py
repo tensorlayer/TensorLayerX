@@ -70,7 +70,7 @@ class Zeros(Initializer):
     """
 
     def __call__(self, shape, dtype=tl.float32):
-        return tl.zeros(shape, dtype=dtype)
+        return tl.ops.zeros(shape, dtype=dtype)
 
 
 class Ones(Initializer):
@@ -86,7 +86,7 @@ class Ones(Initializer):
     """
 
     def __call__(self, shape, dtype=tl.float32):
-        return tl.ones(shape, dtype=dtype)
+        return tl.ops.ones(shape, dtype=dtype)
 
 
 class Constant(Initializer):
@@ -110,7 +110,7 @@ class Constant(Initializer):
         self.value = value
 
     def __call__(self, shape, dtype=tl.float32):
-        return tl.constant(self.value, shape=shape, dtype=dtype)
+        return tl.ops.constant(self.value, shape=shape, dtype=dtype)
 
     def get_config(self):
         return {"value": self.value}
@@ -143,7 +143,7 @@ class RandomUniform(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tl.float32):
-        return tl.random_uniform(shape, self.minval, self.maxval, dtype=dtype, seed=self.seed)
+        return tl.ops.random_uniform(shape, self.minval, self.maxval, dtype=dtype, seed=self.seed)
 
     def get_config(self):
         return {"minval": self.minval, "maxval": self.maxval, "seed": self.seed}
@@ -178,7 +178,7 @@ class RandomNormal(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tl.float32):
-        return tl.random_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
+        return tl.ops.random_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
 
     def get_config(self):
         return {"mean": self.mean, "stddev": self.stddev, "seed": self.seed}
@@ -217,7 +217,7 @@ class TruncatedNormal(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tl.float32):
-        return tl.truncated_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
+        return tl.ops.truncated_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
 
     def get_config(self):
         return {"mean": self.mean, "stddev": self.stddev, "seed": self.seed}
@@ -244,7 +244,7 @@ class HeNormal(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tl.float32):
-        return tl.he_normal(seed=self.seed, shape=shape, dtype=dtype)
+        return tl.ops.he_normal(seed=self.seed, shape=shape, dtype=dtype)
 
     def get_config(self):
         return {"seed", self.seed}
@@ -312,7 +312,7 @@ class XavierNormal(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tl.float32):
-        return tl.xavier_normal(seed=self.seed, shape=shape, dtype=dtype)
+        return tl.ops.xavier_normal(seed=self.seed, shape=shape, dtype=dtype)
 
     def get_config(self):
         return {"seed", self.seed}
@@ -332,7 +332,7 @@ class XavierUniform(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tl.float32):
-        return tl.xavier_uniform(seed=self.seed, shape=shape, dtype=dtype)
+        return tl.ops.xavier_uniform(seed=self.seed, shape=shape, dtype=dtype)
 
     def get_config(self):
         return {"seed", self.seed}

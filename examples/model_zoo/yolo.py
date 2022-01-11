@@ -10,9 +10,9 @@
 
 import numpy as np
 import tensorlayerx as tl
-from tensorlayerx.layers import Mish
-from tensorlayerx.layers import Conv2d, MaxPool2d, BatchNorm2d, ZeroPad2d, UpSampling2d, Concat, Elementwise
-from tensorlayerx.core import Module, SequentialLayer
+from tensorlayerx.nn import Mish
+from tensorlayerx.nn import Conv2d, MaxPool2d, BatchNorm2d, ZeroPad2d, UpSampling2d, Concat, Elementwise
+from tensorlayerx.nn import Module, SequentialLayer
 from tensorlayerx import logging
 
 __all__ = ['YOLOv4']
@@ -44,7 +44,7 @@ class Convolutional(Module):
         if bn:
             b_init = None
         else:
-            b_init = tl.initializers.constant(value=0.0)
+            b_init = tl.nn.initializers.constant(value=0.0)
 
         self.zeropad = ZeroPad2d(((1, 0), (1, 0)))
         self.conv = Conv2d(
@@ -354,7 +354,7 @@ def YOLOv4(NUM_CLASS, pretrained=False):
     return network
 
 
-def restore_params(network, model_path='models.npz'):
+def restore_params(network, model_path='model.npz'):
     logging.info("Restore pre-trained weights")
 
     try:

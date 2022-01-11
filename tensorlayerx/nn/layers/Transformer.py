@@ -3,8 +3,8 @@
 
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.core import Module
-from tensorlayerx.core import LayerList
+from tensorlayerx.nn.core import Module
+from tensorlayerx.nn.core import LayerList
 import numpy as np
 
 __all__ = [
@@ -101,8 +101,8 @@ class MultiheadAttention(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        bias_init = tl.initializers.zeros()
-        weight_init = tl.initializers.XavierNormal()
+        bias_init = tl.nn.initializers.zeros()
+        weight_init = tl.nn.initializers.XavierNormal()
         self.q_proj_weight = self._get_weights(
             'q_weight', shape=(self.embed_dim, self.embed_dim), init=weight_init, order=True
         )
@@ -186,7 +186,7 @@ class Transformer(Module):
     d_model: int
         the number of expected features in the encoder/decoder inputs.
     nhead: int
-        the number of heads in the multiheadattention models.
+        the number of heads in the multiheadattention model.
     num_encoder_layers:
         the number of sub-encoder-layers in the encoder.
     num_decoder_layers:
@@ -246,7 +246,7 @@ class Transformer(Module):
                 d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout, act=act,
                 layer_norm_eps=layer_norm_eps, batch_first=batch_first
             )
-            encoder_norm = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+            encoder_norm = tl.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
             self.encoder = TransformerEncoder(
                 encoder_layer=encoder_layer, num_layers=num_encoder_layers, norm=encoder_norm
             )
@@ -258,7 +258,7 @@ class Transformer(Module):
                 d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout, act=act,
                 layer_norm_eps=layer_norm_eps, batch_first=batch_first
             )
-            decoder_norm = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+            decoder_norm = tl.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
             self.decoder = TransformerDecoder(
                 decoder_layer=decoder_layer, num_layers=num_decoder_layers, norm=decoder_norm
             )
@@ -513,15 +513,15 @@ class TransformerEncoderLayer(Module):
         self._config.pop("self")
         self._config.pop("__class__", None)
         self.self_attn = MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=batch_first)
-        self.linear1 = tensorlayerx.layers.Dense(in_channels=d_model, n_units=dim_feedforward)
-        self.dropout1 = tensorlayerx.layers.Dropout(float(1.0 - dropout))
-        self.linear2 = tensorlayerx.layers.Dense(in_channels=dim_feedforward, n_units=d_model)
+        self.linear1 = tl.nn.layers.Dense(in_channels=d_model, n_units=dim_feedforward)
+        self.dropout1 = tl.nn.layers.Dropout(float(1.0 - dropout))
+        self.linear2 = tl.nn.layers.Dense(in_channels=dim_feedforward, n_units=d_model)
 
-        self.norm1 = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
-        self.norm2 = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+        self.norm1 = tl.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+        self.norm2 = tl.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
 
-        self.dropout2 = tensorlayerx.layers.Dropout(float(1.0 - dropout))
-        self.dropout3 = tensorlayerx.layers.Dropout(float(1.0 - dropout))
+        self.dropout2 = tl.nn.layers.Dropout(float(1.0 - dropout))
+        self.dropout3 = tl.nn.layers.Dropout(float(1.0 - dropout))
         if act == 'relu':
             self.act = tl.relu
         elif act == 'gelu':
@@ -608,14 +608,14 @@ class TransformerDecoderLayer(Module):
         self._config.pop("__class__", None)  # py3
         self.self_attn = MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=batch_first)
         self.cross_attn = MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=batch_first)
-        self.dropout1 = tensorlayerx.layers.Dropout(float(1 - dropout))
-        self.dropout2 = tensorlayerx.layers.Dropout(float(1 - dropout))
-        self.dropout3 = tensorlayerx.layers.Dropout(float(1 - dropout))
-        self.norm1 = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
-        self.norm2 = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
-        self.norm3 = tensorlayerx.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
-        self.linear1 = tensorlayerx.layers.Dense(in_channels=d_model, n_units=dim_feedforward)
-        self.linear2 = tensorlayerx.layers.Dense(in_channels=dim_feedforward, n_units=d_model)
+        self.dropout1 = tl.nn.layers.Dropout(float(1 - dropout))
+        self.dropout2 = tl.nn.layers.Dropout(float(1 - dropout))
+        self.dropout3 = tl.nn.layers.Dropout(float(1 - dropout))
+        self.norm1 = tl.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+        self.norm2 = tl.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+        self.norm3 = tl.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
+        self.linear1 = tl.nn.layers.Dense(in_channels=d_model, n_units=dim_feedforward)
+        self.linear2 = tl.nn.layers.Dense(in_channels=dim_feedforward, n_units=d_model)
 
         if act == 'relu':
             self.act = tl.relu
@@ -661,3 +661,16 @@ class TransformerDecoderLayer(Module):
         tgt = self.norm3(tgt)
         return tgt
 
+
+if __name__ == '__main__':
+    q = tl.nn.layers.Input(shape=(4, 2, 128), init=tl.nn.initializers.ones())
+    attn_mask = tl.convert_to_tensor(np.zeros((4, 4)), dtype='bool')
+    # l = MultiheadAttention(embed_dim=128, num_heads=4)
+    encoder = TransformerEncoderLayer(128, 2, 256)
+    encoder = TransformerEncoder(encoder, 2)
+    # print(encoder.trainable_weights)
+    output = encoder(q, attn_mask)
+    print(output)
+    # decoder = TransformerDecoderLayer(d_model=128, nhead=2, dim_feedforward=512)
+    # output = decoder(q, output)
+    # print(output)

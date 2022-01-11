@@ -23,7 +23,8 @@ import progressbar
 import scipy.io as sio
 from six.moves import cPickle
 import tensorlayerx as tl
-from tensorlayerx import logging, visualize
+from tensorlayerx import logging
+from tensorlayerx.utils import visualize
 
 if tl.BACKEND == 'tensorflow':
     from tensorflow.python.keras.saving import model_config as model_config_lib
@@ -34,7 +35,7 @@ if tl.BACKEND == 'tensorflow':
     import tensorflow as tf
 
 
-    @keras_export('keras.models.save_model')
+    @keras_export('keras.model.save_model')
     def save_keras_model(model):
         # f.attrs['keras_model_config'] = json.dumps(
         #     {
@@ -53,7 +54,7 @@ if tl.BACKEND == 'tensorflow':
         ).encode('utf8')
 
 
-    @keras_export('keras.models.load_model')
+    @keras_export('keras.model.load_model')
     def load_keras_model(model_config):
 
         custom_objects = {}
@@ -163,7 +164,7 @@ def str2func(s):
 #     return saved_file
 
 
-# @keras_export('keras.models.save_model')
+# @keras_export('keras.model.save_model')
 # def save_keras_model(model):
 #     # f.attrs['keras_model_config'] = json.dumps(
 #     #     {
@@ -182,7 +183,7 @@ def str2func(s):
 #     ).encode('utf8')
 #
 #
-# @keras_export('keras.models.load_model')
+# @keras_export('keras.model.load_model')
 # def load_keras_model(model_config):
 #
 #     custom_objects = {}
@@ -308,7 +309,7 @@ def static_graph2net(model_config):
         layer_class = layer_kwargs["class"]  # class of current layer
         prev_layers = layer_kwargs.pop("prev_layer")  # name of previous layers
         net = eval_layer(layer_kwargs)
-        if layer_class in tensorlayerx.nn.layes.inputs.__all__:
+        if layer_class in tensorlayerx.nn.layers.inputs.__all__:
             net = net._nodes[0].out_tensors[0]
         if prev_layers is not None:
             for prev_layer in prev_layers:
@@ -811,7 +812,7 @@ def load_cropped_svhn(path='data', include_extra=True):
 #
 #     References
 #     ---------------
-#     - ``tensorflow.models.rnn.ptb import reader``
+#     - ``tensorflow.model.rnn.ptb import reader``
 #     - `Manual download <http://www.fit.vutbr.cz/~imikolov/rnnlm/simple-examples.tgz>`__
 #
 #     Notes
@@ -1034,7 +1035,7 @@ def load_wmt_en_fr_dataset(path='data'):
 
     References
     ----------
-    - Code modified from /tensorflow/models/rnn/translation/data_utils.py
+    - Code modified from /tensorflow/model/rnn/translation/data_utils.py
 
     Notes
     -----
@@ -2730,11 +2731,11 @@ def _save_weights_to_hdf5_group(f, layers):
         g = f.create_group(layer.name)
         if isinstance(layer, tl.model.Model):
             _save_weights_to_hdf5_group(g, layer.all_layers)
-        elif isinstance(layer, tensorlayerx.layers.ModelLayer):
+        elif isinstance(layer, tensorlayerx.nn.layers.ModelLayer):
             _save_weights_to_hdf5_group(g, layer.model.all_layers)
-        elif isinstance(layer, tensorlayerx.layers.LayerList):
+        elif isinstance(layer, tensorlayerx.nn.layers.LayerList):
             _save_weights_to_hdf5_group(g, layer.layers)
-        elif isinstance(layer, tensorlayerx.layers.Layer):
+        elif isinstance(layer, tensorlayerx.nn.layers.Layer):
             if layer.all_weights is not None:
                 weight_values = tf_variables_to_numpy(layer.all_weights)
                 weight_names = [w.name.encode('utf8') for w in layer.all_weights]
@@ -2772,11 +2773,11 @@ def _load_weights_from_hdf5_group_in_order(f, layers):
         layer = layers[idx]
         if isinstance(layer, tl.model.Model):
             _load_weights_from_hdf5_group_in_order(g, layer.all_layers)
-        elif isinstance(layer, tensorlayerx.layers.ModelLayer):
+        elif isinstance(layer, tensorlayerx.nn.layers.ModelLayer):
             _load_weights_from_hdf5_group_in_order(g, layer.model.all_layers)
-        elif isinstance(layer, tensorlayerx.layers.LayerList):
+        elif isinstance(layer, tensorlayerx.nn.layers.LayerList):
             _load_weights_from_hdf5_group_in_order(g, layer.layers)
-        elif isinstance(layer, tensorlayerx.layers.Layer):
+        elif isinstance(layer, tensorlayerx.nn.layers.Layer):
             weight_names = [n.decode('utf8') for n in g.attrs['weight_names']]
             for iid, w_name in enumerate(weight_names):
                 assign_tf_variable(layer.all_weights[iid], np.asarray(g[w_name]))
@@ -2818,15 +2819,15 @@ def _load_weights_from_hdf5_group(f, layers, skip=False):
             layer = layer_index[name]
             if isinstance(layer, tl.model.Model):
                 _load_weights_from_hdf5_group(g, layer.all_layers, skip)
-            elif isinstance(layer, tensorlayerx.layers.ModelLayer):
+            elif isinstance(layer, tensorlayerx.nn.layers.ModelLayer):
                 _load_weights_from_hdf5_group(g, layer.model.all_layers, skip)
-            elif isinstance(layer, tensorlayerx.layers.LayerList):
+            elif isinstance(layer, tensorlayerx.nn.layers.LayerList):
                 _load_weights_from_hdf5_group(g, layer.layers, skip)
-            elif isinstance(layer, tensorlayerx.layers.Layer):
+            elif isinstance(layer, tensorlayerx.nn.layers.Layer):
                 weight_names = [n.decode('utf8') for n in g.attrs['weight_names']]
                 for iid, w_name in enumerate(weight_names):
                     # FIXME : this is only for compatibility
-                    if isinstance(layer, tensorlayerx.layers.BatchNorm) and np.asarray(g[w_name]).ndim > 1:
+                    if isinstance(layer, tensorlayerx.nn.layers.BatchNorm) and np.asarray(g[w_name]).ndim > 1:
                         assign_tf_variable(layer.all_weights[iid], np.asarray(g[w_name]).squeeze())
                         continue
                     assign_tf_variable(layer.all_weights[iid], np.asarray(g[w_name]))

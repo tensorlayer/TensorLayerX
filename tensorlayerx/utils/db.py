@@ -556,7 +556,7 @@ class TensorHub(object):
         Examples
         -----------
         Uploads a task
-        >>> db.create_task(task_name='mnist', script='example/tutorial_mnist_simple.py', description='simple tutorial')
+        >>> db.create_task(task_name='mnist', script='example/mnist_mlp.py', description='simple tutorial')
 
         Finds and runs the latest task
         >>> db.run_top_task(sort=[("time", pymongo.DESCENDING)])

@@ -7,7 +7,8 @@ import unittest
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorlayerx as tl
-
+import tensorlayerx
+from tensorlayerx.nn import Input
 from tests.utils import CustomTestCase
 
 
@@ -19,7 +20,7 @@ class Layer_Pooling_Test(CustomTestCase):
         ## 1D ========================================================================
 
         x_1_input_shape = [None, 100, 1]
-        nin_1 = Input(x_1_input_shape, name='test_in1')
+        nin_1 = tl.layers.Input(x_1_input_shape, name='test_in1')
 
         n1 = tensorlayerx.layers.Conv1d(n_filter=32, filter_size=5, stride=2, name='test_conv1d')(nin_1)
         n2 = tensorlayerx.layers.MaxPool1d(filter_size=3, strides=2, padding='SAME', name='test_maxpool1d')(n1)

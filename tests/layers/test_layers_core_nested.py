@@ -4,7 +4,7 @@ import os
 import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
+import tensorlayerx
 import tensorlayerx as tl
 import numpy as np
 
@@ -23,7 +23,7 @@ class Layer_nested(CustomTestCase):
 
     def test_nested_layer_with_inchannels(cls):
 
-        class MyLayer(tensorlayerx.layers.Module):
+        class MyLayer(tensorlayerx.nn.Module):
 
             def __init__(self, name=None):
                 super(MyLayer, self).__init__(name=name)
@@ -39,7 +39,7 @@ class Layer_nested(CustomTestCase):
                 output = tl.ops.matmul(inputs, self.W)
                 return output
 
-        class model(tensorlayerx.layers.Module):
+        class model(tensorlayerx.nn.Module):
 
             def __init__(self, name=None):
                 super(model, self).__init__(name=name)

@@ -14,8 +14,8 @@ import tensorlayerx as tl
 
 from tensorlayerx import logging
 from tensorlayerx.files import (maybe_download_and_extract)
-from tensorlayerx.layers import (BatchNorm, Conv2d, Dense, Elementwise, GlobalMeanPool2d, MaxPool2d)
-from tensorlayerx.core import Module, SequentialLayer
+from tensorlayerx.nn import (BatchNorm, Conv2d, Dense, Elementwise, GlobalMeanPool2d, MaxPool2d)
+from tensorlayerx.nn import Module, SequentialLayer
 
 __all__ = [
     'ResNet50',
@@ -26,7 +26,7 @@ block_names = ['2a', '2b', '2c', '3a', '3b', '3c', '3d', '4a', '4b', '4c', '4d',
 block_filters = [[64, 64, 256], [128, 128, 512], [256, 256, 1024], [512, 512, 2048]]
 in_channels_conv = [64, 256, 512, 1024]
 in_channels_identity = [256, 512, 1024, 2048]
-henorm = tl.initializers.he_normal()
+henorm = tl.nn.initializers.he_normal()
 
 
 class identity_block(Module):
@@ -215,7 +215,7 @@ def ResNet50(pretrained=False, end_with='fc1000', n_classes=1000):
     return network
 
 
-def restore_params(network, path='models'):
+def restore_params(network, path='model'):
     logging.info("Restore pre-trained parameters")
     maybe_download_and_extract(
         'resnet50_weights_tf_dim_ordering_tf_kernels.h5',

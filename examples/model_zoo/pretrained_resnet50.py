@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 """
-ResNet50 for ImageNet using TL models
+ResNet50 for ImageNet using TL model
 
 """
 

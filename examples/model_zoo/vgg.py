@@ -15,7 +15,7 @@ Download Pre-trained Model
 - Model weights in this example - vgg16_weights.npz : http://www.cs.toronto.edu/~frossard/post/vgg16/
 - Model weights in this example - vgg19.npy : https://media.githubusercontent.com/media/tensorlayer/pretrained-models/master/models/
 - Caffe VGG 16 model : https://gist.github.com/ksimonyan/211839e770f7b538e2d8#file-readme-md
-- Tool to convert the Caffe models to TensorFlow's : https://github.com/ethereon/caffe-tensorflow
+- Tool to convert the Caffe model to TensorFlow's : https://github.com/ethereon/caffe-tensorflow
 
 Note
 ------
@@ -34,8 +34,8 @@ import numpy as np
 import tensorlayerx as tl
 from tensorlayerx import logging
 from tensorlayerx.files import assign_weights, maybe_download_and_extract
-from tensorlayerx.layers import (BatchNorm, Conv2d, Dense, Flatten, MaxPool2d)
-from tensorlayerx.core import Module, SequentialLayer
+from tensorlayerx.nn import (BatchNorm, Conv2d, Dense, Flatten, SequentialLayer, MaxPool2d)
+from tensorlayerx.nn import Module
 
 __all__ = [
     'VGG',
@@ -262,7 +262,7 @@ def vgg19(pretrained=False, end_with='outputs', mode='dynamic', name=None):
 VGG16 = vgg16
 VGG19 = vgg19
 
-# models without pretrained parameters
+# model without pretrained parameters
 # def vgg11(pretrained=False, end_with='outputs'):
 #     model = VGG(layer_type='vgg11', batch_norm=False, end_with=end_with)
 #     if pretrained:

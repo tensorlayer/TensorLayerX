@@ -4,8 +4,8 @@
 import numpy as np
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.backend.load_backend import BACKEND
-from tensorlayerx.core import Module
+from tensorlayerx import BACKEND
+from tensorlayerx.nn.core import Module
 
 __all__ = [
     'RNN',
@@ -95,7 +95,7 @@ class RNNCell(Module):
 
     def build(self, inputs_shape):
         stdv = 1.0 / np.sqrt(self.hidden_size)
-        _init = tl.initializers.RandomUniform(minval=-stdv, maxval=stdv)
+        _init = tl.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
         self.weight_ih_shape = (self.hidden_size, self.input_size)
         self.weight_hh_shape = (self.hidden_size, self.hidden_size)
         self.weight_ih = self._get_weights("weight_ih", shape=self.weight_ih_shape, init=_init)
@@ -214,7 +214,7 @@ class LSTMCell(Module):
 
     def build(self, inputs_shape):
         stdv = 1.0 / np.sqrt(self.hidden_size)
-        _init = tl.initializers.RandomUniform(minval=-stdv, maxval=stdv)
+        _init = tl.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
         self.weight_ih_shape = (4 * self.hidden_size, self.input_size)
         self.weight_hh_shape = (4 * self.hidden_size, self.hidden_size)
         self.weight_ih = self._get_weights("weight_ih", shape=self.weight_ih_shape, init=_init)
@@ -340,7 +340,7 @@ class GRUCell(Module):
 
     def build(self, inputs_shape):
         stdv = 1.0 / np.sqrt(self.hidden_size)
-        _init = tl.initializers.RandomUniform(minval=-stdv, maxval=stdv)
+        _init = tl.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
         self.weight_ih_shape = (3 * self.hidden_size, self.input_size)
         self.weight_hh_shape = (3 * self.hidden_size, self.hidden_size)
         self.weight_ih = self._get_weights("weight_ih", shape=self.weight_ih_shape, init=_init)
@@ -443,7 +443,7 @@ class RNNBase(Module):
             self.weights_bw = []
             self.bias_bw = []
             stdv = 1.0 / np.sqrt(self.hidden_size)
-            _init = tl.initializers.RandomUniform(minval=-stdv, maxval=stdv)
+            _init = tl.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
             if self.mode == 'LSTM':
                 gate_size = 4 * self.hidden_size
             elif self.mode == 'GRU':

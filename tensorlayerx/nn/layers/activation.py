@@ -3,7 +3,7 @@
 
 from tensorlayerx import logging
 import tensorlayerx as tl
-from tensorlayerx.core import Module
+from tensorlayerx.nn.core import Module
 
 __all__ = [
     'ELU', 'PRelu', 'PRelu6', 'PTRelu6', 'ReLU', 'ReLU6', 'Softplus', 'LeakyReLU', 'LeakyReLU6', 'LeakyTwiceRelu6',

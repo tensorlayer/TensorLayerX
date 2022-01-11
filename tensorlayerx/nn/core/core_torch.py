@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from torch.nn import Module as T_Module
-from tensorlayerx.nn.core.common import str2act, str2init
-from tensorlayerx.nn.core.common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
+from .common import str2act, str2init
+from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from torch.nn.parameter import Parameter
 from collections import OrderedDict
+import torch
 import operator
 from itertools import islice
 

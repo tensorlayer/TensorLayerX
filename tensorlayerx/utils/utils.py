@@ -72,7 +72,7 @@ def fit(
 
     Examples
     --------
-    See `tutorial_mnist_simple.py <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mnist_simple.py>`_
+    See `mnist_mlp.py <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mnist_simple.py>`_
 
     >>> tl.utils.fit(network, train_op=tf.optimizers.Adam(learning_rate=0.0001),
     ...              losses=tl.losses.cross_entropy, X_train=X_train, y_train=y_train, acc=acc,
@@ -190,7 +190,7 @@ def test(network, acc, X_test, y_test, batch_size, cost=None):
 
     Examples
     --------
-    See `tutorial_mnist_simple.py <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mnist_simple.py>`_
+    See `mnist_mlp.py <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mnist_simple.py>`_
 
     >>> def acc(_logits, y_batch):
     ...     return np.mean(np.equal(np.argmax(_logits, 1), y_batch))
@@ -233,7 +233,7 @@ def predict(network, X, batch_size=None):
 
     Examples
     --------
-    See `tutorial_mnist_simple.py <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mnist_simple.py>`_
+    See `mnist_mlp.py <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mnist_simple.py>`_
 
     >>> _logits = tl.utils.predict(network, X_test)
     >>> y_pred = np.argmax(_logits, 1)

@@ -6,8 +6,6 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import tensorlayerx as tl
-
 from tests.utils import CustomTestCase
 
 
@@ -34,7 +32,7 @@ class Layer_Scale_Test(CustomTestCase):
                 output2 = self.scalelayer(output1)
                 return output1, output2
 
-        input = tensorlayerx.layers.Input((8, 3), init=tl.initializers.random_normal())
+        input = tensorlayerx.layers.Input((8, 3), init=tensorlayerx.nn.initializers.random_normal())
         net = model()
         net.set_train()
         dout, fout = net(input)

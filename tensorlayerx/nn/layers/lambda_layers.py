@@ -4,7 +4,7 @@
 import tensorflow as tf
 from tensorlayerx import logging
 from tensorlayerx.files import utils
-from tensorlayerx.core import Module
+from tensorlayerx.nn.core import Module
 
 __all__ = [
     'Lambda',
@@ -50,7 +50,7 @@ class Lambda(Module):
 
     Any function with outside variables:
     This case has not been supported in Model.save() / Model.load() yet.
-    Please avoid using Model.save() / Model.load() to save / load models that contain such Lambda layer. Instead, you may use Model.save_weights() / Model.load_weights() to save / load model weights.
+    Please avoid using Model.save() / Model.load() to save / load model that contain such Lambda layer. Instead, you may use Model.save_weights() / Model.load_weights() to save / load model weights.
     Note: In this case, fn_weights should be a list, and then the trainable weights in this Lambda layer can be added into the weights of the whole model.
 
     >>> a = tl.ops.Variable(1.0)
@@ -203,7 +203,7 @@ class ElementwiseLambda(Module):
 
     Any function with outside variables
     This case has not been supported in Model.save() / Model.load() yet.
-    Please avoid using Model.save() / Model.load() to save / load models that contain such ElementwiseLambda layer. Instead, you may use Model.save_weights() / Model.load_weights() to save / load model weights.
+    Please avoid using Model.save() / Model.load() to save / load model that contain such ElementwiseLambda layer. Instead, you may use Model.save_weights() / Model.load_weights() to save / load model weights.
     Note: In this case, fn_weights should be a list, and then the trainable weights in this ElementwiseLambda layer can be added into the weights of the whole model.
 
     >>> vara = [tf.Variable(1.0)]

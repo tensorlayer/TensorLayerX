@@ -26,7 +26,7 @@ def load_wmt_en_fr_dataset(path='data'):
 
     References
     ----------
-    - Code modified from /tensorflow/models/rnn/translation/data_utils.py
+    - Code modified from /tensorflow/model/rnn/translation/data_utils.py
 
     Notes
     -----

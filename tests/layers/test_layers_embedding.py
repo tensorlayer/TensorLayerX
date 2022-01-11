@@ -5,7 +5,7 @@ import os
 import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
+import tensorlayerx
 import tensorlayerx as tl
 import numpy as np
 
@@ -57,9 +57,9 @@ class Layer_Embed_Test(CustomTestCase):
             num_sampled=100,
             activate_nce_loss=True,  # the nce loss is activated
             nce_loss_args={},
-            E_init=tl.initializers.random_uniform(minval=-1.0, maxval=1.0),
-            nce_W_init=tl.initializers.truncated_normal(stddev=float(1.0 / np.sqrt(embedding_size))),
-            nce_b_init=tl.initializers.constant(value=0.0),
+            E_init=tensorlayerx.nn.initializers.random_uniform(minval=-1.0, maxval=1.0),
+            nce_W_init=tensorlayerx.nn.initializers.truncated_normal(stddev=float(1.0 / np.sqrt(embedding_size))),
+            nce_b_init=tensorlayerx.nn.initializers.constant(value=0.0),
         )
         print(emb_net)
 
@@ -78,9 +78,9 @@ class Layer_Embed_Test(CustomTestCase):
             num_sampled=100,
             activate_nce_loss=False,
             nce_loss_args={},
-            E_init=tl.initializers.random_uniform(minval=-1.0, maxval=1.0),
-            nce_W_init=tl.initializers.truncated_normal(stddev=float(1.0 / np.sqrt(embedding_size))),
-            nce_b_init=tl.initializers.constant(value=0.0),
+            E_init=tensorlayerx.nn.initializers.random_uniform(minval=-1.0, maxval=1.0),
+            nce_W_init=tensorlayerx.nn.initializers.truncated_normal(stddev=float(1.0 / np.sqrt(embedding_size))),
+            nce_b_init=tensorlayerx.nn.initializers.constant(value=0.0),
         )
         print(emb_net)
         embed_tensor = emb_net(inputs)

@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from tensorlayerx.nn.core.common import str2act, str2init
-from tensorlayerx.nn.core.common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
+from .common import str2act, str2init
+from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from mindspore.nn import Cell
 import tensorlayerx as tl
 from collections import OrderedDict
@@ -91,7 +91,7 @@ class Module(Cell):
         raise Exception("The build(self, inputs_shape) method must be implemented by inherited class")
 
     def _get_weights(
-        self, var_name, shape, init=tl.initializers.random_normal(), trainable=True, transposed=False, order=False
+        self, var_name, shape, init=tensorlayerx.nn.initializers.random_normal(), trainable=True, transposed=False, order=False
     ):
         """ Get trainable variables. """
         var_name = self.name + "/" + var_name

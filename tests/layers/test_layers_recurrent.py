@@ -8,7 +8,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import numpy as np
 import tensorlayerx as tl
-
+import tensorlayerx
+import tensorflow as tf
 from tests.utils import CustomTestCase
 
 
@@ -47,8 +48,8 @@ class Layer_RNN_Test(CustomTestCase):
 
     def test_basic_simplernn(self):
 
-        inputs = tensorlayerx.layers.Input([self.batch_size, self.num_steps, self.embedding_size])
-        rnnlayer = tensorlayerx.layers.RNN(
+        inputs = tl.layers.Input([self.batch_size, self.num_steps, self.embedding_size])
+        rnnlayer = tl.layers.RNN(
             cell=tf.keras.layers.SimpleRNNCell(units=self.hidden_size, dropout=0.1), return_last_output=True,
             return_seq_2d=False, return_last_state=True
         )

@@ -10,13 +10,13 @@ from .embedding import *
 from .extend import *
 from .image_resampling import *
 from .inputs import *
-# from .lambda_layers import *
+from .lambda_layers import *
 from .merge import *
 from .noise import *
 from .normalization import *
 from .padding import *
 from .pooling import *
-# from .quantize import *
+from .quantize import *
 from .recurrent import *
 from .scale import *
 from .shape import *

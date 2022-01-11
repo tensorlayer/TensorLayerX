@@ -8,8 +8,8 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 
 
 import tensorlayerx as tl
-from tensorlayerx.core import Module
-from tensorlayerx.layers import Dense, Dropout, Conv2d, MaxPool2d, Flatten
+from tensorlayerx.nn import Module
+from tensorlayerx.nn import Dense, Dropout, Conv2d, MaxPool2d, Flatten
 from tensorlayerx.dataflow import Dataset
 
 X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
@@ -51,9 +51,9 @@ class CNN(Module):
     def __init__(self):
         super(CNN, self).__init__()
         # weights init
-        W_init = tl.initializers.truncated_normal(stddev=5e-2)
-        W_init2 = tl.initializers.truncated_normal(stddev=0.04)
-        b_init2 = tl.initializers.constant(value=0.1)
+        W_init = tl.nn.initializers.truncated_normal(stddev=5e-2)
+        W_init2 = tl.nn.initializers.truncated_normal(stddev=0.04)
+        b_init2 = tl.nn.initializers.constant(value=0.1)
 
         self.conv1 = Conv2d(64, (5, 5), (2, 2), padding='SAME', W_init=W_init, name='conv1', in_channels=3)
         # self.bn = BatchNorm2d(num_features=64, act=tl.ReLU)
@@ -104,6 +104,6 @@ cnn.load_standard_weights('./model.npz', skip=False)
 #  set reshape to True parameter to convert convolution shape.
 # cnn.load_standard_weights('./model.npz', skip=True, reshape=True)
 cnn.set_eval()
-inputs = tensorlayerx.layers.Input(shape=(10, 28, 28, 3), dtype=tl.float32)
+inputs = tl.nn.Input(shape=(10, 28, 28, 3), dtype=tl.float32)
 outputs = cnn(inputs)
 print(outputs)

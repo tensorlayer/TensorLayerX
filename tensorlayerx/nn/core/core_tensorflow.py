@@ -1,13 +1,13 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from tensorlayerx.nn.core.common import str2act, str2init
-from tensorlayerx.nn.core.common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
+from .common import str2act, str2init
+from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from collections import OrderedDict
 import time
 import tensorlayerx as tl
 import tensorflow as tf
-from tensorlayerx.nn.layers.utils import (get_variable_with_initializer)
+from tensorlayerx.nn.layers.utils import (get_variable_with_initializer, random_normal)
 
 __all__ = ['Module', 'SequentialLayer', 'LayerList']
 
@@ -183,7 +183,7 @@ class Module(object):
         raise Exception("The build(self, inputs_shape) method must be implemented by inherited class")
 
     def _get_weights(
-        self, var_name, shape, init=tl.initializers.random_normal(), trainable=True, transposed=None, order=False
+        self, var_name, shape, init=random_normal(), trainable=True, transposed=None, order=False
     ):
         """ Get trainable variables. """
 

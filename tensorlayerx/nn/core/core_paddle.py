@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import copy, six
-from tensorlayerx.nn.core.common import str2act, str2init
-from tensorlayerx.nn.core.common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
+from .common import str2act, str2init
+from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from paddle.fluid import framework
 from paddle.fluid.dygraph import Layer
 from paddle.fluid.framework import in_dygraph_mode

@@ -3,7 +3,7 @@
 
 import tensorlayerx as tl
 from tensorlayerx import logging
-from tensorlayerx.core import Module
+from tensorlayerx.nn.core import Module
 
 __all__ = ['OneHot', 'Word2vecEmbedding', 'Embedding', 'AverageEmbedding']
 
@@ -287,7 +287,7 @@ class Word2vecEmbedding(Module):
             if not isinstance(inputs, list):
                 raise ValueError("If nce loss is used, the labels of inputs must be provided.")
 
-            nce_cost = tl.reduce_mean(
+            nce_cost = tl.ops.reduce_mean(
                 input_tensor=self.nce_loss(
                     weights=self.nce_weights, biases=self.nce_biases, inputs=outputs, labels=inputs[1],
                     num_sampled=self.num_sampled, num_classes=self.vocabulary_size
@@ -391,7 +391,7 @@ class Embedding(Module):
 
 class AverageEmbedding(Module):
     """The :class:`AverageEmbedding` averages over embeddings of inputs.
-    This is often used as the input layer for models like DAN[1] and FastText[2].
+    This is often used as the input layer for model like DAN[1] and FastText[2].
 
     Parameters
     ----------

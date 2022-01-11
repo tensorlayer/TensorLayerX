@@ -6,6 +6,7 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+import tensorlayerx
 import tensorlayerx as tl
 
 from tests.utils import CustomTestCase
@@ -15,15 +16,15 @@ class Activation_Layer_Test(CustomTestCase):
 
     @classmethod
     def setUpClass(self):
-        self.inputs = tensorlayerx.layers.Input([10, 5])
+        self.inputs = tl.layers.Input([10, 5])
 
     @classmethod
     def tearDownClass(self):
         pass
 
     def test_prelu_1(self):
-        prelulayer = tensorlayerx.layers.PRelu(channel_shared=True)
-        class prelu_model(tensorlayerx.layers.Module):
+        prelulayer = tl.layers.PRelu(channel_shared=True)
+        class prelu_model(tensorlayerx.nn.Module):
             def __init__(self):
                 super(prelu_model, self).__init__()
                 self.prelu = prelulayer
@@ -50,7 +51,7 @@ class Activation_Layer_Test(CustomTestCase):
     def test_prelu6_2(self):
         prelu6layer = tensorlayerx.layers.PRelu6(channel_shared=True)
 
-        class prelu6_model(tensorlayerx.layers.Module):
+        class prelu6_model(tensorlayerx.nn.Module):
             def __init__(self):
                 super(prelu6_model, self).__init__()
                 self.prelu = prelu6layer
@@ -71,7 +72,7 @@ class Activation_Layer_Test(CustomTestCase):
     def test_ptrelu6_2(self):
         ptrelu6layer = tensorlayerx.layers.PTRelu6(in_channels=5)
 
-        class ptrelu6_model(tensorlayerx.layers.Module):
+        class ptrelu6_model(tensorlayerx.nn.Module):
             def __init__(self):
                 super(ptrelu6_model, self).__init__()
                 self.prelu = ptrelu6layer

@@ -6,6 +6,7 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+import tensorlayerx
 import tensorlayerx as tl
 
 from tests.utils import CustomTestCase
@@ -82,7 +83,7 @@ class Layer_Convolution_2D_Test(CustomTestCase):
 
         self.conv2dlayer1 = tensorlayerx.layers.Conv2d(
             n_filter=32, in_channels=3, strides=(2, 2), filter_size=(5, 5), padding='SAME',
-            b_init=tl.initializers.truncated_normal(0.01), name='conv2dlayer'
+            b_init=tensorlayerx.nn.initializers.truncated_normal(0.01), name='conv2dlayer'
         )
         self.n1 = self.conv2dlayer1(self.input_layer)
 
