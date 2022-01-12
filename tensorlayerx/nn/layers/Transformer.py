@@ -213,7 +213,7 @@ class Transformer(Module):
 
     >>> src = tl.layers.Input(shape=(4,2,128),init=tl.initializers.ones())
     >>> tgt = tl.layers.Input(shape=(4,2,128),init=tl.initializers.ones())
-    >>> layer = Transformer(d_model=128, num_heads=4)
+    >>> layer = Transformer(d_model=128, nhead=4)
     >>> output = layer(src, tgt)
 
 
@@ -661,16 +661,3 @@ class TransformerDecoderLayer(Module):
         tgt = self.norm3(tgt)
         return tgt
 
-
-if __name__ == '__main__':
-    q = tl.nn.layers.Input(shape=(4, 2, 128), init=tl.nn.initializers.ones())
-    attn_mask = tl.convert_to_tensor(np.zeros((4, 4)), dtype='bool')
-    # l = MultiheadAttention(embed_dim=128, num_heads=4)
-    encoder = TransformerEncoderLayer(128, 2, 256)
-    encoder = TransformerEncoder(encoder, 2)
-    # print(encoder.trainable_weights)
-    output = encoder(q, attn_mask)
-    print(output)
-    # decoder = TransformerDecoderLayer(d_model=128, nhead=2, dim_feedforward=512)
-    # output = decoder(q, output)
-    # print(output)
