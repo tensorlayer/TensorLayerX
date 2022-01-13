@@ -9,8 +9,6 @@ layers that allow user to apply ``tf.ops.lrn`` on ``network.outputs``.
 More functions can be found in `TensorFlow API <https://www.tensorflow.org/versions/master/api_docs/index.html>`__.
 """
 
-from tensorlayerx.lazy_imports import LazyImport
-
 from .dataset_loaders.celebA_dataset import *
 from .dataset_loaders.cifar10_dataset import *
 from .dataset_loaders.cyclegan_dataset import *
@@ -45,7 +43,7 @@ __all__ = [
     # 'load_wmt_en_fr_dataset',
 
     # Util Functions
-    'assign_params',
+    'assign_weights',
     'del_file',
     'del_folder',
     'download_file_from_google_drive',

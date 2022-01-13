@@ -6,7 +6,7 @@ import os
 import imageio
 import numpy as np
 import tensorlayerx as tl
-from tensorlayerx.lazy_imports import LazyImport
+from tensorlayerx.utils.lazy_imports import LazyImport
 import colorsys, random
 
 cv2 = LazyImport("cv2")

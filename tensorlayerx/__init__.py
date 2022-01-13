@@ -22,7 +22,7 @@ if 'TENSORLAYER_PACKAGE_BUILDING' not in os.environ:
     from tensorlayerx import decorators
     from tensorlayerx import files
     from .utils import iterate
-    from tensorlayerx import lazy_imports
+    from .utils import lazy_imports
     from tensorlayerx import logging
     from tensorlayerx import model
     from tensorlayerx import optimizers
@@ -30,7 +30,7 @@ if 'TENSORLAYER_PACKAGE_BUILDING' not in os.environ:
     from tensorlayerx import metrics
     from tensorlayerx import vision
 
-    from tensorlayerx.lazy_imports import LazyImport
+    from tensorlayerx.utils.lazy_imports import LazyImport
 
     # Lazy Imports
     db = LazyImport("tensorlayerx.utils.db")

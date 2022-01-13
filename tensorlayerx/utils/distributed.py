@@ -9,7 +9,7 @@ from tensorflow.python.training import session_run_hook
 
 from tensorlayerx import logging
 from tensorlayerx.decorators import deprecated
-from tensorlayerx.lazy_imports import LazyImport
+from tensorlayerx.utils.lazy_imports import LazyImport
 
 hvd = LazyImport('horovod.tensorflow')
 

@@ -9,7 +9,7 @@ layers that allow user to apply ``tf.ops.lrn`` on ``network.outputs``.
 More functions can be found in `TensorFlow API <https://www.tensorflow.org/versions/master/api_docs/index.html>`__.
 """
 
-from tensorlayerx.lazy_imports import LazyImport
+from tensorlayerx.utils.lazy_imports import LazyImport
 
 from .tl_logging import *
 

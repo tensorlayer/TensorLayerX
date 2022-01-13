@@ -17,7 +17,7 @@ from six.moves import urllib, xrange
 from tensorflow.python.platform import gfile
 
 import tensorlayerx as tl
-from tensorlayerx.lazy_imports import LazyImport
+from tensorlayerx.utils.lazy_imports import LazyImport
 
 nltk = LazyImport("nltk")
 

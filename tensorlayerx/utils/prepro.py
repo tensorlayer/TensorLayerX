@@ -9,7 +9,6 @@ import time
 
 import numpy as np
 import PIL
-import scipy
 import scipy.ndimage as ndi
 import skimage
 from scipy import linalg
@@ -24,7 +23,7 @@ from skimage.morphology import erosion as _erosion
 from skimage.transform import resize
 
 import tensorlayerx as tl
-from tensorlayerx.lazy_imports import LazyImport
+from tensorlayerx.utils.lazy_imports import LazyImport
 
 cv2 = LazyImport("cv2")
 
