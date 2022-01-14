@@ -6,7 +6,7 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 import tensorlayerx
 from tests.utils import CustomTestCase
 
@@ -17,21 +17,21 @@ class Layer_Padding_Test(CustomTestCase):
     def setUpClass(cls):
 
         ## 1D
-        cls.input_layer1 = tensorlayerx.layers.Input([None, 100, 1], name='input_layer1')
+        cls.input_layer1 = tlx.nn.Input([None, 100, 1], name='input_layer1')
 
-        n1 = tensorlayerx.layers.ZeroPad1d(padding=1)(cls.input_layer1)
-        n2 = tensorlayerx.layers.ZeroPad1d(padding=(2, 3))(cls.input_layer1)
+        n1 = tlx.nn.ZeroPad1d(padding=1)(cls.input_layer1)
+        n2 = tlx.nn.ZeroPad1d(padding=(2, 3))(cls.input_layer1)
 
         cls.n1_shape = n1.get_shape().as_list()
         cls.n2_shape = n2.get_shape().as_list()
 
         ## 2D
-        cls.input_layer2 = tensorlayerx.layers.Input([None, 100, 100, 3], name='input_layer2')
+        cls.input_layer2 = tlx.nn.Input([None, 100, 100, 3], name='input_layer2')
 
-        n0 = tensorlayerx.layers.PadLayer([[0, 0], [3, 3], [3, 3], [0, 0]], "REFLECT", name='inpad')(cls.input_layer2)
-        n3 = tensorlayerx.layers.ZeroPad2d(padding=2)(cls.input_layer2)
-        n4 = tensorlayerx.layers.ZeroPad2d(padding=(2, 3))(cls.input_layer2)
-        n5 = tensorlayerx.layers.ZeroPad2d(padding=((3, 3), (4, 4)))(cls.input_layer2)
+        n0 = tlx.nn.PadLayer([[0, 0], [3, 3], [3, 3], [0, 0]], "REFLECT", name='inpad')(cls.input_layer2)
+        n3 = tlx.nn.ZeroPad2d(padding=2)(cls.input_layer2)
+        n4 = tlx.nn.ZeroPad2d(padding=(2, 3))(cls.input_layer2)
+        n5 = tlx.nn.ZeroPad2d(padding=((3, 3), (4, 4)))(cls.input_layer2)
 
         cls.n0_shape = n0.get_shape().as_list()
         cls.n3_shape = n3.get_shape().as_list()
@@ -39,11 +39,11 @@ class Layer_Padding_Test(CustomTestCase):
         cls.n5_shape = n5.get_shape().as_list()
 
         ## 3D
-        cls.input_layer3 = tensorlayerx.layers.Input([None, 100, 100, 100, 3], name='input_layer3')
+        cls.input_layer3 = tlx.nn.Input([None, 100, 100, 100, 3], name='input_layer3')
 
-        n6 = tensorlayerx.layers.ZeroPad3d(padding=2)(cls.input_layer3)
-        n7 = tensorlayerx.layers.ZeroPad3d(padding=(2, 3, 4))(cls.input_layer3)
-        n8 = tensorlayerx.layers.ZeroPad3d(padding=((3, 3), (4, 4), (5, 5)))(cls.input_layer3)
+        n6 = tlx.nn.ZeroPad3d(padding=2)(cls.input_layer3)
+        n7 = tlx.nn.ZeroPad3d(padding=(2, 3, 4))(cls.input_layer3)
+        n8 = tlx.nn.ZeroPad3d(padding=((3, 3), (4, 4), (5, 5)))(cls.input_layer3)
 
         cls.n6_shape = n6.get_shape().as_list()
         cls.n7_shape = n7.get_shape().as_list()
@@ -83,6 +83,6 @@ class Layer_Padding_Test(CustomTestCase):
 
 if __name__ == '__main__':
 
-    tl.logging.set_verbosity(tl.logging.DEBUG)
+    tlx.logging.set_verbosity(tlx.logging.DEBUG)
 
     unittest.main()

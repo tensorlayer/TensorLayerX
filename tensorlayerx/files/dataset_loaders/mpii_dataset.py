@@ -33,10 +33,10 @@ def load_mpii_pose_dataset(path='data', is_16_pos_only=False):
     Examples
     --------
     >>> import pprint
-    >>> import tensorlayerx as tl
-    >>> img_train_list, ann_train_list, img_test_list, ann_test_list = tl.files.load_mpii_pose_dataset()
-    >>> image = tl.vis.read_image(img_train_list[0])
-    >>> tl.vis.draw_mpii_pose_to_image(image, ann_train_list[0], 'image.png')
+    >>> import tensorlayerx as tlx
+    >>> img_train_list, ann_train_list, img_test_list, ann_test_list = tlx.files.load_mpii_pose_dataset()
+    >>> image = tlx.vis.read_image(img_train_list[0])
+    >>> tlx.vis.draw_mpii_pose_to_image(image, ann_train_list[0], 'image.png')
     >>> pprint.pprint(ann_train_list[0])
 
     References

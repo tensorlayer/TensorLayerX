@@ -6,12 +6,12 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'paddle'
 # os.environ['TL_BACKEND'] = 'torch'
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Dense, Dropout, Conv2d, MaxPool2d, Flatten
 from tensorlayerx.dataflow import Dataset
 
-X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
+X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
 
 
 class mnistdataset(Dataset):
@@ -34,11 +34,11 @@ class CustomModel(Module):
     def __init__(self):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(keep=0.8)
-        self.dense1 = Dense(n_units=800, act=tl.ReLU, in_channels=784, name='dense1')
+        self.dense1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='dense1')
         self.dropout2 = Dropout(keep=0.8)
-        self.dense2 = Dense(n_units=800, act=tl.ReLU, in_channels=800, name='dense2')
+        self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800, name='dense2')
         self.dropout3 = Dropout(keep=0.8)
-        self.dense3 = Dense(n_units=10, act=tl.ReLU, in_channels=800, name='dense3')
+        self.dense3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800, name='dense3')
 
     def forward(self, x, foo=None):
         z = self.dropout1(x)
@@ -48,7 +48,7 @@ class CustomModel(Module):
         z = self.dropout3(z)
         out = self.dense3(z)
         if foo is not None:
-            out = tl.ops.relu(out)
+            out = tlx.relu(out)
         return out
 
 
@@ -57,22 +57,22 @@ class CNN(Module):
     def __init__(self):
         super(CNN, self).__init__()
         # weights init
-        W_init = tl.nn.initializers.truncated_normal(stddev=5e-2)
-        W_init2 = tl.nn.initializers.truncated_normal(stddev=0.04)
-        b_init2 = tl.nn.initializers.constant(value=0.1)
+        W_init = tlx.nn.initializers.truncated_normal(stddev=5e-2)
+        W_init2 = tlx.nn.initializers.truncated_normal(stddev=0.04)
+        b_init2 = tlx.nn.initializers.constant(value=0.1)
 
         self.conv1 = Conv2d(64, (5, 5), (2, 2), padding='SAME', W_init=W_init, name='conv1', in_channels=3)
-        # self.bn = BatchNorm2d(num_features=64, act=tl.ReLU)
+        # self.bn = BatchNorm2d(num_features=64, act=tlx.ReLU)
         self.maxpool1 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool1')
 
         self.conv2 = Conv2d(
-            64, (5, 5), (2, 2), padding='SAME', act=tl.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
+            64, (5, 5), (2, 2), padding='SAME', act=tlx.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
         )
         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 
         self.flatten = Flatten(name='flatten')
-        self.dense1 = Dense(384, act=tl.ReLU, W_init=W_init2, b_init=b_init2, name='dense1', in_channels=256)
-        self.dense2 = Dense(192, act=tl.ReLU, W_init=W_init2, b_init=b_init2, name='dense2', in_channels=384)
+        self.dense1 = Dense(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1', in_channels=256)
+        self.dense2 = Dense(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2', in_channels=384)
         self.dense3 = Dense(10, act=None, W_init=W_init2, name='dense3', in_channels=192)
 
     def forward(self, x):
@@ -97,7 +97,7 @@ class CNN(Module):
 # MLP.save_standard_weights('./model.npz')
 # # MLP.load_standard_weights('./model.npz', skip=True)
 # MLP.set_eval()
-# inputs = tl.layers.Input(shape=(10, 784))
+# inputs = tlx.layers.Input(shape=(10, 784))
 # print(MLP(inputs))
 
 # TODO The CNN model was saved to the standard npz_dict format after training at the TensorFlow backend
@@ -111,6 +111,6 @@ cnn.load_standard_weights('./model.npz', skip=False)
 #  set reshape to True parameter to convert convolution shape.
 # cnn.load_standard_weights('./model.npz', skip=True, reshape=True)
 cnn.set_eval()
-inputs = tl.nn.Input(shape=(10, 28, 28, 3), dtype=tl.float32)
+inputs = tlx.nn.Input(shape=(10, 28, 28, 3), dtype=tlx.float32)
 outputs = cnn(inputs)
 print(outputs)

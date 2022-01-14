@@ -8,7 +8,7 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import Input
 import tensorlayerx
 from tests.utils import CustomTestCase
@@ -26,15 +26,15 @@ class Layer_Pooling_Test(CustomTestCase):
         x_2_input_shape = [None, 100, 100, 3]
         nin_2 = Input(x_2_input_shape)
 
-        n6 = tensorlayerx.layers.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), name='test_conv2d')(nin_2)
+        n6 = tlx.nn.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), name='test_conv2d')(nin_2)
 
-        n7 = tensorlayerx.layers.UpSampling2d(scale=(2, 2), name='test_UpSampling2d_1')(n6)
+        n7 = tlx.nn.UpSampling2d(scale=(2, 2), name='test_UpSampling2d_1')(n6)
 
-        n8 = tensorlayerx.layers.UpSampling2d(scale=3, name='test_UpSampling2d_2')(n6)
+        n8 = tlx.nn.UpSampling2d(scale=3, name='test_UpSampling2d_2')(n6)
 
-        n9 = tensorlayerx.layers.DownSampling2d(scale=(2, 2), name='test_DownSampling2d_1')(n6)
+        n9 = tlx.nn.DownSampling2d(scale=(2, 2), name='test_DownSampling2d_1')(n6)
 
-        n10 = tensorlayerx.layers.DownSampling2d(scale=5, name='test_DownSampling2d_2')(n6)
+        n10 = tlx.nn.DownSampling2d(scale=5, name='test_DownSampling2d_2')(n6)
 
         cls.n6_shape = n6.get_shape().as_list()
         cls.n7_shape = n7.get_shape().as_list()
@@ -52,7 +52,7 @@ class Layer_Pooling_Test(CustomTestCase):
         self.assertEqual(self.n8_shape[1:3], [150, 150])
 
         try:
-            layer = tensorlayerx.layers.UpSampling2d(scale=(2, 2, 2))
+            layer = tlx.nn.UpSampling2d(scale=(2, 2, 2))
         except Exception as e:
             print(e)
 
@@ -61,13 +61,13 @@ class Layer_Pooling_Test(CustomTestCase):
         self.assertEqual(self.n10_shape[1:3], [10, 10])
 
         try:
-            layer = tensorlayerx.layers.DownSampling2d(scale=(2, 2, 2))
+            layer = tlx.nn.DownSampling2d(scale=(2, 2, 2))
         except Exception as e:
             print(e)
 
 
 if __name__ == '__main__':
 
-    tl.logging.set_verbosity(tl.logging.DEBUG)
+    tlx.logging.set_verbosity(tlx.logging.DEBUG)
 
     unittest.main()

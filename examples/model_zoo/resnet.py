@@ -10,7 +10,7 @@
 
 import os
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 
 from tensorlayerx import logging
 from tensorlayerx.files import (maybe_download_and_extract)
@@ -26,7 +26,7 @@ block_names = ['2a', '2b', '2c', '3a', '3b', '3c', '3d', '4a', '4b', '4c', '4d',
 block_filters = [[64, 64, 256], [128, 128, 512], [256, 256, 1024], [512, 512, 2048]]
 in_channels_conv = [64, 256, 512, 1024]
 in_channels_identity = [256, 512, 1024, 2048]
-henorm = tl.nn.initializers.he_normal()
+henorm = tlx.nn.initializers.he_normal()
 
 
 class identity_block(Module):
@@ -70,7 +70,7 @@ class identity_block(Module):
         self.conv3 = Conv2d(filters3, (1, 1), W_init=henorm, name=conv_name_base + '2c', in_channels=filters2)
         self.bn3 = BatchNorm(name=bn_name_base + '2c', num_features=filters3)
 
-        self.add = Elementwise(tl.add, act='relu')
+        self.add = Elementwise(tlx.add, act='relu')
 
     def forward(self, inputs):
         output = self.conv1(inputs)
@@ -110,7 +110,7 @@ class conv_block(Module):
         )
         self.shortcut_bn = BatchNorm(name=bn_name_base + '1', num_features=filters3)
 
-        self.add = Elementwise(tl.add, act='relu')
+        self.add = Elementwise(tlx.add, act='relu')
 
     def forward(self, inputs):
         output = self.conv1(inputs)
@@ -194,7 +194,7 @@ def ResNet50(pretrained=False, end_with='fc1000', n_classes=1000):
     >>> resnet = ResNet50(pretrained=True)
     >>> # use for inferencing
     >>> output = resnet(img1)
-    >>> prob = tl.ops.softmax(output)[0].numpy()
+    >>> prob = tlx.softmax(output)[0].numpy()
 
     Extract the features before fc layer
 

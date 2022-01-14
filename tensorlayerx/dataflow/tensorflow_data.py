@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-import tensorlayerx as tl
+import tensorlayerx as tlx
 import numpy as np
 __all__ = [
     'Batch',
@@ -122,7 +122,7 @@ def FromGenerator(generator, output_types, column_names=None):
     With TensorLayer
 
     >>> train_dataset = mnistdataset(data = X_train, label = y_train ,transform = transform)
-    >>> train_dataset = tl.dataflow.FromGenerator(train_dataset, output_types=[tl.float32, tl.int64], column_names=['data', 'label'])
+    >>> train_dataset = tlx.dataflow.FromGenerator(train_dataset, output_types=[tlx.float32, tlx.int64], column_names=['data', 'label'])
 
     """
     output_types = tuple(output_types)
@@ -167,7 +167,7 @@ def Concat(datasets):
     ----------
     With TensorLayer
 
-    >>> dataset = tl.dataflow.Concat([dataset1, dataset2])
+    >>> dataset = tlx.dataflow.Concat([dataset1, dataset2])
 
     """
 
@@ -198,7 +198,7 @@ def FromSlices(datas, column_names=None):
     ----------
     With TensorLayer
 
-    >>> dataset = tl.dataflow.FromSlices([data1, data2])
+    >>> dataset = tlx.dataflow.FromSlices([data1, data2])
 
     """
 
@@ -226,7 +226,7 @@ def Map(dataset, map_func, input_columns=None):
     ----------
     With TensorLayer
 
-    >>> dataset = tl.dataflow.Map(dataset, map_func)
+    >>> dataset = tlx.dataflow.Map(dataset, map_func)
 
     """
     return dataset.map(map_func)
@@ -251,7 +251,7 @@ def Repeat(dataset, count=None):
     ----------
     With TensorLayer
 
-    >>> dataset = tl.dataflow.Repeat(dataset, 2)
+    >>> dataset = tlx.dataflow.Repeat(dataset, 2)
 
     """
     return dataset.repeat(count=count)
@@ -276,7 +276,7 @@ def Shuffle(dataset, buffer_size):
     ----------
     With TensorLayer
 
-    >>> dataset = tl.dataflow.Shuffle(dataset, 2000)
+    >>> dataset = tlx.dataflow.Shuffle(dataset, 2000)
 
     """
     return dataset.shuffle(buffer_size, seed=None, reshuffle_each_iteration=True)
@@ -299,7 +299,7 @@ def Zip(datasets):
     ----------
     With TensorLayer
 
-    >>> dataset = tl.dataflow.Zip([dataset1, dataset2])
+    >>> dataset = tlx.dataflow.Zip([dataset1, dataset2])
 
     """
     return tf.data.Dataset.zip(datasets)
@@ -344,8 +344,8 @@ def Dataloader(dataset, batch_size, shuffle=False, drop_last=False, shuffle_buff
     >>>     def __len__(self):
     >>>         return len(self.data)
     >>> train_dataset = mnistdataset(data = X_train, label = y_train ,transform = transform)
-    >>> train_dataset = tl.dataflow.FromGenerator(train_dataset, output_types=[tl.float32, tl.int64], column_names=['data', 'label'])
-    >>> train_dataloader = tl.dataflow.Dataloader(train_dataset, batch_size=128, shuffle=True, drop_last=False, shuffle_buffer_size=2000)
+    >>> train_dataset = tlx.dataflow.FromGenerator(train_dataset, output_types=[tlx.float32, tlx.int64], column_names=['data', 'label'])
+    >>> train_dataloader = tlx.dataflow.Dataloader(train_dataset, batch_size=128, shuffle=True, drop_last=False, shuffle_buffer_size=2000)
 
     """
 

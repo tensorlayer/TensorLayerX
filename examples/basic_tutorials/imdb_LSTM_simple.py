@@ -7,13 +7,13 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Dense, LSTM, Embedding
 from tensorlayerx.dataflow import Dataset
 import numpy as np
 
-X_train, y_train, X_test, y_test = tl.files.load_imdb_dataset('data', nb_words=20000, test_split=0.2)
+X_train, y_train, X_test, y_test = tlx.files.load_imdb_dataset('data', nb_words=20000, test_split=0.2)
 
 Seq_Len = 200
 vocab_size = len(X_train) + 1
@@ -43,13 +43,13 @@ class ImdbNet(Module):
         super(ImdbNet, self).__init__()
         self.embedding = Embedding(vocabulary_size=vocab_size, embedding_size=64)
         self.lstm = LSTM(input_size=64, hidden_size=64)
-        self.dense1 = Dense(in_channels=64, n_units=64, act=tl.ReLU)
+        self.dense1 = Dense(in_channels=64, n_units=64, act=tlx.ReLU)
         self.dense2 = Dense(in_channels=64, n_units=2)
 
     def forward(self, x):
         x = self.embedding(x)
         x, _ = self.lstm(x)
-        x = tl.ops.reduce_mean(x, axis=1)
+        x = tlx.reduce_mean(x, axis=1)
         x = self.dense1(x)
         x = self.dense2(x)
         return x
@@ -60,15 +60,15 @@ batch_size = 64
 print_freq = 2
 
 train_dataset = imdbdataset(X=X_train, y=y_train)
-train_dataset = tl.dataflow.FromGenerator(
-    train_dataset, output_types=[tl.int64, tl.int64], column_names=['data', 'label']
+train_dataset = tlx.dataflow.FromGenerator(
+    train_dataset, output_types=[tlx.int64, tlx.int64], column_names=['data', 'label']
 )
-train_loader = tl.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
+train_loader = tlx.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
 
 net = ImdbNet()
 train_weights = net.trainable_weights
-optimizer = tl.optimizers.Adam(1e-3)
-metric = tl.metrics.Accuracy()
-loss_fn = tl.losses.softmax_cross_entropy_with_logits
-model = tl.model.Model(network=net, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
+optimizer = tlx.optimizers.Adam(1e-3)
+metric = tlx.metrics.Accuracy()
+loss_fn = tlx.losses.softmax_cross_entropy_with_logits
+model = tlx.model.Model(network=net, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
 model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=True)

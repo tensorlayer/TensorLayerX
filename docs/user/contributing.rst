@@ -4,12 +4,12 @@
 Contributing
 ===============
 
-TensorLayer 3.0 is a major ongoing research project in Peking University and Pengcheng Laboratory, the first version was established at Imperial College London in 2016. The goal of the project is to develop a compositional language that is compatible with multiple deep learning frameworks,
+TensorLayerx is a major ongoing research project in Peking University and Pengcheng Laboratory, the first version was established at Imperial College London in 2016. The goal of the project is to develop a compositional language that is compatible with multiple deep learning frameworks,
 while complex learning systems can be built through composition of neural network modules.
 
 Numerous contributors come from various horizons such as: Imperial College London, Tsinghua University, Carnegie Mellon University, Stanford, University of Technology of Compiegne, Google, Microsoft, Bloomberg and etc.
 
-You can easily open a Pull Request (PR) on `OpenI <https://git.openi.org.cn/TensorLayer/tensorlayer3.0>`__ or `GitHub <https://github.com/tensorlayer/tensorlayer>`__, every little step counts and will be credited.
+You can easily open a Pull Request (PR) on `GitHub <https://github.com/tensorlayer/TensorLayerX>`__, every little step counts and will be credited.
 As an open-source project, we highly welcome and value contributions!
 
 **If you are interested in working with us, please contact us at:** `tensorlayer@gmail.com <tensorlayer@gmail.com>`_.

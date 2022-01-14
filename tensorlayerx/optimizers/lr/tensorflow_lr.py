@@ -39,7 +39,7 @@ class LRScheduler(object):
     With TensorLayer
 
     >>> #Here is an example of a simple ``StepDecay`` implementation.
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> from tensorlayerx.optimizers.lr import LRScheduler
     >>> class StepDecay(LRScheduler):
     >>>     def __init__(self, learning_rate, step_size, gamma = 0.1, last_epoch = -1, verbose=False):
@@ -120,9 +120,9 @@ class StepDecay(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.StepDecay(learning_rate = 0.1, step_size = 10,  gamma = 0.1, last_epoch = -1, verbose = False)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.StepDecay(learning_rate = 0.1, step_size = 10,  gamma = 0.1, last_epoch = -1, verbose = False)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for batch in range(100):
     >>>        # train model
@@ -182,9 +182,9 @@ class CosineAnnealingDecay(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.CosineAnnealingDecay(learning_rate = 0.1, step = 10,  gamma = 0.1, last_epoch = -1, verbose = False)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.CosineAnnealingDecay(learning_rate = 0.1, step = 10,  gamma = 0.1, last_epoch = -1, verbose = False)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
     >>>        # train model
@@ -250,9 +250,9 @@ class NoamDecay(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.NoamDecay(d_model=0.01, warmup_steps=100, verbose=True)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.NoamDecay(d_model=0.01, warmup_steps=100, verbose=True)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
     >>>        # train model
@@ -310,9 +310,9 @@ class PiecewiseDecay(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.PiecewiseDecay(boundaries=[100, 200], values=[0.1, 0.5, 0.1], verbose=True)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.PiecewiseDecay(boundaries=[100, 200], values=[0.1, 0.5, 0.1], verbose=True)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
     >>>        # train model
@@ -361,9 +361,9 @@ class NaturalExpDecay(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.NaturalExpDecay(learning_rate=0.1, gamma=0.1, verbose=True)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.NaturalExpDecay(learning_rate=0.1, gamma=0.1, verbose=True)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
     >>>        # train model
@@ -408,9 +408,9 @@ class InverseTimeDecay(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.InverseTimeDecay(learning_rate=0.1, gamma=0.1, verbose=True)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.InverseTimeDecay(learning_rate=0.1, gamma=0.1, verbose=True)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
     >>>        # train model
@@ -473,9 +473,9 @@ class PolynomialDecay(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.PolynomialDecay(learning_rate=0.1, decay_steps=50, verbose=True)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.PolynomialDecay(learning_rate=0.1, decay_steps=50, verbose=True)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
     >>>        # train model
@@ -551,9 +551,9 @@ class LinearWarmup(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.LinearWarmup(learning_rate=0.1, warmup_steps=20, start_lr=0.0, end_lr=0.5, verbose=True)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.LinearWarmup(learning_rate=0.1, warmup_steps=20, start_lr=0.0, end_lr=0.5, verbose=True)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
     >>>        # train model
@@ -619,9 +619,9 @@ class ExponentialDecay(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.ExponentialDecay(learning_rate=0.1, gamma=0.9, verbose=True)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.ExponentialDecay(learning_rate=0.1, gamma=0.9, verbose=True)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
     >>>        # train model
@@ -677,9 +677,9 @@ class MultiStepDecay(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.MultiStepDecay(learning_rate=0.1, milestones=[50, 100], gamma=0.1, verbose=True)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.MultiStepDecay(learning_rate=0.1, milestones=[50, 100], gamma=0.1, verbose=True)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
     >>>        # train model
@@ -745,9 +745,9 @@ class LambdaDecay(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.LambdaDecay(learning_rate=0.1, lr_lambda=lambda x:0.9**x, verbose=True)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.LambdaDecay(learning_rate=0.1, lr_lambda=lambda x:0.9**x, verbose=True)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
     >>>        # train model
@@ -814,9 +814,9 @@ class ReduceOnPlateau(LRScheduler):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> scheduler = tl.optimizers.lr.ReduceOnPlateau(learning_rate=1.0, factor=0.5, patience=5, verbose=True)
-    >>> sgd = tl.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
+    >>> import tensorlayerx as tlx
+    >>> scheduler = tlx.optimizers.lr.ReduceOnPlateau(learning_rate=1.0, factor=0.5, patience=5, verbose=True)
+    >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
     >>>        # train model

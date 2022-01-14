@@ -4,14 +4,15 @@
 Installation
 ============
 
-TensorLayer3 has some prerequisites that need to be installed first, including
-`TensorFlow`_ , `MindSpore <https://www.mindspore.cn/>`__, `PaddlePaddle <https://www.paddlepaddle.org.cn/>`__,numpy and matplotlib. For GPU
+TensorLayerX has some prerequisites that need to be installed first, including
+`TensorFlow`_ , `MindSpore <https://www.mindspore.cn/>`__, `PaddlePaddle <https://www.paddlepaddle.org.cn/>`__,  `PyTorch <https://pytorch.org/>`__, numpy and matplotlib. For GPU
 support CUDA and cuDNN are required.
 
 If you run into any trouble, please check the `TensorFlow installation
 instructions <https://www.tensorflow.org/versions/master/get_started/os_setup.html>`__,
 `MindSpore installation instructions <https://www.mindspore.cn/install>`__,
 `PaddlePaddle installation instructions <https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html>`__,
+`PyTorch installation instructions <https://pytorch.org/get-started/locally/>`__,
 which cover installing the TensorFlow for a range of operating systems including
 Mac OX, Linux and Windows, or ask for help on `tensorlayer@gmail.com <tensorlayer@gmail.com>`_
 or `FAQ <http://tensorlayer.readthedocs.io/en/latest/user/more.html>`_.
@@ -19,7 +20,7 @@ or `FAQ <http://tensorlayer.readthedocs.io/en/latest/user/more.html>`_.
 
 Install Backend
 =========================
-TensorLayer3 supports multiple deep learning backends, default TensorFlow as backend also supports MindSpore and PaddlePaddle.
+TensorLayerX supports multiple deep learning backends, default TensorFlow as backend also supports MindSpore, PaddlePaddle and PyTorch.
 
 .. code-block:: bash
 
@@ -45,28 +46,34 @@ If you want to use paddlepaddle backend, you should install paddlepaddle>=2.1.1
    python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
 
 
-Install TensorLayer3
+If you want to use PyTorch backend, you should install PyTorch>=1.8.0
+
+.. code-block:: bash
+
+   pip3 install torch==1.8.2+cu102 torchvision==0.9.2+cu102 torchaudio===0.8.2 -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
+
+Install TensorLayerX
 =========================
 
 For stable version:
 
 .. code-block:: bash
 
-  pip3 install tensorlayer3
+  pip3 install tensorlayerx
   
-  pip install tensorlayer3 -i https://pypi.tuna.tsinghua.edu.cn/simple  (faster in China)
+  pip install tensorlayerx -i https://pypi.tuna.tsinghua.edu.cn/simple  (faster in China)
 
-For latest version, please install from OpenI.
+For latest version, please install from github.
 
 .. code-block:: bash
 
-  pip3 install git+https://git.openi.org.cn/TensorLayer/tensorlayer3.0.git
+  pip3 install git+https://github.com/tensorlayer/TensorLayerX.git
 
 For developers, you should clone the folder to your local machine and put it along with your project scripts.
 
 .. code-block:: bash
 
-  git clone https://git.openi.org.cn/TensorLayer/tensorlayer3.0.git
+  git clone https://github.com/tensorlayer/TensorLayerX.git
 
 
 Alternatively, you can build from the source.
@@ -74,7 +81,7 @@ Alternatively, you can build from the source.
 .. code-block:: bash
 
   # First clone the repository and change the current directory to the newly cloned repository
-  git clone https://git.openi.org.cn/TensorLayer/tensorlayer3.0.git
+  git clone https://github.com/tensorlayer/TensorLayerX.git
   cd tensorlayer
 
   # Install virtualenv if necessary

@@ -9,7 +9,7 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 
 import numpy as np
 import tensorflow as tf
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Dense, Dropout, BatchNorm1d
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
@@ -21,11 +21,11 @@ class CustomModel(Module):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(keep=0.8)
         self.dense1 = Dense(n_units=800, in_channels=784)
-        self.batchnorm = BatchNorm1d(act=tl.ReLU, num_features=800)
+        self.batchnorm = BatchNorm1d(act=tlx.ReLU, num_features=800)
         self.dropout2 = Dropout(keep=0.8)
-        self.dense2 = Dense(n_units=800, act=tl.ReLU, in_channels=800)
+        self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800)
         self.dropout3 = Dropout(keep=0.8)
-        self.dense3 = Dense(n_units=10, act=tl.ReLU, in_channels=800)
+        self.dense3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800)
 
     def forward(self, x):
         z = self.dropout1(x)

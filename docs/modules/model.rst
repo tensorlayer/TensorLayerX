@@ -1,9 +1,9 @@
 API - Model Training
 ================================
 
-TensorLayer3 provides two model training interfaces, which can satisfy the training of various deep learning tasks.
+TensorLayerX provides two model training interfaces, which can satisfy the training of various deep learning tasks.
 
-.. automodule:: tensorlayer.models
+.. automodule:: tensorlayerx.model
 
 .. autosummary::
     Model

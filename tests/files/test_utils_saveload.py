@@ -8,9 +8,9 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import numpy as np
 import tensorflow as tf
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.model import *
-
+from tensorlayerx.nn import Input, Conv2d, MaxPool2d, Flatten, Dense
 from tests.utils import CustomTestCase
 
 
@@ -68,45 +68,45 @@ class Model_Core_Test(CustomTestCase):
     def test_hdf5(self):
         modify_val = np.zeros_like(self.static_model.all_weights[-2].numpy())
         ori_val = self.static_model.all_weights[-2].numpy()
-        tl.files.save_weights_to_hdf5("./model_basic.h5", self.static_model)
+        tlx.files.save_weights_to_hdf5("./model_basic.h5", self.static_model)
 
         self.static_model.all_weights[-2].assign(modify_val)
-        tl.files.load_hdf5_to_weights_in_order("./model_basic.h5", self.static_model)
+        tlx.files.load_hdf5_to_weights_in_order("./model_basic.h5", self.static_model)
         self.assertLess(np.max(np.abs(ori_val - self.static_model.all_weights[-2].numpy())), 1e-7)
 
         self.static_model.all_weights[-2].assign(modify_val)
-        tl.files.load_hdf5_to_weights("./model_basic.h5", self.static_model)
+        tlx.files.load_hdf5_to_weights("./model_basic.h5", self.static_model)
         self.assertLess(np.max(np.abs(ori_val - self.static_model.all_weights[-2].numpy())), 1e-7)
 
         ori_weights = self.static_model._all_weights
         self.static_model._all_weights = self.static_model._all_weights[1:]
         self.static_model.all_weights[-2].assign(modify_val)
-        tl.files.load_hdf5_to_weights("./model_basic.h5", self.static_model, skip=True)
+        tlx.files.load_hdf5_to_weights("./model_basic.h5", self.static_model, skip=True)
         self.assertLess(np.max(np.abs(ori_val - self.static_model.all_weights[-2].numpy())), 1e-7)
         self.static_model._all_weights = ori_weights
 
     def test_npz(self):
         modify_val = np.zeros_like(self.dynamic_model.all_weights[-2].numpy())
         ori_val = self.dynamic_model.all_weights[-2].numpy()
-        tl.files.save_npz(self.dynamic_model.all_weights, "./model_basic.npz")
+        tlx.files.save_npz(self.dynamic_model.all_weights, "./model_basic.npz")
 
         self.dynamic_model.all_weights[-2].assign(modify_val)
-        tl.files.load_and_assign_npz("./model_basic.npz", self.dynamic_model)
+        tlx.files.load_and_assign_npz("./model_basic.npz", self.dynamic_model)
         self.assertLess(np.max(np.abs(ori_val - self.dynamic_model.all_weights[-2].numpy())), 1e-7)
 
     def test_npz_dict(self):
         modify_val = np.zeros_like(self.dynamic_model.all_weights[-2].numpy())
         ori_val = self.dynamic_model.all_weights[-2].numpy()
-        tl.files.save_npz_dict(self.dynamic_model.all_weights, "./model_basic.npz")
+        tlx.files.save_npz_dict(self.dynamic_model.all_weights, "./model_basic.npz")
 
         self.dynamic_model.all_weights[-2].assign(modify_val)
-        tl.files.load_and_assign_npz_dict("./model_basic.npz", self.dynamic_model)
+        tlx.files.load_and_assign_npz_dict("./model_basic.npz", self.dynamic_model)
         self.assertLess(np.max(np.abs(ori_val - self.dynamic_model.all_weights[-2].numpy())), 1e-7)
 
         ori_weights = self.dynamic_model._all_weights
         self.dynamic_model._all_weights = self.static_model._all_weights[1:]
         self.dynamic_model.all_weights[-2].assign(modify_val)
-        tl.files.load_and_assign_npz_dict("./model_basic.npz", self.dynamic_model, skip=True)
+        tlx.files.load_and_assign_npz_dict("./model_basic.npz", self.dynamic_model, skip=True)
         self.assertLess(np.max(np.abs(ori_val - self.dynamic_model.all_weights[-2].numpy())), 1e-7)
         self.dynamic_model._all_weights = ori_weights
 

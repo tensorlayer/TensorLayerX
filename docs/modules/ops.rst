@@ -1,7 +1,7 @@
 API - Operations
 ======================
 
-.. automodule:: tensorlayer.ops
+.. automodule:: tensorlayerx
 
 .. autosummary::
 

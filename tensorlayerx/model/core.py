@@ -3,20 +3,20 @@
 
 from collections.abc import Iterable
 from tensorlayerx.nn.core.common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
-import tensorlayerx as tl
-from tensorlayerx.nn.core import Module
+import tensorlayerx as tlx
+from tensorlayerx.nn import Module
 import numpy as np
 import time
 
-if tl.BACKEND == 'tensorflow':
+if tlx.BACKEND == 'tensorflow':
     import tensorflow as tf
-if tl.BACKEND == 'mindspore':
+if tlx.BACKEND == 'mindspore':
     from mindspore.ops import composite
     from mindspore.ops import operations as P
     from mindspore.common import ParameterTuple
-if tl.BACKEND == 'paddle':
+if tlx.BACKEND == 'paddle':
     import paddle as pd
-if tl.BACKEND == 'torch':
+if tlx.BACKEND == 'torch':
     import torch
 
 __all__ = ['Model', 'WithLoss', 'WithGrad', 'TrainOneStep']
@@ -53,14 +53,14 @@ class Model:
 
     Examples
     --------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> class Net(Module):
     >>>     def __init__(self):
     >>>         super(Net, self).__init__()
-    >>>         self.conv = tl.layers.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), in_channels=5, name='conv2d')
-    >>>         self.bn = tl.layers.BatchNorm2d(num_features=32, act=tl.ReLU)
-    >>>         self.flatten = tl.layers.Flatten()
-    >>>         self.fc = tl.layers.Dense(n_units=12, in_channels=32*224*224) # padding=0
+    >>>         self.conv = tlx.nn.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), in_channels=5, name='conv2d')
+    >>>         self.bn = tlx.nn.BatchNorm2d(num_features=32, act=tlx.ReLU)
+    >>>         self.flatten = tlx.nn.Flatten()
+    >>>         self.fc = tlx.nn.Dense(n_units=12, in_channels=32*224*224) # padding=0
     >>>
     >>>     def construct(self, x):
     >>>         x = self.conv(x)
@@ -70,8 +70,8 @@ class Model:
     >>>         return out
     >>>
     >>> net = Net()
-    >>> loss = tl.losses.softmax_cross_entropy_with_logits
-    >>> optim = tl.optimizers.Momentum(params=net.trainable_weights, learning_rate=0.1, momentum=0.9)
+    >>> loss = tlx.losses.softmax_cross_entropy_with_logits
+    >>> optim = tlx.optimizers.Momentum(params=net.trainable_weights, learning_rate=0.1, momentum=0.9)
     >>> model = Model(net, loss_fn=loss, optimizer=optim, metrics=None)
     >>> dataset = get_dataset()
     >>> model.train(2, dataset)
@@ -90,19 +90,19 @@ class Model:
         if not isinstance(train_dataset, Iterable):
             raise Exception("Expected type in (train_dataset, Iterable), but got {}.".format(type(train_dataset)))
 
-        if tl.BACKEND == 'tensorflow':
+        if tlx.BACKEND == 'tensorflow':
             self.tf_train(
                 n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
                 train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
                 print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
             )
-        elif tl.BACKEND == 'mindspore':
+        elif tlx.BACKEND == 'mindspore':
             self.ms_train(
                 n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
                 train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
                 print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
             )
-        elif tl.BACKEND == 'paddle':
+        elif tlx.BACKEND == 'paddle':
             self.pd_train(
                 n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
                 train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
@@ -185,9 +185,9 @@ class Model:
         --------
         1) Save model weights in hdf5 format by default.
         >>> net = vgg16()
-        >>> optimizer = tl.optimizers.Adam(learning_rate=0.001)
-        >>> metrics = tl.metrics.Accuracy()
-        >>> model = tl.model.Model(network=net, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metrics)
+        >>> optimizer = tlx.optimizers.Adam(learning_rate=0.001)
+        >>> metrics = tlx.metrics.Accuracy()
+        >>> model = tlx.model.Model(network=net, loss_fn=tlx.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metrics)
         >>> model.save_weights('./model.h5')
         ...
         >>> model.load_weights('./model.h5')
@@ -230,9 +230,9 @@ class Model:
         --------
         1) load model from a hdf5 file.
         >>> net = vgg16()
-        >>> optimizer = tl.optimizers.Adam(learning_rate=0.001)
-        >>> metrics = tl.metrics.Accuracy()
-        >>> model = tl.model.Model(network=net, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metrics)
+        >>> optimizer = tlx.optimizers.Adam(learning_rate=0.001)
+        >>> metrics = tlx.metrics.Accuracy()
+        >>> model = tlx.model.Model(network=net, loss_fn=tlx.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metrics)
         >>> model.load_weights('./model_graph.h5', in_order=False, skip=True) # load weights by name, skipping mismatch
         >>> model.load_weights('./model_eager.h5') # load sequentially
 
@@ -476,10 +476,10 @@ class WithLoss(Module):
 
     Examples
     --------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> net = vgg16()
-    >>> loss_fn = tl.losses.softmax_cross_entropy_with_logits
-    >>> net_with_loss = tl.model.WithLoss(net, loss_fn)
+    >>> loss_fn = tlx.losses.softmax_cross_entropy_with_logits
+    >>> net_with_loss = tlx.model.WithLoss(net, loss_fn)
 
     """
 
@@ -644,22 +644,22 @@ class WithGrad(object):
 
     Examples
     --------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> net = vgg16()
-    >>> loss_fn = tl.losses.softmax_cross_entropy_with_logits
-    >>> optimizer = tl.optimizers.Adam(learning_rate=1e-3)
-    >>> net_with_grad = tl.model.WithGrad(net, loss_fn, optimizer)
-    >>> inputs, labels = tl.layers.Input((128, 784), dtype=tl.float32), tl.layers.Input((128, 1), dtype=tl.int32)
+    >>> loss_fn = tlx.losses.softmax_cross_entropy_with_logits
+    >>> optimizer = tlx.optimizers.Adam(learning_rate=1e-3)
+    >>> net_with_grad = tlx.model.WithGrad(net, loss_fn, optimizer)
+    >>> inputs, labels = tlx.nn.Input((128, 784), dtype=tlx.float32), tlx.nn.Input((128, 1), dtype=tlx.int32)
     >>> net_with_grad(inputs, labels)
 
     """
 
     def __init__(self, network, loss_fn=None, optimizer=None):
-        if tl.BACKEND == 'tensorflow':
+        if tlx.BACKEND == 'tensorflow':
             self.net_with_grad = WithGradTF(network, loss_fn, optimizer)
-        elif tl.BACKEND == 'mindspore':
+        elif tlx.BACKEND == 'mindspore':
             self.net_with_grad = WithGradMS(network, loss_fn, optimizer)
-        elif tl.BACKEND == 'paddle':
+        elif tlx.BACKEND == 'paddle':
             self.net_with_grad = WithGradPD(network, loss_fn, optimizer)
         else:
             raise NotImplementedError("This backend is not supported")
@@ -686,26 +686,26 @@ class TrainOneStep(object):
 
     Examples
     --------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> net = vgg16()
     >>> train_weights = net.trainable_weights
-    >>> loss_fn = tl.losses.softmax_cross_entropy_with_logits
-    >>> optimizer = tl.optimizers.Adam(learning_rate=1e-3)
-    >>> net_with_loss = tl.model.WithLoss(net, loss_fn)
-    >>> train_one_step = tl.model.TrainOneStep(net_with_loss, optimizer, train_weights)
-    >>> inputs, labels = tl.layers.Input((128, 784), dtype=tl.float32), tl.layers.Input((128, 1), dtype=tl.int32)
+    >>> loss_fn = tlx.losses.softmax_cross_entropy_with_logits
+    >>> optimizer = tlx.optimizers.Adam(learning_rate=1e-3)
+    >>> net_with_loss = tlx.model.WithLoss(net, loss_fn)
+    >>> train_one_step = tlx.model.TrainOneStep(net_with_loss, optimizer, train_weights)
+    >>> inputs, labels = tlx.nn.Input((128, 784), dtype=tlx.float32), tlx.nn.Input((128, 1), dtype=tlx.int32)
     >>> train_one_step(inputs, labels)
 
     """
 
     def __init__(self, net_with_loss, optimizer, train_weights):
-        if tl.BACKEND == 'tensorflow':
+        if tlx.BACKEND == 'tensorflow':
             self.net_with_train = TrainOneStepWithTF(net_with_loss, optimizer, train_weights)
-        elif tl.BACKEND == 'mindspore':
+        elif tlx.BACKEND == 'mindspore':
             self.net_with_train = TrainOneStepWithMS(net_with_loss, optimizer, train_weights)
-        elif tl.BACKEND == 'paddle':
+        elif tlx.BACKEND == 'paddle':
             self.net_with_train = TrainOneStepWithPD(net_with_loss, optimizer, train_weights)
-        elif tl.BACKEND == 'torch':
+        elif tlx.BACKEND == 'torch':
             self.net_with_train = TrainOneStepWithTH(net_with_loss, optimizer, train_weights)
         else:
             raise NotImplementedError("This backend is not supported")

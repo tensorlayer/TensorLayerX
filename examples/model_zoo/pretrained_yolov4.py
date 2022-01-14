@@ -7,9 +7,9 @@ from PIL import Image
 from examples.model_zoo.common import yolo4_input_processing, yolo4_output_processing, \
     result_to_json, read_class_names, draw_boxes_and_labels_to_image_with_json
 from examples.model_zoo.yolo import YOLOv4
-import tensorlayerx as tl
+import tensorlayerx as tlx
 
-tl.logging.set_verbosity(tl.logging.DEBUG)
+tlx.logging.set_verbosity(tlx.logging.DEBUG)
 
 INPUT_SIZE = 416
 image_path = './data/kite.jpg'

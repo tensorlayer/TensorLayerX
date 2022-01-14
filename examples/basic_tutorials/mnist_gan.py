@@ -8,12 +8,12 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 
 import time
 import numpy as np
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import Module, Dense
 from tensorlayerx.dataflow import Dataset
 from tensorlayerx.model import TrainOneStep
 
-X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
+X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
 
 
 class mnistdataset(Dataset):
@@ -33,19 +33,19 @@ class mnistdataset(Dataset):
 
 batch_size = 128
 train_dataset = mnistdataset(data=X_train, label=y_train)
-train_dataset = tl.dataflow.FromGenerator(
-    train_dataset, output_types=[tl.float32, tl.int64], column_names=['data', 'label']
+train_dataset = tlx.dataflow.FromGenerator(
+    train_dataset, output_types=[tlx.float32, tlx.int64], column_names=['data', 'label']
 )
-train_loader = tl.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
+train_loader = tlx.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
 
 
 class generator(Module):
 
     def __init__(self):
         super(generator, self).__init__()
-        self.g_fc1 = Dense(n_units=256, in_channels=100, act=tl.ReLU)
-        self.g_fc2 = Dense(n_units=256, in_channels=256, act=tl.ReLU)
-        self.g_fc3 = Dense(n_units=784, in_channels=256, act=tl.Tanh)
+        self.g_fc1 = Dense(n_units=256, in_channels=100, act=tlx.ReLU)
+        self.g_fc2 = Dense(n_units=256, in_channels=256, act=tlx.ReLU)
+        self.g_fc3 = Dense(n_units=784, in_channels=256, act=tlx.Tanh)
 
     def forward(self, x):
         out = self.g_fc1(x)
@@ -58,9 +58,9 @@ class discriminator(Module):
 
     def __init__(self):
         super(discriminator, self).__init__()
-        self.d_fc1 = Dense(n_units=256, in_channels=784, act=tl.LeakyReLU)
-        self.d_fc2 = Dense(n_units=256, in_channels=256, act=tl.LeakyReLU)
-        self.d_fc3 = Dense(n_units=1, in_channels=256, act=tl.Sigmoid)
+        self.d_fc1 = Dense(n_units=256, in_channels=784, act=tlx.LeakyReLU)
+        self.d_fc2 = Dense(n_units=256, in_channels=256, act=tlx.LeakyReLU)
+        self.d_fc3 = Dense(n_units=1, in_channels=256, act=tlx.Sigmoid)
 
     def forward(self, x):
         out = self.d_fc1(x)
@@ -84,7 +84,7 @@ class WithLossG(Module):
     def forward(self, g_data, label):
         fake_image = self.g_net(g_data)
         logits_fake = self.d_net(fake_image)
-        valid = tl.convert_to_tensor(np.ones(logits_fake.shape), dtype=tl.float32)
+        valid = tlx.convert_to_tensor(np.ones(logits_fake.shape), dtype=tlx.float32)
         loss = self.loss_fn(logits_fake, valid)
         return loss
 
@@ -102,18 +102,18 @@ class WithLossD(Module):
         fake_image = self.g_net(g_data)
         logits_fake = self.d_net(fake_image)
 
-        valid = tl.convert_to_tensor(np.ones(logits_real.shape), dtype=tl.float32)
-        fake = tl.convert_to_tensor(np.zeros(logits_fake.shape), dtype=tl.float32)
+        valid = tlx.convert_to_tensor(np.ones(logits_real.shape), dtype=tlx.float32)
+        fake = tlx.convert_to_tensor(np.zeros(logits_fake.shape), dtype=tlx.float32)
 
         loss = self.loss_fn(logits_real, valid) + self.loss_fn(logits_fake, fake)
         return loss
 
 
-# loss_fn = tl.losses.sigmoid_cross_entropy
-# optimizer = tl.optimizers.Momentum(learning_rate=5e-4, momentum=0.5)
-loss_fn = tl.losses.mean_squared_error
-optimizer_g = tl.optimizers.Adam(learning_rate=3e-4, beta_1=0.5, beta_2=0.999)
-optimizer_d = tl.optimizers.Adam(learning_rate=3e-4)
+# loss_fn = tlx.losses.sigmoid_cross_entropy
+# optimizer = tlx.optimizers.Momentum(learning_rate=5e-4, momentum=0.5)
+loss_fn = tlx.losses.mean_squared_error
+optimizer_g = tlx.optimizers.Adam(learning_rate=3e-4, beta_1=0.5, beta_2=0.999)
+optimizer_d = tlx.optimizers.Adam(learning_rate=3e-4)
 
 g_weights = G.trainable_weights
 d_weights = D.trainable_weights
@@ -125,8 +125,8 @@ n_epoch = 50
 
 
 def plot_fake_image(fake_image, num):
-    fake_image = tl.reshape(fake_image, shape=(num, 28, 28))
-    fake_image = tl.convert_to_numpy(fake_image)
+    fake_image = tlx.reshape(fake_image, shape=(num, 28, 28))
+    fake_image = tlx.convert_to_numpy(fake_image)
     import matplotlib.pylab as plt
     for i in range(num):
         plt.subplot(int(np.sqrt(num)), int(np.sqrt(num)), i + 1)
@@ -139,7 +139,7 @@ for epoch in range(n_epoch):
     n_iter = 0
     start_time = time.time()
     for data, label in train_loader:
-        noise = tl.convert_to_tensor(np.random.random(size=(batch_size, 100)), dtype=tl.float32)
+        noise = tlx.convert_to_tensor(np.random.random(size=(batch_size, 100)), dtype=tlx.float32)
 
         _loss_d = train_one_setp_d(data, noise)
         _loss_g = train_one_setp_g(noise, label)
@@ -150,5 +150,5 @@ for epoch in range(n_epoch):
         print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
         print("   d loss: {}".format(d_loss / n_iter))
         print("   g loss:  {}".format(g_loss / n_iter))
-    fake_image = G(tl.convert_to_tensor(np.random.random(size=(36, 100)), dtype=tl.float32))
+    fake_image = G(tlx.convert_to_tensor(np.random.random(size=(36, 100)), dtype=tlx.float32))
     plot_fake_image(fake_image, 36)

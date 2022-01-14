@@ -55,7 +55,7 @@ def load_voc_dataset(path='data', dataset='2012', contain_classes_in_person=Fals
     ----------
     >>> imgs_file_list, imgs_semseg_file_list, imgs_insseg_file_list, imgs_ann_file_list,
     >>>     classes, classes_in_person, classes_dict,
-    >>>     n_objs_list, objs_info_list, objs_info_dicts = tl.files.load_voc_dataset(dataset="2012", contain_classes_in_person=False)
+    >>>     n_objs_list, objs_info_list, objs_info_dicts = tlx.files.load_voc_dataset(dataset="2012", contain_classes_in_person=False)
     >>> idx = 26
     >>> print(classes)
     ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
@@ -70,10 +70,10 @@ def load_voc_dataset(path='data', dataset='2012', contain_classes_in_person=Fals
     >>> print(objs_info_list[idx])
     14 0.173 0.461333333333 0.142 0.496
     14 0.828 0.542666666667 0.188 0.594666666667
-    >>> ann = tl.prepro.parse_darknet_ann_str_to_list(objs_info_list[idx])
+    >>> ann = tlx.utils.prepro.parse_darknet_ann_str_to_list(objs_info_list[idx])
     >>> print(ann)
     [[14, 0.173, 0.461333333333, 0.142, 0.496], [14, 0.828, 0.542666666667, 0.188, 0.594666666667]]
-    >>> c, b = tl.prepro.parse_darknet_ann_list_to_cls_box(ann)
+    >>> c, b = tlx.utils.prepro.parse_darknet_ann_list_to_cls_box(ann)
     >>> print(c, b)
     [14, 14] [[0.173, 0.461333333333, 0.142, 0.496], [0.828, 0.542666666667, 0.188, 0.594666666667]]
 

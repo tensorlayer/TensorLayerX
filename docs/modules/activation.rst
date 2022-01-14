@@ -1,35 +1,36 @@
 API - Activations
 =========================
 
-To make TensorLayer3 simple, we minimize the number of activation functions as much as
+To make TensorLayerX simple, we minimize the number of activation functions as much as
 we can. So we encourage you to use Customizes activation function.
 For parametric activation, please read the layer APIs.
-
-The shortcut of ``tensorlayer.activation`` is ``tensorlayer.act``.
 
 Your activation
 -------------------
 
-Customizes activation function in TensorLayer3 is very easy.
+Customizes activation function in TensorLayerX is very easy.
 The following example implements an activation that multiplies its input by 2.
-For more complex activation, TensorFlow(MindSpore/PaddlePaddle) API will be required.
+For more complex activation, TensorFlow(MindSpore, PaddlePaddle, PyTorch) API will be required.
 
 .. code-block:: python
-
-  class DoubleActivation(object):
+  from tensorlayerx.nn.core import Module
+  class DoubleActivation(Module):
     def __init__(self):
         pass
-    def __call__(self, x):
+    def forward(self, x):
         return x * 2
   double_activation = DoubleActivation()
 
-.. automodule:: tensorlayer.layers.activation
+.. automodule:: tensorlayerx.nn
 
 .. autosummary::
-
+   ELU
    PRelu
    PRelu6
    PTRelu6
+   ReLU
+   ReLU6
+   Softplus
    LeakyReLU
    LeakyReLU6
    LeakyTwiceRelu6
@@ -37,34 +38,53 @@ For more complex activation, TensorFlow(MindSpore/PaddlePaddle) API will be requ
    Swish
    HardTanh
    Mish
+   Tanh
+   Sigmoid
+   Softmax
+
+ELU
+------
+.. autoclass:: ELU
 
 PRelu
 ------
-.. autofunction:: PRelu
+.. autoclass:: PRelu
 
 PRelu6
 ------------
-.. autofunction:: PRelu6
+.. autoclass:: PRelu6
 
 PTRelu6
 ------------
 .. autofunction:: PTRelu6
 
+ReLU
+-----------------
+.. autoclass:: ReLU
+
+ReLU6
+-----------------
+.. autoclass:: ReLU6
+
+Softplus
+-----------------
+.. autoclass:: Softplus
+
 LeakyReLU
 -----------------
-.. autofunction:: LeakyReLU
+.. autoclass:: LeakyReLU
 
 LeakyReLU6
 ------------
-.. autofunction:: LeakyReLU6
+.. autoclass:: LeakyReLU6
 
 LeakyTwiceRelu6
 ---------------------
-.. autofunction:: LeakyTwiceRelu6
+.. autoclass:: LeakyTwiceRelu6
 
 Ramp
 ---------------------
-.. autofunction:: Ramp
+.. autoclass:: Ramp
 
 Swish
 --------------------
@@ -72,12 +92,25 @@ Swish
 
 HardTanh
 ----------------
-.. autofunction:: HardTanh
+.. autoclass:: HardTanh
 
 Mish
 ---------
-.. autofunction:: Mish
+.. autoclass:: Mish
+
+Tanh
+---------
+.. autoclass:: Tanh
+
+Sigmoid
+---------
+.. autoclass:: Sigmoid
+
+Softmax
+---------
+.. autoclass:: Softmax
+
 
 Parametric activation
 ------------------------------
-See ``tensorlayer.layers``.
+See ``tensorlayerx.nn``.

@@ -6,11 +6,11 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 import numpy as np
 import time
 import tensorflow as tf
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Dense, Dropout, BatchNorm1d
 
-X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
+X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
 
 
 class CustomModel(Module):
@@ -19,11 +19,11 @@ class CustomModel(Module):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(keep=0.8)
         self.dense1 = Dense(n_units=800)
-        self.batchnorm = BatchNorm1d(act=tl.ReLU)
+        self.batchnorm = BatchNorm1d(act=tlx.ReLU)
         self.dropout2 = Dropout(keep=0.8)
-        self.dense2 = Dense(n_units=800, act=tl.ReLU)
+        self.dense2 = Dense(n_units=800, act=tlx.ReLU)
         self.dropout3 = Dropout(keep=0.8)
-        self.dense3 = Dense(n_units=10, act=tl.ReLU)
+        self.dense3 = Dense(n_units=10, act=tlx.ReLU)
 
     def forward(self, x, foo=None):
         z = self.dropout1(x)
@@ -34,31 +34,31 @@ class CustomModel(Module):
         z = self.dropout3(z)
         out = self.dense3(z)
         if foo is not None:
-            out = tl.ops.relu(out)
+            out = tlx.relu(out)
         return out
 
 
 MLP = CustomModel()
 # Automatic inference input of shape.
 # If Layer has no input in_channels, init_build(input) must be called to initialize the weights.
-MLP.init_build(tl.nn.layers.Input(shape=(1, 784)))
+MLP.init_build(tlx.nn.Input(shape=(1, 784)))
 
 n_epoch = 50
 batch_size = 500
 print_freq = 5
 train_weights = MLP.trainable_weights
-optimizer = tl.optimizers.Adam(lr=0.0001)
+optimizer = tlx.optimizers.Adam(lr=0.0001)
 
 for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
     start_time = time.time()
     ## iterate over the entire training set once (shuffle the data via training)
-    for X_batch, y_batch in tl.utils.iterate.minibatches(X_train, y_train, batch_size, shuffle=True):
+    for X_batch, y_batch in tlx.utils.iterate.minibatches(X_train, y_train, batch_size, shuffle=True):
         MLP.set_train()  # enable dropout
         with tf.GradientTape() as tape:
             ## compute outputs
             _logits = MLP(X_batch)
             ## compute loss and update model
-            _loss = tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='train_loss')
+            _loss = tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='train_loss')
         grad = tape.gradient(_loss, train_weights)
         optimizer.apply_gradients(zip(grad, train_weights))
 
@@ -66,18 +66,18 @@ for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
     if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
         print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
         train_loss, train_acc, n_iter = 0, 0, 0
-        for X_batch, y_batch in tl.utils.iterate.minibatches(X_train, y_train, batch_size, shuffle=False):
+        for X_batch, y_batch in tlx.utils.iterate.minibatches(X_train, y_train, batch_size, shuffle=False):
             _logits = MLP(X_batch)
-            train_loss += tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
+            train_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
             train_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
             n_iter += 1
         print("   train loss: {}".format(train_loss / n_iter))
         print("   train acc:  {}".format(train_acc / n_iter))
 
         val_loss, val_acc, n_iter = 0, 0, 0
-        for X_batch, y_batch in tl.utils.iterate.minibatches(X_val, y_val, batch_size, shuffle=False):
+        for X_batch, y_batch in tlx.utils.iterate.minibatches(X_val, y_val, batch_size, shuffle=False):
             _logits = MLP(X_batch)  # is_train=False, disable dropout
-            val_loss += tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
+            val_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
             val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
             n_iter += 1
         print("   val loss: {}".format(val_loss / n_iter))
@@ -86,9 +86,9 @@ for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
 ## use testing data to evaluate the model
 MLP.set_eval()
 test_loss, test_acc, n_iter = 0, 0, 0
-for X_batch, y_batch in tl.utils.iterate.minibatches(X_test, y_test, batch_size, shuffle=False):
+for X_batch, y_batch in tlx.utils.iterate.minibatches(X_test, y_test, batch_size, shuffle=False):
     _logits = MLP(X_batch, foo=1)
-    test_loss += tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='test_loss')
+    test_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='test_loss')
     test_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
     n_iter += 1
 print("   test foo=1 loss: {}".format(test_loss / n_iter))

@@ -25,8 +25,8 @@ def load_fashion_mnist_dataset(shape=(-1, 784), path='data'):
 
     Examples
     --------
-    >>> X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_fashion_mnist_dataset(shape=(-1,784), path='datasets')
-    >>> X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_fashion_mnist_dataset(shape=(-1, 28, 28, 1))
+    >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_fashion_mnist_dataset(shape=(-1,784), path='datasets')
+    >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_fashion_mnist_dataset(shape=(-1, 28, 28, 1))
     """
     return _load_mnist_dataset(
         shape, path, name='fashion_mnist', url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/'

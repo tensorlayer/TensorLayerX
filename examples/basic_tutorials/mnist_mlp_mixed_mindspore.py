@@ -9,7 +9,7 @@ from mindspore import ParameterTuple
 from mindspore.nn import Momentum, WithLossCell
 
 import numpy as np
-import tensorlayerx as tl
+import tensorlayerx as tlx
 import mindspore as ms
 import tensorflow as tf
 import time
@@ -22,9 +22,9 @@ class MLP(Module):
 
     def __init__(self):
         super(MLP, self).__init__()
-        self.dense1 = Dense(n_units=800, act=tl.ReLU, in_channels=784)
-        self.dense2 = Dense(n_units=800, act=tl.ReLU, in_channels=800)
-        self.dense3 = Dense(n_units=10, act=tl.ReLU, in_channels=800)
+        self.dense1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784)
+        self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800)
+        self.dense3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800)
 
     def forward(self, x):
         z = self.dense1(x)
@@ -63,7 +63,7 @@ net_with_criterion = WithLossCell(net, criterion)
 train_network = GradWrap(net_with_criterion)
 train_network.set_train()
 
-X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
+X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
 train_ds = tf.data.Dataset.from_generator(generator_train, output_types=(tf.float32, tf.int32))
 shuffle_buffer_size = 128
 batch_size = 128

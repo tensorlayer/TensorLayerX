@@ -16,7 +16,7 @@ import tensorflow as tf
 from six.moves import urllib, xrange
 from tensorflow.python.platform import gfile
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.lazy_imports import LazyImport
 
 nltk = LazyImport("nltk")
@@ -99,7 +99,7 @@ def generate_skip_gram_batch(data, batch_size, num_skips, skip_window, data_inde
     skip_window : int
         How many words to consider left and right.
     data_index : int
-        Index of the context location. This code use `data_index` to instead of yield like ``tl.iterate``.
+        Index of the context location. This code use `data_index` to instead of yield like ``tlx.iterate``.
 
     Returns
     -------
@@ -116,7 +116,7 @@ def generate_skip_gram_batch(data, batch_size, num_skips, skip_window, data_inde
     In the same way, num_skips=4, skip_window=2 means use the nearby 4 words.
 
     >>> data = [1,2,3,4,5,6,7,8,9,10,11]
-    >>> batch, labels, data_index = tl.nlp.generate_skip_gram_batch(data=data, batch_size=8, num_skips=2, skip_window=1, data_index=0)
+    >>> batch, labels, data_index = tlx.nlp.generate_skip_gram_batch(data=data, batch_size=8, num_skips=2, skip_window=1, data_index=0)
     >>> print(batch)
     [2 2 3 3 4 4 5 5]
     >>> print(labels)
@@ -176,7 +176,7 @@ def sample(a=None, temperature=1.0):
     Notes
     ------
     - No matter what is the temperature and input list, the sum of all probabilities will be one. Even if input list = [1, 100, 200], the sum of all probabilities will still be one.
-    - For large vocabulary size, choice a higher temperature or ``tl.nlp.sample_top`` to avoid error.
+    - For large vocabulary size, choice a higher temperature or ``tlx.nlp.sample_top`` to avoid error.
 
     """
     if a is None:
@@ -193,17 +193,17 @@ def sample(a=None, temperature=1.0):
             return np.argmax(np.random.multinomial(1, a, 1))
     except Exception:
         # np.set_printoptions(threshold=np.nan)
-        # tl.logging.info(a)
-        # tl.logging.info(np.sum(a))
-        # tl.logging.info(np.max(a))
-        # tl.logging.info(np.min(a))
+        # tlx.logging.info(a)
+        # tlx.logging.info(np.sum(a))
+        # tlx.logging.info(np.max(a))
+        # tlx.logging.info(np.min(a))
         # exit()
         message = "For large vocabulary_size, choice a higher temperature\
          to avoid log error. Hint : use ``sample_top``. "
 
         warnings.warn(message, Warning)
-        # tl.logging.info(a)
-        # tl.logging.info(b)
+        # tlx.logging.info(a)
+        # tlx.logging.info(b)
         return np.argmax(np.random.multinomial(1, b, 1))
 
 
@@ -223,7 +223,7 @@ def sample_top(a=None, top_k=10):
 
     idx = np.argpartition(a, -top_k)[-top_k:]
     probs = a[idx]
-    # tl.logging.info("new %f" % probs)
+    # tlx.logging.info("new %f" % probs)
     probs = probs / np.sum(probs)
     choice = np.random.choice(idx, p=probs)
     return choice
@@ -233,7 +233,7 @@ def sample_top(a=None, top_k=10):
     # idx = idx[:top_k]
     # # a = a[idx]
     # probs = a[idx]
-    # tl.logging.info("prev %f" % probs)
+    # tlx.logging.info("prev %f" % probs)
     # # probs = probs / np.sum(probs)
     # # choice = np.random.choice(idx, p=probs)
     # # return choice
@@ -272,7 +272,7 @@ class Vocabulary(object):
     Parameters
     -----------
     vocab_file : str
-        The file contains the vocabulary (can be created via ``tl.nlp.create_vocab``), where the words are the first whitespace-separated token on each line (other tokens are ignored) and the word ids are the corresponding line numbers.
+        The file contains the vocabulary (can be created via ``tlx.nlp.create_vocab``), where the words are the first whitespace-separated token on each line (other tokens are ignored) and the word ids are the corresponding line numbers.
     start_word : str
         Special word denoting sentence start.
     end_word : str
@@ -315,8 +315,8 @@ class Vocabulary(object):
 
     def __init__(self, vocab_file, start_word="<S>", end_word="</S>", unk_word="<UNK>", pad_word="<PAD>"):
         if not tf.io.gfile.exists(vocab_file):
-            tl.logging.fatal("Vocab file %s not found." % vocab_file)
-        tl.logging.info("Initializing vocabulary from file: %s" % vocab_file)
+            tlx.logging.fatal("Vocab file %s not found." % vocab_file)
+        tlx.logging.info("Initializing vocabulary from file: %s" % vocab_file)
 
         with tf.io.gfile.GFile(vocab_file, mode="r") as f:
             reverse_vocab = list(f.readlines())
@@ -334,9 +334,9 @@ class Vocabulary(object):
 
         vocab = dict([(x, y) for (y, x) in enumerate(reverse_vocab)])
 
-        tl.logging.info("Vocabulary from %s : %s %s %s" % (vocab_file, start_word, end_word, unk_word))
-        tl.logging.info("    vocabulary with %d words (includes start_word, end_word, unk_word)" % len(vocab))
-        # tl.logging.info("     vocabulary with %d words" % len(vocab))
+        tlx.logging.info("Vocabulary from %s : %s %s %s" % (vocab_file, start_word, end_word, unk_word))
+        tlx.logging.info("    vocabulary with %d words (includes start_word, end_word, unk_word)" % len(vocab))
+        # tlx.logging.info("     vocabulary with %d words" % len(vocab))
 
         self.vocab = vocab  # vocab[word] = id
         self.reverse_vocab = reverse_vocab  # reverse_vocab[id] = word
@@ -346,10 +346,10 @@ class Vocabulary(object):
         self.end_id = vocab[end_word]
         self.unk_id = vocab[unk_word]
         self.pad_id = vocab[pad_word]
-        tl.logging.info("      start_id: %d" % self.start_id)
-        tl.logging.info("      end_id  : %d" % self.end_id)
-        tl.logging.info("      unk_id  : %d" % self.unk_id)
-        tl.logging.info("      pad_id  : %d" % self.pad_id)
+        tlx.logging.info("      start_id: %d" % self.start_id)
+        tlx.logging.info("      end_id  : %d" % self.end_id)
+        tlx.logging.info("      unk_id  : %d" % self.unk_id)
+        tlx.logging.info("      pad_id  : %d" % self.pad_id)
 
     def word_to_id(self, word):
         """Returns the integer word id of a word string."""
@@ -387,7 +387,7 @@ def process_sentence(sentence, start_word="<S>", end_word="</S>"):
     Examples
     -----------
     >>> c = "how are you?"
-    >>> c = tl.nlp.process_sentence(c)
+    >>> c = tlx.nlp.process_sentence(c)
     >>> print(c)
     ['<S>', 'how', 'are', 'you', '?', '</S>']
 
@@ -438,14 +438,14 @@ def create_vocab(sentences, word_counts_output_file, min_word_count=1):
     >>> captions = ["one two , three", "four five five"]
     >>> processed_capts = []
     >>> for c in captions:
-    >>>     c = tl.nlp.process_sentence(c, start_word="<S>", end_word="</S>")
+    >>>     c = tlx.nlp.process_sentence(c, start_word="<S>", end_word="</S>")
     >>>     processed_capts.append(c)
     >>> print(processed_capts)
     ...[['<S>', 'one', 'two', ',', 'three', '</S>'], ['<S>', 'four', 'five', 'five', '</S>']]
 
     Create vocabulary
 
-    >>> tl.nlp.create_vocab(processed_capts, word_counts_output_file='vocab.txt', min_word_count=1)
+    >>> tlx.nlp.create_vocab(processed_capts, word_counts_output_file='vocab.txt', min_word_count=1)
     Creating vocabulary.
       Total words: 8
       Words in vocabulary: 8
@@ -453,7 +453,7 @@ def create_vocab(sentences, word_counts_output_file, min_word_count=1):
 
     Get vocabulary object
 
-    >>> vocab = tl.nlp.Vocabulary('vocab.txt', start_word="<S>", end_word="</S>", unk_word="<UNK>")
+    >>> vocab = tlx.nlp.Vocabulary('vocab.txt', start_word="<S>", end_word="</S>", unk_word="<UNK>")
     INFO:tensorflow:Initializing vocabulary from file: vocab.txt
     [TL] Vocabulary from vocab.txt : <S> </S> <UNK>
     vocabulary with 10 words (includes start_word, end_word, unk_word)
@@ -463,26 +463,26 @@ def create_vocab(sentences, word_counts_output_file, min_word_count=1):
         pad_id: 0
 
     """
-    tl.logging.info("Creating vocabulary.")
+    tlx.logging.info("Creating vocabulary.")
 
     counter = Counter()
 
     for c in sentences:
         counter.update(c)
-        # tl.logging.info('c',c)
-    tl.logging.info("    Total words: %d" % len(counter))
+        # tlx.logging.info('c',c)
+    tlx.logging.info("    Total words: %d" % len(counter))
 
     # Filter uncommon words and sort by descending count.
     word_counts = [x for x in counter.items() if x[1] >= min_word_count]
     word_counts.sort(key=lambda x: x[1], reverse=True)
     word_counts = [("<PAD>", 0)] + word_counts  # 1st id should be reserved for padding
-    # tl.logging.info(word_counts)
-    tl.logging.info("    Words in vocabulary: %d" % len(word_counts))
+    # tlx.logging.info(word_counts)
+    tlx.logging.info("    Words in vocabulary: %d" % len(word_counts))
 
     # Write out the word counts file.
     with tf.io.gfile.GFile(word_counts_output_file, "w") as f:
         f.write("\n".join(["%s %d" % (w, c) for w, c in word_counts]))
-    tl.logging.info("    Wrote vocabulary file: %s" % word_counts_output_file)
+    tlx.logging.info("    Wrote vocabulary file: %s" % word_counts_output_file)
 
     # Create the vocabulary dictionary.
     reverse_vocab = [x[0] for x in word_counts]
@@ -575,9 +575,9 @@ def read_analogies_file(eval_file='questions-words.txt', word2id=None):
 
     Get the tokenized analogy question data
 
-    >>> words = tl.files.load_matt_mahoney_text8_dataset()
-    >>> data, count, dictionary, reverse_dictionary = tl.nlp.build_words_dataset(words, vocabulary_size, True)
-    >>> analogy_questions = tl.nlp.read_analogies_file(eval_file='questions-words.txt', word2id=dictionary)
+    >>> words = tlx.files.load_matt_mahoney_text8_dataset()
+    >>> data, count, dictionary, reverse_dictionary = tlx.nlp.build_words_dataset(words, vocabulary_size, True)
+    >>> analogy_questions = tlx.nlp.read_analogies_file(eval_file='questions-words.txt', word2id=dictionary)
     >>> print(analogy_questions)
     [[ 3068  1248  7161  1581]
     [ 3068  1248 28683  5642]
@@ -604,9 +604,9 @@ def read_analogies_file(eval_file='questions-words.txt', word2id=None):
                 questions_skipped += 1
             else:
                 questions.append(np.array(ids))
-    tl.logging.info("Eval analogy file: %s" % eval_file)
-    tl.logging.info("Questions: %d", len(questions))
-    tl.logging.info("Skipped: %d", questions_skipped)
+    tlx.logging.info("Eval analogy file: %s" % eval_file)
+    tlx.logging.info("Questions: %d", len(questions))
+    tlx.logging.info("Skipped: %d", questions_skipped)
     analogy_questions = np.array(questions, dtype=np.int32)
     return analogy_questions
 
@@ -641,13 +641,13 @@ def build_vocab(data):
     """
     # data = _read_words(filename)
     counter = collections.Counter(data)
-    # tl.logging.info('counter %s' % counter)   # dictionary for the occurrence number of each word, e.g. 'banknote': 1, 'photography': 1, 'kia': 1
+    # tlx.logging.info('counter %s' % counter)   # dictionary for the occurrence number of each word, e.g. 'banknote': 1, 'photography': 1, 'kia': 1
     count_pairs = sorted(counter.items(), key=lambda x: (-x[1], x[0]))
-    # tl.logging.info('count_pairs %s' % count_pairs)  # convert dictionary to list of tuple, e.g. ('ssangyong', 1), ('swapo', 1), ('wachter', 1)
+    # tlx.logging.info('count_pairs %s' % count_pairs)  # convert dictionary to list of tuple, e.g. ('ssangyong', 1), ('swapo', 1), ('wachter', 1)
     words, _ = list(zip(*count_pairs))
     word_to_id = dict(zip(words, range(len(words))))
-    # tl.logging.info(words)    # list of words
-    # tl.logging.info(word_to_id) # dictionary for word to id, e.g. 'campbell': 2587, 'atlantic': 2247, 'aoun': 6746
+    # tlx.logging.info(words)    # list of words
+    # tlx.logging.info(word_to_id) # dictionary for word to id, e.g. 'campbell': 2587, 'atlantic': 2247, 'aoun': 6746
     return word_to_id
 
 
@@ -701,9 +701,9 @@ def build_words_dataset(words=None, vocabulary_size=50000, printable=True, unk_k
 
     Examples
     --------
-    >>> words = tl.files.load_matt_mahoney_text8_dataset()
+    >>> words = tlx.files.load_matt_mahoney_text8_dataset()
     >>> vocabulary_size = 50000
-    >>> data, count, dictionary, reverse_dictionary = tl.nlp.build_words_dataset(words, vocabulary_size)
+    >>> data, count, dictionary, reverse_dictionary = tlx.nlp.build_words_dataset(words, vocabulary_size)
 
     References
     -----------------
@@ -730,8 +730,8 @@ def build_words_dataset(words=None, vocabulary_size=50000, printable=True, unk_k
     count[0][1] = unk_count
     reverse_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
     if printable:
-        tl.logging.info('Real vocabulary size    %d' % len(collections.Counter(words).keys()))
-        tl.logging.info('Limited vocabulary size {}'.format(vocabulary_size))
+        tlx.logging.info('Real vocabulary size    %d' % len(collections.Counter(words).keys()))
+        tlx.logging.info('Limited vocabulary size {}'.format(vocabulary_size))
     if len(collections.Counter(words).keys()) < vocabulary_size:
         raise Exception(
             "len(collections.Counter(words).keys()) >= vocabulary_size , the limited vocabulary_size must be less than or equal to the read vocabulary_size"
@@ -758,12 +758,12 @@ def words_to_word_ids(data=None, word_to_id=None, unk_key='UNK'):
 
     Examples
     --------
-    >>> words = tl.files.load_matt_mahoney_text8_dataset()
+    >>> words = tlx.files.load_matt_mahoney_text8_dataset()
     >>> vocabulary_size = 50000
-    >>> data, count, dictionary, reverse_dictionary = tl.nlp.build_words_dataset(words, vocabulary_size, True)
+    >>> data, count, dictionary, reverse_dictionary = tlx.nlp.build_words_dataset(words, vocabulary_size, True)
     >>> context = [b'hello', b'how', b'are', b'you']
-    >>> ids = tl.nlp.words_to_word_ids(words, dictionary)
-    >>> context = tl.nlp.word_ids_to_words(ids, reverse_dictionary)
+    >>> ids = tlx.nlp.words_to_word_ids(words, dictionary)
+    >>> context = tlx.nlp.word_ids_to_words(ids, reverse_dictionary)
     >>> print(ids)
     [6434, 311, 26, 207]
     >>> print(context)
@@ -779,10 +779,10 @@ def words_to_word_ids(data=None, word_to_id=None, unk_key='UNK'):
     if word_to_id is None:
         raise Exception("word_to_id : a dictionary")
     # if isinstance(data[0], six.string_types):
-    #     tl.logging.info(type(data[0]))
+    #     tlx.logging.info(type(data[0]))
     #     # exit()
-    #     tl.logging.info(data[0])
-    #     tl.logging.info(word_to_id)
+    #     tlx.logging.info(data[0])
+    #     tlx.logging.info(word_to_id)
     #     return [word_to_id[str(word)] for word in data]
     # else:
 
@@ -796,11 +796,11 @@ def words_to_word_ids(data=None, word_to_id=None, unk_key='UNK'):
     # return [word_to_id[word] for word in data]    # this one
 
     # if isinstance(data[0], str):
-    #     # tl.logging.info('is a string object')
+    #     # tlx.logging.info('is a string object')
     #     return [word_to_id[word] for word in data]
     # else:#if isinstance(s, bytes):
-    #     # tl.logging.info('is a unicode object')
-    #     # tl.logging.info(data[0])
+    #     # tlx.logging.info('is a unicode object')
+    #     # tlx.logging.info(data[0])
     #     return [word_to_id[str(word)] f
 
 
@@ -821,7 +821,7 @@ def word_ids_to_words(data, id_to_word):
 
     Examples
     ---------
-    see ``tl.nlp.words_to_word_ids``
+    see ``tlx.nlp.words_to_word_ids``
 
     """
     return [id_to_word[i] for i in data]
@@ -839,10 +839,10 @@ def save_vocab(count=None, name='vocab.txt'):
 
     Examples
     ---------
-    >>> words = tl.files.load_matt_mahoney_text8_dataset()
+    >>> words = tlx.files.load_matt_mahoney_text8_dataset()
     >>> vocabulary_size = 50000
-    >>> data, count, dictionary, reverse_dictionary = tl.nlp.build_words_dataset(words, vocabulary_size, True)
-    >>> tl.nlp.save_vocab(count, name='vocab_text8.txt')
+    >>> data, count, dictionary, reverse_dictionary = tlx.nlp.build_words_dataset(words, vocabulary_size, True)
+    >>> tlx.nlp.save_vocab(count, name='vocab_text8.txt')
     >>> vocab_text8.txt
     UNK 418391
     the 1061396
@@ -862,7 +862,7 @@ def save_vocab(count=None, name='vocab.txt'):
     with open(os.path.join(pwd, name), "w") as f:
         for i in xrange(vocabulary_size):
             f.write("%s %d\n" % (as_text(count[i][0]), count[i][1]))
-    tl.logging.info("%d vocab saved to %s in %s" % (vocabulary_size, name, pwd))
+    tlx.logging.info("%d vocab saved to %s in %s" % (vocabulary_size, name, pwd))
 
 
 # Functions for translation
@@ -884,8 +884,8 @@ def basic_tokenizer(sentence, _WORD_SPLIT=re.compile(b"([.,!?\"':;)(])")):
     >>> train_path = "wmt/giga-fren.release2"
     >>> with gfile.GFile(train_path + ".en", mode="rb") as f:
     >>>    for line in f:
-    >>>       tokens = tl.nlp.basic_tokenizer(line)
-    >>>       tl.logging.info(tokens)
+    >>>       tokens = tlx.nlp.basic_tokenizer(line)
+    >>>       tlx.logging.info(tokens)
     >>>       exit()
     [b'Changing', b'Lives', b'|', b'Changing', b'Society', b'|', b'How',
       b'It', b'Works', b'|', b'Technology', b'Drives', b'Change', b'Home',
@@ -942,14 +942,14 @@ def create_vocabulary(
     if _START_VOCAB is None:
         _START_VOCAB = [b"_PAD", b"_GO", b"_EOS", b"_UNK"]
     if not gfile.Exists(vocabulary_path):
-        tl.logging.info("Creating vocabulary %s from data %s" % (vocabulary_path, data_path))
+        tlx.logging.info("Creating vocabulary %s from data %s" % (vocabulary_path, data_path))
         vocab = {}
         with gfile.GFile(data_path, mode="rb") as f:
             counter = 0
             for line in f:
                 counter += 1
                 if counter % 100000 == 0:
-                    tl.logging.info("  processing line %d" % counter)
+                    tlx.logging.info("  processing line %d" % counter)
                 tokens = tokenizer(line) if tokenizer else basic_tokenizer(line)
                 for w in tokens:
                     word = re.sub(_DIGIT_RE, b"0", w) if normalize_digits else w
@@ -964,7 +964,7 @@ def create_vocabulary(
                 for w in vocab_list:
                     vocab_file.write(w + b"\n")
     else:
-        tl.logging.info("Vocabulary %s from data %s exists" % (vocabulary_path, data_path))
+        tlx.logging.info("Vocabulary %s from data %s exists" % (vocabulary_path, data_path))
 
 
 def initialize_vocabulary(vocabulary_path):
@@ -991,7 +991,7 @@ def initialize_vocabulary(vocabulary_path):
     dog
     cat
     bird
-    >>> vocab, rev_vocab = tl.nlp.initialize_vocabulary("test")
+    >>> vocab, rev_vocab = tlx.nlp.initialize_vocabulary("test")
     >>> print(vocab)
     >>> {b'cat': 1, b'dog': 0, b'bird': 2}
     >>> print(rev_vocab)
@@ -1078,7 +1078,7 @@ def data_to_token_ids(
 
     """
     if not gfile.Exists(target_path):
-        tl.logging.info("Tokenizing data in %s" % data_path)
+        tlx.logging.info("Tokenizing data in %s" % data_path)
         vocab, _ = initialize_vocabulary(vocabulary_path)
         with gfile.GFile(data_path, mode="rb") as data_file:
             with gfile.GFile(target_path, mode="w") as tokens_file:
@@ -1086,13 +1086,13 @@ def data_to_token_ids(
                 for line in data_file:
                     counter += 1
                     if counter % 100000 == 0:
-                        tl.logging.info("  tokenizing line %d" % counter)
+                        tlx.logging.info("  tokenizing line %d" % counter)
                     token_ids = sentence_to_token_ids(
                         line, vocab, tokenizer, normalize_digits, UNK_ID=UNK_ID, _DIGIT_RE=_DIGIT_RE
                     )
                     tokens_file.write(" ".join([str(tok) for tok in token_ids]) + "\n")
     else:
-        tl.logging.info("Target path %s exists" % target_path)
+        tlx.logging.info("Target path %s exists" % target_path)
 
 
 def moses_multi_bleu(hypotheses, references, lowercase=False):
@@ -1112,7 +1112,7 @@ def moses_multi_bleu(hypotheses, references, lowercase=False):
     ---------
     >>> hypotheses = ["a bird is flying on the sky"]
     >>> references = ["two birds are flying on the sky", "a bird is on the top of the tree", "an airplane is on the sky",]
-    >>> score = tl.nlp.moses_multi_bleu(hypotheses, references)
+    >>> score = tlx.nlp.moses_multi_bleu(hypotheses, references)
 
     Returns
     --------
@@ -1135,7 +1135,7 @@ def moses_multi_bleu(hypotheses, references, lowercase=False):
         )
         os.chmod(multi_bleu_path, 0o755)
     except Exception:  # pylint: disable=W0702
-        tl.logging.info("Unable to fetch multi-bleu.perl script, using local.")
+        tlx.logging.info("Unable to fetch multi-bleu.perl script, using local.")
         metrics_dir = os.path.dirname(os.path.realpath(__file__))
         bin_dir = os.path.abspath(os.path.join(metrics_dir, "..", "..", "bin"))
         multi_bleu_path = os.path.join(bin_dir, "tools/multi-bleu.perl")
@@ -1163,8 +1163,8 @@ def moses_multi_bleu(hypotheses, references, lowercase=False):
             bleu_score = float(bleu_score)
         except subprocess.CalledProcessError as error:
             if error.output is not None:
-                tl.logging.warning("multi-bleu.perl script returned non-zero exit code")
-                tl.logging.warning(error.output)
+                tlx.logging.warning("multi-bleu.perl script returned non-zero exit code")
+                tlx.logging.warning(error.output)
             bleu_score = np.float32(0.0)
 
     # Close temp files

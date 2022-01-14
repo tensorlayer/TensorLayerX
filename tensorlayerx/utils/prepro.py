@@ -23,7 +23,7 @@ from skimage.morphology import disk
 from skimage.morphology import erosion as _erosion
 from skimage.transform import resize
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.lazy_imports import LazyImport
 
 cv2 = LazyImport("cv2")
@@ -135,49 +135,49 @@ def threading_data(data=None, fn=None, thread_count=None, **kwargs):
     --------
     Process images.
 
-    >>> images, _, _, _ = tl.files.load_cifar10_dataset(shape=(-1, 32, 32, 3))
-    >>> images = tl.prepro.threading_data(images[0:32], tl.prepro.zoom, zoom_range=[0.5, 1])
+    >>> images, _, _, _ = tlx.files.load_cifar10_dataset(shape=(-1, 32, 32, 3))
+    >>> images = tlx.prepro.threading_data(images[0:32], tlx.prepro.zoom, zoom_range=[0.5, 1])
 
     Customized image preprocessing function.
 
     >>> def distort_img(x):
-    >>>     x = tl.prepro.flip_axis(x, axis=0, is_random=True)
-    >>>     x = tl.prepro.flip_axis(x, axis=1, is_random=True)
-    >>>     x = tl.prepro.crop(x, 100, 100, is_random=True)
+    >>>     x = tlx.prepro.flip_axis(x, axis=0, is_random=True)
+    >>>     x = tlx.prepro.flip_axis(x, axis=1, is_random=True)
+    >>>     x = tlx.prepro.crop(x, 100, 100, is_random=True)
     >>>     return x
-    >>> images = tl.prepro.threading_data(images, distort_img)
+    >>> images = tlx.prepro.threading_data(images, distort_img)
 
     Process images and masks together (Usually be used for image segmentation).
 
     >>> X, Y --> [batch_size, row, col, 1]
-    >>> data = tl.prepro.threading_data([_ for _ in zip(X, Y)], tl.prepro.zoom_multi, zoom_range=[0.5, 1], is_random=True)
+    >>> data = tlx.prepro.threading_data([_ for _ in zip(X, Y)], tlx.prepro.zoom_multi, zoom_range=[0.5, 1], is_random=True)
     data --> [batch_size, 2, row, col, 1]
     >>> X_, Y_ = data.transpose((1,0,2,3,4))
     X_, Y_ --> [batch_size, row, col, 1]
-    >>> tl.vis.save_image(X_, 'images.png')
-    >>> tl.vis.save_image(Y_, 'masks.png')
+    >>> tlx.vis.save_image(X_, 'images.png')
+    >>> tlx.vis.save_image(Y_, 'masks.png')
 
     Process images and masks together by using ``thread_count``.
 
     >>> X, Y --> [batch_size, row, col, 1]
-    >>> data = tl.prepro.threading_data(X, tl.prepro.zoom_multi, 8, zoom_range=[0.5, 1], is_random=True)
+    >>> data = tlx.prepro.threading_data(X, tlx.prepro.zoom_multi, 8, zoom_range=[0.5, 1], is_random=True)
     data --> [batch_size, 2, row, col, 1]
     >>> X_, Y_ = data.transpose((1,0,2,3,4))
     X_, Y_ --> [batch_size, row, col, 1]
-    >>> tl.vis.save_image(X_, 'after.png')
-    >>> tl.vis.save_image(Y_, 'before.png')
+    >>> tlx.vis.save_image(X_, 'after.png')
+    >>> tlx.vis.save_image(Y_, 'before.png')
 
     Customized function for processing images and masks together.
 
     >>> def distort_img(data):
     >>>    x, y = data
-    >>>    x, y = tl.prepro.flip_axis_multi([x, y], axis=0, is_random=True)
-    >>>    x, y = tl.prepro.flip_axis_multi([x, y], axis=1, is_random=True)
-    >>>    x, y = tl.prepro.crop_multi([x, y], 100, 100, is_random=True)
+    >>>    x, y = tlx.prepro.flip_axis_multi([x, y], axis=0, is_random=True)
+    >>>    x, y = tlx.prepro.flip_axis_multi([x, y], axis=1, is_random=True)
+    >>>    x, y = tlx.prepro.crop_multi([x, y], 100, 100, is_random=True)
     >>>    return x, y
 
     >>> X, Y --> [batch_size, row, col, channel]
-    >>> data = tl.prepro.threading_data([_ for _ in zip(X, Y)], distort_img)
+    >>> data = tlx.prepro.threading_data([_ for _ in zip(X, Y)], distort_img)
     >>> X_, Y_ = data.transpose((1,0,2,3,4))
 
     Returns
@@ -365,7 +365,7 @@ def affine_shear_matrix(x_shear=(-0.1, 0.1), y_shear=(-0.1, 0.1)):
     """
     # if len(shear) != 2:
     #     raise AssertionError(
-    #         "shear should be tuple of 2 floats, or you want to use tl.prepro.shear rather than tl.prepro.shear2 ?"
+    #         "shear should be tuple of 2 floats, or you want to use tlx.prepro.shear rather than tlx.prepro.shear2 ?"
     #     )
     # if isinstance(shear, tuple):
     #     shear = list(shear)
@@ -476,7 +476,7 @@ def transform_matrix_offset_center(matrix, y, x):
 
     Examples
     --------
-    - See ``tl.prepro.rotation``, ``tl.prepro.shear``, ``tl.prepro.zoom``.
+    - See ``tlx.prepro.rotation``, ``tlx.prepro.shear``, ``tlx.prepro.zoom``.
     """
     o_x = (x - 1) / 2.0
     o_y = (y - 1) / 2.0
@@ -518,11 +518,11 @@ def affine_transform(x, transform_matrix, channel_index=2, fill_mode='nearest', 
 
     Examples
     --------
-    >>> M_shear = tl.prepro.affine_shear_matrix(intensity=0.2, is_random=False)
-    >>> M_zoom = tl.prepro.affine_zoom_matrix(zoom_range=0.8)
+    >>> M_shear = tlx.prepro.affine_shear_matrix(intensity=0.2, is_random=False)
+    >>> M_zoom = tlx.prepro.affine_zoom_matrix(zoom_range=0.8)
     >>> M_combined = M_shear.dot(M_zoom)
-    >>> transform_matrix = tl.prepro.transform_matrix_offset_center(M_combined, h, w)
-    >>> result = tl.prepro.affine_transform(image, transform_matrix)
+    >>> transform_matrix = tlx.prepro.transform_matrix_offset_center(M_combined, h, w)
+    >>> result = tlx.prepro.affine_transform(image, transform_matrix)
 
     """
     # transform_matrix = transform_matrix_offset_center()
@@ -546,7 +546,7 @@ apply_transform = affine_transform
 
 
 def affine_transform_cv2(x, transform_matrix, flags=None, border_mode='constant'):
-    """Return transformed images by given an affine matrix in OpenCV format (x is width). (Powered by OpenCV2, faster than ``tl.prepro.affine_transform``)
+    """Return transformed images by given an affine matrix in OpenCV format (x is width). (Powered by OpenCV2, faster than ``tlx.prepro.affine_transform``)
 
     Parameters
     ----------
@@ -560,10 +560,10 @@ def affine_transform_cv2(x, transform_matrix, flags=None, border_mode='constant'
 
     Examples
     --------
-    >>> M_shear = tl.prepro.affine_shear_matrix(intensity=0.2, is_random=False)
-    >>> M_zoom = tl.prepro.affine_zoom_matrix(zoom_range=0.8)
+    >>> M_shear = tlx.prepro.affine_shear_matrix(intensity=0.2, is_random=False)
+    >>> M_zoom = tlx.prepro.affine_zoom_matrix(zoom_range=0.8)
     >>> M_combined = M_shear.dot(M_zoom)
-    >>> result = tl.prepro.affine_transform_cv2(image, M_combined)
+    >>> result = tlx.prepro.affine_transform_cv2(image, M_combined)
     """
     rows, cols = x.shape[0], x.shape[1]
     if flags is None:
@@ -583,7 +583,7 @@ def affine_transform_keypoints(coords_list, transform_matrix):
     OpenCV format, x is width.
 
     Note that, for pose estimation task, flipping requires maintaining the left and right body information.
-    We should not flip the left and right body, so please use ``tl.prepro.keypoint_random_flip``.
+    We should not flip the left and right body, so please use ``tlx.prepro.keypoint_random_flip``.
 
     Parameters
     -----------
@@ -596,18 +596,18 @@ def affine_transform_keypoints(coords_list, transform_matrix):
     Examples
     ---------
     >>> # 1. get all affine transform matrices
-    >>> M_rotate = tl.prepro.affine_rotation_matrix(angle=20)
-    >>> M_flip = tl.prepro.affine_horizontal_flip_matrix(prob=1)
+    >>> M_rotate = tlx.prepro.affine_rotation_matrix(angle=20)
+    >>> M_flip = tlx.prepro.affine_horizontal_flip_matrix(prob=1)
     >>> # 2. combine all affine transform matrices to one matrix
     >>> M_combined = dot(M_flip).dot(M_rotate)
     >>> # 3. transfrom the matrix from Cartesian coordinate (the origin in the middle of image)
     >>> # to Image coordinate (the origin on the top-left of image)
-    >>> transform_matrix = tl.prepro.transform_matrix_offset_center(M_combined, x=w, y=h)
+    >>> transform_matrix = tlx.prepro.transform_matrix_offset_center(M_combined, x=w, y=h)
     >>> # 4. then we can transfrom the image once for all transformations
-    >>> result = tl.prepro.affine_transform_cv2(image, transform_matrix)  # 76 times faster
+    >>> result = tlx.prepro.affine_transform_cv2(image, transform_matrix)  # 76 times faster
     >>> # 5. transform keypoint coordinates
     >>> coords = [[(50, 100), (100, 100), (100, 50), (200, 200)], [(250, 50), (200, 50), (200, 100)]]
-    >>> coords_result = tl.prepro.affine_transform_keypoints(coords, transform_matrix)
+    >>> coords_result = tlx.prepro.affine_transform_keypoints(coords, transform_matrix)
     """
     coords_result_list = []
     for coords in coords_list:
@@ -670,7 +670,7 @@ def projective_transform_by_points(
 
     >>> src = [[0,0],[0,32],[32,0],[32,32]]     # [w, h]
     >>> dst = [[10,10],[0,32],[32,0],[32,32]]
-    >>> x = tl.prepro.projective_transform_by_points(X, src, dst)
+    >>> x = tlx.prepro.projective_transform_by_points(X, src, dst)
 
     References
     -----------
@@ -719,7 +719,7 @@ def rotation(
     cval : float
         Value used for points outside the boundaries of the input if mode=`constant`. Default is 0.0
     order : int
-        The order of interpolation. The order has to be in the range 0-5. See ``tl.prepro.affine_transform`` and `scipy ndimage affine_transform <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.ndimage.interpolation.affine_transform.html>`__
+        The order of interpolation. The order has to be in the range 0-5. See ``tlx.prepro.affine_transform`` and `scipy ndimage affine_transform <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.ndimage.interpolation.affine_transform.html>`__
 
     Returns
     -------
@@ -729,8 +729,8 @@ def rotation(
     Examples
     ---------
     >>> x --> [row, col, 1]
-    >>> x = tl.prepro.rotation(x, rg=40, is_random=False)
-    >>> tl.vis.save_image(x, 'im.png')
+    >>> x = tlx.prepro.rotation(x, rg=40, is_random=False)
+    >>> tlx.vis.save_image(x, 'im.png')
 
     """
     if is_random:
@@ -756,7 +756,7 @@ def rotation_multi(
     x : list of numpy.array
         List of images with dimension of [n_images, row, col, channel] (default).
     others : args
-        See ``tl.prepro.rotation``.
+        See ``tlx.prepro.rotation``.
 
     Returns
     -------
@@ -766,7 +766,7 @@ def rotation_multi(
     Examples
     --------
     >>> x, y --> [row, col, 1]  greyscale
-    >>> x, y = tl.prepro.rotation_multi([x, y], rg=90, is_random=False)
+    >>> x, y = tlx.prepro.rotation_multi([x, y], rg=90, is_random=False)
 
     """
     if is_random:
@@ -816,7 +816,7 @@ def crop(x, wrg, hrg, is_random=False, row_index=0, col_index=1):
     if is_random:
         h_offset = int(np.random.uniform(0, h - hrg))
         w_offset = int(np.random.uniform(0, w - wrg))
-        # tl.logging.info(h_offset, w_offset, x[h_offset: hrg+h_offset ,w_offset: wrg+w_offset].shape)
+        # tlx.logging.info(h_offset, w_offset, x[h_offset: hrg+h_offset ,w_offset: wrg+w_offset].shape)
         return x[h_offset:hrg + h_offset, w_offset:wrg + w_offset]
     else:  # central crop
         h_offset = int(np.floor((h - hrg) / 2.))
@@ -827,7 +827,7 @@ def crop(x, wrg, hrg, is_random=False, row_index=0, col_index=1):
         # old implementation
         # h_offset = (h - hrg)/2
         # w_offset = (w - wrg)/2
-        # tl.logging.info(x[h_offset: h-h_offset ,w_offset: w-w_offset].shape)
+        # tlx.logging.info(x[h_offset: h-h_offset ,w_offset: w-w_offset].shape)
         # return x[h_offset: h-h_offset ,w_offset: w-w_offset]
         # central crop
 
@@ -840,7 +840,7 @@ def crop_multi(x, wrg, hrg, is_random=False, row_index=0, col_index=1):
     x : list of numpy.array
         List of images with dimension of [n_images, row, col, channel] (default).
     others : args
-        See ``tl.prepro.crop``.
+        See ``tlx.prepro.crop``.
 
     Returns
     -------
@@ -916,7 +916,7 @@ def flip_axis_multi(x, axis, is_random=False):
     x : list of numpy.array
         List of images with dimension of [n_images, row, col, channel] (default).
     others : args
-        See ``tl.prepro.flip_axis``.
+        See ``tlx.prepro.flip_axis``.
 
     Returns
     -------
@@ -978,7 +978,7 @@ def shift(
     cval : float
         Value used for points outside the boundaries of the input if mode='constant'. Default is 0.0.
     order : int
-        The order of interpolation. The order has to be in the range 0-5. See ``tl.prepro.affine_transform`` and `scipy ndimage affine_transform <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.ndimage.interpolation.affine_transform.html>`__
+        The order of interpolation. The order has to be in the range 0-5. See ``tlx.prepro.affine_transform`` and `scipy ndimage affine_transform <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.ndimage.interpolation.affine_transform.html>`__
 
     Returns
     -------
@@ -1011,7 +1011,7 @@ def shift_multi(
     x : list of numpy.array
         List of images with dimension of [n_images, row, col, channel] (default).
     others : args
-        See ``tl.prepro.shift``.
+        See ``tlx.prepro.shift``.
 
     Returns
     -------
@@ -1056,7 +1056,7 @@ def shear(
     cval : float
         Value used for points outside the boundaries of the input if mode='constant'. Default is 0.0.
     order : int
-        The order of interpolation. The order has to be in the range 0-5. See ``tl.prepro.affine_transform`` and `scipy ndimage affine_transform <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.ndimage.interpolation.affine_transform.html>`__
+        The order of interpolation. The order has to be in the range 0-5. See ``tlx.prepro.affine_transform`` and `scipy ndimage affine_transform <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.ndimage.interpolation.affine_transform.html>`__
 
     Returns
     -------
@@ -1091,7 +1091,7 @@ def shear_multi(
     x : list of numpy.array
         List of images with dimension of [n_images, row, col, channel] (default).
     others : args
-        See ``tl.prepro.shear``.
+        See ``tlx.prepro.shear``.
 
     Returns
     -------
@@ -1134,7 +1134,7 @@ def shear2(
     cval : float
         Value used for points outside the boundaries of the input if mode='constant'. Default is 0.0.
     order : int
-        The order of interpolation. The order has to be in the range 0-5. See ``tl.prepro.affine_transform`` and `scipy ndimage affine_transform <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.ndimage.interpolation.affine_transform.html>`__
+        The order of interpolation. The order has to be in the range 0-5. See ``tlx.prepro.affine_transform`` and `scipy ndimage affine_transform <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.ndimage.interpolation.affine_transform.html>`__
 
     Returns
     -------
@@ -1148,7 +1148,7 @@ def shear2(
     """
     if len(shear) != 2:
         raise AssertionError(
-            "shear should be tuple of 2 floats, or you want to use tl.prepro.shear rather than tl.prepro.shear2 ?"
+            "shear should be tuple of 2 floats, or you want to use tlx.prepro.shear rather than tlx.prepro.shear2 ?"
         )
     if isinstance(shear, tuple):
         shear = list(shear)
@@ -1178,7 +1178,7 @@ def shear_multi2(
     x : list of numpy.array
         List of images with dimension of [n_images, row, col, channel] (default).
     others : args
-        See ``tl.prepro.shear2``.
+        See ``tlx.prepro.shear2``.
 
     Returns
     -------
@@ -1188,7 +1188,7 @@ def shear_multi2(
     """
     if len(shear) != 2:
         raise AssertionError(
-            "shear should be tuple of 2 floats, or you want to use tl.prepro.shear_multi rather than tl.prepro.shear_multi2 ?"
+            "shear should be tuple of 2 floats, or you want to use tlx.prepro.shear_multi rather than tlx.prepro.shear_multi2 ?"
         )
     if isinstance(shear, tuple):
         shear = list(shear)
@@ -1254,7 +1254,7 @@ def swirl(
     Examples
     ---------
     >>> x --> [row, col, 1] greyscale
-    >>> x = tl.prepro.swirl(x, strength=4, radius=100)
+    >>> x = tlx.prepro.swirl(x, strength=4, radius=100)
 
     """
     if radius == 0:
@@ -1293,7 +1293,7 @@ def swirl_multi(
     x : list of numpy.array
         List of images with dimension of [n_images, row, col, channel] (default).
     others : args
-        See ``tl.prepro.swirl``.
+        See ``tlx.prepro.swirl``.
 
     Returns
     -------
@@ -1354,7 +1354,7 @@ def elastic_transform(x, alpha, sigma, mode="constant", cval=0, is_random=False)
 
     Examples
     ---------
-    >>> x = tl.prepro.elastic_transform(x, alpha=x.shape[1]*3, sigma=x.shape[1]*0.07)
+    >>> x = tlx.prepro.elastic_transform(x, alpha=x.shape[1]*3, sigma=x.shape[1]*0.07)
 
     References
     ------------
@@ -1398,7 +1398,7 @@ def elastic_transform_multi(x, alpha, sigma, mode="constant", cval=0, is_random=
     x : list of numpy.array
         List of greyscale images.
     others : args
-        See ``tl.prepro.elastic_transform``.
+        See ``tlx.prepro.elastic_transform``.
 
     Returns
     -------
@@ -1433,7 +1433,7 @@ def elastic_transform_multi(x, alpha, sigma, mode="constant", cval=0, is_random=
 
         x_, y_ = np.meshgrid(np.arange(shape[0]), np.arange(shape[1]), indexing='ij')
         indices = np.reshape(x_ + dx, (-1, 1)), np.reshape(y_ + dy, (-1, 1))
-        # tl.logging.info(data.shape)
+        # tlx.logging.info(data.shape)
         if is_3d:
             results.append(map_coordinates(data, indices, order=1).reshape((shape[0], shape[1], 1)))
         else:
@@ -1513,7 +1513,7 @@ def zoom_multi(x, zoom_range=(0.9, 1.1), flags=None, border_mode='constant'):
     x : list of numpy.array
         List of images with dimension of [n_images, row, col, channel] (default).
     others : args
-        See ``tl.prepro.zoom``.
+        See ``tlx.prepro.zoom``.
 
     Returns
     -------
@@ -1579,7 +1579,7 @@ def brightness_multi(x, gamma=1, gain=1, is_random=False):
     x : list of numpyarray
         List of images with dimension of [n_images, row, col, channel] (default).
     others : args
-        See ``tl.prepro.brightness``.
+        See ``tlx.prepro.brightness``.
 
     Returns
     -------
@@ -1604,7 +1604,7 @@ def illumination(x, gamma=1., contrast=1., saturation=1., is_random=False):
     x : numpy.array
         An image with dimension of [row, col, channel] (default).
     gamma : float
-        Change brightness (the same with ``tl.prepro.brightness``)
+        Change brightness (the same with ``tlx.prepro.brightness``)
             - if is_random=False, one float number, small than one means brighter, greater than one means darker.
             - if is_random=True, tuple of two float numbers, (min, max).
     contrast : float
@@ -1627,11 +1627,11 @@ def illumination(x, gamma=1., contrast=1., saturation=1., is_random=False):
     ---------
     Random
 
-    >>> x = tl.prepro.illumination(x, gamma=(0.5, 5.0), contrast=(0.3, 1.0), saturation=(0.7, 1.0), is_random=True)
+    >>> x = tlx.prepro.illumination(x, gamma=(0.5, 5.0), contrast=(0.3, 1.0), saturation=(0.7, 1.0), is_random=True)
 
     Non-random
 
-    >>> x = tl.prepro.illumination(x, 0.5, 0.6, 0.8, is_random=False)
+    >>> x = tlx.prepro.illumination(x, 0.5, 0.6, 0.8, is_random=False)
 
     """
     if is_random:
@@ -1649,7 +1649,7 @@ def illumination(x, gamma=1., contrast=1., saturation=1., is_random=False):
             gamma = 1
         im_ = brightness(x, gamma=gamma, gain=1, is_random=False)
 
-        # tl.logging.info("using contrast and saturation")
+        # tlx.logging.info("using contrast and saturation")
         image = PIL.Image.fromarray(im_)  # array -> PIL
         contrast_adjust = PIL.ImageEnhance.Contrast(image)
         image = contrast_adjust.enhance(np.random.uniform(contrast[0], contrast[1]))  #0.3,0.9))
@@ -1770,11 +1770,11 @@ def adjust_hue(im, hout=0.66, is_offset=True, is_clip=True, is_random=False):
     ---------
     Random, add a random value between -0.2 and 0.2 as the offset to every hue values.
 
-    >>> im_hue = tl.prepro.adjust_hue(image, hout=0.2, is_offset=True, is_random=False)
+    >>> im_hue = tlx.prepro.adjust_hue(image, hout=0.2, is_offset=True, is_random=False)
 
     Non-random, make all hue to green.
 
-    >>> im_green = tl.prepro.adjust_hue(image, hout=0.66, is_offset=False, is_random=False)
+    >>> im_green = tlx.prepro.adjust_hue(image, hout=0.66, is_offset=False, is_random=False)
 
     References
     -----------
@@ -2002,11 +2002,11 @@ def get_zca_whitening_principal_components_img(X):
 
     """
     flatX = np.reshape(X, (X.shape[0], X.shape[1] * X.shape[2] * X.shape[3]))
-    tl.logging.info("zca : computing sigma ..")
+    tlx.logging.info("zca : computing sigma ..")
     sigma = np.dot(flatX.T, flatX) / flatX.shape[0]
-    tl.logging.info("zca : computing U, S and V ..")
+    tlx.logging.info("zca : computing U, S and V ..")
     U, S, _ = linalg.svd(sigma)  # USV
-    tl.logging.info("zca : computing principal components ..")
+    tlx.logging.info("zca : computing principal components ..")
     principal_components = np.dot(np.dot(U, np.diag(1. / np.sqrt(S + 10e-7))), U.T)
     return principal_components
 
@@ -2028,10 +2028,10 @@ def zca_whitening(x, principal_components):
 
     """
     flatx = np.reshape(x, (x.size))
-    # tl.logging.info(principal_components.shape, x.shape)  # ((28160, 28160), (160, 176, 1))
+    # tlx.logging.info(principal_components.shape, x.shape)  # ((28160, 28160), (160, 176, 1))
     # flatx = np.reshape(x, (x.shape))
     # flatx = np.reshape(x, (x.shape[0], ))
-    # tl.logging.info(flatx.shape)  # (160, 176, 1)
+    # tlx.logging.info(flatx.shape)  # (160, 176, 1)
     whitex = np.dot(flatx, principal_components)
     x = np.reshape(whitex, (x.shape[0], x.shape[1], x.shape[2]))
     return x
@@ -2098,7 +2098,7 @@ def channel_shift_multi(x, intensity, is_random=False, channel_index=2):
     x : list of numpy.array
         List of images with dimension of [n_images, row, col, channel] (default).
     others : args
-        See ``tl.prepro.channel_shift``.
+        See ``tlx.prepro.channel_shift``.
 
     Returns
     -------
@@ -2161,11 +2161,11 @@ def drop(x, keep=0.5):
 # x = np.asarray([[1,2,3,4,5,6,7,8,9,10],[1,2,3,4,5,6,7,8,9,10]])
 # x = np.asarray([x,x,x,x,x,x])
 # x.shape = 10, 4, 3
-# tl.logging.info(x)
+# tlx.logging.info(x)
 # # exit()
-# tl.logging.info(x.shape)
+# tlx.logging.info(x.shape)
 # # exit()
-# tl.logging.info(drop(x, keep=1.))
+# tlx.logging.info(drop(x, keep=1.))
 # exit()
 
 
@@ -2203,7 +2203,7 @@ def array_to_img(x, dim_ordering=(0, 1, 2), scale=True):
         x += max(-np.min(x), 0)
         x_max = np.max(x)
         if x_max != 0:
-            # tl.logging.info(x_max)
+            # tlx.logging.info(x_max)
             # x /= x_max
             x = x / x_max
         x *= 255
@@ -2271,7 +2271,7 @@ def pt2map(list_points=None, size=(100, 100), val=1):
         return i_m
     for xx in list_points:
         for x in xx:
-            # tl.logging.info(x)
+            # tlx.logging.info(x)
             i_m[int(np.round(x[0]))][int(np.round(x[1]))] = val
     return i_m
 
@@ -2440,7 +2440,7 @@ def obj_box_coord_rescale(coord=None, shape=None):
 
     Examples
     ---------
-    >>> coord = tl.prepro.obj_box_coord_rescale(coord=[30, 40, 50, 50], shape=[100, 100])
+    >>> coord = tlx.prepro.obj_box_coord_rescale(coord=[30, 40, 50, 50], shape=[100, 100])
       [0.3, 0.4, 0.5, 0.5]
 
     """
@@ -2470,7 +2470,7 @@ def obj_box_coord_scale_to_pixelunit(coord, shape=None):
 
     Examples
     ---------
-    >>> x, y, x2, y2 = tl.prepro.obj_box_coord_scale_to_pixelunit([0.2, 0.3, 0.5, 0.7], shape=(100, 200, 3))
+    >>> x, y, x2, y2 = tlx.prepro.obj_box_coord_scale_to_pixelunit([0.2, 0.3, 0.5, 0.7], shape=(100, 200, 3))
       [40, 30, 100, 70]
 
     """
@@ -2486,13 +2486,13 @@ def obj_box_coord_scale_to_pixelunit(coord, shape=None):
 
 
 # coords = obj_box_coords_rescale(coords=[[30, 40, 50, 50], [10, 10, 20, 20]], shape=[100, 100])
-# tl.logging.info(coords)
+# tlx.logging.info(coords)
 #     #   [[0.3, 0.4, 0.5, 0.5], [0.1, 0.1, 0.2, 0.2]]
 # coords = obj_box_coords_rescale(coords=[[30, 40, 50, 50]], shape=[50, 100])
-# tl.logging.info(coords)
+# tlx.logging.info(coords)
 #     #   [[0.3, 0.8, 0.5, 1.0]]
 # coords = obj_box_coords_rescale(coords=[[30, 40, 50, 50]], shape=[100, 200])
-# tl.logging.info(coords)
+# tlx.logging.info(coords)
 #     #   [[0.15, 0.4, 0.25, 0.5]]
 # exit()
 
@@ -2533,7 +2533,7 @@ def obj_box_coord_centroid_to_upleft_butright(coord, to_int=False):
 
 
 # coord = obj_box_coord_centroid_to_upleft_butright([30, 40, 20, 20])
-# tl.logging.info(coord)    [20, 30, 40, 50]
+# tlx.logging.info(coord)    [20, 30, 40, 50]
 # exit()
 
 
@@ -2748,16 +2748,16 @@ obj_box_left_right_flip = obj_box_horizontal_flip
 
 # im = np.zeros([80, 100])    # as an image with shape width=100, height=80
 # im, coords = obj_box_left_right_flip(im, coords=[[0.2, 0.4, 0.3, 0.3], [0.1, 0.5, 0.2, 0.3]], is_rescale=True, is_center=True, is_random=False)
-# tl.logging.info(coords)
+# tlx.logging.info(coords)
 # #   [[0.8, 0.4, 0.3, 0.3], [0.9, 0.5, 0.2, 0.3]]
 # im, coords = obj_box_left_right_flip(im, coords=[[0.2, 0.4, 0.3, 0.3]], is_rescale=True, is_center=False, is_random=False)
-# tl.logging.info(coords)
+# tlx.logging.info(coords)
 # # [[0.5, 0.4, 0.3, 0.3]]
 # im, coords = obj_box_left_right_flip(im, coords=[[20, 40, 30, 30]], is_rescale=False, is_center=True, is_random=False)
-# tl.logging.info(coords)
+# tlx.logging.info(coords)
 # #   [[80, 40, 30, 30]]
 # im, coords = obj_box_left_right_flip(im, coords=[[20, 40, 30, 30]], is_rescale=False, is_center=False, is_random=False)
-# tl.logging.info(coords)
+# tlx.logging.info(coords)
 # # [[50, 40, 30, 30]]
 # exit()
 
@@ -2772,7 +2772,7 @@ def obj_box_imresize(im, coords=None, size=None, interp='bicubic', mode=None, is
     coords : list of list of 4 int/float or None
         Coordinates [[x, y, w, h], [x, y, w, h], ...]
     size interp and mode : args
-        See ``tl.prepro.imresize``.
+        See ``tlx.prepro.imresize``.
     is_rescale : boolean
         Set to True, if the input coordinates are rescaled to [0, 1], then return the original coordinates. Default is False.
 
@@ -2821,7 +2821,7 @@ def obj_box_imresize(im, coords=None, size=None, interp='bicubic', mode=None, is
             # x' = x * (imw'/imw)
             x = int(coord[0] * (size[1] / imw))
             # y' = y * (imh'/imh)
-            # tl.logging.info('>>', coord[1], size[0], imh)
+            # tlx.logging.info('>>', coord[1], size[0], imh)
             y = int(coord[1] * (size[0] / imh))
             # w' = w * (imw'/imw)
             w = int(coord[2] * (size[1] / imw))
@@ -2835,16 +2835,16 @@ def obj_box_imresize(im, coords=None, size=None, interp='bicubic', mode=None, is
 
 # im = np.zeros([80, 100, 3])    # as an image with shape width=100, height=80
 # _, coords = obj_box_imresize(im, coords=[[20, 40, 30, 30], [10, 20, 20, 20]], size=[160, 200], is_rescale=False)
-# tl.logging.info(coords)
+# tlx.logging.info(coords)
 # #   [[40, 80, 60, 60], [20, 40, 40, 40]]
 # _, coords = obj_box_imresize(im, coords=[[20, 40, 30, 30]], size=[40, 100], is_rescale=False)
-# tl.logging.info(coords)
+# tlx.logging.info(coords)
 # #   [20, 20, 30, 15]
 # _, coords = obj_box_imresize(im, coords=[[20, 40, 30, 30]], size=[60, 150], is_rescale=False)
-# tl.logging.info(coords)
+# tlx.logging.info(coords)
 # #   [30, 30, 45, 22]
 # im2, coords = obj_box_imresize(im, coords=[[0.2, 0.4, 0.3, 0.3]], size=[160, 200], is_rescale=True)
-# tl.logging.info(coords, im2.shape)
+# tlx.logging.info(coords, im2.shape)
 # # [0.2, 0.4, 0.3, 0.3] (160, 200, 3)
 # exit()
 
@@ -2865,7 +2865,7 @@ def obj_box_crop(
     coords : list of list of 4 int/float or None
         Coordinates [[x, y, w, h], [x, y, w, h], ...]
     wrg hrg and is_random : args
-        See ``tl.prepro.crop``.
+        See ``tlx.prepro.crop``.
     is_rescale : boolean
         Set to True, if the input coordinates are rescaled to [0, 1]. Default is False.
     is_center : boolean, default False
@@ -2962,12 +2962,12 @@ def obj_box_crop(
             h = im_new.shape[0] - y
 
         if (w / (h + 1.) > thresh_wh2) or (h / (w + 1.) > thresh_wh2):  # object shape strange: too narrow
-            # tl.logging.info('xx', w, h)
+            # tlx.logging.info('xx', w, h)
             return None
 
         if (w / (im_new.shape[1] * 1.) < thresh_wh) or (h / (im_new.shape[0] * 1.) <
                                                         thresh_wh):  # object shape strange: too narrow
-            # tl.logging.info('yy', w, im_new.shape[1], h, im_new.shape[0])
+            # tlx.logging.info('yy', w, im_new.shape[1], h, im_new.shape[0])
             return None
 
         coord = [x, y, w, h]
@@ -3017,7 +3017,7 @@ def obj_box_shift(
         Class IDs.
     coords : list of list of 4 int/float or None
         Coordinates [[x, y, w, h], [x, y, w, h], ...]
-    wrg, hrg row_index col_index channel_index is_random fill_mode cval and order : see ``tl.prepro.shift``.
+    wrg, hrg row_index col_index channel_index is_random fill_mode cval and order : see ``tlx.prepro.shift``.
     is_rescale : boolean
         Set to True, if the input coordinates are rescaled to [0, 1]. Default is False.
     is_center : boolean
@@ -3097,12 +3097,12 @@ def obj_box_shift(
             h = im_new.shape[0] - y
 
         if (w / (h + 1.) > thresh_wh2) or (h / (w + 1.) > thresh_wh2):  # object shape strange: too narrow
-            # tl.logging.info('xx', w, h)
+            # tlx.logging.info('xx', w, h)
             return None
 
         if (w / (im_new.shape[1] * 1.) < thresh_wh) or (h / (im_new.shape[0] * 1.) <
                                                         thresh_wh):  # object shape strange: too narrow
-            # tl.logging.info('yy', w, im_new.shape[1], h, im_new.shape[0])
+            # tlx.logging.info('yy', w, im_new.shape[1], h, im_new.shape[0])
             return None
 
         coord = [x, y, w, h]
@@ -3153,7 +3153,7 @@ def obj_box_zoom(
         Class IDs.
     coords : list of list of 4 int/float or None
         Coordinates [[x, y, w, h], [x, y, w, h], ...].
-    zoom_range row_index col_index channel_index is_random fill_mode cval and order : see ``tl.prepro.zoom``.
+    zoom_range row_index col_index channel_index is_random fill_mode cval and order : see ``tlx.prepro.zoom``.
     is_rescale : boolean
         Set to True, if the input coordinates are rescaled to [0, 1]. Default is False.
     is_center : boolean
@@ -3183,12 +3183,12 @@ def obj_box_zoom(
     if is_random:
         if zoom_range[0] == 1 and zoom_range[1] == 1:
             zx, zy = 1, 1
-            tl.logging.info(" random_zoom : not zoom in/out")
+            tlx.logging.info(" random_zoom : not zoom in/out")
         else:
             zx, zy = np.random.uniform(zoom_range[0], zoom_range[1], 2)
     else:
         zx, zy = zoom_range
-    # tl.logging.info(zx, zy)
+    # tlx.logging.info(zx, zy)
     zoom_matrix = np.array([[zx, 0, 0], [0, zy, 0], [0, 0, 1]])
 
     h, w = im.shape[row_index], im.shape[col_index]
@@ -3234,12 +3234,12 @@ def obj_box_zoom(
             h = im_new.shape[0] - y
 
         if (w / (h + 1.) > thresh_wh2) or (h / (w + 1.) > thresh_wh2):  # object shape strange: too narrow
-            # tl.logging.info('xx', w, h)
+            # tlx.logging.info('xx', w, h)
             return None
 
         if (w / (im_new.shape[1] * 1.) < thresh_wh) or (h / (im_new.shape[0] * 1.) <
                                                         thresh_wh):  # object shape strange: too narrow
-            # tl.logging.info('yy', w, im_new.shape[1], h, im_new.shape[0])
+            # tlx.logging.info('yy', w, im_new.shape[1], h, im_new.shape[0])
             return None
 
         coord = [x, y, w, h]

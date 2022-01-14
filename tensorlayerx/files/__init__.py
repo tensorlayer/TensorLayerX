@@ -45,7 +45,7 @@ __all__ = [
     # 'load_wmt_en_fr_dataset',
 
     # Util Functions
-    'assign_params',
+    # 'assign_params',
     'del_file',
     'del_folder',
     'download_file_from_google_drive',

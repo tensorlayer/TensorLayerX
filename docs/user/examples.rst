@@ -4,7 +4,7 @@
 Examples
 ============
 
-We list some examples here, but more tutorials and applications can be found in `Openi examples <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples>`__.
+We list some examples here, but more tutorials and applications can be found in `Github examples <https://github.com/tensorlayer/TensorLayerX/tree/main/examples>`__.
 
 Commonly used dataset and pretrained models
 ===========================================
@@ -20,26 +20,28 @@ Commonly used dataset and pretrained models
 Basics
 ============
 
- - Multi-layer perceptron (MNIST), simple usage and supports multiple backends. Classification task, see `tutorial_mnist_simple.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_mnist_simple.py>`__.
- - Multi-layer perceptron (MNIST), mix of tensorlayer and tensorflow. Classification with dropout using iterator, see `tutorial_mnist_mlp_tensorflow_backend.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_mnist_mlp_tensorflow_backend.py>`__.
- - Multi-layer perceptron (MNIST), mix of tensorlayer and mindspore. Classification task, see `tutorial_mnist_mlp_mindspore_backend.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_mnist_mlp_mindspore_backend.py>`__.
- - Multi-layer perceptron (MNIST), mix of tensorlayer and paddlepaddle. Classification task, see `tutorial_mnist_mlp_paddlepaddle_backend.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_mnist_mlp_paddlepaddle_backend.py>`__.
+ - Multi-layer perceptron (MNIST), simple usage and supports multiple backends. Classification task, see `mnist_mlp.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp.py>`__.
+ - Multi-layer perceptron (MNIST), mix of tensorlayerx and tensorflow. Classification with dropout using iterator, see `mnist_mlp_mixed_tensorflow.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_tensorflow.py>`__.
+ - Multi-layer perceptron (MNIST), mix of tensorlayerx and mindspore. Classification task, see `mnist_mlp_mixed_mindspore.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_mindspore.py>`__.
+ - Multi-layer perceptron (MNIST), mix of tensorlayerx and paddlepaddle. Classification task, see `mnist_mlp_mixed_paddle.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_paddle.py>`__.
+ - Multi-layer perceptron (MNIST), mix of tensorlayerx and pytorch. Classification task, see `mnist_mlp_mixed_torch.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_torch.py>`__.
 
- - Generative Adversarial Networks (MNIST), simple usage and supports multiple backends. See `tutorial_mnist_gan_tensorlayer.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_mnist_gan_tensorlayer.py>`__.
+ - Generative Adversarial Networks (MNIST), simple usage and supports multiple backends. See `mnist_gan.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_gan.py>`__.
 
- - Convolutional Network (CIFAR-10), simple usage and supports multiple backends. Classification task, see `tutorial_cifar10_cnn_tensorlayer.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_cifar10_cnn_tensorlayer.py>`__.
- - Convolutional Network (CIFAR-10). mix of tensorlayer and tensorflow. Classification task, see `tutorial_cifar10_cnn_tensorflow_backend.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_cifar10_cnn_tensorflow_backend.py>`__.
- - Convolutional Network (CIFAR-10). mix of tensorlayer and mindspore. Classification task, see `tutorial_cifar10_cnn_mindspore_backend.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_cifar10_cnn_mindspore_backend.py>`__.
- - Convolutional Network (CIFAR-10). mix of tensorlayer and paddle. Classification task, see `tutorial_cifar10_cnn_paddle_backend.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_cifar10_cnn_paddle_backend.py>`__.
+ - Convolutional Network (CIFAR-10), simple usage and supports multiple backends. Classification task, see `cifar10_cnn.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn.py>`__.
+ - Convolutional Network (CIFAR-10). mix of tensorlayerx and tensorflow. Classification task, see `cifar10_cnn_mixed_tensorflow.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn_mixed_tensorflow.py>`__.
+ - Convolutional Network (CIFAR-10). mix of tensorlayerx and mindspore. Classification task, see `cifar10_cnn_mixed_mindspore.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn_mixed_mindspore.py>`__.
+ - Convolutional Network (CIFAR-10). mix of tensorlayerx and paddle. Classification task, see `cifar10_cnn_mixed_paddle.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn_mixed_paddle.py>`__.
 
- - Recurrent Neural Network (IMDB), simple usage and supports multiple backends. Text classification task, see `tutorial_imdb_LSTM_simple.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_imdb_LSTM_simple.py>`__.
+ - Recurrent Neural Network (IMDB), simple usage and supports multiple backends. Text classification task, see `imdb_LSTM_simple.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/imdb_LSTM_simple.py>`__.
 
- - Using tensorlayer to automatic inference input shape. See `tutorial_automatic_inference_input_shape.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_automatic_inference_input%20_shape.py>`__.
- - Using Layerlist in tensorlayer. See `tutorial_LayerList.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_LayerList.py>`__.
- - Using SequentialLayer in tensorlayer. See `tutorial_SequentialLayer.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_SequentialLayer.py>`__.
- - Using Dataflow in tensorlayer. See `tutorial_dataflow.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_dataflow.py>`__.
- - Using nested layer in tensorlayer. See `tutorial_nested_usage_of_Layer.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_nested_usage_of_Layer.py>`__.
- - Using tensorlayer to save tensorflow model to pb. See `tutorial_tensorflow_model_save_to_pb.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/basic_tutorials/tutorial_tensorflow_model_save_to_pb.py>`__.
+ - Using tensorlayerx to automatic inference input shape. See `automatic_inference_input _shape.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/automatic_inference_input%20_shape.py>`__.
+ - Using Layerlist in tensorlayerx. See `tutorial_LayerList.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tutorial_LayerList.py>`__.
+ - Using SequentialLayer in tensorlayerx. See `mnist_SequentialLayer.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_SequentialLayer.py>`__.
+ - Using Dataflow in tensorlayerx. See `mnist_dataflow.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_dataflow.py>`__.
+ - Using nested layer in tensorlayerx. See `nested_usage_of_layer.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/nested_usage_of_layer.py>`__.
+ - Using tensorlayerx to save tensorflow model to pb. See `tensorflow_model_save_to_pb.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tensorflow_model_save_to_pb.py>`__.
+ - Using tensorlayerx to load model from npz. See `tutorial_tensorlayer_model_load.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tutorial_tensorlayer_model_load.py>`__.
 
 
 
@@ -47,14 +49,14 @@ Basics
 Pretrained Models
 ==================
 
- - VGG 16 (ImageNet). Classification task demo, see `pretrained_vgg16 <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/model_zoo/pretrained_vgg16.py>`__. and VGG model, see `vgg.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/model_zoo/vgg.py>`__.
- - Resnet50 (ImageNet). Classification task demo, see `pretrained_resnet50.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/model_zoo/pretrained_resnet50.py>`__. and Resnet model, see `resnet.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/model_zoo/resnet.py>`__.
- - YOLOv4 (MS-COCO). Object Detection demo, see `pretrained_yolov4.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/model_zoo/pretrained_yolov4.py>`__. and YOLOv4 model, see `yolo.py <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/examples/model_zoo/yolo.py>`__.
+ - VGG 16 (ImageNet). Classification task demo, see `pretrained_vgg16 <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/model_zoo/pretrained_vgg16.py>`__. and VGG model, see `vgg.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/model_zoo/vgg.py>`__.
+ - Resnet50 (ImageNet). Classification task demo, see `pretrained_resnet50.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/model_zoo/pretrained_resnet50.py>`__. and Resnet model, see `resnet.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/model_zoo/resnet.py>`__.
+ - YOLOv4 (MS-COCO). Object Detection demo, see `pretrained_yolov4.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/model_zoo/pretrained_yolov4.py>`__. and YOLOv4 model, see `yolo.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/model_zoo/yolo.py>`__.
  - All pretrained models in `pretrained-models <https://git.openi.org.cn/TensorLayer/tensorlayer3.0/datasets?type=0>`__.
 
 Vision
 ==================
-Warning:These examples below only support Tensorlayer 2.0. Tensorlayer 3.0 is under development.
+Warning:These examples below only support Tensorlayer 2.0. TensorlayerX is under development.
  - Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization, see `examples <https://github.com/tensorlayer/adaptive-style-transfer>`__.
  - ArcFace: Additive Angular Margin Loss for Deep Face Recognition, see `InsignFace <https://github.com/auroua/InsightFace_TF>`__.
  - BinaryNet. Model compression, see `mnist <https://github.com/tensorlayer/tensorlayer/blob/master/examples/quantized_net/tutorial_binarynet_mnist_cnn.py>`__ `cifar10 <https://github.com/tensorlayer/tensorlayer/blob/master/examples/quantized_net/tutorial_binarynet_cifar10_tfrecord.py>`__.
@@ -70,7 +72,7 @@ Warning:These examples below only support Tensorlayer 2.0. Tensorlayer 3.0 is un
 
 Adversarial Learning
 ========================
-Warning:These examples below only support Tensorlayer 2.0. Tensorlayer 3.0 is under development.
+Warning:These examples below only support Tensorlayer 2.0. TensorlayerX is under development.
  - DCGAN (CelebA). Generating images by `Deep Convolutional Generative Adversarial Networks <http://arxiv.org/abs/1511.06434>`__ by `zsdonghao <https://github.com/tensorlayer/dcgan>`__.
  - `Generative Adversarial Text to Image Synthesis <https://github.com/zsdonghao/text-to-image>`__ by `zsdonghao <https://github.com/zsdonghao/text-to-image>`__.
  - `Unsupervised Image to Image Translation with Generative Adversarial Networks <https://github.com/zsdonghao/Unsup-Im2Im>`__ by `zsdonghao <https://github.com/zsdonghao/Unsup-Im2Im>`__.
@@ -81,8 +83,7 @@ Warning:These examples below only support Tensorlayer 2.0. Tensorlayer 3.0 is un
 
 Natural Language Processing
 ==============================
-Warning:These examples below only support Tensorlayer 2.0. Tensorlayer 3.0 is under development.
- - Recurrent Neural Network (LSTM). Apply multiple LSTM to PTB dataset for language modeling, see `tutorial_ptb_lstm_state_is_tuple.py <https://github.com/tensorlayer/tensorlayer/blob/master/examples/text_ptb/tutorial_ptb_lstm_state_is_tuple.py>`__.
+Warning:These examples below only support Tensorlayer 2.0. TensorlayerX is under development.
  - Word Embedding (Word2vec). Train a word embedding matrix, see `tutorial_word2vec_basic.py <https://github.com/tensorlayer/tensorlayer/blob/master/examples/text_word_embedding/tutorial_word2vec_basic.py>`__.
  - Restore Embedding matrix. Restore a pre-train embedding matrix, see `tutorial_generate_text.py <https://github.com/tensorlayer/tensorlayer/blob/master/examples/text_generation/tutorial_generate_text.py>`__.
  - Text Generation. Generates new text scripts, using LSTM network, see `tutorial_generate_text.py <https://github.com/tensorlayer/tensorlayer/blob/master/examples/text_generation/tutorial_generate_text.py>`__.
@@ -92,7 +93,7 @@ Warning:These examples below only support Tensorlayer 2.0. Tensorlayer 3.0 is un
 
 Reinforcement Learning
 ==============================
-Warning:These examples below only support Tensorlayer 2.0. Tensorlayer 3.0 is under development.
+Warning:These examples below only support Tensorlayer 2.0. TensorlayerX is under development.
  - Policy Gradient / Network (Atari Ping Pong), see `tutorial_atari_pong.py <https://github.com/tensorlayer/tensorlayer/blob/master/examples/reinforcement_learning/tutorial_atari_pong.py>`__.
  - Deep Q-Network (Frozen lake), see `tutorial_frozenlake_dqn.py <https://github.com/tensorlayer/tensorlayer/blob/master/examples/reinforcement_learning/tutorial_frozenlake_dqn.py>`__.
  - Q-Table learning algorithm (Frozen lake), see `tutorial_frozenlake_q_table.py <https://github.com/tensorlayer/tensorlayer/blob/master/examples/reinforcement_learning/tutorial_frozenlake_q_table.py>`__.
@@ -104,7 +105,7 @@ Warning:These examples below only support Tensorlayer 2.0. Tensorlayer 3.0 is un
 
 Miscellaneous
 =================
-Warning:These examples below only support Tensorlayer 2.0. Tensorlayer 3.0 is under development.
+Warning:These examples below only support Tensorlayer 2.0. TensorlayerX is under development.
 
 - `Sipeed <https://github.com/sipeed/Maix-EMC>`__ : Run TensorLayer on AI Chips
 

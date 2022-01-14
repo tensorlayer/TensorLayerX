@@ -5,7 +5,7 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import Input, Dense, Stack, UnStack
 import tensorlayerx
 from tests.utils import CustomTestCase
@@ -103,6 +103,6 @@ class Layer_UnStack_Test(CustomTestCase):
 
 if __name__ == '__main__':
 
-    tl.logging.set_verbosity(tl.logging.DEBUG)
+    tlx.logging.set_verbosity(tlx.logging.DEBUG)
 
     unittest.main()
