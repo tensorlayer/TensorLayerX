@@ -1,29 +1,30 @@
-Welcome to TensorLayer3
+Welcome to TensorLayerX
 =======================================
 
 
-.. image:: user/my_figs/tl_transparent_logo.png
+.. image:: user/my_figs/tlx_transparent_logo.png
   :width: 30 %
   :align: center
-  :target: https://git.openi.org.cn/TensorLayer/tensorlayer3.0
+  :target: https://github.com/tensorlayer/TensorLayerX
 
 **Documentation Version:** |release|
 
-`TensorLayer3`_ is a deep learning library designed for researchers and engineers that is compatible with multiple deep learning frameworks
+`TensorLayerX`_ is a deep learning library designed for researchers and engineers that is compatible with multiple deep learning frameworks
 such as TensorFlow, MindSpore and PaddlePaddle, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend.
 It provides popular DL and RL modules that can be easily customized and assembled for tackling real-world machine learning problems.
-More details can be found `here <https://git.openi.org.cn/TensorLayer/tensorlayer3.0>`_.
-TensorLayer3 will support TensorFlow, MindSpore, PaddlePaddle, and PyTorch backends in the future.
+More details can be found `here <https://github.com/tensorlayer/TensorLayerX>`_.
+
+TensorLayerX is a multi-backend AI framework, which can run on almost all operation systems and AI hardwares, and support hybrid-framework programming. The currently version supports TensorFlow, MindSpore, PaddlePaddle and PyTorch(partial) as the backends.
 
 .. note::
    If you got problem to read the docs online, you could download the repository
-   on `OpenI`_, then go to ``/docs/_build/html/index.html`` to read the docs
+   on `TensorLayerX`_, then go to ``/docs/_build/html/index.html`` to read the docs
    offline. The ``_build`` folder can be generated in ``docs`` using ``make html``.
 
 User Guide
 ------------
 
-The TensorLayer3 user guide explains how to install TensorFlow, CUDA and cuDNN,
+The TensorLayerX user guide explains how to install TensorFlow, CUDA and cuDNN,
 how to build and train neural networks using TensorLayer3, and how to contribute
 to the library as a developer.
 
@@ -54,39 +55,21 @@ method, this part of the documentation is for you.
   :caption: Stable Functionalities
 
   modules/activation
-  modules/cost
+  modules/losses
   modules/dataflow
-  modules/prepro
   modules/files
-  modules/iterate
-  modules/layers
-  modules/models
+  modules/nn
+  modules/model
   modules/pretrain_models
-  modules/nlp
   modules/vision
   modules/initializers
-  modules/visualize
-  modules/backend_ops
-
-.. toctree::
-  :maxdepth: 2
-  :caption: Alpha Version Functionalities
-
-  modules/db
+  modules/ops
   modules/optimizers
-  modules/distributed
-  
+
 Command-line Reference
 ----------------------
 
-TensorLayer3 provides a handy command-line tool `tl` to perform some common tasks.
-
-.. toctree::
-  :maxdepth: 2
-  :caption: Command Line Interface
-
-  modules/cli
-
+TensorLayerX provides a handy command-line tool `tlx` to perform some common tasks.
 
 Indices and tables
 ==================
@@ -96,5 +79,5 @@ Indices and tables
 * :ref:`search`
 
 
-.. _OpenI: https://git.openi.org.cn/TensorLayer/tensorlayer3.0
-.. _TensorLayer3: https://git.openi.org.cn/TensorLayer/tensorlayer3.0
+.. _OpenI: https://git.openi.org.cn/OpenI/TensorLayerX
+.. _TensorLayerX: https://github.com/tensorlayer/TensorLayerX

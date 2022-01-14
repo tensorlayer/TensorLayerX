@@ -6,7 +6,7 @@ import unittest
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tests.utils import CustomTestCase
 from tensorlayerx.nn import Input, Conv1d, BatchNorm, Conv2d, Conv3d, Dense, BatchNorm1d, BatchNorm2d, BatchNorm3d
 
@@ -22,10 +22,10 @@ class Laye_BatchNorm_Test(CustomTestCase):
         x_3_input_shape = [None, 100, 100, 100, 3]
         batchsize = 2
 
-        cls.x0 = tl.ops.truncated_normal(shape=[batchsize] + x_0_input_shape[1:])
-        cls.x1 = tl.ops.truncated_normal([batchsize] + x_1_input_shape[1:])
-        cls.x2 = tl.ops.truncated_normal([batchsize] + x_2_input_shape[1:])
-        cls.x3 = tl.ops.truncated_normal([batchsize] + x_3_input_shape[1:])
+        cls.x0 = tlx.truncated_normal(shape=[batchsize] + x_0_input_shape[1:])
+        cls.x1 = tlx.truncated_normal([batchsize] + x_1_input_shape[1:])
+        cls.x2 = tlx.truncated_normal([batchsize] + x_2_input_shape[1:])
+        cls.x3 = tlx.truncated_normal([batchsize] + x_3_input_shape[1:])
 
         ## Base
         ni_1 = Input(x_1_input_shape, name='test_ni1')
@@ -43,7 +43,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
         n3_b = BatchNorm(name='test_bn3d')(nn_3)
         cls.n3_b = n3_b
 
-        class bn_0d_model(tl.nn.Module):
+        class bn_0d_model(tlx.nn.Module):
 
             def __init__(self):
                 super(bn_0d_model, self).__init__()
@@ -66,7 +66,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
         cls.n0 = n0
 
-        class bn_0d_model(tl.nn.Module):
+        class bn_0d_model(tlx.nn.Module):
 
             def __init__(self):
                 super(bn_0d_model, self).__init__(name='test_bn_0d_model')
@@ -88,7 +88,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
         cls.n1 = n1
 
-        class bn_1d_model(tl.nn.Module):
+        class bn_1d_model(tlx.nn.Module):
 
             def __init__(self):
                 super(bn_1d_model, self).__init__(name='test_bn_1d_model')
@@ -110,7 +110,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
         cls.n2 = n2
 
-        class bn_2d_model(tl.nn.Module):
+        class bn_2d_model(tlx.nn.Module):
 
             def __init__(self):
                 super(bn_2d_model, self).__init__(name='test_bn_2d_model')
@@ -128,11 +128,11 @@ class Laye_BatchNorm_Test(CustomTestCase):
         nin_3 = Input(x_3_input_shape, name='test_in3')
 
         n3 = Conv3d(n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), name='test_conv3d')(nin_3)
-        n3 = BatchNorm3d(name='test_bn3d', act=tl.ReLU)(n3)
+        n3 = BatchNorm3d(name='test_bn3d', act=tlx.ReLU)(n3)
 
         cls.n3 = n3
 
-        class bn_3d_model(tl.nn.Module):
+        class bn_3d_model(tlx.nn.Module):
 
             def __init__(self):
                 super(bn_3d_model, self).__init__(name='test_bn_3d_model')
@@ -203,6 +203,6 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
 if __name__ == '__main__':
 
-    tl.logging.set_verbosity(tl.logging.DEBUG)
+    tlx.logging.set_verbosity(tlx.logging.DEBUG)
 
     unittest.main()

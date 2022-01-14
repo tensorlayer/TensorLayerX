@@ -25,7 +25,7 @@ def load_nietzsche_dataset(path='data'):
     Examples
     --------
     >>> see tutorial_generate_text.py
-    >>> words = tl.files.load_nietzsche_dataset()
+    >>> words = tlx.files.load_nietzsche_dataset()
     >>> words = basic_clean_str(words)
     >>> words = words.split()
 

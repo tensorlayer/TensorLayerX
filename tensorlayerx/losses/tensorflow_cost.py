@@ -45,8 +45,8 @@ def softmax_cross_entropy_with_logits(output, target, name=None):
 
     Examples
     --------
-    >>> import tensorlayerx as tl
-    >>> ce = tl.losses.softmax_cross_entropy_with_logits(y_logits, y_target_logits, 'my_loss')
+    >>> import tensorlayerx as tlx
+    >>> ce = tlx.losses.softmax_cross_entropy_with_logits(y_logits, y_target_logits, 'my_loss')
 
     References
     -----------
@@ -73,8 +73,8 @@ def sigmoid_cross_entropy(output, target, name=None):
 
     Examples
     --------
-    >>> import tensorlayerx as tl
-    >>> losses = tl.losses.sigmoid_cross_entropy(y_logits, y_target_logits)
+    >>> import tensorlayerx as tlx
+    >>> losses = tlx.losses.sigmoid_cross_entropy(y_logits, y_target_logits)
 
     """
     return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=target, logits=output), name=name)
@@ -96,8 +96,8 @@ def binary_cross_entropy(output, target, epsilon=1e-8, name='bce_loss'):
 
     Examples
     --------
-    >>> import tensorlayerx as tl
-    >>> losses = tl.losses.binary_cross_entropy(y_logits, y_target_logits)
+    >>> import tensorlayerx as tlx
+    >>> losses = tlx.losses.binary_cross_entropy(y_logits, y_target_logits)
 
     References
     -----------
@@ -140,8 +140,8 @@ def mean_squared_error(output, target, is_mean=False, axis=-1, name="mean_square
 
         Examples
     --------
-    >>> import tensorlayerx as tl
-    >>> losses = tl.losses.mean_squared_error(y_logits, y_target_logits)
+    >>> import tensorlayerx as tlx
+    >>> losses = tlx.losses.mean_squared_error(y_logits, y_target_logits)
 
     References
     ------------
@@ -181,8 +181,8 @@ def normalized_mean_square_error(output, target, axis=-1, name="normalized_mean_
 
     Examples
     --------
-    >>> import tensorlayerx as tl
-    >>> losses = tl.losses.normalized_mean_square_error(y_logits, y_target_logits)
+    >>> import tensorlayerx as tlx
+    >>> losses = tlx.losses.normalized_mean_square_error(y_logits, y_target_logits)
 
     """
     with tf.name_scope("normalized_mean_squared_error_loss"):
@@ -218,8 +218,8 @@ def absolute_difference_error(output, target, is_mean=False, axis=-1, name="abso
 
     Examples
     --------
-    >>> import tensorlayerx as tl
-    >>> losses = tl.losses.absolute_difference_error(y_logits, y_target_logits)
+    >>> import tensorlayerx as tlx
+    >>> losses = tlx.losses.absolute_difference_error(y_logits, y_target_logits)
 
     """
     # # with tf.name_scope("absolute_difference_error_loss"):
@@ -260,9 +260,9 @@ def dice_coe(output, target, loss_type='jaccard', axis=(1, 2, 3), smooth=1e-5):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> outputs = tl.ops.softmax(outputs)
-    >>> dice_loss = 1 - tl.losses.dice_coe(outputs, y_)
+    >>> import tensorlayerx as tlx
+    >>> outputs = tlx.softmax(outputs)
+    >>> dice_loss = 1 - tlx.losses.dice_coe(outputs, y_)
 
     References
     -----------
@@ -471,11 +471,11 @@ def cross_entropy_seq(logits, target_seqs, batch_size=None):
 
     Examples
     --------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> # see `PTB example <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_ptb_lstm.py>`__.for more details
     >>> # outputs shape : (batch_size * n_steps, n_classes)
     >>> # targets shape : (batch_size, n_steps)
-    >>> losses = tl.losses.cross_entropy_seq(outputs, targets)
+    >>> losses = tlx.losses.cross_entropy_seq(outputs, targets)
 
     """
     sequence_loss_by_example_fn = sequence_loss_by_example
@@ -510,29 +510,29 @@ def cross_entropy_seq_with_mask(logits, target_seqs, input_mask, return_details=
 
     Examples
     --------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import tensorflow as tf
     >>> import numpy as np
     >>> batch_size = 64
     >>> vocab_size = 10000
     >>> embedding_size = 256
-    >>> ni = tl.layers.Input([batch_size, None], dtype=tf.int64)
+    >>> ni = tlx.nn.Input([batch_size, None], dtype=tf.int64)
     >>> net_lits = []
-    >>> net_list.append(tl.layers.Embedding(
+    >>> net_list.append(tlx.nn.Embedding(
     ...         vocabulary_size = vocab_size,
     ...         embedding_size = embedding_size,
     ...         name = 'seq_embedding'))
-    >>> net_list.append(tl.layers.RNN(
+    >>> net_list.append(tlx.nn.RNN(
     ...         cell =tf.keras.layers.LSTMCell(units=embedding_size, dropout=0.1),
     ...         return_seq_2d = True,
     ...         name = 'dynamicrnn'))
-    >>> net_list.append(tl.layers.Dense(n_units=vocab_size, name="output"))
-    >>> model = tl.layers.SequentialLayer(net_list)
+    >>> net_list.append(tlx.nn.Dense(n_units=vocab_size, name="output"))
+    >>> model = tlx.nn.SequentialLayer(net_list)
     >>> input_seqs = np.random.randint(0, 10, size=(batch_size, 10), dtype=np.int64)
     >>> target_seqs = np.random.randint(0, 10, size=(batch_size, 10), dtype=np.int64)
     >>> input_mask = np.random.randint(0, 2, size=(batch_size, 10), dtype=np.int64)
     >>> outputs = model(input_seqs)
-    >>> loss = tl.losses.cross_entropy_seq_with_mask(outputs, target_seqs, input_mask)
+    >>> loss = tlx.losses.cross_entropy_seq_with_mask(outputs, target_seqs, input_mask)
 
     """
     targets = tf.reshape(target_seqs, [-1])  # to one vector

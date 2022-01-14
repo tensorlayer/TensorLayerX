@@ -9,7 +9,7 @@
 """
 
 import numpy as np
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import Mish
 from tensorlayerx.nn import Conv2d, MaxPool2d, BatchNorm2d, ZeroPad2d, UpSampling2d, Concat, Elementwise
 from tensorlayerx.nn import Module, SequentialLayer
@@ -44,7 +44,7 @@ class Convolutional(Module):
         if bn:
             b_init = None
         else:
-            b_init = tl.nn.initializers.constant(value=0.0)
+            b_init = tlx.nn.initializers.constant(value=0.0)
 
         self.zeropad = ZeroPad2d(((1, 0), (1, 0)))
         self.conv = Conv2d(
@@ -78,7 +78,7 @@ class residual_block(Module):
         super(residual_block, self).__init__()
         self.conv1 = Convolutional(filters_shape=(1, 1, input_channel, filter_num1), activate_type=activate_type)
         self.conv2 = Convolutional(filters_shape=(3, 3, filter_num1, filter_num2), activate_type=activate_type)
-        self.add = Elementwise(tl.add)
+        self.add = Elementwise(tlx.add)
 
     def forward(self, inputs):
         output = self.conv1(inputs)

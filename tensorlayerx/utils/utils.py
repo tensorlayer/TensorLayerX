@@ -14,7 +14,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 
 __all__ = [
     'fit', 'test', 'predict', 'evaluation', 'dict_to_one', 'flatten_list', 'class_balancing_oversample',
@@ -31,7 +31,7 @@ def fit(
     """Training a given non time-series network by the given losses function, training data, batch_size, n_epoch etc.
 
     - MNIST example click `here <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mnist_simple.py>`_.
-    - In order to control the training details, the authors HIGHLY recommend ``tl.iterate`` see two MNIST examples `1 <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mlp_dropout1.py>`_, `2 <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mlp_dropout1.py>`_.
+    - In order to control the training details, the authors HIGHLY recommend ``tlx.iterate`` see two MNIST examples `1 <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mlp_dropout1.py>`_, `2 <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mlp_dropout1.py>`_.
 
     Parameters
     ----------
@@ -40,7 +40,7 @@ def fit(
     train_op : TensorFlow optimizer
         The optimizer for training e.g. tf.optimizers.Adam().
     cost : TensorLayer or TensorFlow loss function
-        Metric for loss function, e.g tl.losses.cross_entropy.
+        Metric for loss function, e.g tlx.losses.cross_entropy.
     X_train : numpy.array
         The input of training data
     y_train : numpy.array
@@ -74,10 +74,10 @@ def fit(
     --------
     See `mnist_mlp.py <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mnist_simple.py>`_
 
-    >>> tl.utils.fit(network, train_op=tf.optimizers.Adam(learning_rate=0.0001),
-    ...              losses=tl.losses.cross_entropy, X_train=X_train, y_train=y_train, acc=acc,
+    >>> tlx.utils.fit(network, train_op=tf.optimizers.Adam(learning_rate=0.0001),
+    ...              losses=tlx.losses.cross_entropy, X_train=X_train, y_train=y_train, acc=acc,
     ...              batch_size=64, n_epoch=20, _val=X_val, y_val=y_val, eval_train=True)
-    >>> tl.utils.fit(network, train_op, losses, X_train, y_train,
+    >>> tlx.utils.fit(network, train_op, losses, X_train, y_train,
     ...            acc=acc, batch_size=500, n_epoch=200, print_freq=5,
     ...            X_val=X_val, y_val=y_val, eval_train=False, tensorboard=True)
 
@@ -90,9 +90,9 @@ def fit(
         raise AssertionError("Number of training examples should be bigger than the batch size")
 
     if tensorboard_dir is not None:
-        tl.logging.info("Setting up tensorboard ...")
+        tlx.logging.info("Setting up tensorboard ...")
         #Set up tensorboard summaries and saver
-        tl.files.exists_or_mkdir(tensorboard_dir)
+        tlx.files.exists_or_mkdir(tensorboard_dir)
 
         #Only write summaries for more recent TensorFlow versions
         if hasattr(tf, 'summary') and hasattr(tf.summary, 'create_file_writer'):
@@ -105,9 +105,9 @@ def fit(
         train_writer = None
         val_writer = None
 
-        tl.logging.info("Finished! use `tensorboard --logdir=%s/` to start tensorboard" % tensorboard_dir)
+        tlx.logging.info("Finished! use `tensorboard --logdir=%s/` to start tensorboard" % tensorboard_dir)
 
-    tl.logging.info("Start training the network ...")
+    tlx.logging.info("Start training the network ...")
     start_time_begin = time.time()
     for epoch in range(n_epoch):
         start_time = time.time()
@@ -143,28 +143,28 @@ def fit(
 
         if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
             if (X_val is not None) and (y_val is not None):
-                tl.logging.info("Epoch %d of %d took %fs" % (epoch + 1, n_epoch, time.time() - start_time))
+                tlx.logging.info("Epoch %d of %d took %fs" % (epoch + 1, n_epoch, time.time() - start_time))
                 if eval_train is True:
                     if train_loss is None:
                         train_loss, train_acc, _ = run_epoch(
                             network, X_train, y_train, cost=cost, acc=acc, batch_size=batch_size
                         )
-                    tl.logging.info("   train loss: %f" % train_loss)
+                    tlx.logging.info("   train loss: %f" % train_loss)
                     if acc is not None:
-                        tl.logging.info("   train acc: %f" % train_acc)
+                        tlx.logging.info("   train acc: %f" % train_acc)
                 if val_loss is None:
                     val_loss, val_acc, _ = run_epoch(network, X_val, y_val, cost=cost, acc=acc, batch_size=batch_size)
 
-                # tl.logging.info("   val loss: %f" % val_loss)
+                # tlx.logging.info("   val loss: %f" % val_loss)
 
                 if acc is not None:
                     pass
-                    # tl.logging.info("   val acc: %f" % val_acc)
+                    # tlx.logging.info("   val acc: %f" % val_acc)
             else:
-                tl.logging.info(
+                tlx.logging.info(
                     "Epoch %d of %d took %fs, loss %f" % (epoch + 1, n_epoch, time.time() - start_time, loss_ep)
                 )
-    tl.logging.info("Total training time: %fs" % (time.time() - start_time_begin))
+    tlx.logging.info("Total training time: %fs" % (time.time() - start_time_begin))
 
 
 def test(network, acc, X_test, y_test, batch_size, cost=None):
@@ -186,7 +186,7 @@ def test(network, acc, X_test, y_test, batch_size, cost=None):
         The batch size for testing, when dataset is large, we should use minibatche for testing;
         if dataset is small, we can set it to None.
     cost : TensorLayer or TensorFlow loss function
-        Metric for loss function, e.g tl.losses.cross_entropy. If None, would not print the information.
+        Metric for loss function, e.g tlx.losses.cross_entropy. If None, would not print the information.
 
     Examples
     --------
@@ -194,26 +194,26 @@ def test(network, acc, X_test, y_test, batch_size, cost=None):
 
     >>> def acc(_logits, y_batch):
     ...     return np.mean(np.equal(np.argmax(_logits, 1), y_batch))
-    >>> tl.utils.test(network, acc, X_test, y_test, batch_size=None, losses=tl.losses.cross_entropy)
+    >>> tlx.utils.test(network, acc, X_test, y_test, batch_size=None, losses=tlx.losses.cross_entropy)
 
     """
-    tl.logging.info('Start testing the network ...')
+    tlx.logging.info('Start testing the network ...')
     network.eval()
     if batch_size is None:
         y_pred = network(X_test)
         if cost is not None:
             test_loss = cost(y_pred, y_test)
-            # tl.logging.info("   test loss: %f" % test_loss)
+            # tlx.logging.info("   test loss: %f" % test_loss)
         test_acc = acc(y_pred, y_test)
-        # tl.logging.info("   test acc: %f" % (test_acc / test_acc))
+        # tlx.logging.info("   test acc: %f" % (test_acc / test_acc))
         return test_acc
     else:
         test_loss, test_acc, n_batch = run_epoch(
             network, X_test, y_test, cost=cost, acc=acc, batch_size=batch_size, shuffle=False
         )
         if cost is not None:
-            tl.logging.info("   test loss: %f" % test_loss)
-        tl.logging.info("   test acc: %f" % test_acc)
+            tlx.logging.info("   test loss: %f" % test_loss)
+        tlx.logging.info("   test acc: %f" % test_acc)
         return test_acc
 
 
@@ -235,7 +235,7 @@ def predict(network, X, batch_size=None):
     --------
     See `mnist_mlp.py <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_mnist_simple.py>`_
 
-    >>> _logits = tl.utils.predict(network, X_test)
+    >>> _logits = tlx.utils.predict(network, X_test)
     >>> y_pred = np.argmax(_logits, 1)
 
     """
@@ -280,17 +280,17 @@ def evaluation(y_test=None, y_predict=None, n_classes=None):
 
     Examples
     --------
-    >>> c_mat, f1, acc, f1_macro = tl.utils.evaluation(y_test, y_predict, n_classes)
+    >>> c_mat, f1, acc, f1_macro = tlx.utils.evaluation(y_test, y_predict, n_classes)
 
     """
     c_mat = confusion_matrix(y_test, y_predict, labels=[x for x in range(n_classes)])
     f1 = f1_score(y_test, y_predict, average=None, labels=[x for x in range(n_classes)])
     f1_macro = f1_score(y_test, y_predict, average='macro')
     acc = accuracy_score(y_test, y_predict)
-    tl.logging.info('confusion matrix: \n%s' % c_mat)
-    tl.logging.info('f1-score        : %s' % f1)
-    tl.logging.info('f1-score(macro) : %f' % f1_macro)  # same output with > f1_score(y_true, y_pred, average='macro')
-    tl.logging.info('accuracy-score  : %f' % acc)
+    tlx.logging.info('confusion matrix: \n%s' % c_mat)
+    tlx.logging.info('f1-score        : %s' % f1)
+    tlx.logging.info('f1-score(macro) : %f' % f1_macro)  # same output with > f1_score(y_true, y_pred, average='macro')
+    tlx.logging.info('accuracy-score  : %f' % acc)
     return c_mat, f1, acc, f1_macro
 
 
@@ -317,7 +317,7 @@ def flatten_list(list_of_list):
 
     Examples
     --------
-    >>> tl.utils.flatten_list([[1, 2, 3],[4, 5],[6]])
+    >>> tlx.utils.flatten_list([[1, 2, 3],[4, 5],[6]])
     [1, 2, 3, 4, 5, 6]
 
     """
@@ -342,26 +342,26 @@ def class_balancing_oversample(X_train=None, y_train=None, printable=True):
 
     Two X
 
-    >>> X, y = tl.utils.class_balancing_oversample(X_train=np.hstack((X1, X2)), y_train=y, printable=False)
+    >>> X, y = tlx.utils.class_balancing_oversample(X_train=np.hstack((X1, X2)), y_train=y, printable=False)
     >>> X1 = X[:, 0:5]
     >>> X2 = X[:, 5:]
 
     """
     # ======== Classes balancing
     if printable:
-        tl.logging.info("Classes balancing for training examples...")
+        tlx.logging.info("Classes balancing for training examples...")
 
     c = Counter(y_train)
 
     if printable:
-        tl.logging.info('the occurrence number of each stage: %s' % c.most_common())
-        tl.logging.info('the least stage is Label %s have %s instances' % c.most_common()[-1])
-        tl.logging.info('the most stage is  Label %s have %s instances' % c.most_common(1)[0])
+        tlx.logging.info('the occurrence number of each stage: %s' % c.most_common())
+        tlx.logging.info('the least stage is Label %s have %s instances' % c.most_common()[-1])
+        tlx.logging.info('the most stage is  Label %s have %s instances' % c.most_common(1)[0])
 
     most_num = c.most_common(1)[0][1]
 
     if printable:
-        tl.logging.info('most num is %d, all classes tend to be this num' % most_num)
+        tlx.logging.info('most num is %d, all classes tend to be this num' % most_num)
 
     locations = {}
     number = {}
@@ -370,14 +370,14 @@ def class_balancing_oversample(X_train=None, y_train=None, printable=True):
         number[lab] = num
         locations[lab] = np.where(np.array(y_train) == lab)[0]
     if printable:
-        tl.logging.info('convert list(np.array) to dict format')
+        tlx.logging.info('convert list(np.array) to dict format')
     X = {}  # convert list to dict
     for lab, num in number.items():
         X[lab] = X_train[locations[lab]]
 
     # oversampling
     if printable:
-        tl.logging.info('start oversampling')
+        tlx.logging.info('start oversampling')
     for key in X:
         temp = X[key]
         while True:
@@ -385,28 +385,28 @@ def class_balancing_oversample(X_train=None, y_train=None, printable=True):
                 break
             X[key] = np.vstack((X[key], temp))
     if printable:
-        tl.logging.info('first features of label 0 > %d' % len(X[0][0]))
-        tl.logging.info('the occurrence num of each stage after oversampling')
+        tlx.logging.info('first features of label 0 > %d' % len(X[0][0]))
+        tlx.logging.info('the occurrence num of each stage after oversampling')
     for key in X:
-        tl.logging.info("%s %d" % (key, len(X[key])))
+        tlx.logging.info("%s %d" % (key, len(X[key])))
     if printable:
-        tl.logging.info('make each stage have same num of instances')
+        tlx.logging.info('make each stage have same num of instances')
     for key in X:
         X[key] = X[key][0:most_num, :]
-        tl.logging.info("%s %d" % (key, len(X[key])))
+        tlx.logging.info("%s %d" % (key, len(X[key])))
 
     # convert dict to list
     if printable:
-        tl.logging.info('convert from dict to list format')
+        tlx.logging.info('convert from dict to list format')
     y_train = []
     X_train = np.empty(shape=(0, len(X[0][0])))
     for key in X:
         X_train = np.vstack((X_train, X[key]))
         y_train.extend([key for i in range(len(X[key]))])
-    # tl.logging.info(len(X_train), len(y_train))
+    # tlx.logging.info(len(X_train), len(y_train))
     c = Counter(y_train)
     if printable:
-        tl.logging.info('the occurrence number of each stage after oversampling: %s' % c.most_common())
+        tlx.logging.info('the occurrence number of each stage after oversampling: %s' % c.most_common())
     # ================ End of Classes balancing
     return X_train, y_train
 
@@ -457,17 +457,17 @@ def exit_tensorflow(port=6006):
 
     """
     text = "[TL] Close tensorboard and nvidia-process if available"
-    text2 = "[TL] Close tensorboard and nvidia-process not yet supported by this function (tl.ops.exit_tf) on "
+    text2 = "[TL] Close tensorboard and nvidia-process not yet supported by this function (tlx.ops.exit_tf) on "
 
     if _platform == "linux" or _platform == "linux2":
-        tl.logging.info('linux: %s' % text)
+        tlx.logging.info('linux: %s' % text)
         os.system('nvidia-smi')
         os.system('fuser ' + str(port) + '/tcp -k')  # kill tensorboard 6006
         os.system("nvidia-smi | grep python |awk '{print $3}'|xargs kill")  # kill all nvidia-smi python process
         _exit()
 
     elif _platform == "darwin":
-        tl.logging.info('OS X: %s' % text)
+        tlx.logging.info('OS X: %s' % text)
         subprocess.Popen(
             "lsof -i tcp:" + str(port) + "  | grep -v PID | awk '{print $2}' | xargs kill", shell=True
         )  # kill tensorboard
@@ -475,7 +475,7 @@ def exit_tensorflow(port=6006):
         raise NotImplementedError("this function is not supported on the Windows platform")
 
     else:
-        tl.logging.info(text2 + _platform)
+        tlx.logging.info(text2 + _platform)
 
 
 def open_tensorboard(log_dir='/tmp/tensorflow', port=6006):
@@ -490,25 +490,25 @@ def open_tensorboard(log_dir='/tmp/tensorflow', port=6006):
 
     """
     text = "[TL] Open tensorboard, go to localhost:" + str(port) + " to access"
-    text2 = " not yet supported by this function (tl.ops.open_tb)"
+    text2 = " not yet supported by this function (tlx.ops.open_tb)"
 
-    if not tl.files.exists_or_mkdir(log_dir, verbose=False):
-        tl.logging.info("[TL] Log reportory was created at %s" % log_dir)
+    if not tlx.files.exists_or_mkdir(log_dir, verbose=False):
+        tlx.logging.info("[TL] Log reportory was created at %s" % log_dir)
 
     if _platform == "linux" or _platform == "linux2":
-        tl.logging.info('linux: %s' % text)
+        tlx.logging.info('linux: %s' % text)
         subprocess.Popen(
             sys.prefix + " | python -m tensorflow.tensorboard --logdir=" + log_dir + " --port=" + str(port), shell=True
         )  # open tensorboard in localhost:6006/ or whatever port you chose
     elif _platform == "darwin":
-        tl.logging.info('OS X: %s' % text)
+        tlx.logging.info('OS X: %s' % text)
         subprocess.Popen(
             sys.prefix + " | python -m tensorflow.tensorboard --logdir=" + log_dir + " --port=" + str(port), shell=True
         )  # open tensorboard in localhost:6006/ or whatever port you chose
     elif _platform == "win32":
         raise NotImplementedError("this function is not supported on the Windows platform")
     else:
-        tl.logging.info(_platform + text2)
+        tlx.logging.info(_platform + text2)
 
 
 def clear_all_placeholder_variables(printable=True):
@@ -521,7 +521,7 @@ def clear_all_placeholder_variables(printable=True):
         If True, print all deleted variables.
 
     """
-    tl.logging.info('clear all .....................................')
+    tlx.logging.info('clear all .....................................')
     gl = globals().copy()
     for var in gl:
         if var[0] == '_': continue
@@ -530,7 +530,7 @@ def clear_all_placeholder_variables(printable=True):
         if 'class' in str(globals()[var]): continue
 
         if printable:
-            tl.logging.info(" clear_all ------- %s" % str(globals()[var]))
+            tlx.logging.info(" clear_all ------- %s" % str(globals()[var]))
 
         del globals()[var]
 
@@ -549,10 +549,10 @@ def set_gpu_fraction(gpu_fraction=0.3):
 
     """
     if gpu_fraction is None:
-        tl.logging.info("[TL]: ALLOW GPU MEM GROWTH")
+        tlx.logging.info("[TL]: ALLOW GPU MEM GROWTH")
         tf.config.gpu.set_per_process_memory_growth(True)
     else:
-        tl.logging.info("[TL]: GPU MEM Fraction %f" % gpu_fraction)
+        tlx.logging.info("[TL]: GPU MEM Fraction %f" % gpu_fraction)
         tf.config.gpu.set_per_process_memory_fraction(0.4)
     # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction)
     # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
@@ -574,7 +574,7 @@ def train_epoch(
     y : numpy.array
         The target of training data
     cost : TensorLayer or TensorFlow loss function
-        Metric for loss function, e.g tl.losses.cross_entropy.
+        Metric for loss function, e.g tlx.losses.cross_entropy.
     train_op : TensorFlow optimizer
         The optimizer for training e.g. tf.optimizers.Adam().
     acc : TensorFlow/numpy expression or None
@@ -622,7 +622,7 @@ def run_epoch(network, X, y, cost=None, acc=None, batch_size=100, shuffle=False)
     y : numpy.array
         The target of training data
     cost : TensorLayer or TensorFlow loss function
-        Metric for loss function, e.g tl.losses.cross_entropy.
+        Metric for loss function, e.g tlx.losses.cross_entropy.
     acc : TensorFlow/numpy expression or None
         Metric for accuracy or others. If None, would not print the information.
     batch_size : int

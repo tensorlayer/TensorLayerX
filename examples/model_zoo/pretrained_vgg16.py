@@ -7,18 +7,18 @@ import time
 import numpy as np
 import tensorflow as tf
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from examples.model_zoo.imagenet_classes import class_names
 from examples.model_zoo.vgg import vgg16
 
-tl.logging.set_verbosity(tl.logging.DEBUG)
+tlx.logging.set_verbosity(tlx.logging.DEBUG)
 
 # get the whole model
 vgg = vgg16(pretrained=True)
 vgg.set_eval()
 
-img = tl.vis.read_image('data/tiger.jpeg')
-img = tl.prepro.imresize(img, (224, 224)).astype(np.float32) / 255
+img = tlx.vis.read_image('data/tiger.jpeg')
+img = tlx.prepro.imresize(img, (224, 224)).astype(np.float32) / 255
 
 start_time = time.time()
 output = vgg(img)

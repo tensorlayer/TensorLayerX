@@ -27,8 +27,8 @@ class Adadelta(tf.optimizers.Adadelta):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> optimizer = tl.optimizers.Adadelta(0.0001)
+    >>> import tensorlayerx as tlx
+    >>> optimizer = tlx.optimizers.Adadelta(0.0001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -58,8 +58,8 @@ class Adagrad(tf.optimizers.Adagrad):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> optimizer = tl.optimizers.Adagrad(0.0001)
+    >>> import tensorlayerx as tlx
+    >>> optimizer = tlx.optimizers.Adagrad(0.0001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -90,8 +90,8 @@ class Adam(tf.optimizers.Adam):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> optimizer = tl.optimizers.Adam(0.0001)
+    >>> import tensorlayerx as tlx
+    >>> optimizer = tlx.optimizers.Adam(0.0001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -122,8 +122,8 @@ class Adamax(tf.optimizers.Adamax):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> optimizer = tl.optimizers.Adamax(0.0001)
+    >>> import tensorlayerx as tlx
+    >>> optimizer = tlx.optimizers.Adamax(0.0001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -161,8 +161,8 @@ class Ftrl(tf.optimizers.Ftrl):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> optimizer = tl.optimizers.Ftrl(0.0001)
+    >>> import tensorlayerx as tlx
+    >>> optimizer = tlx.optimizers.Ftrl(0.0001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -200,8 +200,8 @@ class Nadam(tf.optimizers.Nadam):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> optimizer = tl.optimizers.Nadam(0.0001)
+    >>> import tensorlayerx as tlx
+    >>> optimizer = tlx.optimizers.Nadam(0.0001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -236,8 +236,8 @@ class RMSprop(tf.optimizers.RMSprop):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> optimizer = tl.optimizers.RMSprop(0.0001)
+    >>> import tensorlayerx as tlx
+    >>> optimizer = tlx.optimizers.RMSprop(0.0001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -267,8 +267,8 @@ class SGD(tf.optimizers.SGD):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> optimizer = tl.optimizers.SGD(0.0001)
+    >>> import tensorlayerx as tlx
+    >>> optimizer = tlx.optimizers.SGD(0.0001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -304,8 +304,8 @@ class Momentum(tf.compat.v1.train.MomentumOptimizer):
     --------
     With TensorLayer
 
-    >>> import tensorlayerx as tl
-    >>> optimizer = tl.optimizers.Momentum(0.0001)
+    >>> import tensorlayerx as tlx
+    >>> optimizer = tlx.optimizers.Momentum(0.0001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """

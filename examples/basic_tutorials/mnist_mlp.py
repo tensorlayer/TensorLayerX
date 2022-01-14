@@ -7,12 +7,12 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Dense, Dropout
 from tensorlayerx.dataflow import Dataset
 
-X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
+X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
 
 
 class mnistdataset(Dataset):
@@ -35,11 +35,11 @@ class CustomModel(Module):
     def __init__(self):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(keep=0.8)
-        self.dense1 = Dense(n_units=800, act=tl.ReLU, in_channels=784)
+        self.dense1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784)
         self.dropout2 = Dropout(keep=0.8)
-        self.dense2 = Dense(n_units=800, act=tl.ReLU, in_channels=800)
+        self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800)
         self.dropout3 = Dropout(keep=0.8)
-        self.dense3 = Dense(n_units=10, act=tl.ReLU, in_channels=800)
+        self.dense3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800)
 
     def forward(self, x, foo=None):
         z = self.dropout1(x)
@@ -49,7 +49,7 @@ class CustomModel(Module):
         z = self.dropout3(z)
         out = self.dense3(z)
         if foo is not None:
-            out = tl.ops.relu(out)
+            out = tlx.relu(out)
         return out
 
 
@@ -59,16 +59,16 @@ batch_size = 128
 print_freq = 2
 
 train_weights = MLP.trainable_weights
-optimizer = tl.optimizers.Momentum(0.05, 0.9)
-metric = tl.metrics.Accuracy()
-loss_fn = tl.losses.softmax_cross_entropy_with_logits
+optimizer = tlx.optimizers.Momentum(0.05, 0.9)
+metric = tlx.metrics.Accuracy()
+loss_fn = tlx.losses.softmax_cross_entropy_with_logits
 train_dataset = mnistdataset(data=X_train, label=y_train)
-train_dataset = tl.dataflow.FromGenerator(
-    train_dataset, output_types=[tl.float32, tl.int64], column_names=['data', 'label']
+train_dataset = tlx.dataflow.FromGenerator(
+    train_dataset, output_types=[tlx.float32, tlx.int64], column_names=['data', 'label']
 )
-train_loader = tl.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
+train_loader = tlx.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
 
-model = tl.model.Model(network=MLP, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
+model = tlx.model.Model(network=MLP, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
 model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=False)
 model.save_weights('./model.npz', format='npz_dict')
 model.load_weights('./model.npz', format='npz_dict')

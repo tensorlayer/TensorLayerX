@@ -31,7 +31,7 @@ import os
 
 import numpy as np
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.files import assign_weights, maybe_download_and_extract
 from tensorlayerx.nn import (BatchNorm, Conv2d, Dense, Flatten, SequentialLayer, MaxPool2d)
@@ -124,7 +124,7 @@ def make_layers(config, batch_norm=False, end_with='outputs'):
                     in_channels = layer_group[idx - 1]
                 layer_list.append(
                     Conv2d(
-                        n_filter=n_filter, filter_size=(3, 3), strides=(1, 1), act=tl.ReLU, padding='SAME',
+                        n_filter=n_filter, filter_size=(3, 3), strides=(1, 1), act=tlx.ReLU, padding='SAME',
                         in_channels=in_channels, name=layer_name
                     )
                 )
@@ -142,9 +142,9 @@ def make_layers(config, batch_norm=False, end_with='outputs'):
             elif layer_group == 'F':
                 layer_list.append(Flatten(name='flatten'))
             elif layer_group == 'fc1':
-                layer_list.append(Dense(n_units=4096, act=tl.ReLU, in_channels=512 * 7 * 7, name=layer_name))
+                layer_list.append(Dense(n_units=4096, act=tlx.ReLU, in_channels=512 * 7 * 7, name=layer_name))
             elif layer_group == 'fc2':
-                layer_list.append(Dense(n_units=4096, act=tl.ReLU, in_channels=4096, name=layer_name))
+                layer_list.append(Dense(n_units=4096, act=tlx.ReLU, in_channels=4096, name=layer_name))
             if layer_name == end_with:
                 is_end = True
         if is_end:
@@ -205,7 +205,7 @@ def vgg16(pretrained=False, end_with='outputs', mode='dynamic', name=None):
     >>> vgg = vgg16(pretrained=True)
     >>> # use for inferencing
     >>> output = vgg(img)
-    >>> probs = tl.ops.softmax(output)[0].numpy()
+    >>> probs = tlx.softmax(output)[0].numpy()
 
     """
 
@@ -245,7 +245,7 @@ def vgg19(pretrained=False, end_with='outputs', mode='dynamic', name=None):
     >>> vgg = vgg19(pretrained=True)
     >>> # use for inferencing
     >>> output = vgg(img)
-    >>> probs = tl.ops.softmax(output)[0].numpy()
+    >>> probs = tlx.softmax(output)[0].numpy()
 
     """
     if mode == 'dynamic':

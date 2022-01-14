@@ -5,7 +5,7 @@
 import os
 os.environ['TL_BACKEND'] = 'paddle'
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Dense, Flatten
 import paddle
@@ -13,7 +13,7 @@ from paddle.io import TensorDataset
 
 print('download training data and load training data')
 
-X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
+X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
 
 print('load finished')
 X_train = paddle.to_tensor(X_train.astype('float32'))
@@ -24,8 +24,8 @@ class MLP(Module):
 
     def __init__(self):
         super(MLP, self).__init__()
-        self.linear1 = Dense(n_units=120, in_channels=784, act=tl.ReLU)
-        self.linear2 = Dense(n_units=84, in_channels=120, act=tl.ReLU)
+        self.linear1 = Dense(n_units=120, in_channels=784, act=tlx.ReLU)
+        self.linear2 = Dense(n_units=84, in_channels=120, act=tlx.ReLU)
         self.linear3 = Dense(n_units=10, in_channels=84)
         self.flatten = Flatten()
 
@@ -41,10 +41,10 @@ traindataset = paddle.io.TensorDataset([X_train, y_train])
 train_loader = paddle.io.DataLoader(traindataset, batch_size=64, shuffle=True)
 net = MLP()
 
-optimizer = tl.optimizers.Adam(learning_rate=0.001)
-metric = tl.metrics.Accuracy()
-model = tl.model.Model(
-    network=net, loss_fn=tl.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metric
+optimizer = tlx.optimizers.Adam(learning_rate=0.001)
+metric = tlx.metrics.Accuracy()
+model = tlx.model.Model(
+    network=net, loss_fn=tlx.losses.softmax_cross_entropy_with_logits, optimizer=optimizer, metrics=metric
 )
 model.train(n_epoch=2, train_dataset=train_loader, print_freq=5, print_train_batch=True)
 model.save_weights('./model_mlp.npz', format='npz_dict')

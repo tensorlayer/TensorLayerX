@@ -8,7 +8,7 @@ import numpy as np
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
-import tensorlayerx as tl
+import tensorlayerx as tlx
 import tensorlayerx
 from tests.utils import CustomTestCase
 
@@ -38,8 +38,8 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tensorlayerx.layers.Lambda(perceptron, perceptron.trainable_variables)
+                self.dense = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tlx.nn.Lambda(perceptron, perceptron.trainable_variables)
 
             def forward(self, x):
                 z = self.dense(x)
@@ -56,7 +56,7 @@ class Layer_Lambda_Test(CustomTestCase):
         for epoch in range(10):
             with tf.GradientTape() as tape:
                 pred_y = model(self.data_x)
-                loss = tl.losses.mean_squared_error(pred_y, self.data_y)
+                loss = tlx.losses.mean_squared_error(pred_y, self.data_y)
 
             gradients = tape.gradient(loss, model.trainable_weights)
             optimizer.apply_gradients(zip(gradients, model.trainable_weights))
@@ -77,8 +77,8 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tensorlayerx.layers.Lambda(customize_func, fn_weights=[], fn_args={'foo': 0})
+                self.dense = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tlx.nn.Lambda(customize_func, fn_weights=[], fn_args={'foo': 0})
 
             def forward(self, x, bar):
                 z = self.dense(x)
@@ -112,8 +112,8 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tensorlayerx.layers.Lambda(customize_fn, fn_weights=[a])
+                self.dense = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tlx.nn.Lambda(customize_fn, fn_weights=[a])
 
             def forward(self, x):
                 z = self.dense(x)
@@ -133,8 +133,8 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tensorlayerx.layers.Lambda(lambda x: 2 * x)
+                self.dense = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tlx.nn.Lambda(lambda x: 2 * x)
 
             def forward(self, x):
                 z = self.dense(x)
@@ -157,10 +157,10 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense1 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
-                self.dense2 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
-                self.dense3 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tensorlayerx.layers.ElementwiseLambda(customize_func, fn_args={'foo': 1024})
+                self.dense1 = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.dense2 = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.dense3 = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tlx.nn.ElementwiseLambda(customize_func, fn_args={'foo': 1024})
 
             def forward(self, x, bar=None):
                 noise = self.dense1(x)
@@ -190,10 +190,10 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense1 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
-                self.dense2 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
-                self.dense3 = tensorlayerx.layers.Dense(in_channels=1, n_units=5)
-                self.lambdalayer = tensorlayerx.layers.ElementwiseLambda(customize_func, fn_weights=[])
+                self.dense1 = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.dense2 = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.dense3 = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.lambdalayer = tlx.nn.ElementwiseLambda(customize_func, fn_weights=[])
 
             def forward(self, x):
                 noise = self.dense1(x)

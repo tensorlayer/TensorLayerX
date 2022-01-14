@@ -30,7 +30,7 @@ def load_matt_mahoney_text8_dataset(path='data'):
 
     Examples
     --------
-    >>> words = tl.files.load_matt_mahoney_text8_dataset()
+    >>> words = tlx.files.load_matt_mahoney_text8_dataset()
     >>> print('Data size', len(words))
 
     """

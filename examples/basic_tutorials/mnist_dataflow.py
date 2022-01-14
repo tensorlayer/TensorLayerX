@@ -6,7 +6,7 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Dense, Flatten
 from tensorlayerx.vision.transforms import Normalize, Compose
@@ -16,7 +16,7 @@ transform = Compose([Normalize(mean=[127.5], std=[127.5], data_format='HWC')])
 
 print('download training data and load training data')
 
-X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 28, 28, 1))
+X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 28, 28, 1))
 X_train = X_train * 255
 
 print('load finished')
@@ -61,8 +61,8 @@ class MLP(Module):
 
     def __init__(self):
         super(MLP, self).__init__()
-        self.linear1 = Dense(n_units=120, in_channels=784, act=tl.ReLU)
-        self.linear2 = Dense(n_units=84, in_channels=120, act=tl.ReLU)
+        self.linear1 = Dense(n_units=120, in_channels=784, act=tlx.ReLU)
+        self.linear2 = Dense(n_units=84, in_channels=120, act=tlx.ReLU)
         self.linear3 = Dense(n_units=10, in_channels=84)
         self.flatten = Flatten()
 
@@ -75,10 +75,10 @@ class MLP(Module):
 
 
 train_dataset = mnistdataset1(data=X_train, label=y_train, transform=transform)
-train_dataset = tl.dataflow.FromGenerator(
-    train_dataset, output_types=[tl.float32, tl.int64], column_names=['data', 'label']
+train_dataset = tlx.dataflow.FromGenerator(
+    train_dataset, output_types=[tlx.float32, tlx.int64], column_names=['data', 'label']
 )
-train_loader = tl.dataflow.Dataloader(train_dataset, batch_size=128, shuffle=False)
+train_loader = tlx.dataflow.Dataloader(train_dataset, batch_size=128, shuffle=False)
 
 for i in train_loader:
     print(i[0].shape, i[1])

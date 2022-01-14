@@ -4,7 +4,7 @@
 from __future__ import absolute_import
 
 import hyperdash as hd
-import tensorlayerx as tl
+import tensorlayerx as tlx
 
 __all__ = ["HyperDashHandler", "monitor", "Experiment", "IPythonMagicsWrapper"]
 
@@ -30,7 +30,7 @@ class HyperDashHandler(object):
                 "You should first call `HyperDashHandler.set_apikey('my_api_key')` in order to use `hyperdash`"
             )
 
-        tl.logging.debug("Hyperdash API Key: %s" % cls.apikey)
+        tlx.logging.debug("Hyperdash API Key: %s" % cls.apikey)
 
         return cls.apikey
 

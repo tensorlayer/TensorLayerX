@@ -5,7 +5,8 @@ import os
 
 import imageio
 import numpy as np
-import tensorlayerx as tl
+
+import tensorlayerx as tlx
 from tensorlayerx.utils.lazy_imports import LazyImport
 import colorsys, random
 
@@ -64,11 +65,11 @@ def read_images(img_list, path='', n_threads=10, printable=True):
     imgs = []
     for idx in range(0, len(img_list), n_threads):
         b_imgs_list = img_list[idx:idx + n_threads]
-        b_imgs = tl.prepro.threading_data(b_imgs_list, fn=read_image, path=path)
-        # tl.logging.info(b_imgs.shape)
+        b_imgs = tlx.prepro.threading_data(b_imgs_list, fn=read_image, path=path)
+        # tlx.logging.info(b_imgs.shape)
         imgs.extend(b_imgs)
         if printable:
-            tl.logging.info('read %d from %s' % (len(imgs), path))
+            tlx.logging.info('read %d from %s' % (len(imgs), path))
     return imgs
 
 
@@ -107,7 +108,7 @@ def save_images(images, size, image_path='_temp.png'):
     >>> import numpy as np
     >>> import tensorlayerx as tl
     >>> images = np.random.rand(64, 100, 100, 3)
-    >>> tl.visualize.save_images(images, [8, 8], 'temp.png')
+    >>> tlx.visualize.save_images(images, [8, 8], 'temp.png')
 
     """
     if len(images.shape) == 3:  # Greyscale [batch, h, w] --> [batch, h, w, 1]
@@ -139,7 +140,7 @@ def save_images(images, size, image_path='_temp.png'):
 def draw_boxes_and_labels_to_image(
     image, classes, coords, scores, classes_list, is_center=True, is_rescale=True, save_name=None
 ):
-    """Draw bboxes and class labels on image. Return or save the image with bboxes, example in the docs of ``tl.prepro``.
+    """Draw bboxes and class labels on image. Return or save the image with bboxes, example in the docs of ``tlx.prepro``.
 
     Parameters
     -----------
@@ -191,12 +192,12 @@ def draw_boxes_and_labels_to_image(
 
     for i, _v in enumerate(coords):
         if is_center:
-            x, y, x2, y2 = tl.prepro.obj_box_coord_centroid_to_upleft_butright(coords[i])
+            x, y, x2, y2 = tlx.prepro.obj_box_coord_centroid_to_upleft_butright(coords[i])
         else:
             x, y, x2, y2 = coords[i]
 
         if is_rescale:  # scale back to pixel unit if the coords are the portion of width and high
-            x, y, x2, y2 = tl.prepro.obj_box_coord_scale_to_pixelunit([x, y, x2, y2], (imh, imw))
+            x, y, x2, y2 = tlx.prepro.obj_box_coord_scale_to_pixelunit([x, y, x2, y2], (imh, imw))
 
         cv2.rectangle(
             image,
@@ -220,7 +221,7 @@ def draw_boxes_and_labels_to_image(
         # cv2.imwrite('_my.png', image)
         save_image(image, save_name)
     # if len(coords) == 0:
-    #     tl.logging.info("draw_boxes_and_labels_to_image: no bboxes exist, cannot draw !")
+    #     tlx.logging.info("draw_boxes_and_labels_to_image: no bboxes exist, cannot draw !")
     return image
 
 
@@ -234,7 +235,7 @@ def draw_mpii_pose_to_image(image, poses, save_name='image.png'):
     image : numpy.array
         The RGB image [height, width, channel].
     poses : list of dict
-        The people(s) annotation in MPII format, see ``tl.files.load_mpii_pose_dataset``.
+        The people(s) annotation in MPII format, see ``tlx.files.load_mpii_pose_dataset``.
     save_name : None or str
         The name of image file (i.e. image.png), if None, not to save image.
 
@@ -247,9 +248,9 @@ def draw_mpii_pose_to_image(image, poses, save_name='image.png'):
     --------
     >>> import pprint
     >>> import tensorlayerx as tl
-    >>> img_train_list, ann_train_list, img_test_list, ann_test_list = tl.files.load_mpii_pose_dataset()
-    >>> image = tl.vis.read_image(img_train_list[0])
-    >>> tl.vis.draw_mpii_pose_to_image(image, ann_train_list[0], 'image.png')
+    >>> img_train_list, ann_train_list, img_test_list, ann_test_list = tlx.files.load_mpii_pose_dataset()
+    >>> image = tlx.vis.read_image(img_train_list[0])
+    >>> tlx.vis.draw_mpii_pose_to_image(image, ann_train_list[0], 'image.png')
     >>> pprint.pprint(ann_train_list[0])
 
     References
@@ -368,7 +369,7 @@ def frame(I=None, second=5, saveable=True, name='frame', cmap=None, fig_idx=1283
     --------
     >>> env = gym.make("Pong-v0")
     >>> observation = env.reset()
-    >>> tl.visualize.frame(observation)
+    >>> tlx.visualize.frame(observation)
 
     """
     import matplotlib.pyplot as plt
@@ -409,11 +410,11 @@ def CNN2d(CNN=None, second=10, saveable=True, name='cnn', fig_idx=3119362):
 
     Examples
     --------
-    >>> tl.visualize.CNN2d(network.all_params[0].eval(), second=10, saveable=True, name='cnn1_mnist', fig_idx=2012)
+    >>> tlx.visualize.CNN2d(network.all_params[0].eval(), second=10, saveable=True, name='cnn1_mnist', fig_idx=2012)
 
     """
     import matplotlib.pyplot as plt
-    # tl.logging.info(CNN.shape)    # (5, 5, 3, 64)
+    # tlx.logging.info(CNN.shape)    # (5, 5, 3, 64)
     # exit()
     n_mask = CNN.shape[3]
     n_row = CNN.shape[0]
@@ -429,7 +430,7 @@ def CNN2d(CNN=None, second=10, saveable=True, name='cnn', fig_idx=3119362):
             if count > n_mask:
                 break
             fig.add_subplot(col, row, count)
-            # tl.logging.info(CNN[:,:,:,count-1].shape, n_row, n_col)   # (5, 1, 32) 5 5
+            # tlx.logging.info(CNN[:,:,:,count-1].shape, n_row, n_col)   # (5, 1, 32) 5 5
             # exit()
             # plt.imshow(
             #         np.reshape(CNN[count-1,:,:,:], (n_row, n_col)),
@@ -472,12 +473,12 @@ def images2d(images=None, second=10, saveable=True, name='images', dtype=None, f
 
     Examples
     --------
-    >>> X_train, y_train, X_test, y_test = tl.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
-    >>> tl.visualize.images2d(X_train[0:100,:,:,:], second=10, saveable=False, name='cifar10', dtype=np.uint8, fig_idx=20212)
+    >>> X_train, y_train, X_test, y_test = tlx.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
+    >>> tlx.visualize.images2d(X_train[0:100,:,:,:], second=10, saveable=False, name='cifar10', dtype=np.uint8, fig_idx=20212)
 
     """
     import matplotlib.pyplot as plt
-    # tl.logging.info(images.shape)    # (50000, 32, 32, 3)
+    # tlx.logging.info(images.shape)    # (50000, 32, 32, 3)
     # exit()
     if dtype:
         images = np.asarray(images, dtype=dtype)
@@ -495,7 +496,7 @@ def images2d(images=None, second=10, saveable=True, name='images', dtype=None, f
             if count > n_mask:
                 break
             fig.add_subplot(col, row, count)
-            # tl.logging.info(images[:,:,:,count-1].shape, n_row, n_col)   # (5, 1, 32) 5 5
+            # tlx.logging.info(images[:,:,:,count-1].shape, n_row, n_col)   # (5, 1, 32) 5 5
             # plt.imshow(
             #         np.reshape(images[count-1,:,:,:], (n_row, n_col)),
             #         cmap='gray', interpolation="nearest")     # theano
@@ -541,7 +542,7 @@ def tsne_embedding(embeddings, reverse_dictionary, plot_only=500, second=5, save
     --------
     >>> see 'tutorial_word2vec_basic.py'
     >>> final_embeddings = normalized_embeddings.eval()
-    >>> tl.visualize.tsne_embedding(final_embeddings, labels, reverse_dictionary,
+    >>> tlx.visualize.tsne_embedding(final_embeddings, labels, reverse_dictionary,
     ...                   plot_only=500, second=5, saveable=False, name='tsne')
 
     """
@@ -581,7 +582,7 @@ def tsne_embedding(embeddings, reverse_dictionary, plot_only=500, second=5, save
 
     except ImportError:
         _err = "Please install sklearn and matplotlib to visualize embeddings."
-        tl.logging.error(_err)
+        tlx.logging.error(_err)
         raise ImportError(_err)
 
 
@@ -605,7 +606,7 @@ def draw_weights(W=None, second=10, saveable=True, shape=None, name='mnist', fig
 
     Examples
     --------
-    >>> tl.visualize.draw_weights(network.all_params[0].eval(), second=10, saveable=True, name='weight_of_1st_layer', fig_idx=2012)
+    >>> tlx.visualize.draw_weights(network.all_params[0].eval(), second=10, saveable=True, name='weight_of_1st_layer', fig_idx=2012)
 
     """
     if shape is None:

@@ -22,11 +22,11 @@ import numpy as np
 import progressbar
 import scipy.io as sio
 from six.moves import cPickle
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.utils import visualize
 
-if tl.BACKEND == 'tensorflow':
+if tlx.BACKEND == 'tensorflow':
     from tensorflow.python.keras.saving import model_config as model_config_lib
     from tensorflow.python.platform import gfile
     from tensorflow.python.util import serialization
@@ -65,14 +65,14 @@ if tl.BACKEND == 'tensorflow':
         return model
 
 
-if tl.BACKEND == 'mindspore':
+if tlx.BACKEND == 'mindspore':
     from mindspore.ops.operations import Assign
     from mindspore.nn import Cell
     from mindspore import Tensor
     import mindspore as ms
-if tl.BACKEND == 'paddle':
+if tlx.BACKEND == 'paddle':
     import paddle as pd
-if tl.BACKEND == 'torch':
+if tlx.BACKEND == 'torch':
     import torch
 
 if sys.version_info[0] == 2:
@@ -211,13 +211,13 @@ def save_hdf5_graph(network, filepath='model.hdf5', save_weights=False, customiz
     Examples
     --------
     >>> # Save the architecture (with parameters)
-    >>> tl.files.save_hdf5_graph(network, filepath='model.hdf5', save_weights=True)
+    >>> tlx.files.save_hdf5_graph(network, filepath='model.hdf5', save_weights=True)
     >>> # Save the architecture (without parameters)
-    >>> tl.files.save_hdf5_graph(network, filepath='model.hdf5', save_weights=False)
+    >>> tlx.files.save_hdf5_graph(network, filepath='model.hdf5', save_weights=False)
     >>> # Load the architecture in another script (no parameters restore)
-    >>> net = tl.files.load_hdf5_graph(filepath='model.hdf5', load_weights=False)
+    >>> net = tlx.files.load_hdf5_graph(filepath='model.hdf5', load_weights=False)
     >>> # Load the architecture in another script (restore parameters)
-    >>> net = tl.files.load_hdf5_graph(filepath='model.hdf5', load_weights=True)
+    >>> net = tlx.files.load_hdf5_graph(filepath='model.hdf5', load_weights=True)
     """
     if network.outputs is None:
         raise RuntimeError("save_hdf5_graph not support dynamic mode yet")
@@ -230,7 +230,7 @@ def save_hdf5_graph(network, filepath='model.hdf5', save_weights=False, customiz
     model_config_str = str(model_config)
     customized_data_str = str(customized_data)
     # version_info = {
-    #     "tensorlayer_version": tl.__version__,
+    #     "tensorlayerx_version": tlx.__version__,
     #     "backend": "tensorflow",
     #     "backend_version": tf.__version__,
     #     "training_device": "gpu",
@@ -274,25 +274,25 @@ def eval_layer(layer_kwargs):
     layer_type = args.pop('layer_type')
     if layer_type == "normal":
         generate_func(args)
-        return eval('tl.layers.' + layer_class)(**args)
+        return eval('tlx.layers.' + layer_class)(**args)
     elif layer_type == "layerlist":
         ret_layer = []
         layers = args["layers"]
         for layer_graph in layers:
             ret_layer.append(eval_layer(layer_graph))
         args['layers'] = ret_layer
-        return eval('tl.layers.' + layer_class)(**args)
+        return eval('tlx.layers.' + layer_class)(**args)
     elif layer_type == "modellayer":
         M = static_graph2net(args['model'])
         args['model'] = M
-        return eval('tl.layers.' + layer_class)(**args)
+        return eval('tlx.layers.' + layer_class)(**args)
     elif layer_type == "keraslayer":
         M = load_keras_model(args['fn'])
         input_shape = args.pop('keras_input_shape')
         _ = M(np.random.random(input_shape).astype(np.float32))
         args['fn'] = M
         args['fn_weights'] = M.trainable_variables
-        return eval('tl.layers.' + layer_class)(**args)
+        return eval('tlx.layers.' + layer_class)(**args)
     else:
         raise RuntimeError("Unknown layer type.")
 
@@ -307,7 +307,7 @@ def static_graph2net(model_config):
         layer_class = layer_kwargs["class"]  # class of current layer
         prev_layers = layer_kwargs.pop("prev_layer")  # name of previous layers
         net = eval_layer(layer_kwargs)
-        if layer_class in tensorlayerx.nn.layers.inputs.__all__:
+        if layer_class in tlx.nn.inputs.__all__:
             net = net._nodes[0].out_tensors[0]
         if prev_layers is not None:
             for prev_layer in prev_layers:
@@ -355,7 +355,7 @@ def load_hdf5_graph(filepath='model.hdf5', load_weights=False):
 
     Examples
     --------
-    - see ``tl.files.save_hdf5_graph``
+    - see ``tlx.files.save_hdf5_graph``
     """
     logging.info("[*] Loading TL model from {}, loading weights={}".format(filepath, load_weights))
 
@@ -368,17 +368,17 @@ def load_hdf5_graph(filepath='model.hdf5', load_weights=False):
     # version_info = eval(version_info_str)
     version_info = model_config["version_info"]
     backend_version = version_info["backend_version"]
-    tensorlayer_version = version_info["tensorlayer_version"]
+    tensorlayerx_version = version_info["tensorlayerx_version"]
     if backend_version != tf.__version__:
         logging.warning(
             "Saved model uses tensorflow version {}, but now you are using tensorflow version {}".format(
                 backend_version, tf.__version__
             )
         )
-    if tensorlayer_version != tl.__version__:
+    if tensorlayerx_version != tlx.__version__:
         logging.warning(
             "Saved model uses tensorlayerx version {}, but now you are using tensorlayerx version {}".format(
-                tensorlayer_version, tl.__version__
+                tensorlayerx_version, tlx.__version__
             )
         )
 
@@ -466,8 +466,8 @@ def load_mnist_dataset(shape=(-1, 784), path='data'):
 
     Examples
     --------
-    >>> X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1,784), path='datasets')
-    >>> X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 28, 28, 1))
+    >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1,784), path='datasets')
+    >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 28, 28, 1))
     """
     return _load_mnist_dataset(shape, path, name='mnist', url='http://yann.lecun.com/exdb/mnist/')
 
@@ -491,8 +491,8 @@ def load_fashion_mnist_dataset(shape=(-1, 784), path='data'):
 
     Examples
     --------
-    >>> X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_fashion_mnist_dataset(shape=(-1,784), path='datasets')
-    >>> X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_fashion_mnist_dataset(shape=(-1, 28, 28, 1))
+    >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_fashion_mnist_dataset(shape=(-1,784), path='datasets')
+    >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_fashion_mnist_dataset(shape=(-1, 28, 28, 1))
     """
     return _load_mnist_dataset(
         shape, path, name='fashion_mnist', url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/'
@@ -585,7 +585,7 @@ def load_cifar10_dataset(shape=(-1, 32, 32, 3), path='data', plotable=False):
 
     Examples
     --------
-    >>> X_train, y_train, X_test, y_test = tl.files.load_cifar10_dataset(shape=(-1, 32, 32, 3))
+    >>> X_train, y_train, X_test, y_test = tlx.files.load_cifar10_dataset(shape=(-1, 32, 32, 3))
 
     References
     ----------
@@ -706,8 +706,8 @@ def load_cropped_svhn(path='data', include_extra=True):
 
     Examples
     ---------
-    >>> X_train, y_train, X_test, y_test = tl.files.load_cropped_svhn(include_extra=False)
-    >>> tl.vis.save_images(X_train[0:100], [10, 10], 'svhn.png')
+    >>> X_train, y_train, X_test, y_test = tlx.files.load_cropped_svhn(include_extra=False)
+    >>> tlx.vis.save_images(X_train[0:100], [10, 10], 'svhn.png')
 
     """
     start_time = time.time()
@@ -806,7 +806,7 @@ def load_cropped_svhn(path='data', include_extra=True):
 #
 #     Examples
 #     --------
-#     >>> train_data, valid_data, test_data, vocab_size = tl.files.load_ptb_dataset()
+#     >>> train_data, valid_data, test_data, vocab_size = tlx.files.load_ptb_dataset()
 #
 #     References
 #     ---------------
@@ -866,7 +866,7 @@ def load_matt_mahoney_text8_dataset(path='data'):
 
     Examples
     --------
-    >>> words = tl.files.load_matt_mahoney_text8_dataset()
+    >>> words = tlx.files.load_matt_mahoney_text8_dataset()
     >>> print('Data size', len(words))
 
     """
@@ -911,7 +911,7 @@ def load_imdb_dataset(
 
     Examples
     --------
-    >>> X_train, y_train, X_test, y_test = tl.files.load_imdb_dataset(
+    >>> X_train, y_train, X_test, y_test = tlx.files.load_imdb_dataset(
     ...                                 nb_words=20000, test_split=0.2)
     >>> print('X_train.shape', X_train.shape)
     (20000,)  [[1, 62, 74, ... 1033, 507, 27],[1, 60, 33, ... 13, 1053, 7]..]
@@ -1003,7 +1003,7 @@ def load_nietzsche_dataset(path='data'):
     Examples
     --------
     >>> see tutorial_generate_text.py
-    >>> words = tl.files.load_nietzsche_dataset()
+    >>> words = tlx.files.load_nietzsche_dataset()
     >>> words = basic_clean_str(words)
     >>> words = words.split()
 
@@ -1112,11 +1112,11 @@ def load_flickr25k_dataset(tag='sky', path="data", n_threads=50, printable=False
     -----------
     Get images with tag of sky
 
-    >>> images = tl.files.load_flickr25k_dataset(tag='sky')
+    >>> images = tlx.files.load_flickr25k_dataset(tag='sky')
 
     Get all images
 
-    >>> images = tl.files.load_flickr25k_dataset(tag=None, n_threads=100, printable=True)
+    >>> images = tlx.files.load_flickr25k_dataset(tag=None, n_threads=100, printable=True)
 
     """
     path = os.path.join(path, 'flickr25k')
@@ -1184,11 +1184,11 @@ def load_flickr1M_dataset(tag='sky', size=10, path="data", n_threads=50, printab
     ----------
     Use 200k images
 
-    >>> images = tl.files.load_flickr1M_dataset(tag='zebra', size=2)
+    >>> images = tlx.files.load_flickr1M_dataset(tag='zebra', size=2)
 
     Use 1 Million images
 
-    >>> images = tl.files.load_flickr1M_dataset(tag='zebra')
+    >>> images = tlx.files.load_flickr1M_dataset(tag='zebra')
 
     """
     path = os.path.join(path, 'flickr1M')
@@ -1310,7 +1310,7 @@ def load_cyclegan_dataset(filename='summer2winter_yosemite', path='data'):
 def download_file_from_google_drive(ID, destination):
     """Download file from Google Drive.
 
-    See ``tl.files.load_celebA_dataset`` for example.
+    See ``tlx.files.load_celebA_dataset`` for example.
 
     Parameters
     --------------
@@ -1436,7 +1436,7 @@ def load_celebA_dataset(path='data'):
 #     ----------
 #     >>> imgs_file_list, imgs_semseg_file_list, imgs_insseg_file_list, imgs_ann_file_list,
 #     >>>     classes, classes_in_person, classes_dict,
-#     >>>     n_objs_list, objs_info_list, objs_info_dicts = tl.files.load_voc_dataset(dataset="2012", contain_classes_in_person=False)
+#     >>>     n_objs_list, objs_info_list, objs_info_dicts = tlx.files.load_voc_dataset(dataset="2012", contain_classes_in_person=False)
 #     >>> idx = 26
 #     >>> print(classes)
 #     ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
@@ -1451,10 +1451,10 @@ def load_celebA_dataset(path='data'):
 #     >>> print(objs_info_list[idx])
 #     14 0.173 0.461333333333 0.142 0.496
 #     14 0.828 0.542666666667 0.188 0.594666666667
-#     >>> ann = tl.prepro.parse_darknet_ann_str_to_list(objs_info_list[idx])
+#     >>> ann = tlx.prepro.parse_darknet_ann_str_to_list(objs_info_list[idx])
 #     >>> print(ann)
 #     [[14, 0.173, 0.461333333333, 0.142, 0.496], [14, 0.828, 0.542666666667, 0.188, 0.594666666667]]
-#     >>> c, b = tl.prepro.parse_darknet_ann_list_to_cls_box(ann)
+#     >>> c, b = tlx.prepro.parse_darknet_ann_list_to_cls_box(ann)
 #     >>> print(c, b)
 #     [14, 14] [[0.173, 0.461333333333, 0.142, 0.496], [0.828, 0.542666666667, 0.188, 0.594666666667]]
 #
@@ -1741,10 +1741,10 @@ def load_mpii_pose_dataset(path='data', is_16_pos_only=False):
     Examples
     --------
     >>> import pprint
-    >>> import tensorlayerx as tl
-    >>> img_train_list, ann_train_list, img_test_list, ann_test_list = tl.files.load_mpii_pose_dataset()
-    >>> image = tl.vis.read_image(img_train_list[0])
-    >>> tl.vis.draw_mpii_pose_to_image(image, ann_train_list[0], 'image.png')
+    >>> import tensorlayerx as tlx
+    >>> img_train_list, ann_train_list, img_test_list, ann_test_list = tlx.files.load_mpii_pose_dataset()
+    >>> image = tlx.vis.read_image(img_train_list[0])
+    >>> tlx.vis.draw_mpii_pose_to_image(image, ann_train_list[0], 'image.png')
     >>> pprint.pprint(ann_train_list[0])
 
     References
@@ -1960,7 +1960,7 @@ def load_mpii_pose_dataset(path='data', is_16_pos_only=False):
 
 
 def save_npz(save_list=None, name='model.npz'):
-    """Input parameters and the file name, save parameters into .npz file. Use tl.utils.load_npz() to restore.
+    """Input parameters and the file name, save parameters into .npz file. Use tlx.utils.load_npz() to restore.
 
     Parameters
     ----------
@@ -1973,33 +1973,33 @@ def save_npz(save_list=None, name='model.npz'):
     --------
     Save model to npz
 
-    >>> tl.files.save_npz(network.all_weights, name='model.npz')
+    >>> tlx.files.save_npz(network.all_weights, name='model.npz')
 
     Load model from npz (Method 1)
 
-    >>> load_params = tl.files.load_npz(name='model.npz')
-    >>> tl.files.assign_weights(load_params, network)
+    >>> load_params = tlx.files.load_npz(name='model.npz')
+    >>> tlx.files.assign_weights(load_params, network)
 
     Load model from npz (Method 2)
 
-    >>> tl.files.load_and_assign_npz(name='model.npz', network=network)
+    >>> tlx.files.load_and_assign_npz(name='model.npz', network=network)
 
     References
     ----------
     `Saving dictionary using numpy <http://stackoverflow.com/questions/22315595/saving-dictionary-of-header-information-using-numpy-savez>`__
 
     """
-    logging.info("[*] Saving TL weights into %s" % name)
+    logging.info("[*] Saving TLX weights into %s" % name)
     if save_list is None:
         save_list = []
 
-    if tl.BACKEND == 'tensorflow':
+    if tlx.BACKEND == 'tensorflow':
         save_list_var = tf_variables_to_numpy(save_list)
-    elif tl.BACKEND == 'mindspore':
+    elif tlx.BACKEND == 'mindspore':
         save_list_var = ms_variables_to_numpy(save_list)
-    elif tl.BACKEND == 'paddle':
+    elif tlx.BACKEND == 'paddle':
         save_list_var = pd_variables_to_numpy(save_list)
-    elif tl.BACKEND == 'torch':
+    elif tlx.BACKEND == 'torch':
         save_list_var = th_variables_to_numpy(save_list)
     else:
         raise NotImplementedError("This backend is not supported")
@@ -2010,7 +2010,7 @@ def save_npz(save_list=None, name='model.npz'):
 
 
 def load_npz(path='', name='model.npz'):
-    """Load the parameters of a Model saved by tl.files.save_npz().
+    """Load the parameters of a Model saved by tlx.files.save_npz().
 
     Parameters
     ----------
@@ -2026,7 +2026,7 @@ def load_npz(path='', name='model.npz'):
 
     Examples
     --------
-    - See ``tl.files.save_npz``
+    - See ``tlx.files.save_npz``
 
     References
     ----------
@@ -2067,11 +2067,11 @@ def assign_weights(weights, network):
 
     """
     ops = []
-    if tl.BACKEND == 'tensorflow':
+    if tlx.BACKEND == 'tensorflow':
         for idx, param in enumerate(weights):
             ops.append(network.all_weights[idx].assign(param))
 
-    elif tl.BACKEND == 'mindspore':
+    elif tlx.BACKEND == 'mindspore':
 
         class Assign_net(Cell):
 
@@ -2087,10 +2087,10 @@ def assign_weights(weights, network):
             # net = Assign_net(network.all_weights[idx])
             # net(assign_param)
             Assign()(network.all_weights[idx], assign_param)
-    elif tl.BACKEND == 'paddle':
+    elif tlx.BACKEND == 'paddle':
         for idx, param in enumerate(weights):
             assign_pd_variable(network.all_weights[idx], param)
-    elif tl.BACKEND == 'torch':
+    elif tlx.BACKEND == 'torch':
         for idx, param in enumerate(weights):
             assign_th_variable(network.all_weights[idx], param)
 
@@ -2111,7 +2111,7 @@ def load_and_assign_npz(name=None, network=None):
 
     Examples
     --------
-    - See ``tl.files.save_npz``
+    - See ``tlx.files.save_npz``
 
     """
     if network is None:
@@ -2129,7 +2129,7 @@ def load_and_assign_npz(name=None, network=None):
 def save_npz_dict(save_list=None, name='model.npz'):
     """Input parameters and the file name, save parameters as a dictionary into .npz file.
 
-    Use ``tl.files.load_and_assign_npz_dict()`` to restore.
+    Use ``tlx.files.load_and_assign_npz_dict()`` to restore.
 
     Parameters
     ----------
@@ -2141,16 +2141,16 @@ def save_npz_dict(save_list=None, name='model.npz'):
     """
     if save_list is None:
         save_list = []
-    if tl.BACKEND is not 'torch':
+    if tlx.BACKEND is not 'torch':
         save_list_names = [tensor.name for tensor in save_list]
 
-    if tl.BACKEND == 'tensorflow':
+    if tlx.BACKEND == 'tensorflow':
         save_list_var = tf_variables_to_numpy(save_list)
-    elif tl.BACKEND == 'mindspore':
+    elif tlx.BACKEND == 'mindspore':
         save_list_var = ms_variables_to_numpy(save_list)
-    elif tl.BACKEND == 'paddle':
+    elif tlx.BACKEND == 'paddle':
         save_list_var = pd_variables_to_numpy(save_list)
-    elif tl.BACKEND == 'torch':
+    elif tlx.BACKEND == 'torch':
         save_list_names = []
         save_list_var = []
         for named, values in save_list:
@@ -2168,7 +2168,7 @@ def save_npz_dict(save_list=None, name='model.npz'):
 
 
 def load_and_assign_npz_dict(name='model.npz', network=None, skip=False):
-    """Restore the parameters saved by ``tl.files.save_npz_dict()``.
+    """Restore the parameters saved by ``tlx.files.save_npz_dict()``.
 
     Parameters
     -------------
@@ -2189,7 +2189,7 @@ def load_and_assign_npz_dict(name='model.npz', network=None, skip=False):
     if len(weights.keys()) != len(set(weights.keys())):
         raise Exception("Duplication in model npz_dict %s" % name)
 
-    if tl.BACKEND == 'torch':
+    if tlx.BACKEND == 'torch':
         net_weights_name = [n for n, v in network.named_parameters()]
         torch_weights_dict = {n: v for n, v in network.named_parameters()}
     else:
@@ -2205,14 +2205,14 @@ def load_and_assign_npz_dict(name='model.npz', network=None, skip=False):
                     "if you want to skip redundant or mismatch weights." % key
                 )
         else:
-            if tl.BACKEND == 'tensorflow':
+            if tlx.BACKEND == 'tensorflow':
                 assign_tf_variable(network.all_weights[net_weights_name.index(key)], weights[key])
-            elif tl.BACKEND == 'mindspore':
+            elif tlx.BACKEND == 'mindspore':
                 assign_param = Tensor(weights[key], dtype=ms.float32)
                 assign_ms_variable(network.all_weights[net_weights_name.index(key)], assign_param)
-            elif tl.BACKEND == 'paddle':
+            elif tlx.BACKEND == 'paddle':
                 assign_pd_variable(network.all_weights[net_weights_name.index(key)], weights[key])
-            elif tl.BACKEND == 'torch':
+            elif tlx.BACKEND == 'torch':
                 assign_th_variable(torch_weights_dict[key], weights[key])
             else:
                 raise NotImplementedError('Not implemented')
@@ -2295,19 +2295,19 @@ def load_ckpt(sess=None, mode_name='model.ckpt', save_dir='checkpoint', var_list
     ----------
     - Save all global parameters.
 
-    >>> tl.files.save_ckpt(sess=sess, mode_name='model.ckpt', save_dir='model', printable=True)
+    >>> tlx.files.save_ckpt(sess=sess, mode_name='model.ckpt', save_dir='model', printable=True)
 
     - Save specific parameters.
 
-    >>> tl.files.save_ckpt(sess=sess, mode_name='model.ckpt', var_list=net.all_params, save_dir='model', printable=True)
+    >>> tlx.files.save_ckpt(sess=sess, mode_name='model.ckpt', var_list=net.all_params, save_dir='model', printable=True)
 
     - Load latest ckpt.
 
-    >>> tl.files.load_ckpt(sess=sess, var_list=net.all_params, save_dir='model', printable=True)
+    >>> tlx.files.load_ckpt(sess=sess, var_list=net.all_params, save_dir='model', printable=True)
 
     - Load specific ckpt.
 
-    >>> tl.files.load_ckpt(sess=sess, mode_name='model.ckpt', var_list=net.all_params, save_dir='model', is_latest=False, printable=True)
+    >>> tlx.files.load_ckpt(sess=sess, mode_name='model.ckpt', var_list=net.all_params, save_dir='model', is_latest=False, printable=True)
 
     """
     # if sess is None:
@@ -2364,8 +2364,8 @@ def save_any_to_npy(save_dict=None, name='file.npy'):
 
     Examples
     ---------
-    >>> tl.files.save_any_to_npy(save_dict={'data': ['a','b']}, name='test.npy')
-    >>> data = tl.files.load_npy_to_any(name='test.npy')
+    >>> tlx.files.save_any_to_npy(save_dict={'data': ['a','b']}, name='test.npy')
+    >>> data = tlx.files.load_npy_to_any(name='test.npy')
     >>> print(data)
     {'data': ['a','b']}
 
@@ -2387,7 +2387,7 @@ def load_npy_to_any(path='', name='file.npy'):
 
     Examples
     ---------
-    - see tl.files.save_any_to_npy()
+    - see tlx.files.save_any_to_npy()
 
     """
     file_path = os.path.join(path, name)
@@ -2423,7 +2423,7 @@ def read_file(filepath):
 
     Examples
     ---------
-    >>> data = tl.files.read_file('data.txt')
+    >>> data = tlx.files.read_file('data.txt')
 
     """
     with open(filepath, 'r') as afile:
@@ -2446,7 +2446,7 @@ def load_file_list(path=None, regx='\.jpg', printable=True, keep_prefix=False):
 
     Examples
     ----------
-    >>> file_list = tl.files.load_file_list(path=None, regx='w1pre_[0-9]+\.(npz)')
+    >>> file_list = tlx.files.load_file_list(path=None, regx='w1pre_[0-9]+\.(npz)')
 
     """
     if path is None:
@@ -2497,7 +2497,7 @@ def exists_or_mkdir(path, verbose=True):
 
     Examples
     --------
-    >>> tl.files.exists_or_mkdir("checkpoints/train")
+    >>> tlx.files.exists_or_mkdir("checkpoints/train")
 
     """
     if not os.path.exists(path):
@@ -2535,10 +2535,10 @@ def maybe_download_and_extract(filename, working_directory, url_source, extract=
 
     Examples
     --------
-    >>> down_file = tl.files.maybe_download_and_extract(filename='train-images-idx3-ubyte.gz',
+    >>> down_file = tlx.files.maybe_download_and_extract(filename='train-images-idx3-ubyte.gz',
     ...                                            working_directory='data/',
     ...                                            url_source='http://yann.lecun.com/exdb/mnist/')
-    >>> tl.files.maybe_download_and_extract(filename='ADEChallengeData2016.zip',
+    >>> tlx.files.maybe_download_and_extract(filename='ADEChallengeData2016.zip',
     ...                                             working_directory='data/',
     ...                                             url_source='http://sceneparsing.csail.mit.edu/data/',
     ...                                             extract=True)
@@ -2596,7 +2596,7 @@ def natural_keys(text):
     Examples
     ----------
     >>> l = ['im1.jpg', 'im31.jpg', 'im11.jpg', 'im21.jpg', 'im03.jpg', 'im05.jpg']
-    >>> l.sort(key=tl.files.natural_keys)
+    >>> l.sort(key=tlx.files.natural_keys)
     ['im1.jpg', 'im03.jpg', 'im05', 'im11.jpg', 'im21.jpg', 'im31.jpg']
     >>> l.sort() # that is what we dont want
     ['im03.jpg', 'im05', 'im1.jpg', 'im11.jpg', 'im21.jpg', 'im31.jpg']
@@ -2618,7 +2618,7 @@ def natural_keys(text):
 
 # Visualizing npz files
 def npz_to_W_pdf(path=None, regx='w1pre_[0-9]+\.(npz)'):
-    r"""Convert the first weight matrix of `.npz` file to `.pdf` by using `tl.visualize.W()`.
+    r"""Convert the first weight matrix of `.npz` file to `.pdf` by using `tlx.visualize.W()`.
 
     Parameters
     ----------
@@ -2631,7 +2631,7 @@ def npz_to_W_pdf(path=None, regx='w1pre_[0-9]+\.(npz)'):
     ---------
     Convert the first weight matrix of w1_pre...npz file to w1_pre...pdf.
 
-    >>> tl.files.npz_to_W_pdf(path='/Users/.../npz_file/', regx='w1pre_[0-9]+\.(npz)')
+    >>> tlx.files.npz_to_W_pdf(path='/Users/.../npz_file/', regx='w1pre_[0-9]+\.(npz)')
 
     """
     file_list = load_file_list(path=path, regx=regx)
@@ -2727,13 +2727,13 @@ def _save_weights_to_hdf5_group(f, layers):
 
     for layer in layers:
         g = f.create_group(layer.name)
-        if isinstance(layer, tl.model.Model):
+        if isinstance(layer, tlx.model.Model):
             _save_weights_to_hdf5_group(g, layer.all_layers)
-        elif isinstance(layer, tensorlayerx.nn.layers.ModelLayer):
+        elif isinstance(layer, tlx.nn.ModelLayer):
             _save_weights_to_hdf5_group(g, layer.model.all_layers)
-        elif isinstance(layer, tensorlayerx.nn.layers.LayerList):
+        elif isinstance(layer, tlx.nn.LayerList):
             _save_weights_to_hdf5_group(g, layer.layers)
-        elif isinstance(layer, tensorlayerx.nn.layers.Layer):
+        elif isinstance(layer, tlx.nn.Layer):
             if layer.all_weights is not None:
                 weight_values = tf_variables_to_numpy(layer.all_weights)
                 weight_names = [w.name.encode('utf8') for w in layer.all_weights]
@@ -2769,13 +2769,13 @@ def _load_weights_from_hdf5_group_in_order(f, layers):
     for idx, name in enumerate(layer_names):
         g = f[name]
         layer = layers[idx]
-        if isinstance(layer, tl.model.Model):
+        if isinstance(layer, tlx.model.Model):
             _load_weights_from_hdf5_group_in_order(g, layer.all_layers)
-        elif isinstance(layer, tensorlayerx.nn.layers.ModelLayer):
+        elif isinstance(layer, tlx.nn.ModelLayer):
             _load_weights_from_hdf5_group_in_order(g, layer.model.all_layers)
-        elif isinstance(layer, tensorlayerx.nn.layers.LayerList):
+        elif isinstance(layer, tlx.nn.layers.LayerList):
             _load_weights_from_hdf5_group_in_order(g, layer.layers)
-        elif isinstance(layer, tensorlayerx.nn.layers.Layer):
+        elif isinstance(layer, tlx.nn.Layer):
             weight_names = [n.decode('utf8') for n in g.attrs['weight_names']]
             for iid, w_name in enumerate(weight_names):
                 assign_tf_variable(layer.all_weights[iid], np.asarray(g[w_name]))
@@ -2815,17 +2815,17 @@ def _load_weights_from_hdf5_group(f, layers, skip=False):
         else:
             g = f[name]
             layer = layer_index[name]
-            if isinstance(layer, tl.model.Model):
+            if isinstance(layer, tlx.model.Model):
                 _load_weights_from_hdf5_group(g, layer.all_layers, skip)
-            elif isinstance(layer, tensorlayerx.nn.layers.ModelLayer):
+            elif isinstance(layer, tlx.nn.ModelLayer):
                 _load_weights_from_hdf5_group(g, layer.model.all_layers, skip)
-            elif isinstance(layer, tensorlayerx.nn.layers.LayerList):
+            elif isinstance(layer, tlx.nn.LayerList):
                 _load_weights_from_hdf5_group(g, layer.layers, skip)
-            elif isinstance(layer, tensorlayerx.nn.layers.Layer):
+            elif isinstance(layer, tlx.nn.Layer):
                 weight_names = [n.decode('utf8') for n in g.attrs['weight_names']]
                 for iid, w_name in enumerate(weight_names):
                     # FIXME : this is only for compatibility
-                    if isinstance(layer, tensorlayerx.nn.layers.BatchNorm) and np.asarray(g[w_name]).ndim > 1:
+                    if isinstance(layer, tlx.nn.BatchNorm) and np.asarray(g[w_name]).ndim > 1:
                         assign_tf_variable(layer.all_weights[iid], np.asarray(g[w_name]).squeeze())
                         continue
                     assign_tf_variable(layer.all_weights[iid], np.asarray(g[w_name]))

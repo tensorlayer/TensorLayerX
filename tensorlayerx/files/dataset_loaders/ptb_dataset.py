@@ -32,7 +32,7 @@ def load_ptb_dataset(path='data'):
 
     Examples
     --------
-    >>> train_data, valid_data, test_data, vocab_size = tl.files.load_ptb_dataset()
+    >>> train_data, valid_data, test_data, vocab_size = tlx.files.load_ptb_dataset()
 
     References
     ---------------

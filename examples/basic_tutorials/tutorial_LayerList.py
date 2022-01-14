@@ -7,11 +7,11 @@ import os
 os.environ['TL_BACKEND'] = 'paddle'
 
 from tensorlayerx.nn import Module, LayerList, Dense
-import tensorlayerx as tl
+import tensorlayerx as tlx
 
-d1 = Dense(n_units=800, act=tl.ReLU, in_channels=784, name='Dense1')
-d2 = Dense(n_units=800, act=tl.ReLU, in_channels=800, name='Dense2')
-d3 = Dense(n_units=10, act=tl.ReLU, in_channels=800, name='Dense3')
+d1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='Dense1')
+d2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800, name='Dense2')
+d3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800, name='Dense3')
 
 layer_list = LayerList([d1, d2])
 # Inserts a given d2 before a given index in the list
@@ -41,4 +41,4 @@ class model(Module):
 net = model()
 print(net.trainable_weights)
 print(net)
-print(net(tl.nn.Input((10, 784))))
+print(net(tlx.nn.Input((10, 784))))

@@ -38,11 +38,11 @@ def load_flickr25k_dataset(tag='sky', path="data", n_threads=50, printable=False
     -----------
     Get images with tag of sky
 
-    >>> images = tl.files.load_flickr25k_dataset(tag='sky')
+    >>> images = tlx.files.load_flickr25k_dataset(tag='sky')
 
     Get all images
 
-    >>> images = tl.files.load_flickr25k_dataset(tag=None, n_threads=100, printable=True)
+    >>> images = tlx.files.load_flickr25k_dataset(tag=None, n_threads=100, printable=True)
 
     """
     path = os.path.join(path, 'flickr25k')

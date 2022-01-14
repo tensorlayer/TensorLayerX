@@ -10,14 +10,14 @@ import multiprocessing
 import tensorflow as tf
 
 from tensorlayerx.nn import Module
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
 
 # enable debug logging
-tl.logging.set_verbosity(tl.logging.DEBUG)
+tlx.logging.set_verbosity(tlx.logging.DEBUG)
 
 # prepare cifar10 data
-X_train, y_train, X_test, y_test = tl.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
+X_train, y_train, X_test, y_test = tlx.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
 
 
 class CNN(Module):
@@ -25,22 +25,22 @@ class CNN(Module):
     def __init__(self):
         super(CNN, self).__init__()
         # weights init
-        W_init = tl.nn.initializers.truncated_normal(stddev=5e-2)
-        W_init2 = tl.nn.initializers.truncated_normal(stddev=0.04)
-        b_init2 = tl.nn.initializers.constant(value=0.1)
+        W_init = tlx.nn.initializers.truncated_normal(stddev=5e-2)
+        W_init2 = tlx.nn.initializers.truncated_normal(stddev=0.04)
+        b_init2 = tlx.nn.initializers.constant(value=0.1)
 
         self.conv1 = Conv2d(64, (5, 5), (1, 1), padding='SAME', W_init=W_init, b_init=None, name='conv1', in_channels=3)
-        self.bn = BatchNorm2d(num_features=64, act=tl.ReLU)
+        self.bn = BatchNorm2d(num_features=64, act=tlx.ReLU)
         self.maxpool1 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool1')
 
         self.conv2 = Conv2d(
-            64, (5, 5), (1, 1), padding='SAME', act=tl.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
+            64, (5, 5), (1, 1), padding='SAME', act=tlx.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
         )
         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 
         self.flatten = Flatten(name='flatten')
-        self.dense1 = Dense(384, act=tl.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_channels=2304)
-        self.dense2 = Dense(192, act=tl.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_channels=384)
+        self.dense1 = Dense(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_channels=2304)
+        self.dense2 = Dense(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_channels=384)
         self.dense3 = Dense(10, act=None, W_init=W_init2, name='output', in_channels=192)
 
     def forward(self, x):
@@ -69,7 +69,7 @@ n_step = n_epoch * n_step_epoch
 shuffle_buffer_size = 128
 
 train_weights = net.trainable_weights
-optimizer = tl.optimizers.Adam(learning_rate)
+optimizer = tlx.optimizers.Adam(learning_rate)
 # looking for decay learning rate? see https://github.com/tensorlayer/srgan/blob/master/train.py
 
 
@@ -150,7 +150,7 @@ for epoch in range(n_epoch):
             # compute outputs
             _logits = net(X_batch)
             # compute loss and update model
-            _loss_ce = tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='train_loss')
+            _loss_ce = tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='train_loss')
 
         grad = tape.gradient(_loss_ce, train_weights)
         optimizer.apply_gradients(zip(grad, train_weights))
@@ -170,7 +170,7 @@ for epoch in range(n_epoch):
         val_loss, val_acc, n_iter = 0, 0, 0
         for X_batch, y_batch in test_ds:
             _logits = net(X_batch)  # is_train=False, disable dropout
-            val_loss += tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
+            val_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
             val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
             n_iter += 1
         print("   val loss: {}".format(val_loss / n_iter))
@@ -181,7 +181,7 @@ net.set_eval()
 test_loss, test_acc, n_iter = 0, 0, 0
 for X_batch, y_batch in test_ds:
     _logits = net(X_batch)
-    test_loss += tl.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='test_loss')
+    test_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='test_loss')
     test_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
     n_iter += 1
 print("   test loss: {}".format(test_loss / n_iter))
