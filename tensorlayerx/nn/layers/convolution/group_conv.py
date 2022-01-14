@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -44,8 +44,8 @@ class GroupConv2d(Module):
       ---------
       With TensorLayer
 
-      >>> net = tl.layers.Input([8, 24, 24, 32], name='input')
-      >>> groupconv2d = tl.layers.GroupConv2d(
+      >>> net = tlx.nn.Input([8, 24, 24, 32], name='input')
+      >>> groupconv2d = tlx.nn.GroupConv2d(
       ...     n_filter=64, filter_size=(3, 3), strides=(2, 2), n_group=2, name='group'
       ... )(net)
       >>> print(groupconv2d)
@@ -140,10 +140,10 @@ class GroupConv2d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
-        self.group_conv2d = tl.ops.GroupConv2D(
+        self.group_conv2d = tlx.ops.GroupConv2D(
             strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
             out_channel=self.n_filter, k_size=(self.filter_size[0], self.filter_size[1]), groups=self.n_group
         )
@@ -155,7 +155,7 @@ class GroupConv2d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

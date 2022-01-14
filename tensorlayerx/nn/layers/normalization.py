@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -62,8 +62,8 @@ class BatchNorm(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 50, 50, 32], name='input')
-    >>> net = tl.layers.BatchNorm()(net)
+    >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
+    >>> net = tlx.nn.BatchNorm()(net)
 
     Notes
     -----
@@ -170,7 +170,7 @@ class BatchNorm(Module):
             var_name="moving_var", shape=params_shape, init=self.moving_var_init, trainable=False
         )
 
-        self.batchnorm = tl.ops.BatchNorm(
+        self.batchnorm = tlx.ops.BatchNorm(
             decay=self.decay, epsilon=self.epsilon, beta=self.beta, gamma=self.gamma, moving_mean=self.moving_mean,
             moving_var=self.moving_var, num_features=self.num_features, data_format=self.data_format,
             is_train=self.is_train
@@ -184,12 +184,12 @@ class BatchNorm(Module):
         self._check_input_shape(inputs)
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
         if not self.is_train:
-            self.batchnorm = tl.ops.BatchNorm(
+            self.batchnorm = tlx.ops.BatchNorm(
                 decay=self.decay, epsilon=self.epsilon, beta=self.beta, gamma=self.gamma, moving_mean=self.moving_mean,
                 moving_var=self.moving_var, num_features=self.num_features, data_format=self.data_format, is_train=False
             )
@@ -209,11 +209,11 @@ class BatchNorm1d(BatchNorm):
     With TensorLayer
 
     >>> # in static model, no need to specify num_features
-    >>> net = tl.layers.Input([10, 50, 32], name='input')
-    >>> net = tl.layers.BatchNorm1d()(net)
+    >>> net = tlx.nn.Input([10, 50, 32], name='input')
+    >>> net = tlx.nn.BatchNorm1d()(net)
     >>> # in dynamic model, build by specifying num_features
-    >>> conv = tl.layers.Conv1d(32, 5, 1, in_channels=3)
-    >>> bn = tl.layers.BatchNorm1d(num_features=32)
+    >>> conv = tlx.nn.Conv1d(32, 5, 1, in_channels=3)
+    >>> bn = tlx.nn.BatchNorm1d(num_features=32)
 
     """
 
@@ -232,11 +232,11 @@ class BatchNorm2d(BatchNorm):
     With TensorLayer
 
     >>> # in static model, no need to specify num_features
-    >>> net = tl.layers.Input([10, 50, 50, 32], name='input')
-    >>> net = tl.layers.BatchNorm2d()(net)
+    >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
+    >>> net = tlx.nn.BatchNorm2d()(net)
     >>> # in dynamic model, build by specifying num_features
-    >>> conv = tl.layers.Conv2d(32, (5, 5), (1, 1), in_channels=3)
-    >>> bn = tl.layers.BatchNorm2d(num_features=32)
+    >>> conv = tlx.nn.Conv2d(32, (5, 5), (1, 1), in_channels=3)
+    >>> bn = tlx.nn.BatchNorm2d(num_features=32)
 
     """
 
@@ -255,11 +255,11 @@ class BatchNorm3d(BatchNorm):
     With TensorLayer
 
     >>> # in static model, no need to specify num_features
-    >>> net = tl.layers.Input([10, 50, 50, 50, 32], name='input')
-    >>> net = tl.layers.BatchNorm3d()(net)
+    >>> net = tlx.nn.Input([10, 50, 50, 50, 32], name='input')
+    >>> net = tlx.nn.BatchNorm3d()(net)
     >>> # in dynamic model, build by specifying num_features
-    >>> conv = tl.layers.Conv3d(32, (5, 5, 5), (1, 1), in_channels=3)
-    >>> bn = tl.layers.BatchNorm3d(num_features=32)
+    >>> conv = tlx.nn.Conv3d(32, (5, 5, 5), (1, 1), in_channels=3)
+    >>> bn = tlx.nn.BatchNorm3d(num_features=32)
 
     """
 
@@ -292,8 +292,8 @@ class LayerNorm(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 50, 50, 32], name='input')
-    >>> net = tl.layers.LayerNorm()(net)
+    >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
+    >>> net = tlx.nn.LayerNorm()(net)
 
 
     References
@@ -342,7 +342,7 @@ class LayerNorm(Module):
             )
         if self.beta_init is not None:
             self.beta = self._get_weights(var_name='beta', shape=self.normalized_shape, init=self.beta_init, order=True)
-        self.layernorm = tl.ops.layernorm(self.normalized_shape, self.gamma, self.beta, self.epsilon, input_shape)
+        self.layernorm = tlx.ops.layernorm(self.normalized_shape, self.gamma, self.beta, self.epsilon, input_shape)
         self.act_init_flag = False
         if self.act:
             self.act_init_flag = True
@@ -350,7 +350,7 @@ class LayerNorm(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -47,9 +47,9 @@ class TernaryConv2d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 12, 12, 32], name='input')
-    >>> ternaryconv2d = tl.layers.TernaryConv2d(
-    ...     n_filter=64, filter_size=(5, 5), strides=(1, 1), act=tl.ReLU, padding='SAME', name='ternaryconv2d'
+    >>> net = tlx.nn.Input([8, 12, 12, 32], name='input')
+    >>> ternaryconv2d = tlx.nn.TernaryConv2d(
+    ...     n_filter=64, filter_size=(5, 5), strides=(1, 1), act=tlx.ReLU, padding='SAME', name='ternaryconv2d'
     ... )(net)
     >>> print(ternaryconv2d)
     >>> output shape : (8, 12, 12, 64)
@@ -137,9 +137,9 @@ class TernaryConv2d(Module):
         self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(data_format=self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(data_format=self.data_format)
 
-        self.ternary_conv = tl.ops.TernaryConv(
+        self.ternary_conv = tlx.ops.TernaryConv(
             weights=self.W, strides=self._strides, padding=self.padding, data_format=self.data_format,
             dilations=self._dilation_rate
         )
@@ -147,7 +147,7 @@ class TernaryConv2d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

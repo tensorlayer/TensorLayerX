@@ -5,7 +5,7 @@ from .common import str2act, str2init
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from collections import OrderedDict
 import time
-import tensorlayerx as tl
+import tensorlayerx as tlx
 import tensorflow as tf
 from tensorlayerx.nn.layers.utils import (get_variable_with_initializer, random_normal)
 
@@ -254,8 +254,8 @@ class Module(object):
         TODO It is not possible to modify the parameter state after initialization, and a better way needs to be found.
         Examples
         --------
-        >>> import tensorlayerx as tl
-        >>> net = tl.vgg16()
+        >>> import tensorlayerx as tlx
+        >>> net = tlx.vgg16()
         >>> net.set_train()
 
         """
@@ -270,8 +270,8 @@ class Module(object):
         TODO It is not possible to modify the parameter state after initialization, and a better way needs to be found.
         Examples
         --------
-        >>> import tensorlayerx as tl
-        >>> net = tl.vgg16()
+        >>> import tensorlayerx as tlx
+        >>> net = tlx.vgg16()
         >>> net.set_eval()
         # do evaluation
 
@@ -284,9 +284,9 @@ class Module(object):
     @staticmethod
     def _compute_shape(tensors):
         if isinstance(tensors, list):
-            shape_mem = [tl.get_tensor_shape(t) for t in tensors]
+            shape_mem = [tlx.get_tensor_shape(t) for t in tensors]
         else:
-            shape_mem = tl.get_tensor_shape(tensors)
+            shape_mem = tlx.get_tensor_shape(tensors)
         return shape_mem
 
     def insert_param_to_layer(self, param_name, param, check_name=True):
@@ -623,10 +623,10 @@ class SequentialLayer(Module):
 
     Examples
     ---------
-    >>> conv = tl.layers.Conv2d(3, 2, 3, pad_mode='valid')
-    >>> bn = tl.layers.BatchNorm2d(2)
-    >>> seq = tl.nn.SequentialLayer([conv, bn])
-    >>> x = tl.layers.Input((1, 3, 4, 4))
+    >>> conv = tlx.layers.Conv2d(3, 2, 3, pad_mode='valid')
+    >>> bn = tlx.layers.BatchNorm2d(2)
+    >>> seq = tlx.nn.SequentialLayer([conv, bn])
+    >>> x = tlx.layers.Input((1, 3, 4, 4))
     >>> seq(x)
     """
 
@@ -718,10 +718,10 @@ class LayerList(Module):
     Examples
     ---------
     >>> from tensorlayerx.nn import Module, LayerList, Dense
-    >>> import tensorlayerx as tl
-    >>> d1 = Dense(n_units=800, act=tl.ReLU, in_channels=784, name='Dense1')
-    >>> d2 = Dense(n_units=800, act=tl.ReLU, in_channels=800, name='Dense2')
-    >>> d3 = Dense(n_units=10, act=tl.ReLU, in_channels=800, name='Dense3')
+    >>> import tensorlayerx as tlx
+    >>> d1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='Dense1')
+    >>> d2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800, name='Dense2')
+    >>> d3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800, name='Dense3')
     >>> layer_list = LayerList([d1, d2])
     >>> # Inserts a given d2 before a given index in the list
     >>> layer_list.insert(1, d2)

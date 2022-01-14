@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -38,10 +38,10 @@ class QuanDense(Module):
 
     Examples
     --------
-    >>> net = tl.layers.Input([10, 784], name='input')
-    >>> net = tl.layers.QuanDense(n_units=800, act=tl.ReLU, name='relu1')(net)
+    >>> net = tlx.nn.Input([10, 784], name='input')
+    >>> net = tlx.nn.QuanDense(n_units=800, act=tlx.ReLU, name='relu1')(net)
     >>> output shape :(10, 800)
-    >>> net = tl.layers.QuanDense(n_units=10, name='output')(net)
+    >>> net = tlx.nn.QuanDense(n_units=10, name='output')(net)
     >>> output shape :(10, 10)
 
     """
@@ -102,14 +102,14 @@ class QuanDense(Module):
         self.b = None
         if self.b_init is not None:
             self.b = self._get_weights("biases", shape=int(self.n_units), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd()
+            self.bias_add = tlx.ops.BiasAdd()
 
-        self.quan_dense = tl.ops.QuanDense(self.W, self.b, self.bitW, self.bitA)
+        self.quan_dense = tlx.ops.QuanDense(self.W, self.b, self.bitW, self.bitA)
 
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
         outputs = self.quan_dense(inputs)

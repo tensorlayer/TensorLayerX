@@ -35,8 +35,9 @@ class Lambda(Module):
     Non-parametric and non-args case:
     This case is supported in the Model.save() / Model.load() to save / load the whole model architecture and weights(optional).
 
-    >>> x = tl.layers.Input([8, 3], name='input')
-    >>> y = tl.layers.Lambda(lambda x: 2*x, name='lambda')(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.nn.Input([8, 3], name='input')
+    >>> y = tlx.nn.Lambda(lambda x: 2*x, name='lambda')(x)
 
 
     Non-parametric and with args case:
@@ -44,8 +45,8 @@ class Lambda(Module):
 
     >>> def customize_func(x, foo=42): # x is the inputs, foo is an argument
     >>>     return foo * x
-    >>> x = tl.layers.Input([8, 3], name='input')
-    >>> lambdalayer = tl.layers.Lambda(customize_func, fn_args={'foo': 2}, name='lambda')(x)
+    >>> x = tlx.nn.Input([8, 3], name='input')
+    >>> lambdalayer = tlx.nn.Lambda(customize_func, fn_args={'foo': 2}, name='lambda')(x)
 
 
     Any function with outside variables:
@@ -53,44 +54,44 @@ class Lambda(Module):
     Please avoid using Model.save() / Model.load() to save / load model that contain such Lambda layer. Instead, you may use Model.save_weights() / Model.load_weights() to save / load model weights.
     Note: In this case, fn_weights should be a list, and then the trainable weights in this Lambda layer can be added into the weights of the whole model.
 
-    >>> a = tl.ops.Variable(1.0)
+    >>> a = tlx.ops.Variable(1.0)
     >>> def func(x):
     >>>     return x + a
-    >>> x = tl.layers.Input([8, 3], name='input')
-    >>> y = tl.layers.Lambda(func, fn_weights=[a], name='lambda')(x)
+    >>> x = tlx.nn.Input([8, 3], name='input')
+    >>> y = tlx.nn.Lambda(func, fn_weights=[a], name='lambda')(x)
 
 
     Parametric case, merge other wrappers into TensorLayer:
     This case is supported in the Model.save() / Model.load() to save / load the whole model architecture and weights(optional).
 
     >>> layers = [
-    >>>     tl.layers.Dense(10, act=tl.Relu),
-    >>>     tl.layers.Dense(5, act=tl.Relu),
-    >>>     tl.layers.Dense(1, activation=tf.identity)
+    >>>     tlx.nn.Dense(10, act=tlx.Relu),
+    >>>     tlx.nn.Dense(5, act=tlx.Relu),
+    >>>     tlx.nn.Dense(1, activation=tf.identity)
     >>> ]
-    >>> perceptron = tl.layers.SequentialLayer(layers)
+    >>> perceptron = tlx.nn.SequentialLayer(layers)
     >>> # in order to compile keras model and get trainable_variables of the keras model
     >>> _ = perceptron(np.random.random([100, 5]).astype(np.float32))
     >>>
-    >>> class CustomizeModel(tl.layers.Module):
+    >>> class CustomizeModel(tlx.nn.Module):
     >>>     def __init__(self):
     >>>         super(CustomizeModel, self).__init__()
-    >>>         self.dense = tl.layers.Dense(in_channels=1, n_units=5)
-    >>>         self.lambdalayer = tl.layers.Lambda(perceptron, perceptron.trainable_variables)
+    >>>         self.dense = tlx.nn.Dense(in_channels=1, n_units=5)
+    >>>         self.lambdalayer = tlx.nn.Lambda(perceptron, perceptron.trainable_variables)
     >>>
     >>>     def forward(self, x):
     >>>         z = self.dense(x)
     >>>         z = self.lambdalayer(z)
     >>>         return z
     >>>
-    >>> optimizer = tl.optimizers.Adam(learning_rate=0.1)
+    >>> optimizer = tlx.optimizers.Adam(learning_rate=0.1)
     >>> model = CustomizeModel()
     >>> model.set_train()
     >>>
     >>> for epoch in range(50):
     >>>     with tf.GradientTape() as tape:
     >>>         pred_y = model(data_x)
-    >>>         loss = tl.losses.mean_squared_error(pred_y, data_y)
+    >>>         loss = tlx.losses.mean_squared_error(pred_y, data_y)
     >>>
     >>>     gradients = tape.gradient(loss, model.trainable_weights)
     >>>     optimizer.apply_gradients(zip(gradients, model.trainable_weights))
@@ -186,19 +187,19 @@ class ElementwiseLambda(Module):
 
     >>> def func(noise, mean, std, foo=42):
     >>>     return mean + noise * tf.exp(std * 0.5) + foo
-    >>> noise = tl.layers.Input([100, 1])
-    >>> mean = tl.layers.Input([100, 1])
-    >>> std = tl.layers.Input([100, 1])
-    >>> out = tl.layers.ElementwiseLambda(fn=func, fn_args={'foo': 84}, name='elementwiselambda')([noise, mean, std])
+    >>> noise = tlx.nn.Input([100, 1])
+    >>> mean = tlx.nn.Input([100, 1])
+    >>> std = tlx.nn.Input([100, 1])
+    >>> out = tlx.nn.ElementwiseLambda(fn=func, fn_args={'foo': 84}, name='elementwiselambda')([noise, mean, std])
 
 
     Non-parametric and non-args case
     This case is supported in the Model.save() / Model.load() to save / load the whole model architecture and weights(optional).
 
-    >>> noise = tl.layers.Input([100, 1])
-    >>> mean = tl.layers.Input([100, 1])
-    >>> std = tl.layers.Input([100, 1])
-    >>> out = tl.layers.ElementwiseLambda(fn=lambda x, y, z: x + y * tf.exp(z * 0.5), name='elementwiselambda')([noise, mean, std])
+    >>> noise = tlx.nn.Input([100, 1])
+    >>> mean = tlx.nn.Input([100, 1])
+    >>> std = tlx.nn.Input([100, 1])
+    >>> out = tlx.nn.ElementwiseLambda(fn=lambda x, y, z: x + y * tf.exp(z * 0.5), name='elementwiselambda')([noise, mean, std])
 
 
     Any function with outside variables
@@ -209,10 +210,10 @@ class ElementwiseLambda(Module):
     >>> vara = [tf.Variable(1.0)]
     >>> def func(noise, mean, std):
     >>>     return mean + noise * tf.exp(std * 0.5) + vara
-    >>> noise = tl.layers.Input([100, 1])
-    >>> mean = tl.layers.Input([100, 1])
-    >>> std = tl.layers.Input([100, 1])
-    >>> out = tl.layers.ElementwiseLambda(fn=func, fn_weights=vara, name='elementwiselambda')([noise, mean, std])
+    >>> noise = tlx.nn.Input([100, 1])
+    >>> mean = tlx.nn.Input([100, 1])
+    >>> std = tlx.nn.Input([100, 1])
+    >>> out = tlx.nn.ElementwiseLambda(fn=func, fn_weights=vara, name='elementwiselambda')([noise, mean, std])
 
     """
 

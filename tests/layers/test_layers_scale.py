@@ -7,7 +7,7 @@ import unittest
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 from tests.utils import CustomTestCase
-
+import tensorlayerx
 
 class Layer_Scale_Test(CustomTestCase):
 
@@ -21,7 +21,7 @@ class Layer_Scale_Test(CustomTestCase):
 
     def test_scale(self):
 
-        class model(tensorlayerx.layers.Module):
+        class model(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(model, self).__init__()

@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 from ..initializers import *
@@ -54,7 +54,7 @@ class _InputLayer(Module):
         return self.outputs
 
 
-def Input(shape, init=ones(), dtype=tl.float32, name=None):
+def Input(shape, init=ones(), dtype=tlx.float32, name=None):
     """
     The :class:`Input` class is the starting layer of a neural network.
 
@@ -73,13 +73,13 @@ def Input(shape, init=ones(), dtype=tl.float32, name=None):
     ---------
     With TensorLayer
 
-    >>> ni = tl.layers.Input([10, 50, 50, 32], name='input')
+    >>> ni = tlx.nn.Input([10, 50, 50, 32], name='input')
     >>> output shape : [10, 50, 50, 32]
 
     """
 
-    if tl.BACKEND == 'paddle':
-        return tl.ops.ones(shape, dtype)
+    if tlx.BACKEND == 'paddle':
+        return tlx.ops.ones(shape, dtype)
     input_layer = _InputLayer(shape, dtype=dtype, name=name, init=init)
     outputs = input_layer()
     return outputs

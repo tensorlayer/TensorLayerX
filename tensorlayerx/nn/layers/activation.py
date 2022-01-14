@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from tensorlayerx import logging
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.nn.core import Module
 
 __all__ = [
@@ -31,8 +31,8 @@ class PRelu(Module):
 
     Examples
     -----------
-    >>> inputs = tl.layers.Input([10, 5])
-    >>> prelulayer = tl.layers.PRelu(channel_shared=True, in_channels=5)(inputs)
+    >>> inputs = tlx.nn.Input([10, 5])
+    >>> prelulayer = tlx.nn.PRelu(channel_shared=True, in_channels=5)(inputs)
 
     References
     -----------
@@ -85,13 +85,13 @@ class PRelu(Module):
             else:
                 raise Exception("Dim should be equal to 1, 2 or 3")
         self.alpha_var = self._get_weights("alpha", shape=w_shape, init=self.a_init)
-        self.relu = tl.ops.ReLU()
-        self.sigmoid = tl.ops.Sigmoid()
+        self.relu = tlx.ops.ReLU()
+        self.sigmoid = tlx.ops.Sigmoid()
 
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
@@ -107,7 +107,7 @@ class PRelu6(Module):
 
     This Layer is a modified version of the :class:`PRelu`.
 
-    This activation layer use a modified version :func:`tl.act.leaky_relu` introduced by the following paper:
+    This activation layer use a modified version :func:`tlx.act.leaky_relu` introduced by the following paper:
     `Rectifier Nonlinearities Improve Neural Network Acoustic Models [A. L. Maas et al., 2013] <https://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf>`__
 
     This activation function also use a modified version of the activation function :func:`tf.nn.relu6` introduced by the following paper:
@@ -134,8 +134,8 @@ class PRelu6(Module):
 
     Examples
     -----------
-    >>> inputs = tl.layers.Input([10, 5])
-    >>> prelulayer = tl.layers.PRelu6(channel_shared=True, in_channels=5)(inputs)
+    >>> inputs = tlx.nn.Input([10, 5])
+    >>> prelulayer = tlx.nn.PRelu6(channel_shared=True, in_channels=5)(inputs)
 
     References
     -----------
@@ -194,14 +194,14 @@ class PRelu6(Module):
             else:
                 raise Exception("Dim should be equal to 1, 2 or 3")
         self.alpha_var = self._get_weights("alpha", shape=w_shape, init=self.a_init)
-        self.sigmoid = tl.ops.Sigmoid()
-        self.relu = tl.ops.ReLU()
+        self.sigmoid = tlx.ops.Sigmoid()
+        self.relu = tlx.ops.ReLU()
 
     # @tf.function
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
@@ -218,7 +218,7 @@ class PTRelu6(Module):
 
     This Layer is a modified version of the :class:`PRelu`.
 
-    This activation layer use a modified version :func:`tl.act.leaky_relu` introduced by the following paper:
+    This activation layer use a modified version :func:`tlx.act.leaky_relu` introduced by the following paper:
     `Rectifier Nonlinearities Improve Neural Network Acoustic Models [A. L. Maas et al., 2013] <https://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf>`__
 
     This activation function also use a modified version of the activation function :func:`tf.nn.relu6` introduced by the following paper:
@@ -247,8 +247,8 @@ class PTRelu6(Module):
 
     Examples
     -----------
-    >>> inputs = tl.layers.Input([10, 5])
-    >>> prelulayer = tl.layers.PTRelu6(channel_shared=True, in_channels=5)(inputs)
+    >>> inputs = tlx.nn.Input([10, 5])
+    >>> prelulayer = tlx.nn.PTRelu6(channel_shared=True, in_channels=5)(inputs)
 
     References
     -----------
@@ -307,8 +307,8 @@ class PTRelu6(Module):
 
         # Alpha for outputs lower than zeros
         self.alpha_low = self._get_weights("alpha_low", shape=w_shape, init=self.a_init)
-        self.sigmoid = tl.ops.Sigmoid()
-        self.relu = tl.ops.ReLU()
+        self.sigmoid = tlx.ops.Sigmoid()
+        self.relu = tlx.ops.ReLU()
         # Alpha for outputs higher than 6
         self.alpha_high = self._get_weights("alpha_high", shape=w_shape, init=self.a_init)
 
@@ -316,7 +316,7 @@ class PTRelu6(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
@@ -350,8 +350,8 @@ class Ramp(Module):
 
         Examples
         -----------
-        >>> inputs = tl.layers.Input([10, 5])
-        >>> prelulayer = tl.layers.Ramp()(inputs)
+        >>> inputs = tlx.nn.Input([10, 5])
+        >>> prelulayer = tlx.nn.Ramp()(inputs)
 
         """
 
@@ -362,7 +362,7 @@ class Ramp(Module):
         self.v_max = v_max
 
     def forward(self, x):
-        return tl.ops.clip_by_value(x, clip_value_min=self.v_min, clip_value_max=self.v_max)
+        return tlx.ops.clip_by_value(x, clip_value_min=self.v_min, clip_value_max=self.v_max)
 
 
 class ELU(Module):
@@ -383,8 +383,8 @@ class ELU(Module):
     
      Examples
     --------
-    >>> net = tl.layers.Input([10, 200])
-    >>> net = tl.layers.ELU(alpha=0.5)(net)
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.ELU(alpha=0.5)(net)
 
     Returns
     -------
@@ -396,7 +396,7 @@ class ELU(Module):
         super(ELU, self).__init__()
         self._built = True
         self.alpha = alpha
-        self._elu = tl.ops.ELU(alpha=alpha)
+        self._elu = tlx.ops.ELU(alpha=alpha)
 
     def forward(self, x):
         return self._elu(x)
@@ -413,8 +413,8 @@ class Softmax(Module):
 
     Examples
     --------
-    >>> net = tl.layers.Input([10, 200])
-    >>> net = tl.layers.Softmax()(net)
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.Softmax()(net)
 
     Returns
     -------
@@ -426,7 +426,7 @@ class Softmax(Module):
     def __init__(self):
         super(Softmax, self).__init__()
         self._built = True
-        self._softmax = tl.ops.Softmax()
+        self._softmax = tlx.ops.Softmax()
 
     def forward(self, x):
         return self._softmax(x)
@@ -443,8 +443,8 @@ class Sigmoid(Module):
 
     Examples
     --------
-    >>> net = tl.layers.Input([10, 200])
-    >>> net = tl.layers.Sigmoid()(net)
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.Sigmoid()(net)
 
     Returns
     -------
@@ -456,7 +456,7 @@ class Sigmoid(Module):
     def __init__(self):
         super(Sigmoid, self).__init__()
         self._built = True
-        self._sigmoid = tl.ops.Sigmoid()
+        self._sigmoid = tlx.ops.Sigmoid()
 
     def forward(self, x):
         return self._sigmoid(x)
@@ -472,8 +472,8 @@ class Tanh(Module):
 
     Examples
     --------
-    >>> net = tl.layers.Input([10, 200])
-    >>> net = tl.layers.Tanh()(net)
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.Tanh()(net)
 
     Returns
     -------
@@ -485,7 +485,7 @@ class Tanh(Module):
     def __init__(self):
         super(Tanh, self).__init__()
         self._built = True
-        self._tanh = tl.ops.Tanh()
+        self._tanh = tlx.ops.Tanh()
 
     def forward(self, x):
         return self._tanh(x)
@@ -504,8 +504,8 @@ class Softplus(Module):
 
     Examples
     --------
-    >>> net = tl.layers.Input([10, 200])
-    >>> net = tl.layers.Softplus()(net)
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.Softplus()(net)
 
     Returns
     -------
@@ -517,7 +517,7 @@ class Softplus(Module):
     def __init__(self):
         super(Softplus, self).__init__()
         self._built = True
-        self._softplus = tl.ops.Softplus()
+        self._softplus = tlx.ops.Softplus()
 
     def forward(self, x):
         return self._softplus(x)
@@ -536,8 +536,8 @@ class ReLU6(Module):
 
     Examples
     --------
-    >>> net = tl.layers.Input([10, 200])
-    >>> net = tl.layers.ReLU6()(net)
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.ReLU6()(net)
 
     Returns
     -------
@@ -549,7 +549,7 @@ class ReLU6(Module):
     def __init__(self):
         super(ReLU6, self).__init__()
         self._built = True
-        self._relu6 = tl.ops.ReLU6()
+        self._relu6 = tlx.ops.ReLU6()
 
     def forward(self, x):
         return self._relu6(x)
@@ -569,8 +569,8 @@ class ReLU(Module):
 
     Examples
     --------
-    >>> net = tl.layers.Input([10, 200])
-    >>> net = tl.layers.ReLU()(net)
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.ReLU()(net)
 
     Returns
     -------
@@ -582,7 +582,7 @@ class ReLU(Module):
     def __init__(self):
         super(ReLU, self).__init__()
         self._built = True
-        self._relu = tl.ops.ReLU()
+        self._relu = tlx.ops.ReLU()
 
     def forward(self, x):
         return self._relu(x)
@@ -609,8 +609,8 @@ class LeakyReLU(Module):
 
     Examples
     --------
-    >>> net = tl.layers.Input([10, 200])
-    >>> net = tl.layers.LeakyReLU(alpha=0.5)(net)
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.LeakyReLU(alpha=0.5)(net)
 
     Returns
     -------
@@ -627,7 +627,7 @@ class LeakyReLU(Module):
         super(LeakyReLU, self).__init__()
         self._built = True
         self.alpha = alpha
-        self._leakyrelu = tl.ops.LeakyReLU(alpha=alpha)
+        self._leakyrelu = tlx.ops.LeakyReLU(alpha=alpha)
 
     def forward(self, x):
         return self._leakyrelu(x)
@@ -657,8 +657,8 @@ class LeakyReLU6(Module):
 
         Examples
         --------
-        >>> net = tl.layers.Input([10, 200])
-        >>> net = tl.layers.LeakyReLU6(alpha=0.5)(net)
+        >>> net = tlx.nn.Input([10, 200])
+        >>> net = tlx.nn.LeakyReLU6(alpha=0.5)(net)
 
         Returns
         -------
@@ -678,8 +678,8 @@ class LeakyReLU6(Module):
             raise ValueError("`alpha` value must be in [0, 1]`")
 
         self.alpha = alpha
-        self.minimum = tl.ops.Minimum()
-        self.maximum = tl.ops.Maximum()
+        self.minimum = tlx.ops.Minimum()
+        self.maximum = tlx.ops.Maximum()
 
     def forward(self, x):
         return self.minimum(self.maximum(x, self.alpha * x), 6)
@@ -714,8 +714,8 @@ class LeakyTwiceRelu6(Module):
 
         Examples
         --------
-        >>> net = tl.layers.Input([10, 200])
-        >>> net = tl.layers.LeakyTwiceRelu6(alpha_low=0.5, alpha_high=0.2)(net)
+        >>> net = tlx.nn.Input([10, 200])
+        >>> net = tlx.nn.LeakyTwiceRelu6(alpha_low=0.5, alpha_high=0.2)(net)
 
         Returns
         -------
@@ -740,8 +740,8 @@ class LeakyTwiceRelu6(Module):
 
         self.alpha_low = alpha_low
         self.alpha_high = alpha_high
-        self.minimum = tl.ops.Minimum()
-        self.maximum = tl.ops.Maximum()
+        self.minimum = tlx.ops.Minimum()
+        self.maximum = tlx.ops.Maximum()
 
     def forward(self, x):
         x_is_above_0 = self.minimum(x, 6 * (1 - self.alpha_high) + self.alpha_high * x)
@@ -763,8 +763,8 @@ class Swish(Module):
 
         Examples
         --------
-        >>> net = tl.layers.Input([10, 200])
-        >>> net = tl.layers.Swish()(net)
+        >>> net = tlx.nn.Input([10, 200])
+        >>> net = tlx.nn.Swish()(net)
 
         Returns
         -------
@@ -775,7 +775,7 @@ class Swish(Module):
 
     def __init__(self):
         super(Swish, self).__init__()
-        self.sigmoid = tl.ops.Sigmoid()
+        self.sigmoid = tlx.ops.Sigmoid()
         self._built = True
 
     def forward(self, x):
@@ -796,8 +796,8 @@ class HardTanh(Module):
 
         Examples
         --------
-        >>> net = tl.layers.Input([10, 200])
-        >>> net = tl.layers.HardTanh()(net)
+        >>> net = tlx.nn.Input([10, 200])
+        >>> net = tlx.nn.HardTanh()(net)
 
         Returns
         -------
@@ -811,7 +811,7 @@ class HardTanh(Module):
         self._built = True
 
     def forward(self, x):
-        return tl.ops.clip_by_value(x, -1, 1)
+        return tlx.ops.clip_by_value(x, -1, 1)
 
 
 class Mish(Module):
@@ -826,8 +826,8 @@ class Mish(Module):
 
         Examples
         --------
-        >>> net = tl.layers.Input([10, 200])
-        >>> net = tl.layers.Mish()(net)
+        >>> net = tlx.nn.Input([10, 200])
+        >>> net = tlx.nn.Mish()(net)
 
         Returns
         -------
@@ -838,8 +838,8 @@ class Mish(Module):
 
     def __init__(self):
         super(Mish, self).__init__()
-        self._tanh = tl.ops.Tanh()
-        self._softplus = tl.ops.Softplus()
+        self._tanh = tlx.ops.Tanh()
+        self._softplus = tlx.ops.Softplus()
         self._built = True
 
     def forward(self, x):

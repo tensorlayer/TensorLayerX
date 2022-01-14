@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 import numpy as np
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
@@ -48,10 +48,10 @@ class MaskedConv3d(Module):
         --------
         With TensorLayer
 
-        >>> net = tl.layers.Input([8, 20, 20, 20, 3], name='input')
-        >>> conv3d = tl.layers.MaskedConv3d(mask_type='A', n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), bias_initializer=None, in_channels=3, name='conv3d_1')
+        >>> net = tlx.nn.Input([8, 20, 20, 20, 3], name='input')
+        >>> conv3d = tlx.nn.MaskedConv3d(mask_type='A', n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), bias_initializer=None, in_channels=3, name='conv3d_1')
         >>> print(conv3d)
-        >>> tensor = tl.layers.MaskedConv3d(mask_type='B', n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), act=tl.ReLU, name='conv3d_2')(net)
+        >>> tensor = tlx.nn.MaskedConv3d(mask_type='B', n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), act=tlx.ReLU, name='conv3d_2')(net)
         >>> print(tensor)
 
         """
@@ -126,13 +126,13 @@ class MaskedConv3d(Module):
         self.b_init_flag = False
         if self.bias_initializer:
             self.bias = self._get_weights('bias', shape=(self.n_filter, ), init=self.bias_initializer)
-            self.bias_add = tl.ops.BiasAdd(data_format=self._data_format)
+            self.bias_add = tlx.ops.BiasAdd(data_format=self._data_format)
             self.b_init_flag = True
 
         center = self.filter_size[0] // 2
 
         mask = np.ones(self.kernel.shape, dtype=np.float32)
-        if tl.BACKEND == 'tensorflow':
+        if tlx.BACKEND == 'tensorflow':
             mask[center, center, center + (self.mask_type == 'B'):, :, :] = 0.  # centre depth layer, center row
             mask[center, center + 1:, :, :, :] = 0.  # center depth layer, lower row
             mask[center + 1:, :, :, :, :] = 0.  # behind layers,all row, columns
@@ -141,9 +141,9 @@ class MaskedConv3d(Module):
             mask[:, :, :, center + 1:, center] = 0.
             mask[:, :, :, :, center + 1:] = 0
 
-        self.mask = tl.ops.convert_to_tensor(mask, tl.float32)
+        self.mask = tlx.ops.convert_to_tensor(mask, tlx.float32)
 
-        self.conv3d = tl.ops.Conv3D(
+        self.conv3d = tlx.ops.Conv3D(
             strides=self._strides, padding=self.padding, data_format=self._data_format, dilations=self._dilation_rate,
             out_channel=self.n_filter, k_size=self.filter_size
         )
@@ -154,11 +154,11 @@ class MaskedConv3d(Module):
     def forward(self, inputs):  #input：[batch, in_depth, in_height, in_width, in_channels]
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
-        masked_kernel = tl.ops.multiply(self.mask, self.kernel)
+        masked_kernel = tlx.ops.multiply(self.mask, self.kernel)
         x = self.conv3d(inputs, masked_kernel)
         if self.b_init_flag:
             x = self.bias_add(x, self.bias)

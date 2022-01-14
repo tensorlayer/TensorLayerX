@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -46,9 +46,9 @@ class BinaryConv2d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 100, 100, 32], name='input')
-    >>> binaryconv2d = tl.layers.BinaryConv2d(
-        ... n_filter=64, filter_size=(3, 3), strides=(2, 2), act=tl.ReLU, in_channels=32, name='binaryconv2d')(net)
+    >>> net = tlx.nn.Input([8, 100, 100, 32], name='input')
+    >>> binaryconv2d = tlx.nn.BinaryConv2d(
+        ... n_filter=64, filter_size=(3, 3), strides=(2, 2), act=tlx.ReLU, in_channels=32, name='binaryconv2d')(net)
     >>> print(binaryconv2d)
     >>> output shape : (8, 50, 50, 64)
 
@@ -119,14 +119,14 @@ class BinaryConv2d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
         self.act_init_flag = False
         if self.act:
             self.act_init_flag = True
 
-        self.binaryconv2d = tl.ops.BinaryConv2D(
+        self.binaryconv2d = tlx.ops.BinaryConv2D(
             strides=self._strides,
             padding=self.padding,
             data_format=self.data_format,
@@ -139,7 +139,7 @@ class BinaryConv2d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

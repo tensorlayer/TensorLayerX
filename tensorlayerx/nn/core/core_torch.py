@@ -203,10 +203,10 @@ class SequentialLayer(Module):
 
     Examples
     ---------
-    >>> conv = tl.layers.Conv2d(3, 2, 3, pad_mode='valid')
-    >>> bn = tl.layers.BatchNorm2d(2)
-    >>> seq = tl.nn.SequentialLayer([conv, bn])
-    >>> x = tl.layers.Input((1, 3, 4, 4))
+    >>> conv = tlx.layers.Conv2d(3, 2, 3, pad_mode='valid')
+    >>> bn = tlx.layers.BatchNorm2d(2)
+    >>> seq = tlx.nn.SequentialLayer([conv, bn])
+    >>> x = tlx.layers.Input((1, 3, 4, 4))
     >>> seq(x)
     """
 
@@ -315,10 +315,10 @@ class LayerList(Module):
     Examples
     ---------
     >>> from tensorlayerx.nn import Module, LayerList, Dense
-    >>> import tensorlayerx as tl
-    >>> d1 = Dense(n_units=800, act=tl.ReLU, in_channels=784, name='Dense1')
-    >>> d2 = Dense(n_units=800, act=tl.ReLU, in_channels=800, name='Dense2')
-    >>> d3 = Dense(n_units=10, act=tl.ReLU, in_channels=800, name='Dense3')
+    >>> import tensorlayerx as tlx
+    >>> d1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='Dense1')
+    >>> d2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800, name='Dense2')
+    >>> d3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800, name='Dense3')
     >>> layer_list = LayerList([d1, d2])
     >>> # Inserts a given d2 before a given index in the list
     >>> layer_list.insert(1, d2)

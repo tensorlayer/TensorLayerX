@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import tensorlayerx as tl
+import tensorlayerx as tlx
 
 __all__ = [
     'Initializer',
@@ -31,7 +31,7 @@ class Initializer(object):
         shape : tuple of int.
             The shape of the tensor.
         dtype : Optional dtype of the tensor.
-            If not provided will return tensor of `tl.float32`.
+            If not provided will return tensor of `tlx.float32`.
 
         Returns
         -------
@@ -72,14 +72,14 @@ class Zeros(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.zeros()
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.zeros()
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.ops.zeros(shape, dtype=dtype)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.ops.zeros(shape, dtype=dtype)
 
 
 class Ones(Initializer):
@@ -88,14 +88,14 @@ class Ones(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.ones()
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.ones()
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.ops.ones(shape, dtype=dtype)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.ops.ones(shape, dtype=dtype)
 
 
 class Constant(Initializer):
@@ -109,17 +109,17 @@ class Constant(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.constant(value=10)
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.constant(value=10)
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
     def __init__(self, value=0):
         self.value = value
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.ops.constant(self.value, shape=shape, dtype=dtype)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.ops.constant(self.value, shape=shape, dtype=dtype)
 
     def get_config(self):
         return {"value": self.value}
@@ -140,9 +140,9 @@ class RandomUniform(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.random_uniform(minval=-0.05, maxval=0.05)
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.random_uniform(minval=-0.05, maxval=0.05)
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -151,8 +151,8 @@ class RandomUniform(Initializer):
         self.maxval = maxval
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.ops.random_uniform(shape, self.minval, self.maxval, dtype=dtype, seed=self.seed)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.ops.random_uniform(shape, self.minval, self.maxval, dtype=dtype, seed=self.seed)
 
     def get_config(self):
         return {"minval": self.minval, "maxval": self.maxval, "seed": self.seed}
@@ -175,9 +175,9 @@ class RandomNormal(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.random_normal(mean=0.0, stddev=0.05)
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.random_normal(mean=0.0, stddev=0.05)
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -186,8 +186,8 @@ class RandomNormal(Initializer):
         self.stddev = stddev
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.ops.random_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.ops.random_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
 
     def get_config(self):
         return {"mean": self.mean, "stddev": self.stddev, "seed": self.seed}
@@ -214,9 +214,9 @@ class TruncatedNormal(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.truncated_normal(mean=0.0, stddev=0.05)
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.truncated_normal(mean=0.0, stddev=0.05)
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -225,8 +225,8 @@ class TruncatedNormal(Initializer):
         self.stddev = stddev
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.ops.truncated_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.ops.truncated_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
 
     def get_config(self):
         return {"mean": self.mean, "stddev": self.stddev, "seed": self.seed}
@@ -243,17 +243,17 @@ class HeNormal(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.he_normal()
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.he_normal()
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
     def __init__(self, seed=None):
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.ops.he_normal(seed=self.seed, shape=shape, dtype=dtype)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.ops.he_normal(seed=self.seed, shape=shape, dtype=dtype)
 
     def get_config(self):
         return {"seed", self.seed}
@@ -321,8 +321,8 @@ class XavierNormal(Initializer):
     def __init__(self, seed=None):
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.ops.xavier_normal(seed=self.seed, shape=shape, dtype=dtype)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.ops.xavier_normal(seed=self.seed, shape=shape, dtype=dtype)
 
     def get_config(self):
         return {"seed", self.seed}
@@ -342,8 +342,8 @@ class XavierUniform(Initializer):
     def __init__(self, seed=None):
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.ops.xavier_uniform(seed=self.seed, shape=shape, dtype=dtype)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.ops.xavier_uniform(seed=self.seed, shape=shape, dtype=dtype)
 
     def get_config(self):
         return {"seed", self.seed}

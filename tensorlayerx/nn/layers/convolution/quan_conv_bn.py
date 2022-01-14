@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 from tensorlayerx.backend import BACKEND
@@ -61,11 +61,11 @@ class QuanConv2dWithBN(Module):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> net = tl.layers.Input([50, 256, 256, 3])
-    >>> layer = tl.layers.QuanConv2dWithBN(n_filter=64, filter_size=(5,5),strides=(1,1),padding='SAME',name='qcnnbn1')
+    >>> import tensorlayerx as tlx
+    >>> net = tlx.nn.Input([50, 256, 256, 3])
+    >>> layer = tlx.nn.QuanConv2dWithBN(n_filter=64, filter_size=(5,5),strides=(1,1),padding='SAME',name='qcnnbn1')
     >>> print(layer)
-    >>> net = tl.layers.QuanConv2dWithBN(n_filter=64, filter_size=(5,5),strides=(1,1),padding='SAME',name='qcnnbn1')(net)
+    >>> net = tlx.nn.QuanConv2dWithBN(n_filter=64, filter_size=(5,5),strides=(1,1),padding='SAME',name='qcnnbn1')(net)
     >>> print(net)
     """
 
@@ -177,13 +177,13 @@ class QuanConv2dWithBN(Module):
             self.offset_para = None
 
         self.moving_mean = self._get_weights(
-            "moving_mean", shape=para_bn_shape, init=tl.nn.initializers.constant(1.0), trainable=False
+            "moving_mean", shape=para_bn_shape, init=tlx.nn.initializers.constant(1.0), trainable=False
         )
         self.moving_variance = self._get_weights(
-            "moving_variance", shape=para_bn_shape, init=tl.nn.initializers.constant(1.0), trainable=False
+            "moving_variance", shape=para_bn_shape, init=tlx.nn.initializers.constant(1.0), trainable=False
         )
 
-        self.quan_conv_bn = tl.ops.QuanConvBn(
+        self.quan_conv_bn = tlx.ops.QuanConvBn(
             weights=self.W, scale_para=self.scale_para, offset_para=self.offset_para, moving_mean=self.moving_mean,
             moving_variance=self.moving_variance, strides=self._strides, padding=self.padding,
             data_format=self.data_format, dilations=self._dilation_rate, bitW=self.bitW, bitA=self.bitA,
@@ -193,7 +193,7 @@ class QuanConv2dWithBN(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

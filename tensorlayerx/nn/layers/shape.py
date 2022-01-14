@@ -3,7 +3,7 @@
 
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
-import tensorlayerx as tl
+import tensorlayerx as tlx
 
 __all__ = [
     'Flatten',
@@ -26,8 +26,8 @@ class Flatten(Module):
 
     Examples
     --------
-    >>> x = tl.layers.Input([8, 4, 3], name='input')
-    >>> y = tl.layers.Flatten(name='flatten')(x)
+    >>> x = tlx.nn.Input([8, 4, 3], name='input')
+    >>> y = tlx.nn.Flatten(name='flatten')(x)
     [8, 12]
 
     """
@@ -47,7 +47,7 @@ class Flatten(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.flatten_reshape = tl.ops.FlattenReshape()
+        self.flatten_reshape = tlx.ops.FlattenReshape()
 
     # @tf.function
     def forward(self, inputs):
@@ -67,8 +67,8 @@ class Reshape(Module):
 
     Examples
     --------
-    >>> x = tl.layers.Input([8, 4, 3], name='input')
-    >>> y = tl.layers.Reshape(shape=[-1, 12], name='reshape')(x)
+    >>> x = tlx.nn.Input([8, 4, 3], name='input')
+    >>> y = tlx.nn.Reshape(shape=[-1, 12], name='reshape')(x)
     (8, 12)
 
     """
@@ -90,7 +90,7 @@ class Reshape(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.reshape = tl.ops.Reshape(self.shape)
+        self.reshape = tlx.ops.Reshape(self.shape)
 
     def forward(self, inputs):
         outputs = self.reshape(inputs)
@@ -115,8 +115,8 @@ class Transpose(Module):
 
     Examples
     ----------
-    >>> x = tl.layers.Input([8, 4, 3], name='input')
-    >>> y = tl.layers.Transpose(perm=[0, 2, 1], conjugate=False, name='trans')(x)
+    >>> x = tlx.nn.Input([8, 4, 3], name='input')
+    >>> y = tlx.nn.Transpose(perm=[0, 2, 1], conjugate=False, name='trans')(x)
     (8, 3, 4)
 
     """
@@ -140,7 +140,7 @@ class Transpose(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.transpose = tl.ops.Transpose(perm=self.perm, conjugate=self.conjugate)
+        self.transpose = tlx.ops.Transpose(perm=self.perm, conjugate=self.conjugate)
 
     # @tf.function
     def forward(self, inputs):
@@ -160,8 +160,8 @@ class Shuffle(Module):
 
     Examples
     --------
-    >>> x = tl.layers.Input([1, 16, 16, 8], name='input')
-    >>> y = tl.layers.Shuffle(group=2, name='shuffle')(x)
+    >>> x = tlx.nn.Input([1, 16, 16, 8], name='input')
+    >>> y = tlx.nn.Shuffle(group=2, name='shuffle')(x)
     (1, 16, 16, 8)
 
     """
@@ -184,28 +184,28 @@ class Shuffle(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.transpose = tl.ops.Transpose([0, 1, 2, 4, 3])
+        self.transpose = tlx.ops.Transpose([0, 1, 2, 4, 3])
         inputs_shape = self.inchannels
-        if tl.BACKEND == 'mindspore' and inputs_shape == None:
+        if tlx.BACKEND == 'mindspore' and inputs_shape == None:
             raise ValueError("Do you forget to pass the keyword argument 'in_channels")
-        if tl.BACKEND == 'mindspore':
+        if tlx.BACKEND == 'mindspore':
             h, w, in_channel = inputs_shape[1:]
             if in_channel % self.group != 0:
                 raise ValueError(
                     "The in_channel must be a multiple of the number of groups. The in_channel got %d and the number of groups is %d."
                     % (in_channel, self.group)
                 )
-            self.reshape1 = tl.ops.Reshape([-1, h, w, in_channel // self.group, self.group])
-            self.reshape2 = tl.ops.Reshape([-1, h, w, in_channel])
+            self.reshape1 = tlx.ops.Reshape([-1, h, w, in_channel // self.group, self.group])
+            self.reshape2 = tlx.ops.Reshape([-1, h, w, in_channel])
 
     def forward(self, inputs):
-        if tl.BACKEND in ['tensorflow', 'paddle']:
-            in_shape = tl.get_tensor_shape(inputs)
+        if tlx.BACKEND in ['tensorflow', 'paddle']:
+            in_shape = tlx.get_tensor_shape(inputs)
             h, w, in_channel = in_shape[1:]
-            reshape1 = tl.ops.Reshape([-1, h, w, in_channel // self.group, self.group])
+            reshape1 = tlx.ops.Reshape([-1, h, w, in_channel // self.group, self.group])
             temp = reshape1(inputs)
             temp = self.transpose(temp)
-            reshape2 = tl.ops.Reshape([-1, h, w, in_channel])
+            reshape2 = tlx.ops.Reshape([-1, h, w, in_channel])
             outputs = reshape2(temp)
         else:
             temp = self.reshape1(inputs)

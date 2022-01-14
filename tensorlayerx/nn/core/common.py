@@ -2,27 +2,27 @@
 # -*- coding: utf-8 -*-
 
 import os
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.files import utils
 from tensorlayerx import logging
 import numpy as np
 from tensorlayerx.nn.initializers import *
 
-if tl.BACKEND == 'mindspore':
+if tlx.BACKEND == 'mindspore':
     from mindspore.ops.operations import Assign
     from mindspore.nn import Cell
     from mindspore import Tensor
     import mindspore as ms
 
 _act_dict = {
-    "relu": tl.ops.ReLU,
-    "relu6": tl.ops.ReLU6,
-    "leaky_relu": tl.ops.LeakyReLU,
-    "lrelu": tl.ops.LeakyReLU,
-    "softplus": tl.ops.Softplus,
-    "tanh": tl.ops.Tanh,
-    "sigmoid": tl.ops.Sigmoid,
-    "softmax": tl.ops.Softmax
+    "relu": tlx.ops.ReLU,
+    "relu6": tlx.ops.ReLU6,
+    "leaky_relu": tlx.ops.LeakyReLU,
+    "lrelu": tlx.ops.LeakyReLU,
+    "softplus": tlx.ops.Softplus,
+    "tanh": tlx.ops.Tanh,
+    "sigmoid": tlx.ops.Sigmoid,
+    "softmax": tlx.ops.Softmax
 }
 
 _initializers_dict = {
@@ -54,14 +54,14 @@ def str2act(act):
     if len(act) > 5 and act[0:5] == "lrelu":
         try:
             alpha = float(act[5:])
-            return tl.ops.LeakyReLU(alpha=alpha)
+            return tlx.ops.LeakyReLU(alpha=alpha)
         except Exception as e:
             raise Exception("{} can not be parsed as a float".format(act[5:]))
 
     if len(act) > 10 and act[0:10] == "leaky_relu":
         try:
             alpha = float(act[10:])
-            return tl.ops.LeakyReLU(alpha=alpha)
+            return tlx.ops.LeakyReLU(alpha=alpha)
         except Exception as e:
             raise Exception("{} can not be parsed as a float".format(act[10:]))
 
@@ -95,9 +95,9 @@ def _save_weights(net, file_path, format=None):
     --------
     1) Save model weights in hdf5 format by default.
     >>> net = vgg16()
-    >>> optimizer = tl.optimizers.Adam(learning_rate=0.001)
-    >>> metrics = tl.metrics.Accuracy()
-    >>> model = tl.model.Model(network=net, loss_fn=tl.losses.cross_entropy, optimizer=optimizer, metrics=metrics)
+    >>> optimizer = tlx.optimizers.Adam(learning_rate=0.001)
+    >>> metrics = tlx.metrics.Accuracy()
+    >>> model = tlx.model.Model(network=net, loss_fn=tlx.losses.cross_entropy, optimizer=optimizer, metrics=metrics)
     >>> model.save_weights('./model.h5')
     ...
     >>> model.load_weights('./model.h5')
@@ -108,7 +108,7 @@ def _save_weights(net, file_path, format=None):
 
     """
 
-    if tl.BACKEND is not 'torch' and net.all_weights is None or len(net.all_weights) == 0:
+    if tlx.BACKEND is not 'torch' and net.all_weights is None or len(net.all_weights) == 0:
         logging.warning("Model contains no weights or layers haven't been built, nothing will be saved")
         return
 
@@ -125,7 +125,7 @@ def _save_weights(net, file_path, format=None):
     elif format == 'npz':
         utils.save_npz(net.all_weights, file_path)
     elif format == 'npz_dict':
-        if tl.BACKEND == 'torch':
+        if tlx.BACKEND == 'torch':
             utils.save_npz_dict(net.named_parameters(), file_path)
         else:
             utils.save_npz_dict(net.all_weights, file_path)
@@ -169,9 +169,9 @@ def _load_weights(net, file_path, format=None, in_order=True, skip=False):
     --------
     1) load model from a hdf5 file.
     >>> net = vgg16()
-    >>> optimizer = tl.optimizers.Adam(learning_rate=0.001)
-    >>> metrics = tl.metrics.Accuracy()
-    >>> model = tl.model.Model(network=net, loss_fn=tl.losses.cross_entropy, optimizer=optimizer, metrics=metrics)
+    >>> optimizer = tlx.optimizers.Adam(learning_rate=0.001)
+    >>> metrics = tlx.metrics.Accuracy()
+    >>> model = tlx.model.Model(network=net, loss_fn=tlx.losses.cross_entropy, optimizer=optimizer, metrics=metrics)
     >>> model.load_weights('./model_graph.h5', in_order=False, skip=True) # load weights by name, skipping mismatch
     >>> model.load_weights('./model_eager.h5') # load sequentially
 
@@ -219,7 +219,7 @@ def _load_weights(net, file_path, format=None, in_order=True, skip=False):
 
 def _save_standard_weights_dict(net, file_path):
     # Eliminate parameter naming differences between frameworks.
-    if tl.BACKEND == 'torch':
+    if tlx.BACKEND == 'torch':
         save_standard_npz_dict(net.named_parameters(), file_path)
     else:
         save_standard_npz_dict(net.all_weights, file_path)
@@ -233,9 +233,9 @@ def encode_list_name(list_name):
     # standard weights format: conv1.weights, conv1.bias
 
     for i in range(len(list_name)):
-        if tl.BACKEND == 'tensorflow':
+        if tlx.BACKEND == 'tensorflow':
             list_name[i] = list_name[i][:-2]
-        if tl.BACKEND == 'torch':
+        if tlx.BACKEND == 'torch':
             if list_name[i][-1] == 'W' and 'conv' not in list_name[i]:
                 list_name[i] = list_name[i][:-2] + str('/weights')
             elif list_name[i][-1] == 'W' and 'conv' in list_name[i]:
@@ -250,9 +250,9 @@ def encode_list_name(list_name):
 
 
 def decode_key_name(key_name):
-    if tl.BACKEND == 'tensorflow':
+    if tlx.BACKEND == 'tensorflow':
         key_name = key_name + str(':0')
-    if tl.BACKEND == 'torch':
+    if tlx.BACKEND == 'torch':
         if key_name.split('/')[-1] in ['weights', 'filters']:
             key_name = key_name[:-8] + str('.W')
         elif key_name.split('/')[-1] == 'biases':
@@ -265,7 +265,7 @@ def decode_key_name(key_name):
 def save_standard_npz_dict(save_list=None, name='model.npz'):
     """Input parameters and the file name, save parameters as a dictionary into standard npz_dict file.
 
-    Use ``tl.files.load_and_assign_npz_dict()`` to restore.
+    Use ``tlx.files.load_and_assign_npz_dict()`` to restore.
 
     Parameters
     ----------
@@ -277,16 +277,16 @@ def save_standard_npz_dict(save_list=None, name='model.npz'):
     """
     if save_list is None:
         save_list = []
-    if tl.BACKEND is not 'torch':
+    if tlx.BACKEND is not 'torch':
         save_list_names = [tensor.name for tensor in save_list]
 
-    if tl.BACKEND == 'tensorflow':
+    if tlx.BACKEND == 'tensorflow':
         save_list_var = utils.tf_variables_to_numpy(save_list)
-    elif tl.BACKEND == 'mindspore':
+    elif tlx.BACKEND == 'mindspore':
         save_list_var = utils.ms_variables_to_numpy(save_list)
-    elif tl.BACKEND == 'paddle':
+    elif tlx.BACKEND == 'paddle':
         save_list_var = utils.pd_variables_to_numpy(save_list)
-    elif tl.BACKEND == 'torch':
+    elif tlx.BACKEND == 'torch':
         save_list_names = []
         save_list_var = []
         for named, values in save_list:
@@ -322,7 +322,7 @@ def load_and_assign_standard_npz_dict(net, file_path, skip=False, reshape=False)
     if len(weights.keys()) != len(set(weights.keys())):
         raise Exception("Duplication in model npz_dict %s" % file_path)
 
-    if tl.BACKEND == 'torch':
+    if tlx.BACKEND == 'torch':
         net_weights_name = [n for n, v in net.named_parameters()]
         torch_weights_dict = {n: v for n, v in net.named_parameters()}
     else:
@@ -339,21 +339,21 @@ def load_and_assign_standard_npz_dict(net, file_path, skip=False, reshape=False)
                     "if you want to skip redundant or mismatch weights." % key
                 )
         else:
-            if tl.BACKEND == 'tensorflow':
+            if tlx.BACKEND == 'tensorflow':
                 reshape_weights = weight_reshape(weights[key], reshape)
                 check_reshape(reshape_weights, net.all_weights[net_weights_name.index(de_key)])
                 utils.assign_tf_variable(net.all_weights[net_weights_name.index(de_key)], reshape_weights)
-            elif tl.BACKEND == 'mindspore':
+            elif tlx.BACKEND == 'mindspore':
                 reshape_weights = weight_reshape(weights[key], reshape)
                 import mindspore as ms
                 assign_param = ms.Tensor(reshape_weights, dtype=ms.float32)
                 check_reshape(assign_param, net.all_weights[net_weights_name.index(de_key)])
                 utils.assign_ms_variable(net.all_weights[net_weights_name.index(de_key)], assign_param)
-            elif tl.BACKEND == 'paddle':
+            elif tlx.BACKEND == 'paddle':
                 reshape_weights = weight_reshape(weights[key], reshape)
                 check_reshape(reshape_weights, net.all_weights[net_weights_name.index(de_key)])
                 utils.assign_pd_variable(net.all_weights[net_weights_name.index(de_key)], reshape_weights)
-            elif tl.BACKEND == 'torch':
+            elif tlx.BACKEND == 'torch':
                 reshape_weights = weight_reshape(weights[key], reshape)
                 check_reshape(reshape_weights, net.all_weights[net_weights_name.index(de_key)])
                 utils.assign_th_variable(torch_weights_dict[de_key], reshape_weights)
@@ -373,13 +373,13 @@ def load_and_assign_standard_npz(file_path=None, network=None, reshape=False):
     else:
         weights = utils.load_npz(name=file_path)
         ops = []
-        if tl.BACKEND == 'tensorflow':
+        if tlx.BACKEND == 'tensorflow':
             for idx, param in enumerate(weights):
                 param = weight_reshape(param, reshape)
                 check_reshape(param, network.all_weights[idx])
                 ops.append(network.all_weights[idx].assign(param))
 
-        elif tl.BACKEND == 'mindspore':
+        elif tlx.BACKEND == 'mindspore':
 
             class Assign_net(Cell):
 
@@ -396,13 +396,13 @@ def load_and_assign_standard_npz(file_path=None, network=None, reshape=False):
                 check_reshape(assign_param, network.all_weights[idx])
                 Assign()(network.all_weights[idx], assign_param)
 
-        elif tl.BACKEND == 'paddle':
+        elif tlx.BACKEND == 'paddle':
             for idx, param in enumerate(weights):
                 param = weight_reshape(param, reshape)
                 check_reshape(param, network.all_weights[idx])
                 utils.assign_pd_variable(network.all_weights[idx], param)
 
-        elif tl.BACKEND == 'torch':
+        elif tlx.BACKEND == 'torch':
             for idx, param in enumerate(weights):
                 param = weight_reshape(param, reshape)
                 check_reshape(param, network.all_weights[idx])
@@ -416,16 +416,16 @@ def load_and_assign_standard_npz(file_path=None, network=None, reshape=False):
 
 def check_reshape(weight, shape_weights):
     if len(weight.shape) >= 4 and weight.shape[::-1] == tuple(shape_weights.shape):
-        if tl.BACKEND == 'tensorflow':
+        if tlx.BACKEND == 'tensorflow':
 
             raise Warning(
                 'Set reshape to True only when importing weights from MindSpore/PyTorch/PaddlePaddle to TensorFlow.'
             )
-        if tl.BACKEND == 'torch':
+        if tlx.BACKEND == 'torch':
             raise Warning('Set reshape to True only when importing weights from TensorFlow to PyTorch.')
-        if tl.BACKEND == 'paddle':
+        if tlx.BACKEND == 'paddle':
             raise Warning('Set reshape to True only when importing weights from TensorFlow to PaddlePaddle.')
-        if tl.BACKEND == 'mindspore':
+        if tlx.BACKEND == 'mindspore':
             raise Warning('Set reshape to True only when importing weights from TensorFlow to MindSpore.')
 
 

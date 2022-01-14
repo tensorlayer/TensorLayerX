@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -16,7 +16,7 @@ class DeformableConv2d(Module):
 
     Parameters
     ----------
-    offset_layer : tl.Tensor
+    offset_layer : tlx.Tensor
         To predict the offset of convolution operations.
         The shape is (batchsize, input height, input width, 2*(number of element in the convolution kernel))
         e.g. if apply a 3*3 kernel, the number of the last dimension should be 18 (2*3*3)
@@ -41,17 +41,17 @@ class DeformableConv2d(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([5, 10, 10, 16], name='input')
-    >>> offset1 = tl.layers.Conv2d(
+    >>> net = tlx.nn.Input([5, 10, 10, 16], name='input')
+    >>> offset1 = tlx.nn.Conv2d(
     ...     n_filter=18, filter_size=(3, 3), strides=(1, 1), padding='SAME', name='offset1'
     ... )(net)
-    >>> deformconv1 = tl.layers.DeformableConv2d(
+    >>> deformconv1 = tlx.nn.DeformableConv2d(
     ...     offset_layer=offset1, n_filter=32, filter_size=(3, 3), name='deformable1'
     ... )(net)
-    >>> offset2 = tl.layers.Conv2d(
+    >>> offset2 = tlx.nn.Conv2d(
     ...     n_filter=18, filter_size=(3, 3), strides=(1, 1), padding='SAME', name='offset2'
     ... )(deformconv1)
-    >>> deformconv2 = tl.layers.DeformableConv2d(
+    >>> deformconv2 = tlx.nn.DeformableConv2d(
     ...     offset_layer=offset2, n_filter=64, filter_size=(3, 3), name='deformable2'
     ... )(deformconv1)
 
@@ -120,29 +120,29 @@ class DeformableConv2d(Module):
 
         self.input_h = int(inputs_shape[1])
         self.input_w = int(inputs_shape[2])
-        initial_offsets = tl.ops.stack(
-            tl.ops.meshgrid(tl.ops.range(self.filter_size[0]), tl.ops.range(self.filter_size[1]), indexing='ij')
+        initial_offsets = tlx.ops.stack(
+            tlx.ops.meshgrid(tlx.ops.range(self.filter_size[0]), tlx.ops.range(self.filter_size[1]), indexing='ij')
         )  # initial_offsets --> (kh, kw, 2)
-        initial_offsets = tl.ops.reshape(initial_offsets, (-1, 2))  # initial_offsets --> (n, 2)
-        initial_offsets = tl.ops.expand_dims(initial_offsets, 0)  # initial_offsets --> (1, n, 2)
-        initial_offsets = tl.ops.expand_dims(initial_offsets, 0)  # initial_offsets --> (1, 1, n, 2)
-        initial_offsets = tl.ops.tile(
+        initial_offsets = tlx.ops.reshape(initial_offsets, (-1, 2))  # initial_offsets --> (n, 2)
+        initial_offsets = tlx.ops.expand_dims(initial_offsets, 0)  # initial_offsets --> (1, n, 2)
+        initial_offsets = tlx.ops.expand_dims(initial_offsets, 0)  # initial_offsets --> (1, 1, n, 2)
+        initial_offsets = tlx.ops.tile(
             initial_offsets, [self.input_h, self.input_w, 1, 1]
         )  # initial_offsets --> (h, w, n, 2)
-        initial_offsets = tl.ops.cast(initial_offsets, 'float32')
-        grid = tl.ops.meshgrid(
-            tl.ops.range(
+        initial_offsets = tlx.ops.cast(initial_offsets, 'float32')
+        grid = tlx.ops.meshgrid(
+            tlx.ops.range(
                 -int((self.filter_size[0] - 1) / 2.0), int(self.input_h - int((self.filter_size[0] - 1) / 2.0)), 1
             ),
-            tl.ops.range(
+            tlx.ops.range(
                 -int((self.filter_size[1] - 1) / 2.0), int(self.input_w - int((self.filter_size[1] - 1) / 2.0)), 1
             ), indexing='ij'
         )
 
-        grid = tl.ops.stack(grid, axis=-1)
-        grid = tl.ops.cast(grid, 'float32')  # grid --> (h, w, 2)
-        grid = tl.ops.expand_dims(grid, 2)  # grid --> (h, w, 1, 2)
-        grid = tl.ops.tile(grid, [1, 1, self.kernel_n, 1])  # grid --> (h, w, n, 2)
+        grid = tlx.ops.stack(grid, axis=-1)
+        grid = tlx.ops.cast(grid, 'float32')  # grid --> (h, w, 2)
+        grid = tlx.ops.expand_dims(grid, 2)  # grid --> (h, w, 1, 2)
+        grid = tlx.ops.tile(grid, [1, 1, self.kernel_n, 1])  # grid --> (h, w, n, 2)
         self.grid_offset = grid + initial_offsets  # grid_offset --> (h, w, n, 2)
 
         self.filter_shape = (1, 1, self.kernel_n, self.in_channels, self.n_filter)
@@ -152,13 +152,13 @@ class DeformableConv2d(Module):
         if self.b_init:
             self.b = self._get_weights("b_deformableconv2d", shape=(self.n_filter, ), init=self.b_init)
 
-        self.conv3d = tl.ops.Conv3D(strides=[1, 1, 1, 1, 1], padding='VALID')
-        self.bias_add = tl.ops.BiasAdd()
+        self.conv3d = tlx.ops.Conv3D(strides=[1, 1, 1, 1, 1], padding='VALID')
+        self.bias_add = tlx.ops.BiasAdd()
 
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
@@ -168,7 +168,7 @@ class DeformableConv2d(Module):
 
         input_deform = self._tf_batch_map_offsets(inputs, offset, grid_offset)
         outputs = self.conv3d(input=input_deform, filters=self.W)
-        outputs = tl.ops.reshape(
+        outputs = tlx.ops.reshape(
             tensor=outputs, shape=[outputs.get_shape()[0], self.input_h, self.input_w, self.n_filter]
         )
         if self.b_init:
@@ -179,27 +179,27 @@ class DeformableConv2d(Module):
 
     def _to_bc_h_w(self, x, x_shape):
         """(b, h, w, c) -> (b*c, h, w)"""
-        x = tl.ops.transpose(a=x, perm=[0, 3, 1, 2])
-        x = tl.ops.reshape(x, (-1, x_shape[1], x_shape[2]))
+        x = tlx.ops.transpose(a=x, perm=[0, 3, 1, 2])
+        x = tlx.ops.reshape(x, (-1, x_shape[1], x_shape[2]))
         return x
 
     def _to_b_h_w_n_c(self, x, x_shape):
         """(b*c, h, w, n) -> (b, h, w, n, c)"""
-        x = tl.ops.reshape(x, (-1, x_shape[4], x_shape[1], x_shape[2], x_shape[3]))
-        x = tl.ops.transpose(a=x, perm=[0, 2, 3, 4, 1])
+        x = tlx.ops.reshape(x, (-1, x_shape[4], x_shape[1], x_shape[2], x_shape[3]))
+        x = tlx.ops.transpose(a=x, perm=[0, 2, 3, 4, 1])
         return x
 
     def tf_flatten(self, a):
         """Flatten tensor"""
-        return tl.ops.reshape(a, [-1])
+        return tlx.ops.reshape(a, [-1])
 
     def _get_vals_by_coords(self, inputs, coords, idx, out_shape):
-        indices = tl.ops.stack(
+        indices = tlx.ops.stack(
             [idx, self.tf_flatten(coords[:, :, :, :, 0]),
              self.tf_flatten(coords[:, :, :, :, 1])], axis=-1
         )
-        vals = tl.ops.gather_nd(inputs, indices)
-        vals = tl.ops.reshape(vals, out_shape)
+        vals = tlx.ops.gather_nd(inputs, indices)
+        vals = tlx.ops.reshape(vals, out_shape)
         return vals
 
     def _tf_repeat(self, a, repeats):
@@ -209,8 +209,8 @@ class DeformableConv2d(Module):
         if len(a.get_shape()) != 1:
             raise AssertionError("This is not a 1D Tensor")
 
-        a = tl.ops.expand_dims(a, -1)
-        a = tl.ops.tile(a, [1, repeats])
+        a = tlx.ops.expand_dims(a, -1)
+        a = tlx.ops.tile(a, [1, repeats])
         a = self.tf_flatten(a)
         return a
 
@@ -219,36 +219,36 @@ class DeformableConv2d(Module):
         Only supports 2D feature maps
         Parameters
         ----------
-        inputs : ``tl.Tensor``
+        inputs : ``tlx.Tensor``
             shape = (b*c, h, w)
-        coords : ``tl.Tensor``
+        coords : ``tlx.Tensor``
             shape = (b*c, h, w, n, 2)
         Returns
         -------
-        ``tl.Tensor``
+        ``tlx.Tensor``
             A Tensor with the shape as (b*c, h, w, n)
         """
         inputs_shape = inputs.get_shape()
         coords_shape = coords.get_shape()
-        batch_channel = tl.get_tensor_shape(inputs)[0]
+        batch_channel = tlx.get_tensor_shape(inputs)[0]
         input_h = int(inputs_shape[1])
         input_w = int(inputs_shape[2])
         kernel_n = int(coords_shape[3])
         n_coords = input_h * input_w * kernel_n
 
-        coords_lt = tl.ops.cast(tl.ops.Floor()(coords), 'int32')
-        coords_rb = tl.ops.cast(tl.ops.Ceil()(coords), 'int32')
-        coords_lb = tl.ops.stack([coords_lt[:, :, :, :, 0], coords_rb[:, :, :, :, 1]], axis=-1)
-        coords_rt = tl.ops.stack([coords_rb[:, :, :, :, 0], coords_lt[:, :, :, :, 1]], axis=-1)
+        coords_lt = tlx.ops.cast(tlx.ops.Floor()(coords), 'int32')
+        coords_rb = tlx.ops.cast(tlx.ops.Ceil()(coords), 'int32')
+        coords_lb = tlx.ops.stack([coords_lt[:, :, :, :, 0], coords_rb[:, :, :, :, 1]], axis=-1)
+        coords_rt = tlx.ops.stack([coords_rb[:, :, :, :, 0], coords_lt[:, :, :, :, 1]], axis=-1)
 
-        idx = self._tf_repeat(tl.ops.range(batch_channel), n_coords)
+        idx = self._tf_repeat(tlx.ops.range(batch_channel), n_coords)
 
         vals_lt = self._get_vals_by_coords(inputs, coords_lt, idx, (batch_channel, input_h, input_w, kernel_n))
         vals_rb = self._get_vals_by_coords(inputs, coords_rb, idx, (batch_channel, input_h, input_w, kernel_n))
         vals_lb = self._get_vals_by_coords(inputs, coords_lb, idx, (batch_channel, input_h, input_w, kernel_n))
         vals_rt = self._get_vals_by_coords(inputs, coords_rt, idx, (batch_channel, input_h, input_w, kernel_n))
 
-        coords_offset_lt = coords - tl.ops.cast(coords_lt, 'float32')
+        coords_offset_lt = coords - tlx.ops.cast(coords_lt, 'float32')
 
         vals_t = vals_lt + (vals_rt - vals_lt) * coords_offset_lt[:, :, :, :, 0]
         vals_b = vals_lb + (vals_rb - vals_lb) * coords_offset_lt[:, :, :, :, 0]
@@ -260,19 +260,19 @@ class DeformableConv2d(Module):
         """Batch map offsets into input
         Parameters
         ------------
-        inputs : ``tl.Tensor``
+        inputs : ``tlx.Tensor``
             shape = (b, h, w, c)
-        offsets: ``tl.Tensor``
+        offsets: ``tlx.Tensor``
             shape = (b, h, w, 2*n)
-        grid_offset: `tl.Tensor``
+        grid_offset: `tlx.Tensor``
             Offset grids shape = (h, w, n, 2)
         Returns
         -------
-        ``tl.Tensor``
+        ``tlx.Tensor``
             A Tensor with the shape as (b, h, w, c)
         """
         inputs_shape = inputs.get_shape()
-        batch_size = tl.get_tensor_shape(inputs)[0]
+        batch_size = tlx.get_tensor_shape(inputs)[0]
         kernel_n = int(int(offsets.get_shape()[3]) / 2)
         input_h = inputs_shape[1]
         input_w = inputs_shape[2]
@@ -282,19 +282,19 @@ class DeformableConv2d(Module):
         inputs = self._to_bc_h_w(inputs, inputs_shape)
 
         # offsets (b, h, w, 2*n) --> (b, h, w, n, 2)
-        offsets = tl.ops.reshape(offsets, (batch_size, input_h, input_w, kernel_n, 2))
+        offsets = tlx.ops.reshape(offsets, (batch_size, input_h, input_w, kernel_n, 2))
 
-        coords = tl.ops.expand_dims(grid_offset, 0)  # grid_offset --> (1, h, w, n, 2)
-        coords = tl.ops.tile(coords, [batch_size, 1, 1, 1, 1]) + offsets  # grid_offset --> (b, h, w, n, 2)
+        coords = tlx.ops.expand_dims(grid_offset, 0)  # grid_offset --> (1, h, w, n, 2)
+        coords = tlx.ops.tile(coords, [batch_size, 1, 1, 1, 1]) + offsets  # grid_offset --> (b, h, w, n, 2)
 
         # clip out of bound
-        coords = tl.ops.stack(
+        coords = tlx.ops.stack(
             [
-                tl.ops.clip_by_value(coords[:, :, :, :, 0], 0.0, tl.ops.cast(input_h - 1, 'float32')),
-                tl.ops.clip_by_value(coords[:, :, :, :, 1], 0.0, tl.ops.cast(input_w - 1, 'float32'))
+                tlx.ops.clip_by_value(coords[:, :, :, :, 0], 0.0, tlx.ops.cast(input_h - 1, 'float32')),
+                tlx.ops.clip_by_value(coords[:, :, :, :, 1], 0.0, tlx.ops.cast(input_w - 1, 'float32'))
             ], axis=-1
         )
-        coords = tl.ops.tile(coords, [channel, 1, 1, 1, 1])
+        coords = tlx.ops.tile(coords, [channel, 1, 1, 1, 1])
 
         mapped_vals = self._tf_batch_map_coordinates(inputs, coords)
         # (b*c, h, w, n) --> (b, h, w, n, c)

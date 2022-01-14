@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -32,8 +32,8 @@ class SubpixelConv1d(Module):
     ----------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 25, 32], name='input')
-    >>> subpixelconv1d = tl.layers.SubpixelConv1d(scale=2, name='subpixelconv1d')(net)
+    >>> net = tlx.nn.Input([8, 25, 32], name='input')
+    >>> subpixelconv1d = tlx.nn.SubpixelConv1d(scale=2, name='subpixelconv1d')(net)
     >>> print(subpixelconv1d)
     >>> output shape : (8, 50, 16)
 
@@ -77,13 +77,13 @@ class SubpixelConv1d(Module):
         if inputs_shape is not None:
             self.in_channels = inputs_shape[-1]
         self.out_channels = int(self.in_channels / self.scale)
-        self.transpose = tl.ops.Transpose(perm=[2, 1, 0])
-        self.batch_to_space = tl.ops.BatchToSpace(block_size=[self.scale], crops=[[0, 0]])
+        self.transpose = tlx.ops.Transpose(perm=[2, 1, 0])
+        self.batch_to_space = tlx.ops.BatchToSpace(block_size=[self.scale], crops=[[0, 0]])
 
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
@@ -118,18 +118,18 @@ class SubpixelConv2d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([2, 16, 16, 4], name='input1')
-    >>> subpixelconv2d = tl.layers.SubpixelConv2d(scale=2, data_format='channels_last', name='subpixel_conv2d1')(net)
+    >>> net = tlx.nn.Input([2, 16, 16, 4], name='input1')
+    >>> subpixelconv2d = tlx.nn.SubpixelConv2d(scale=2, data_format='channels_last', name='subpixel_conv2d1')(net)
     >>> print(subpixelconv2d)
     >>> output shape : (2, 32, 32, 1)
 
-    >>> net = tl.layers.Input([2, 16, 16, 40], name='input2')
-    >>> subpixelconv2d = tl.layers.SubpixelConv2d(scale=2, data_format='channels_last', name='subpixel_conv2d2')(net)
+    >>> net = tlx.nn.Input([2, 16, 16, 40], name='input2')
+    >>> subpixelconv2d = tlx.nn.SubpixelConv2d(scale=2, data_format='channels_last', name='subpixel_conv2d2')(net)
     >>> print(subpixelconv2d)
     >>> output shape : (2, 32, 32, 10)
 
-    >>> net = tl.layers.Input([2, 16, 16, 250], name='input3')
-    >>> subpixelconv2d = tl.layers.SubpixelConv2d(scale=5, data_format='channels_last', name='subpixel_conv2d3')(net)
+    >>> net = tlx.nn.Input([2, 16, 16, 250], name='input3')
+    >>> subpixelconv2d = tlx.nn.SubpixelConv2d(scale=5, data_format='channels_last', name='subpixel_conv2d3')(net)
     >>> print(subpixelconv2d)
     >>> output shape : (2, 80, 80, 10)
 
@@ -168,12 +168,12 @@ class SubpixelConv2d(Module):
 
     def build(self, inputs_shape):
 
-        self.depth_to_space = tl.ops.DepthToSpace(block_size=self.scale, data_format=self.data_format)
+        self.depth_to_space = tlx.ops.DepthToSpace(block_size=self.scale, data_format=self.data_format)
 
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

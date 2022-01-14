@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -26,9 +26,9 @@ class Concat(Module):
     >>> class CustomModel(Module):
     >>>     def __init__(self):
     >>>         super(CustomModel, self).__init__(name="custom")
-    >>>         self.dense1 = tl.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu1_1')
-    >>>         self.dense2 = tl.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu2_1')
-    >>>         self.concat = tl.layers.Concat(concat_dim=1, name='concat_layer')
+    >>>         self.dense1 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu1_1')
+    >>>         self.dense2 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu2_1')
+    >>>         self.concat = tlx.nn.Concat(concat_dim=1, name='concat_layer')
 
     >>>     def forward(self, inputs):
     >>>         d1 = self.dense1(inputs)
@@ -57,7 +57,7 @@ class Concat(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        self.concat = tl.ops.Concat(self.concat_dim)
+        self.concat = tlx.ops.Concat(self.concat_dim)
 
     # @tf.function
     def forward(self, inputs):
@@ -78,7 +78,7 @@ class Elementwise(Module):
     Parameters
     ----------
     combine_fn : a TensorFlow element-wise combine function
-        e.g. AND is ``tl.minimum`` ;  OR is ``tl.maximum`` ; ADD is ``tl.add`` ; MUL is ``tl.multiply`` and so on.
+        e.g. AND is ``tlx.minimum`` ;  OR is ``tlx.maximum`` ; ADD is ``tlx.add`` ; MUL is ``tlx.multiply`` and so on.
         See `TensorFlow Math API <https://www.tensorflow.org/versions/master/api_docs/python/math_ops.html#math>`__ .
         If the combine function is more complicated, please consider to use :class:`ElementwiseLambda`.
     act : activation function
@@ -88,12 +88,13 @@ class Elementwise(Module):
 
     Examples
     --------
-    >>> class CustomModel(tl.model.Model):
+    >>> import tensorlayerx as tlx
+    >>> class CustomModel(tlx.nn.Module):
     >>>     def __init__(self):
     >>>         super(CustomModel, self).__init__(name="custom")
-    >>>         self.dense1 = tl.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu1_1')
-    >>>         self.dense2 = tl.layers.Dense(in_channels=20, n_units=10, act=tl.ReLU, name='relu2_1')
-    >>>         self.element = tl.layers.Elementwise(combine_fn=tl.minimum, name='minimum', act=tl.identity)
+    >>>         self.dense1 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu1_1')
+    >>>         self.dense2 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu2_1')
+    >>>         self.element = tlx.nn.Elementwise(combine_fn=tlx.minimum, name='minimum', act=tlx.identity)
 
     >>>     def forward(self, inputs):
     >>>         d1 = self.dense1(inputs)
@@ -104,7 +105,7 @@ class Elementwise(Module):
 
     def __init__(
         self,
-        combine_fn=tl.ops.minimum,
+        combine_fn=tlx.ops.minimum,
         act=None,
         name=None,  #'elementwise',
     ):

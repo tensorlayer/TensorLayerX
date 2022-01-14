@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -50,9 +50,9 @@ class DorefaConv2d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 12, 12, 32], name='input')
-    >>> dorefaconv2d = tl.layers.DorefaConv2d(
-    ...     n_filter=32, filter_size=(5, 5), strides=(1, 1), act=tl.ReLU, padding='SAME', name='dorefaconv2d'
+    >>> net = tlx.nn.Input([8, 12, 12, 32], name='input')
+    >>> dorefaconv2d = tlx.nn.DorefaConv2d(
+    ...     n_filter=32, filter_size=(5, 5), strides=(1, 1), act=tlx.ReLU, padding='SAME', name='dorefaconv2d'
     ... )(net)
     >>> print(dorefaconv2d)
     >>> output shape : (8, 12, 12, 32)
@@ -138,14 +138,14 @@ class DorefaConv2d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
         self.act_init_flag = False
         if self.act:
             self.act_init_flag = True
 
-        self.dorefaconv2d = tl.ops.DorefaConv2D(
+        self.dorefaconv2d = tlx.ops.DorefaConv2D(
             bitW=self.bitW, bitA=self.bitA, strides=self._strides, padding=self.padding, data_format=self.data_format,
             dilations=self._dilation_rate, out_channel=self.n_filter, k_size=self.filter_size,
             in_channel=self.in_channels
@@ -155,7 +155,7 @@ class DorefaConv2d(Module):
 
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

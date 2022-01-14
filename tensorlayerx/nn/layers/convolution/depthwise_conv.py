@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 from tensorlayerx.backend import BACKEND
@@ -48,9 +48,9 @@ class DepthwiseConv2d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 200, 200, 32], name='input')
-    >>> depthwiseconv2d = tl.layers.DepthwiseConv2d(
-    ...     filter_size=(3, 3), strides=(1, 1), dilation_rate=(2, 2), act=tl.ReLU, depth_multiplier=2, name='depthwise'
+    >>> net = tlx.nn.Input([8, 200, 200, 32], name='input')
+    >>> depthwiseconv2d = tlx.nn.DepthwiseConv2d(
+    ...     filter_size=(3, 3), strides=(1, 1), dilation_rate=(2, 2), act=tlx.ReLU, depth_multiplier=2, name='depthwise'
     ... )(net)
     >>> print(depthwiseconv2d)
     >>> output shape : (8, 200, 200, 64)
@@ -149,7 +149,7 @@ class DepthwiseConv2d(Module):
             self.W = self._get_weights("filters", shape=self.filter_depthwise, init=self.W_init, order=True)
             self.point_W = self._get_weights("point_filter", shape=self.filter_pointwise, init=self.W_init, order=True)
 
-        self.depthwise_conv2d = tl.ops.DepthwiseConv2d(
+        self.depthwise_conv2d = tlx.ops.DepthwiseConv2d(
             strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
             ksize=self.filter_size, channel_multiplier=self.depth_multiplier
         )
@@ -157,7 +157,7 @@ class DepthwiseConv2d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.in_channels * self.depth_multiplier, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
         self.act_init_flag = False
@@ -167,7 +167,7 @@ class DepthwiseConv2d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

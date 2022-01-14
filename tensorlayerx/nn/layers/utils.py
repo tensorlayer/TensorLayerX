@@ -4,7 +4,7 @@
 import tensorflow as tf
 from tensorflow.python.ops.rnn_cell import LSTMStateTuple
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.decorators import deprecated, deprecated_alias
 from tensorlayerx.backend.ops.load_backend import BACKEND
@@ -75,9 +75,9 @@ def flatten_reshape(variable, name='flatten'):
 
     """
     dim = 1
-    for d in tl.get_tensor_shape(variable)[1:]:  # variable.get_shape()[1:].as_list():
+    for d in tlx.get_tensor_shape(variable)[1:]:  # variable.get_shape()[1:].as_list():
         dim *= d
-    return tl.reshape(variable, shape=[-1, dim])
+    return tlx.reshape(variable, shape=[-1, dim])
 
 
 def get_collection_trainable(name=''):
@@ -109,8 +109,8 @@ def get_layers_with_name(net, name="", verbose=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> layers = tl.layers.get_layers_with_name(net, "CNN", True)
+    >>> import tensorlayerx as tlx
+    >>> layers = tlx.utils.get_layers_with_name(net, "CNN", True)
 
     """
     logging.info("  [*] geting layers with %s" % name)
@@ -146,7 +146,7 @@ def get_variable_with_initializer(scope_name, var_name, shape, init=random_norma
     if BACKEND == 'dragon':
         return initial_value
 
-    var = tl.Variable(initial_value=initial_value, name=var_name, trainable=trainable)
+    var = tlx.Variable(initial_value=initial_value, name=var_name, trainable=trainable)
     return var
 
 
@@ -170,8 +170,8 @@ def get_variables_with_name(name=None, train_only=True, verbose=False):
 
     Examples
     --------
-    >>> import tensorlayerx as tl
-    >>> dense_vars = tl.layers.get_variables_with_name('dense', True, True)
+    >>> import tensorlayerx as tlx
+    >>> dense_vars = tlx.utils.get_variables_with_name('dense', True, True)
 
     """
     if name is None:
@@ -287,10 +287,10 @@ def merge_networks(layers=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> n1 = ...
     >>> n2 = ...
-    >>> n1 = tl.layers.merge_networks([n1, n2])
+    >>> n1 = tlx.utils.merge_networks([n1, n2])
 
     """
     if layers is None:
@@ -318,7 +318,7 @@ def merge_networks(layers=None):
 
 def print_all_variables(train_only=False):
     """Print information of trainable or all variables,
-    without ``tl.layers.initialize_global_variables(sess)``.
+    without ``tlx.nn.initialize_global_variables(sess)``.
 
     Parameters
     ----------

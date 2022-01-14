@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -33,11 +33,11 @@ class Dense(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([100, 50], name='input')
-    >>> dense = tl.layers.Dense(n_units=800, act=tl.ReLU, in_channels=50, name='dense_1')
+    >>> net = tlx.nn.Input([100, 50], name='input')
+    >>> dense = tlx.nn.Dense(n_units=800, act=tlx.ReLU, in_channels=50, name='dense_1')
     >>> print(dense)
     Dense(n_units=800, relu, in_channels='50', name='dense_1')
-    >>> tensor = tl.layers.Dense(n_units=800, act=tl.ReLU, name='dense_2')(net)
+    >>> tensor = tlx.nn.Dense(n_units=800, act=tlx.ReLU, name='dense_2')(net)
     >>> print(tensor)
     tf.Tensor([...], shape=(100, 800), dtype=float32)
 
@@ -98,18 +98,18 @@ class Dense(Module):
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_units, ), init=self.b_init)
             self.b_init_flag = True
-            self.bias_add = tl.ops.BiasAdd(data_format='NHWC')
+            self.bias_add = tlx.ops.BiasAdd(data_format='NHWC')
 
         self.act_init_flag = False
         if self.act:
             self.act_init_flag = True
 
-        self.matmul = tl.ops.MatMul()
+        self.matmul = tlx.ops.MatMul()
 
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

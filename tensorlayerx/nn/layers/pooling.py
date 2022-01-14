@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -32,8 +32,8 @@ __all__ = [
 class PoolLayer(Module):
     """
     The :class:`PoolLayer` class is a Pooling layer.
-    You can choose ``tl.ops.max_pool`` and ``tl.ops.avg_pool`` for 2D input or
-    ``tl.ops.max_pool3d`` and ``tl.ops.avg_pool3d`` for 3D input.
+    You can choose ``tlx.ops.max_pool`` and ``tlx.ops.avg_pool`` for 2D input or
+    ``tlx.ops.max_pool3d`` and ``tlx.ops.avg_pool3d`` for 3D input.
 
     Parameters
     ----------
@@ -46,7 +46,7 @@ class PoolLayer(Module):
     padding : str
         The padding algorithm type: "SAME" or "VALID".
     pool : pooling function
-        One of ``tl.ops.max_pool``, ``tl.ops.avg_pool``, ``tl.ops.max_pool3d`` and ``f.ops.avg_pool3d``.
+        One of ``tlx.ops.max_pool``, ``tlx.ops.avg_pool``, ``tlx.ops.max_pool3d`` and ``f.ops.avg_pool3d``.
         See `TensorFlow pooling APIs <https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/nn/>`__
     name : None or str
         A unique layer name.
@@ -55,8 +55,8 @@ class PoolLayer(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 50, 50, 32], name='input')
-    >>> net = tl.layers.PoolLayer()(net)
+    >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
+    >>> net = tlx.nn.PoolLayer()(net)
     >>> output shape : [10, 25, 25, 32]
 
     """
@@ -66,7 +66,7 @@ class PoolLayer(Module):
         filter_size=(1, 2, 2, 1),
         strides=(1, 2, 2, 1),
         padding='SAME',
-        pool=tl.ops.MaxPool,
+        pool=tlx.ops.MaxPool,
         name=None  # 'pool_pro',
     ):
         super().__init__(name)
@@ -118,8 +118,8 @@ class MaxPool1d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 50, 32], name='input')
-    >>> net = tl.layers.MaxPool1d(filter_size=3, strides=2, padding='SAME', name='maxpool1d')(net)
+    >>> net = tlx.nn.Input([10, 50, 32], name='input')
+    >>> net = tlx.nn.MaxPool1d(filter_size=3, strides=2, padding='SAME', name='maxpool1d')(net)
     >>> output shape : [10, 25, 32]
 
     """
@@ -163,7 +163,7 @@ class MaxPool1d(Module):
             raise Exception("unsupported data format")
         self._filter_size = [self.filter_size]
         self._strides = [self.strides]
-        self.max_pool = tl.ops.MaxPool1d(
+        self.max_pool = tlx.ops.MaxPool1d(
             ksize=self._filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
         )
 
@@ -192,8 +192,8 @@ class MeanPool1d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 50, 32], name='input')
-    >>> net = tl.layers.MeanPool1d(filter_size=3, strides=2, padding='SAME')(net)
+    >>> net = tlx.nn.Input([10, 50, 32], name='input')
+    >>> net = tlx.nn.MeanPool1d(filter_size=3, strides=2, padding='SAME')(net)
     >>> output shape : [10, 25, 32]
 
     """
@@ -238,7 +238,7 @@ class MeanPool1d(Module):
             raise Exception("unsupported data format")
         self._filter_size = [self.filter_size]
         self._strides = [self.strides]
-        self.avg_pool = tl.ops.AvgPool1d(
+        self.avg_pool = tlx.ops.AvgPool1d(
             ksize=self._filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
         )
 
@@ -267,8 +267,8 @@ class MaxPool2d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 50, 50, 32], name='input')
-    >>> net = tl.layers.MaxPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME')(net)
+    >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
+    >>> net = tlx.nn.MaxPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME')(net)
     >>> output shape : [10, 25, 25, 32]
 
     """
@@ -314,7 +314,7 @@ class MaxPool2d(Module):
         else:
             raise Exception("unsupported data format")
 
-        self.max_pool = tl.ops.MaxPool(
+        self.max_pool = tlx.ops.MaxPool(
             ksize=self.filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
         )
 
@@ -343,8 +343,8 @@ class MeanPool2d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 50, 50, 32], name='input')
-    >>> net = tl.layers.MeanPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME')(net)
+    >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
+    >>> net = tlx.nn.MeanPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME')(net)
     >>> output shape : [10, 25, 25, 32]
 
     """
@@ -389,7 +389,7 @@ class MeanPool2d(Module):
             self._strides = [1, 1, self.strides[0], self.strides[1]]
         else:
             raise Exception("unsupported data format")
-        self.avg_pool = tl.ops.AvgPool(
+        self.avg_pool = tlx.ops.AvgPool(
             ksize=self.filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
         )
 
@@ -423,8 +423,8 @@ class MaxPool3d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 50, 50, 50, 32], name='input')
-    >>> net = tl.layers.MaxPool3d(filter_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME')(net)
+    >>> net = tlx.nn.Input([10, 50, 50, 50, 32], name='input')
+    >>> net = tlx.nn.MaxPool3d(filter_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME')(net)
     >>> output shape : [10, 25, 25, 25, 32]
 
     """
@@ -467,7 +467,7 @@ class MaxPool3d(Module):
             self._strides = [1, 1, self.strides[0], self.strides[1], self.strides[2]]
         else:
             raise Exception("unsupported data format")
-        self.max_pool3d = tl.ops.MaxPool3d(
+        self.max_pool3d = tlx.ops.MaxPool3d(
             ksize=self.filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
         )
 
@@ -501,8 +501,8 @@ class MeanPool3d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 50, 50, 50, 32], name='input')
-    >>> net = tl.layers.MeanPool3d(filter_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME')(net)
+    >>> net = tlx.nn.Input([10, 50, 50, 50, 32], name='input')
+    >>> net = tlx.nn.MeanPool3d(filter_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME')(net)
     >>> output shape : [10, 25, 25, 25, 32]
 
     """
@@ -544,7 +544,7 @@ class MeanPool3d(Module):
             self.data_format = 'NCDHW'
         else:
             raise Exception("unsupported data format")
-        self.avg_pool3d = tl.ops.AvgPool3d(
+        self.avg_pool3d = tlx.ops.AvgPool3d(
             ksize=self.filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
         )
 
@@ -567,8 +567,8 @@ class GlobalMaxPool1d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 100, 30], name='input')
-    >>> net = tl.layers.GlobalMaxPool1d()(net)
+    >>> net = tlx.nn.Input([10, 100, 30], name='input')
+    >>> net = tlx.nn.GlobalMaxPool1d()(net)
     >>> output shape : [10, 30]
 
     """
@@ -596,9 +596,9 @@ class GlobalMaxPool1d(Module):
 
     def build(self, inputs_shape=None):
         if self.data_format == 'channels_last':
-            self.reduce_max = tl.ReduceMax(axis=1)
+            self.reduce_max = tlx.ReduceMax(axis=1)
         elif self.data_format == 'channels_first':
-            self.reduce_max = tl.ReduceMax(axis=2)
+            self.reduce_max = tlx.ReduceMax(axis=2)
         else:
             raise ValueError(
                 "`data_format` should have one of the following values: [`channels_last`, `channels_first`]"
@@ -623,8 +623,8 @@ class GlobalMeanPool1d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 100, 30], name='input')
-    >>> net = tl.layers.GlobalMeanPool1d()(net)
+    >>> net = tlx.nn.Input([10, 100, 30], name='input')
+    >>> net = tlx.nn.GlobalMeanPool1d()(net)
     >>> output shape : [10, 30]
 
     """
@@ -651,9 +651,9 @@ class GlobalMeanPool1d(Module):
 
     def build(self, inputs_shape=None):
         if self.data_format == 'channels_last':
-            self.reduce_mean = tl.ReduceMean(axis=1)
+            self.reduce_mean = tlx.ReduceMean(axis=1)
         elif self.data_format == 'channels_first':
-            self.reduce_mean = tl.ReduceMean(axis=2)
+            self.reduce_mean = tlx.ReduceMean(axis=2)
         else:
             raise ValueError(
                 "`data_format` should have one of the following values: [`channels_last`, `channels_first`]"
@@ -678,8 +678,8 @@ class GlobalMaxPool2d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 100, 100, 30], name='input')
-    >>> net = tl.layers.GlobalMaxPool2d()(net)
+    >>> net = tlx.nn.Input([10, 100, 100, 30], name='input')
+    >>> net = tlx.nn.GlobalMaxPool2d()(net)
     >>> output shape : [10, 30]
 
     """
@@ -706,9 +706,9 @@ class GlobalMaxPool2d(Module):
 
     def build(self, inputs_shape=None):
         if self.data_format == 'channels_last':
-            self.reduce_max = tl.ReduceMax(axis=[1, 2])
+            self.reduce_max = tlx.ReduceMax(axis=[1, 2])
         elif self.data_format == 'channels_first':
-            self.reduce_max = tl.ReduceMax(axis=[2, 3])
+            self.reduce_max = tlx.ReduceMax(axis=[2, 3])
         else:
             raise ValueError(
                 "`data_format` should have one of the following values: [`channels_last`, `channels_first`]"
@@ -733,8 +733,8 @@ class GlobalMeanPool2d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 100, 100, 30], name='input')
-    >>> net = tl.layers.GlobalMeanPool2d()(net)
+    >>> net = tlx.nn.Input([10, 100, 100, 30], name='input')
+    >>> net = tlx.nn.GlobalMeanPool2d()(net)
     >>> output shape : [10, 30]
 
     """
@@ -762,9 +762,9 @@ class GlobalMeanPool2d(Module):
 
     def build(self, inputs_shape=None):
         if self.data_format == 'channels_last':
-            self.reduce_mean = tl.ReduceMean(axis=[1, 2])
+            self.reduce_mean = tlx.ReduceMean(axis=[1, 2])
         elif self.data_format == 'channels_first':
-            self.reduce_mean = tl.ReduceMean(axis=[2, 3])
+            self.reduce_mean = tlx.ReduceMean(axis=[2, 3])
         else:
             raise ValueError(
                 "`data_format` should have one of the following values: [`channels_last`, `channels_first`]"
@@ -789,8 +789,8 @@ class GlobalMaxPool3d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 100, 100, 100, 30], name='input')
-    >>> net = tl.layers.GlobalMaxPool3d()(net)
+    >>> net = tlx.nn.Input([10, 100, 100, 100, 30], name='input')
+    >>> net = tlx.nn.GlobalMaxPool3d()(net)
     >>> output shape : [10, 30]
 
     """
@@ -818,9 +818,9 @@ class GlobalMaxPool3d(Module):
 
     def build(self, inputs_shape=None):
         if self.data_format == 'channels_last':
-            self.reduce_max = tl.ReduceMax(axis=[1, 2, 3])
+            self.reduce_max = tlx.ReduceMax(axis=[1, 2, 3])
         elif self.data_format == 'channels_first':
-            self.reduce_max = tl.ReduceMax(axis=[2, 3, 4])
+            self.reduce_max = tlx.ReduceMax(axis=[2, 3, 4])
         else:
             raise ValueError(
                 "`data_format` should have one of the following values: [`channels_last`, `channels_first`]"
@@ -845,8 +845,8 @@ class GlobalMeanPool3d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 100, 100, 100, 30], name='input')
-    >>> net = tl.layers.GlobalMeanPool3d()(net)
+    >>> net = tlx.nn.Input([10, 100, 100, 100, 30], name='input')
+    >>> net = tlx.nn.GlobalMeanPool3d()(net)
     >>> output shape : [10, 30]
 
     """
@@ -873,9 +873,9 @@ class GlobalMeanPool3d(Module):
 
     def build(self, inputs_shape=None):
         if self.data_format == 'channels_last':
-            self.reduce_mean = tl.ReduceMean(axis=[1, 2, 3])
+            self.reduce_mean = tlx.ReduceMean(axis=[1, 2, 3])
         elif self.data_format == 'channels_first':
-            self.reduce_mean = tl.ReduceMean(axis=[2, 3, 4])
+            self.reduce_mean = tlx.ReduceMean(axis=[2, 3, 4])
         else:
             raise ValueError(
                 "`data_format` should have one of the following values: [`channels_last`, `channels_first`]"
@@ -901,8 +901,8 @@ class CornerPool2d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 32, 32, 8], name='input')
-    >>> net = tl.layers.CornerPool2d(mode='TopLeft',name='cornerpool2d')(net)
+    >>> net = tlx.nn.Input([10, 32, 32, 8], name='input')
+    >>> net = tlx.nn.CornerPool2d(mode='TopLeft',name='cornerpool2d')(net)
     >>> output shape : [10, 32, 32, 8]
 
     """
@@ -930,32 +930,32 @@ class CornerPool2d(Module):
         pass
 
     def forward(self, inputs):
-        _, input_width, input_height, _ = tl.get_tensor_shape(inputs)
+        _, input_width, input_height, _ = tlx.get_tensor_shape(inputs)
         # input_width = inputs.shape[2]
         # input_height = inputs.shape[1]
-        batch_min = tl.reduce_min(inputs)
+        batch_min = tlx.reduce_min(inputs)
         if self.mode == 'TopLeft':
-            temp_bottom = tl.pad(
-                inputs, tl.constant([[0, 0], [0, input_height - 1], [0, 0], [0, 0]]), constant_values=batch_min
+            temp_bottom = tlx.pad(
+                inputs, tlx.constant([[0, 0], [0, input_height - 1], [0, 0], [0, 0]]), constant_values=batch_min
             )
-            temp_right = tl.pad(
-                inputs, tl.constant([[0, 0], [0, 0], [0, input_width - 1], [0, 0]]), constant_values=batch_min
+            temp_right = tlx.pad(
+                inputs, tlx.constant([[0, 0], [0, 0], [0, input_width - 1], [0, 0]]), constant_values=batch_min
             )
-            temp_bottom = tl.ops.max_pool(temp_bottom, ksize=(input_height, 1), strides=(1, 1), padding='VALID')
-            temp_right = tl.ops.max_pool(temp_right, ksize=(1, input_width), strides=(1, 1), padding='VALID')
-            outputs = tl.add(temp_bottom, temp_right)  #, name=self.name)
+            temp_bottom = tlx.ops.max_pool(temp_bottom, ksize=(input_height, 1), strides=(1, 1), padding='VALID')
+            temp_right = tlx.ops.max_pool(temp_right, ksize=(1, input_width), strides=(1, 1), padding='VALID')
+            outputs = tlx.add(temp_bottom, temp_right)  #, name=self.name)
         elif self.mode == 'BottomRight':
-            temp_top = tl.pad(
-                inputs, tl.constant([[0, 0], [input_height - 1, 0], [0, 0], [0, 0]]), constant_values=batch_min
+            temp_top = tlx.pad(
+                inputs, tlx.constant([[0, 0], [input_height - 1, 0], [0, 0], [0, 0]]), constant_values=batch_min
             )
-            temp_left = tl.pad(
-                inputs, tl.constant([[0, 0], [0, 0], [input_width - 1, 0], [0, 0]]), constant_values=batch_min
+            temp_left = tlx.pad(
+                inputs, tlx.constant([[0, 0], [0, 0], [input_width - 1, 0], [0, 0]]), constant_values=batch_min
             )
-            temp_top = tl.ops.max_pool(temp_top, ksize=(input_height, 1), strides=(1, 1), padding='VALID')
-            temp_left = tl.ops.max_pool(temp_left, ksize=(1, input_width), strides=(1, 1), padding='VALID')
-            outputs = tl.add(temp_top, temp_left)
+            temp_top = tlx.ops.max_pool(temp_top, ksize=(input_height, 1), strides=(1, 1), padding='VALID')
+            temp_left = tlx.ops.max_pool(temp_left, ksize=(1, input_width), strides=(1, 1), padding='VALID')
+            outputs = tlx.add(temp_top, temp_left)
         else:
-            outputs = tl.identity(inputs)
+            outputs = tlx.identity(inputs)
         return outputs
 
 
@@ -975,8 +975,8 @@ class AdaptiveMeanPool1d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 32, 3], name='input')
-    >>> net = tl.layers.AdaptiveMeanPool1d(output_size=16)(net)
+    >>> net = tlx.nn.Input([10, 32, 3], name='input')
+    >>> net = tlx.nn.AdaptiveMeanPool1d(output_size=16)(net)
     >>> output shape : [10, 16, 3]
 
     """
@@ -1006,7 +1006,7 @@ class AdaptiveMeanPool1d(Module):
         else:
             raise Exception("unsupported data format")
 
-        self.adaptivemeanpool1d = tl.ops.AdaptiveMeanPool1D(output_size=self.output_size, data_format=self.data_format)
+        self.adaptivemeanpool1d = tlx.ops.AdaptiveMeanPool1D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
 
@@ -1030,8 +1030,8 @@ class AdaptiveMeanPool2d(Module):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10,32, 32, 3], name='input')
-    >>> net = tl.layers.AdaptiveMeanPool2d(output_size=16)(net)
+    >>> net = tlx.nn.Input([10,32, 32, 3], name='input')
+    >>> net = tlx.nn.AdaptiveMeanPool2d(output_size=16)(net)
     >>> output shape : [10,16, 16, 3]
 
     """
@@ -1064,7 +1064,7 @@ class AdaptiveMeanPool2d(Module):
         if isinstance(self.output_size, int):
             self.output_size = (self.output_size, ) * 2
 
-        self.adaptivemeanpool2d = tl.ops.AdaptiveMeanPool2D(output_size=self.output_size, data_format=self.data_format)
+        self.adaptivemeanpool2d = tlx.ops.AdaptiveMeanPool2D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
 
@@ -1088,8 +1088,8 @@ class AdaptiveMeanPool3d(Module):
         ---------
         With TensorLayer
 
-        >>> net = tl.layers.Input([10,32, 32, 32, 3], name='input')
-        >>> net = tl.layers.AdaptiveMeanPool3d(output_size=16)(net)
+        >>> net = tlx.nn.Input([10,32, 32, 32, 3], name='input')
+        >>> net = tlx.nn.AdaptiveMeanPool3d(output_size=16)(net)
         >>> output shape : [10, 16, 16, 16, 3]
 
         """
@@ -1122,7 +1122,7 @@ class AdaptiveMeanPool3d(Module):
         if isinstance(self.output_size, int):
             self.output_size = (self.output_size, ) * 3
 
-        self.adaptivemeanpool3d = tl.ops.AdaptiveMeanPool3D(output_size=self.output_size, data_format=self.data_format)
+        self.adaptivemeanpool3d = tlx.ops.AdaptiveMeanPool3D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
 
@@ -1146,8 +1146,8 @@ class AdaptiveMaxPool1d(Module):
         ---------
         With TensorLayer
 
-        >>> net = tl.layers.Input([10, 32, 3], name='input')
-        >>> net = tl.layers.AdaptiveMaxPool1d(output_size=16)(net)
+        >>> net = tlx.nn.Input([10, 32, 3], name='input')
+        >>> net = tlx.nn.AdaptiveMaxPool1d(output_size=16)(net)
         >>> output shape : [10, 16, 3]
 
         """
@@ -1177,7 +1177,7 @@ class AdaptiveMaxPool1d(Module):
         else:
             raise Exception("unsupported data format")
 
-        self.adaptivemaxpool1d = tl.ops.AdaptiveMaxPool1D(output_size=self.output_size, data_format=self.data_format)
+        self.adaptivemaxpool1d = tlx.ops.AdaptiveMaxPool1D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
 
@@ -1201,8 +1201,8 @@ class AdaptiveMaxPool2d(Module):
         ---------
         With TensorLayer
 
-        >>> net = tl.layers.Input([10, 32, 32, 3], name='input')
-        >>> net = tl.layers.AdaptiveMaxPool2d(output_size=16)(net)
+        >>> net = tlx.nn.Input([10, 32, 32, 3], name='input')
+        >>> net = tlx.nn.AdaptiveMaxPool2d(output_size=16)(net)
         >>> output shape : [10, 16, 16, 3]
 
     """
@@ -1234,7 +1234,7 @@ class AdaptiveMaxPool2d(Module):
         if isinstance(self.output_size, int):
             self.output_size = (self.output_size, ) * 2
 
-        self.adaptivemaxpool2d = tl.ops.AdaptiveMaxPool2D(output_size=self.output_size, data_format=self.data_format)
+        self.adaptivemaxpool2d = tlx.ops.AdaptiveMaxPool2D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
 
@@ -1258,8 +1258,8 @@ class AdaptiveMaxPool3d(Module):
         ---------
         With TensorLayer
 
-        >>> net = tl.layers.Input([10,32, 32, 32, 3], name='input')
-        >>> net = tl.layers.AdaptiveMaxPool3d(output_size=16)(net)
+        >>> net = tlx.nn.Input([10,32, 32, 32, 3], name='input')
+        >>> net = tlx.nn.AdaptiveMaxPool3d(output_size=16)(net)
         >>> output shape : [10, 16, 16, 16, 3]
 
         """
@@ -1292,7 +1292,7 @@ class AdaptiveMaxPool3d(Module):
         if isinstance(self.output_size, int):
             self.output_size = (self.output_size, ) * 3
 
-        self.adaptivemaxpool3d = tl.ops.AdaptiveMaxPool3D(output_size=self.output_size, data_format=self.data_format)
+        self.adaptivemaxpool3d = tlx.ops.AdaptiveMaxPool3D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
 

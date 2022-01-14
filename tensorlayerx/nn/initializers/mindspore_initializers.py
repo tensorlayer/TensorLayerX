@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from mindspore import Tensor
 from mindspore.common import initializer
 
@@ -24,7 +24,7 @@ class Initializer(object):
         shape : tuple of int.
             The shape of the tensor.
         dtype : Optional dtype of the tensor.
-            If not provided will return tensor of `tl.float32`.
+            If not provided will return tensor of `tlx.float32`.
 
         Returns
         -------
@@ -66,7 +66,7 @@ class Zeros(Initializer):
     def __init__(self):
         self.zero = initializer.Zero()
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         arr = np.ndarray(shape)
         self.zero(arr)
         return Tensor(arr, dtype=dtype)
@@ -79,7 +79,7 @@ class Ones(Initializer):
     def __init__(self):
         self.one = initializer.One()
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         arr = np.ndarray(shape)
         self.one(arr)
         return Tensor(arr, dtype=dtype)
@@ -99,7 +99,7 @@ class Constant(Initializer):
         self.value = value
         self.constant = initializer.Constant(value=value)
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         arr = np.ndarray(shape)
         self.constant(arr)
         return Tensor(arr, dtype=dtype)
@@ -127,8 +127,8 @@ class RandomUniform(Initializer):
         self.maxval = maxval
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.random_uniform(shape, self.minval, self.maxval, dtype=dtype, seed=self.seed)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.random_uniform(shape, self.minval, self.maxval, dtype=dtype, seed=self.seed)
 
     def get_config(self):
         return {"minval": self.minval, "maxval": self.maxval, "seed": self.seed}
@@ -152,8 +152,8 @@ class RandomNormal(Initializer):
         self.stddev = stddev
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.random_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.random_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
 
     def get_config(self):
         return {"mean": self.mean, "stddev": self.stddev, "seed": self.seed}
@@ -183,8 +183,8 @@ class TruncatedNormal(Initializer):
         self.stddev = stddev
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.truncated_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.truncated_normal(shape, self.mean, self.stddev, dtype=dtype, seed=self.seed)
 
     def get_config(self):
         return {"mean": self.mean, "stddev": self.stddev, "seed": self.seed}
@@ -203,8 +203,8 @@ class HeNormal(Initializer):
     def __init__(self, seed=None):
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.he_normal(seed=self.seed, shape=shape, dtype=dtype)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.he_normal(seed=self.seed, shape=shape, dtype=dtype)
 
     def get_config(self):
         return {"seed", self.seed}
@@ -272,8 +272,8 @@ class XavierUniform(Initializer):
     def __init__(self, seed=None):
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.xavier_uniform(seed=self.seed, shape=shape, dtype=dtype)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.xavier_uniform(seed=self.seed, shape=shape, dtype=dtype)
 
     def get_config(self):
         return {"seed", self.seed}
@@ -293,8 +293,8 @@ class XavierNormal(Initializer):
     def __init__(self, seed=None):
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
-        return tl.xavier_normal(seed=self.seed, shape=shape, dtype=dtype)
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.xavier_normal(seed=self.seed, shape=shape, dtype=dtype)
 
     def get_config(self):
         return {"seed", self.seed}

@@ -4,6 +4,7 @@
 import os
 import unittest
 import numpy as np
+import tensorlayerx
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -23,7 +24,7 @@ class Layer_Shape_Test(CustomTestCase):
 
     def test_flatten(self):
 
-        class CustomizeModel(tensorlayerx.layers.Module):
+        class CustomizeModel(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
@@ -40,7 +41,7 @@ class Layer_Shape_Test(CustomTestCase):
 
     def test_reshape(self):
 
-        class CustomizeModel(tensorlayerx.layers.Module):
+        class CustomizeModel(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
@@ -63,7 +64,7 @@ class Layer_Shape_Test(CustomTestCase):
 
     def test_transpose(self):
 
-        class CustomizeModel(tensorlayerx.layers.Module):
+        class CustomizeModel(tensorlayerx.nn.Module):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
@@ -101,7 +102,7 @@ class Layer_Shape_Test(CustomTestCase):
 
     def test_shuffle(self):
 
-        class CustomizeModel(tensorlayerx.layers.Module):
+        class CustomizeModel(tensorlayerx.nn.Module):
 
             def __init__(self, x):
                 super(CustomizeModel, self).__init__()

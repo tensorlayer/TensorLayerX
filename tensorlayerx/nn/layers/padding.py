@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -30,8 +30,8 @@ class PadLayer(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 224, 224, 3], name='input')
-    >>> padlayer = tl.layers.PadLayer([[0, 0], [3, 3], [3, 3], [0, 0]], "REFLECT", name='inpad')(net)
+    >>> net = tlx.nn.Input([10, 224, 224, 3], name='input')
+    >>> padlayer = tlx.nn.PadLayer([[0, 0], [3, 3], [3, 3], [0, 0]], "REFLECT", name='inpad')(net)
     >>> print(padlayer)
     >>> output shape : (10, 230, 230, 3)
 
@@ -67,7 +67,7 @@ class PadLayer(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.pad = tl.ops.Pad(paddings=self.padding, mode=self.mode, constant_values=self.constant_values)
+        self.pad = tlx.ops.Pad(paddings=self.padding, mode=self.mode, constant_values=self.constant_values)
 
     def forward(self, inputs):
         outputs = self.pad(inputs)
@@ -90,8 +90,8 @@ class ZeroPad1d(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 100, 1], name='input')
-    >>> pad1d = tl.layers.ZeroPad1d(padding=(3, 3))(net)
+    >>> net = tlx.nn.Input([10, 100, 1], name='input')
+    >>> pad1d = tlx.nn.ZeroPad1d(padding=(3, 3))(net)
     >>> print(pad1d)
     >>> output shape : (10, 106, 1)
 
@@ -120,7 +120,7 @@ class ZeroPad1d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.layer = tl.ops.ZeroPadding1D(padding=self.padding)
+        self.layer = tlx.ops.ZeroPadding1D(padding=self.padding)
 
     def forward(self, inputs):
         outputs = self.layer(inputs)
@@ -144,8 +144,8 @@ class ZeroPad2d(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 100, 100, 3], name='input')
-    >>> pad2d = tl.layers.ZeroPad2d(padding=((3, 3), (4, 4)))(net)
+    >>> net = tlx.nn.Input([10, 100, 100, 3], name='input')
+    >>> pad2d = tlx.nn.ZeroPad2d(padding=((3, 3), (4, 4)))(net)
     >>> print(pad2d)
     >>> output shape : (10, 106, 108, 3)
 
@@ -175,7 +175,7 @@ class ZeroPad2d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.layer = tl.ops.ZeroPadding2D(padding=self.padding)
+        self.layer = tlx.ops.ZeroPadding2D(padding=self.padding)
 
     def forward(self, inputs):
         outputs = self.layer(inputs)
@@ -200,8 +200,8 @@ class ZeroPad3d(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([10, 100, 100, 100, 3], name='input')
-    >>> pad3d = tl.layers.ZeroPad3d(padding=((3, 3), (4, 4), (5, 5)))(net)
+    >>> net = tlx.nn.Input([10, 100, 100, 100, 3], name='input')
+    >>> pad3d = tlx.nn.ZeroPad3d(padding=((3, 3), (4, 4), (5, 5)))(net)
     >>> print(pad3d)
     >>> output shape : (10, 106, 108, 110, 3)
 
@@ -231,7 +231,7 @@ class ZeroPad3d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.layer = tl.ops.ZeroPadding3D(padding=self.padding)
+        self.layer = tlx.ops.ZeroPadding3D(padding=self.padding)
 
     def forward(self, inputs):
         outputs = self.layer(inputs)

@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -25,8 +25,8 @@ class ExpandDims(Module):
 
     Examples
     --------
-    >>> x = tl.layers.Input([10, 3], name='in')
-    >>> y = tl.layers.ExpandDims(axis=-1)(x)
+    >>> x = tlx.nn.Input([10, 3], name='in')
+    >>> y = tlx.nn.ExpandDims(axis=-1)(x)
     [10, 3, 1]
     """
 
@@ -51,7 +51,7 @@ class ExpandDims(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        self.expand_dims = tl.ops.ExpandDims(axis=self.axis)
+        self.expand_dims = tlx.ops.ExpandDims(axis=self.axis)
 
     # @tf.function
     def forward(self, inputs):
@@ -74,8 +74,8 @@ class Tile(Module):
 
     Examples
     --------
-    >>> x = tl.layers.Input([10, 3], name='in')
-    >>> y = tl.layers.Tile(multiples=[2, 3])(x)
+    >>> x = tlx.nn.Input([10, 3], name='in')
+    >>> y = tlx.nn.Tile(multiples=[2, 3])(x)
 
     """
 
@@ -97,7 +97,7 @@ class Tile(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        self.tile = tl.ops.Tile()
+        self.tile = tlx.ops.Tile()
 
     # @tf.function
     def forward(self, inputs):

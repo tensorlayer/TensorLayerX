@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -24,23 +24,23 @@ class OneHot(Module):
     axis : None or int
         The axis.
     dtype : None or TensorFlow dtype
-        The data type, None means tl.float32.
+        The data type, None means tlx.float32.
     name : str
         A unique layer name.
 
     Examples
     ---------
-    >>> net = tl.layers.Input([32], dtype=tl.int32)
-    >>> onehot = tl.layers.OneHot(depth=8)
+    >>> net = tlx.nn.Input([32], dtype=tlx.int32)
+    >>> onehot = tlx.nn.OneHot(depth=8)
     >>> print(onehot)
     OneHot(depth=8, name='onehot')
-    >>> tensor = tl.layers.OneHot(depth=8)(net)
+    >>> tensor = tlx.nn.OneHot(depth=8)(net)
     >>> print(tensor)
     Tensor([...], shape=(32, 8), dtype=float32)
 
     """
 
-    def __init__(self, depth=None, on_value=1.0, off_value=0.0, axis=-1, dtype=tl.float32, name=None):
+    def __init__(self, depth=None, on_value=1.0, off_value=0.0, axis=-1, dtype=tlx.float32, name=None):
         super(OneHot, self).__init__(name)
         self.depth = depth
         self.on_value = on_value
@@ -69,7 +69,7 @@ class OneHot(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.onehot = tl.ops.OneHot(
+        self.onehot = tlx.ops.OneHot(
             depth=self.depth, on_value=self.on_value, off_value=self.off_value, axis=self.axis, dtype=self.dtype
         )
 
@@ -138,20 +138,20 @@ class Word2vecEmbedding(Module):
     --------
     Word2Vec With TensorLayer (Example in `examples/text_word_embedding/tutorial_word2vec_basic.py`)
 
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> batch_size = 8
     >>> embedding_size = 50
-    >>> inputs = tl.layers.Input([batch_size], dtype=tl.int32)
-    >>> labels = tl.layers.Input([batch_size, 1], dtype=tl.int32)
-    >>> emb_net = tl.layers.Word2vecEmbedding(
+    >>> inputs = tlx.nn.Input([batch_size], dtype=tlx.int32)
+    >>> labels = tlx.nn.Input([batch_size, 1], dtype=tlx.int32)
+    >>> emb_net = tlx.nn.Word2vecEmbedding(
     >>>     vocabulary_size=10000,
     >>>     embedding_size=embedding_size,
     >>>     num_sampled=100,
     >>>     activate_nce_loss=True, # the nce loss is activated
     >>>     nce_loss_args={},
-    >>>     E_init=tl.initializers.random_uniform(minval=-1.0, maxval=1.0),
-    >>>     nce_W_init=tl.initializers.truncated_normal(stddev=float(1.0 / np.sqrt(embedding_size))),
-    >>>     nce_b_init=tl.initializers.constant(value=0.0),
+    >>>     E_init=tlx.initializers.random_uniform(minval=-1.0, maxval=1.0),
+    >>>     nce_W_init=tlx.initializers.truncated_normal(stddev=float(1.0 / np.sqrt(embedding_size))),
+    >>>     nce_b_init=tlx.initializers.constant(value=0.0),
     >>>     name='word2vec_layer',
     >>> )
     >>> print(emb_net)
@@ -159,8 +159,8 @@ class Word2vecEmbedding(Module):
     >>> embed_tensor = emb_net(inputs, use_nce_loss=False) # the nce loss is turned off and no need to provide labels
     >>> embed_tensor = emb_net([inputs, labels], use_nce_loss=False) # the nce loss is turned off and the labels will be ignored
     >>> embed_tensor, embed_nce_loss = emb_net([inputs, labels]) # the nce loss is calculated
-    >>> outputs = tl.layers.Dense(n_units=10, name="dense")(embed_tensor)
-    >>> model = tl.model.Model(inputs=[inputs, labels], outputs=[outputs, embed_nce_loss], name="word2vec_model") # a static model
+    >>> outputs = tlx.layers.Dense(n_units=10, name="dense")(embed_tensor)
+    >>> model = tlx.model.Model(inputs=[inputs, labels], outputs=[outputs, embed_nce_loss], name="word2vec_model") # a static model
     >>> out = model([data_x, data_y], is_train=True) # where data_x is inputs and data_y is labels
 
     References
@@ -232,7 +232,7 @@ class Word2vecEmbedding(Module):
             init=self.E_init,
         )
 
-        self.normalized_embeddings = tl.L2Normalize(axis=1)(self.embeddings)
+        self.normalized_embeddings = tlx.L2Normalize(axis=1)(self.embeddings)
 
         if self.activate_nce_loss:
             # Construct the variables for the NCE loss (i.e. negative sampling)
@@ -248,10 +248,10 @@ class Word2vecEmbedding(Module):
                 init=self.nce_b_init,
             )
 
-        self.embedding_lookup = tl.EmbeddingLookup()
+        self.embedding_lookup = tlx.EmbeddingLookup()
 
         if self.activate_nce_loss:
-            self.nce_loss = tl.NCELoss(**self.nce_loss_args)
+            self.nce_loss = tlx.NCELoss(**self.nce_loss_args)
 
     def forward(self, inputs, use_nce_loss=None):
         """
@@ -287,7 +287,7 @@ class Word2vecEmbedding(Module):
             if not isinstance(inputs, list):
                 raise ValueError("If nce loss is used, the labels of inputs must be provided.")
 
-            nce_cost = tl.ops.reduce_mean(
+            nce_cost = tlx.ops.reduce_mean(
                 input_tensor=self.nce_loss(
                     weights=self.nce_weights, biases=self.nce_biases, inputs=outputs, labels=inputs[1],
                     num_sampled=self.num_sampled, num_classes=self.vocabulary_size
@@ -327,9 +327,9 @@ class Embedding(Module):
 
     Examples
     --------
-    >>> import tensorlayerx as tl
-    >>> input = tl.layers.Input([8, 100], dtype=tl.int32)
-    >>> embed = tl.layers.Embedding(vocabulary_size=1000, embedding_size=50, name='embed')
+    >>> import tensorlayerx as tlx
+    >>> input = tlx.nn.Input([8, 100], dtype=tlx.int32)
+    >>> embed = tlx.nn.Embedding(vocabulary_size=1000, embedding_size=50, name='embed')
     >>> print(embed)
     Embedding(vocabulary_size=1000, embedding_size=50)
     >>> tensor = embed(input)
@@ -376,7 +376,7 @@ class Embedding(Module):
             shape=(self.vocabulary_size, self.embedding_size),
             init=self.E_init,
         )
-        self.embedding_lookup = tl.EmbeddingLookup()
+        self.embedding_lookup = tlx.EmbeddingLookup()
 
     def forward(self, inputs):
         """
@@ -418,11 +418,11 @@ class AverageEmbedding(Module):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> batch_size = 8
     >>> length = 5
-    >>> input = tl.layers.Input([batch_size, length], dtype=tl.int32)
-    >>> avgembed = tl.layers.AverageEmbedding(vocabulary_size=1000, embedding_size=50, name='avg')
+    >>> input = tlx.nn.Input([batch_size, length], dtype=tlx.int32)
+    >>> avgembed = tlx.nn.AverageEmbedding(vocabulary_size=1000, embedding_size=50, name='avg')
     >>> print(avgembed)
     AverageEmbedding(vocabulary_size=1000, embedding_size=50, pad_value=0)
     >>> tensor = avgembed(input)
@@ -475,12 +475,12 @@ class AverageEmbedding(Module):
             shape=(self.vocabulary_size, self.embedding_size),
             init=self.E_init,
         )
-        self.embedding_lookup = tl.EmbeddingLookup()
-        self.not_equal = tl.NotEqual()
-        self.cast = tl.Cast(tl.float32)
-        self.expand_dims = tl.ExpandDims(axis=-1)
-        self.reduce_sum = tl.ReduceSum(axis=1)
-        self.count_nonzero = tl.CountNonzero(keepdims=True, dtype=tl.float32)
+        self.embedding_lookup = tlx.EmbeddingLookup()
+        self.not_equal = tlx.NotEqual()
+        self.cast = tlx.Cast(tlx.float32)
+        self.expand_dims = tlx.ExpandDims(axis=-1)
+        self.reduce_sum = tlx.ReduceSum(axis=1)
+        self.count_nonzero = tlx.CountNonzero(keepdims=True, dtype=tlx.float32)
 
     def forward(self, inputs):
         """
@@ -500,7 +500,7 @@ class AverageEmbedding(Module):
         # Count number of non-padding words in each sentence
         sentence_lengths = self.count_nonzero(masks, axis=1)
         print(masks, sentence_lengths)
-        sentence_embeddings = tl.ops.divide(
+        sentence_embeddings = tlx.ops.divide(
             sum_word_embeddings,
             sentence_lengths + 1e-8,  # Add epsilon to avoid dividing by 0
         )

@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -50,10 +50,10 @@ class QuanDenseWithBN(Module):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> net = tl.layers.Input([50, 256])
-    >>> layer = tl.layers.QuanDenseWithBN(128, act='relu', name='qdbn1')(net)
-    >>> net = tl.layers.QuanDenseWithBN(256, act='relu', name='qdbn2')(net)
+    >>> import tensorlayerx as tlx
+    >>> net = tlx.nn.Input([50, 256])
+    >>> layer = tlx.nn.QuanDenseWithBN(128, act='relu', name='qdbn1')(net)
+    >>> net = tlx.nn.QuanDenseWithBN(256, act='relu', name='qdbn2')(net)
     """
 
     def __init__(
@@ -131,13 +131,13 @@ class QuanDenseWithBN(Module):
             self.offset_para = None
 
         self.moving_mean = self._get_weights(
-            "moving_mean", shape=para_bn_shape, init=tl.nn.initializers.constant(1.0), trainable=False
+            "moving_mean", shape=para_bn_shape, init=tlx.nn.initializers.constant(1.0), trainable=False
         )
         self.moving_variance = self._get_weights(
-            "moving_variacne", shape=para_bn_shape, init=tl.nn.initializers.constant(1.0), trainable=False
+            "moving_variacne", shape=para_bn_shape, init=tlx.nn.initializers.constant(1.0), trainable=False
         )
 
-        self.quan_dense_bn = tl.ops.QuanDenseBn(
+        self.quan_dense_bn = tlx.ops.QuanDenseBn(
             self.W, self.scale_para, self.offset_para, self.moving_mean, self.moving_variance, self.decay, self.bitW,
             self.bitA, self.epsilon, self.is_train
         )
@@ -145,7 +145,7 @@ class QuanDenseWithBN(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

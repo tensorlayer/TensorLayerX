@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -27,8 +27,8 @@ class Dropout(Module):
 
     Examples
     --------
-    >>> net = tl.layers.Input([10, 200])
-    >>> net = tl.layers.Dropout(keep=0.2)(net)
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.Dropout(keep=0.2)(net)
 
     """
 
@@ -50,7 +50,7 @@ class Dropout(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.dropout = tl.ops.Dropout(keep=self.keep, seed=self.seed)
+        self.dropout = tlx.ops.Dropout(keep=self.keep, seed=self.seed)
 
     # @tf.function
     def forward(self, inputs):

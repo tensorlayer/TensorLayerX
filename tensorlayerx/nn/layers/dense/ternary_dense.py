@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -88,12 +88,12 @@ class TernaryDense(Module):
         self.b = None
         if self.b_init is not None:
             self.b = self._get_weights(var_name="biases", shape=(self.n_units), init=self.b_init)
-        self.ternary_dense = tl.ops.TernaryDense(self.W, self.b)
+        self.ternary_dense = tlx.ops.TernaryDense(self.W, self.b)
 
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
         outputs = self.ternary_dense(inputs)

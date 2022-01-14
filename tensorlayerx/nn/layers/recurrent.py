@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx import BACKEND
 from tensorlayerx.nn.core import Module
@@ -95,7 +95,7 @@ class RNNCell(Module):
 
     def build(self, inputs_shape):
         stdv = 1.0 / np.sqrt(self.hidden_size)
-        _init = tl.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
+        _init = tlx.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
         self.weight_ih_shape = (self.hidden_size, self.input_size)
         self.weight_hh_shape = (self.hidden_size, self.hidden_size)
         self.weight_ih = self._get_weights("weight_ih", shape=self.weight_ih_shape, init=_init)
@@ -109,7 +109,7 @@ class RNNCell(Module):
         else:
             self.bias_ih = None
             self.bias_hh = None
-        self.rnncell = tl.ops.rnncell(
+        self.rnncell = tlx.ops.rnncell(
             weight_ih=self.weight_ih, weight_hh=self.weight_hh, bias_ih=self.bias_ih, bias_hh=self.bias_hh, act=self.act
         )
 
@@ -127,18 +127,18 @@ class RNNCell(Module):
         --------
         With TensorLayer
 
-        >>> input = tl.layers.Input([4, 16], name='input')
-        >>> prev_h = tl.layers.Input([4,32])
-        >>> cell = tl.layers.RNNCell(input_size=16, hidden_size=32, bias=True, act='tanh', name='rnncell_1')
+        >>> input = tlx.nn.Input([4, 16], name='input')
+        >>> prev_h = tlx.nn.Input([4,32])
+        >>> cell = tlx.nn.RNNCell(input_size=16, hidden_size=32, bias=True, act='tanh', name='rnncell_1')
         >>> y, h = cell(input, prev_h)
         >>> print(y.shape)
 
         """
-        input_shape = tl.get_tensor_shape(inputs)
+        input_shape = tlx.get_tensor_shape(inputs)
         self.check_input(input_shape)
         if states is None:
-            states = tl.zeros(shape=(input_shape[0], self.hidden_size), dtype=inputs.dtype)
-        states_shape = tl.get_tensor_shape(states)
+            states = tlx.zeros(shape=(input_shape[0], self.hidden_size), dtype=inputs.dtype)
+        states_shape = tlx.get_tensor_shape(states)
         self.check_hidden(input_shape, states_shape, hidden_label='h')
         output, states = self.rnncell(inputs, states)
         return output, states
@@ -214,7 +214,7 @@ class LSTMCell(Module):
 
     def build(self, inputs_shape):
         stdv = 1.0 / np.sqrt(self.hidden_size)
-        _init = tl.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
+        _init = tlx.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
         self.weight_ih_shape = (4 * self.hidden_size, self.input_size)
         self.weight_hh_shape = (4 * self.hidden_size, self.hidden_size)
         self.weight_ih = self._get_weights("weight_ih", shape=self.weight_ih_shape, init=_init)
@@ -229,7 +229,7 @@ class LSTMCell(Module):
             self.bias_ih = None
             self.bias_hh = None
 
-        self.lstmcell = tl.ops.lstmcell(
+        self.lstmcell = tlx.ops.lstmcell(
             weight_ih=self.weight_ih, weight_hh=self.weight_hh, bias_ih=self.bias_ih, bias_hh=self.bias_hh
         )
 
@@ -247,23 +247,23 @@ class LSTMCell(Module):
         --------
         With TensorLayer
 
-        >>> input = tl.layers.Input([4, 16], name='input')
-        >>> prev_h = tl.layers.Input([4,32])
-        >>> prev_c = tl.layers.Input([4,32])
-        >>> cell = tl.layers.LSTMCell(input_size=16, hidden_size=32, bias=True, name='lstmcell_1')
+        >>> input = tlx.nn.Input([4, 16], name='input')
+        >>> prev_h = tlx.nn.Input([4,32])
+        >>> prev_c = tlx.nn.Input([4,32])
+        >>> cell = tlx.nn.LSTMCell(input_size=16, hidden_size=32, bias=True, name='lstmcell_1')
         >>> y, (h, c)= cell(input, (prev_h, prev_c))
         >>> print(y.shape)
 
         """
-        input_shape = tl.get_tensor_shape(inputs)
+        input_shape = tlx.get_tensor_shape(inputs)
         self.check_input(input_shape)
         if states is not None:
             h, c = states
         else:
-            h = tl.zeros(shape=(input_shape[0], self.hidden_size), dtype=inputs.dtype)
-            c = tl.zeros(shape=(input_shape[0], self.hidden_size), dtype=inputs.dtype)
-        h_shape = tl.get_tensor_shape(h)
-        c_shape = tl.get_tensor_shape(c)
+            h = tlx.zeros(shape=(input_shape[0], self.hidden_size), dtype=inputs.dtype)
+            c = tlx.zeros(shape=(input_shape[0], self.hidden_size), dtype=inputs.dtype)
+        h_shape = tlx.get_tensor_shape(h)
+        c_shape = tlx.get_tensor_shape(c)
         self.check_hidden(input_shape, h_shape, hidden_label='h')
         self.check_hidden(input_shape, c_shape, hidden_label='c')
         output, new_h, new_c = self.lstmcell(inputs, h, c)
@@ -340,7 +340,7 @@ class GRUCell(Module):
 
     def build(self, inputs_shape):
         stdv = 1.0 / np.sqrt(self.hidden_size)
-        _init = tl.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
+        _init = tlx.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
         self.weight_ih_shape = (3 * self.hidden_size, self.input_size)
         self.weight_hh_shape = (3 * self.hidden_size, self.hidden_size)
         self.weight_ih = self._get_weights("weight_ih", shape=self.weight_ih_shape, init=_init)
@@ -355,7 +355,7 @@ class GRUCell(Module):
             self.bias_ih = None
             self.bias_hh = None
 
-        self.grucell = tl.ops.grucell(
+        self.grucell = tlx.ops.grucell(
             weight_ih=self.weight_ih, weight_hh=self.weight_hh, bias_ih=self.bias_ih, bias_hh=self.bias_hh
         )
 
@@ -373,18 +373,18 @@ class GRUCell(Module):
         --------
         With TensorLayer
 
-        >>> input = tl.layers.Input([4, 16], name='input')
-        >>> prev_h = tl.layers.Input([4,32])
-        >>> cell = tl.layers.GRUCell(input_size=16, hidden_size=32, bias=True, name='grucell_1')
+        >>> input = tlx.nn.Input([4, 16], name='input')
+        >>> prev_h = tlx.nn.Input([4,32])
+        >>> cell = tlx.nn.GRUCell(input_size=16, hidden_size=32, bias=True, name='grucell_1')
         >>> y, h= cell(input, prev_h)
         >>> print(y.shape)
 
         """
-        input_shape = tl.get_tensor_shape(inputs)
+        input_shape = tlx.get_tensor_shape(inputs)
         self.check_input(input_shape)
         if states is None:
-            states = tl.zeros(shape=(input_shape[0], self.hidden_size), dtype=inputs.dtype)
-        states_shape = tl.get_tensor_shape(states)
+            states = tlx.zeros(shape=(input_shape[0], self.hidden_size), dtype=inputs.dtype)
+        states_shape = tlx.get_tensor_shape(states)
         self.check_hidden(input_shape, states_shape, hidden_label='h')
         output, states = self.grucell(inputs, states)
         return output, states
@@ -443,7 +443,7 @@ class RNNBase(Module):
             self.weights_bw = []
             self.bias_bw = []
             stdv = 1.0 / np.sqrt(self.hidden_size)
-            _init = tl.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
+            _init = tlx.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
             if self.mode == 'LSTM':
                 gate_size = 4 * self.hidden_size
             elif self.mode == 'GRU':
@@ -486,14 +486,14 @@ class RNNBase(Module):
                             self.bias_bw.append(self.b_ih)
                             self.bias_bw.append(self.b_hh)
 
-            self.rnn = tl.ops.rnnbase(
+            self.rnn = tlx.ops.rnnbase(
                 mode=self.mode, input_size=self.input_size, hidden_size=self.hidden_size, num_layers=self.num_layers,
                 bias=self.bias, batch_first=self.batch_first, dropout=self.dropout, bidirectional=self.bidirectional,
                 is_train=self.is_train, weights_fw=self.weights_fw, weights_bw=self.weights_bw, bias_fw=self.bias_fw,
                 bias_bw=self.bias_bw
             )
         else:
-            self.rnn = tl.ops.rnnbase(
+            self.rnn = tlx.ops.rnnbase(
                 mode=self.mode,
                 input_size=self.input_size,
                 hidden_size=self.hidden_size,
@@ -584,9 +584,9 @@ class RNN(RNNBase):
         --------
         With TensorLayer
 
-        >>> input = tl.layers.Input([23, 32, 16], name='input')
-        >>> prev_h = tl.layers.Input([4, 32, 32])
-        >>> cell = tl.layers.RNN(input_size=16, hidden_size=32, bias=True, num_layers=2, bidirectional = True, act='tanh', batch_first=False, dropout=0, name='rnn_1')
+        >>> input = tlx.nn.Input([23, 32, 16], name='input')
+        >>> prev_h = tlx.nn.Input([4, 32, 32])
+        >>> cell = tlx.nn.RNN(input_size=16, hidden_size=32, bias=True, num_layers=2, bidirectional = True, act='tanh', batch_first=False, dropout=0, name='rnn_1')
         >>> y, h= cell(input, prev_h)
         >>> print(y.shape)
 
@@ -659,10 +659,10 @@ class LSTM(RNNBase):
         --------
         With TensorLayer
 
-        >>> input = tl.layers.Input([23, 32, 16], name='input')
-        >>> prev_h = tl.layers.Input([4, 32, 32])
-        >>> prev_c = tl.layers.Input([4, 32, 32])
-        >>> cell = tl.layers.LSTM(input_size=16, hidden_size=32, bias=True, num_layers=2, bidirectional = True,  batch_first=False, dropout=0, name='lstm_1')
+        >>> input = tlx.nn.Input([23, 32, 16], name='input')
+        >>> prev_h = tlx.nn.Input([4, 32, 32])
+        >>> prev_c = tlx.nn.Input([4, 32, 32])
+        >>> cell = tlx.nn.LSTM(input_size=16, hidden_size=32, bias=True, num_layers=2, bidirectional = True,  batch_first=False, dropout=0, name='lstm_1')
         >>> y, (h, c)= cell(input, (prev_h, prev_c))
         >>> print(y.shape)
 
@@ -735,9 +735,9 @@ class GRU(RNNBase):
         --------
         With TensorLayer
 
-        >>> input = tl.layers.Input([23, 32, 16], name='input')
-        >>> prev_h = tl.layers.Input([4, 32, 32])
-        >>> cell = tl.layers.GRU(input_size=16, hidden_size=32, bias=True, num_layers=2, bidirectional = True,  batch_first=False, dropout=0, name='GRU_1')
+        >>> input = tlx.nn.Input([23, 32, 16], name='input')
+        >>> prev_h = tlx.nn.Input([4, 32, 32])
+        >>> cell = tlx.nn.GRU(input_size=16, hidden_size=32, bias=True, num_layers=2, bidirectional = True,  batch_first=False, dropout=0, name='GRU_1')
         >>> y, h= cell(input, prev_h)
         >>> print(y.shape)
 

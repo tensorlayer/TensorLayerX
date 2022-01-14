@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -37,8 +37,8 @@ class UpSampling2d(Module):
     ---------
     With TensorLayer
 
-    >>> ni = tl.layers.Input([10, 50, 50, 32], name='input')
-    >>> ni = tl.layers.UpSampling2d(scale=(2, 2))(ni)
+    >>> ni = tlx.nn.Input([10, 50, 50, 32], name='input')
+    >>> ni = tlx.nn.UpSampling2d(scale=(2, 2))(ni)
     >>> output shape : [10, 100, 100, 32]
 
     """
@@ -69,7 +69,7 @@ class UpSampling2d(Module):
         return s.format(classname=self.__class__.__name__, scale=self.scale, method=self.method, name=self.name)
 
     def build(self, inputs_shape):
-        self.resize = tl.ops.Resize(
+        self.resize = tlx.ops.Resize(
             scale=self.scale, method=self.method, antialias=self.antialias, data_format=self.data_format
         )
 
@@ -111,8 +111,8 @@ class DownSampling2d(Module):
     ---------
     With TensorLayer
 
-    >>> ni = tl.layers.Input([10, 50, 50, 32], name='input')
-    >>> ni = tl.layers.DownSampling2d(scale=(2, 2))(ni)
+    >>> ni = tlx.nn.Input([10, 50, 50, 32], name='input')
+    >>> ni = tlx.nn.DownSampling2d(scale=(2, 2))(ni)
     >>> output shape : [10, 25, 25, 32]
 
     """
@@ -144,7 +144,7 @@ class DownSampling2d(Module):
 
     def build(self, inputs_shape):
         scale = [1.0 / self.scale[0], 1.0 / self.scale[1]]
-        self.resize = tl.ops.Resize(
+        self.resize = tlx.ops.Resize(
             scale=scale, method=self.method, antialias=self.antialias, data_format=self.data_format
         )
 

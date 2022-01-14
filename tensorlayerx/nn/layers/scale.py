@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -22,9 +22,9 @@ class Scale(Module):
 
     Examples
     ----------
-    >>> inputs = tl.layers.Input([8, 3])
-    >>> dense = tl.layers.Dense(n_units=10, in_channels=3)(inputs)
-    >>> outputs = tl.layers.Scale(init_scale=0.5)(dense)
+    >>> inputs = tlx.nn.Input([8, 3])
+    >>> dense = tlx.nn.Dense(n_units=10, in_channels=3)(inputs)
+    >>> outputs = tlx.nn.Scale(init_scale=0.5)(dense)
 
     """
 
@@ -49,7 +49,7 @@ class Scale(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        self.scale = self._get_weights("scale", shape=[1], init=tl.nn.initializers.constant(value=self.init_scale))
+        self.scale = self._get_weights("scale", shape=[1], init=tlx.nn.initializers.constant(value=self.init_scale))
 
     # @tf.function
     def forward(self, inputs):

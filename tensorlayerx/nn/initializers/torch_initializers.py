@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import torch
-import tensorlayerx as tl
+import tensorlayerx as tlx
 
 __all__ = [
     'Initializer',
@@ -31,7 +31,7 @@ class Initializer(object):
         shape : tuple of int.
             The shape of the tensor.
         dtype : Optional dtype of the tensor.
-            If not provided will return tensor of `tl.float32`.
+            If not provided will return tensor of `tlx.float32`.
 
         Returns
         -------
@@ -72,13 +72,13 @@ class Zeros(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.zeros()
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.zeros()
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         _tensor = torch.empty(size=shape, dtype=dtype)
         return torch.nn.init.zeros_(_tensor)
 
@@ -89,13 +89,13 @@ class Ones(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.ones()
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.ones()
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         _tensor = torch.empty(size=shape, dtype=dtype)
         return torch.nn.init.ones_(_tensor)
 
@@ -111,16 +111,16 @@ class Constant(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.constant(value=10)
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.constant(value=10)
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
     def __init__(self, value=0):
         self.value = value
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         _tensor = torch.empty(size=shape, dtype=dtype)
         return torch.nn.init.constant_(_tensor, val=self.value)
 
@@ -143,9 +143,9 @@ class RandomUniform(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.random_uniform(minval=-0.05, maxval=0.05)
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.random_uniform(minval=-0.05, maxval=0.05)
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -154,7 +154,7 @@ class RandomUniform(Initializer):
         self.maxval = maxval
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         _tensor = torch.empty(size=shape, dtype=dtype)
         return torch.nn.init.uniform_(_tensor, a=self.minval, b=self.maxval)
 
@@ -179,9 +179,9 @@ class RandomNormal(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.random_normal(mean=0.0, stddev=0.05)
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.random_normal(mean=0.0, stddev=0.05)
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -190,7 +190,7 @@ class RandomNormal(Initializer):
         self.stddev = stddev
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         _tensor = torch.empty(size=shape)
         return torch.nn.init.normal_(_tensor, mean=self.mean, std=self.stddev)
 
@@ -219,9 +219,9 @@ class TruncatedNormal(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.truncated_normal(mean=0.0, stddev=0.05)
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.truncated_normal(mean=0.0, stddev=0.05)
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -230,7 +230,7 @@ class TruncatedNormal(Initializer):
         self.stddev = stddev
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         _tensor = torch.empty(size=shape)
         return self._truncated_normal(_tensor, self.mean, self.stddev)
 
@@ -259,16 +259,16 @@ class HeNormal(Initializer):
     Examples
     --------
 
-    >>> import tensorlayerx as tl
-    >>> init = tl.initializers.he_normal()
-    >>> print(init(shape=(5, 10), dtype=tl.float32))
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.he_normal()
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
     def __init__(self, seed=None):
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         _tensor = torch.empty(size=shape)
         return torch.nn.init.kaiming_normal_(_tensor)
 
@@ -311,7 +311,7 @@ class XavierNormal(Initializer):
     def __init__(self, seed=None):
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         _tensor = torch.empty(size=shape)
         return torch.nn.init.xavier_normal_(_tensor)
 
@@ -333,7 +333,7 @@ class XavierUniform(Initializer):
     def __init__(self, seed=None):
         self.seed = seed
 
-    def __call__(self, shape, dtype=tl.float32):
+    def __call__(self, shape, dtype=tlx.float32):
         _tensor = torch.empty(size=shape)
         return torch.nn.init.xavier_uniform_(_tensor)
 

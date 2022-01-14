@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from tensorlayerx.nn.core import Module
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 
 __all__ = [
@@ -47,10 +47,10 @@ class Conv1d(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 100, 1], name='input')
-    >>> conv1d = tl.layers.Conv1d(n_filter=32, filter_size=5, stride=2, b_init=None, in_channels=1, name='conv1d_1')
+    >>> net = tlx.nn.Input([8, 100, 1], name='input')
+    >>> conv1d = tlx.nn.Conv1d(n_filter=32, filter_size=5, stride=2, b_init=None, in_channels=1, name='conv1d_1')
     >>> print(conv1d)
-    >>> tensor = tl.layers.Conv1d(n_filter=32, filter_size=5, stride=2, act=tl.ReLU, name='conv1d_2')(net)
+    >>> tensor = tlx.nn.Conv1d(n_filter=32, filter_size=5, stride=2, act=tlx.ReLU, name='conv1d_2')(net)
     >>> print(tensor)
 
     """
@@ -127,10 +127,10 @@ class Conv1d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
-        self.conv1d = tl.ops.Conv1D(
+        self.conv1d = tlx.ops.Conv1D(
             stride=self.stride, padding=self.padding, data_format=self.data_format, dilations=self.dilation_rate,
             out_channel=self.n_filter, k_size=self.filter_size
         )
@@ -142,7 +142,7 @@ class Conv1d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
@@ -188,10 +188,10 @@ class Conv2d(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 400, 400, 3], name='input')
-    >>> conv2d = tl.layers.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), b_init=None, in_channels=3, name='conv2d_1')
+    >>> net = tlx.nn.Input([8, 400, 400, 3], name='input')
+    >>> conv2d = tlx.nn.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), b_init=None, in_channels=3, name='conv2d_1')
     >>> print(conv2d)
-    >>> tensor = tl.layers.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), act=tl.ReLU, name='conv2d_2')(net)
+    >>> tensor = tlx.nn.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), act=tlx.ReLU, name='conv2d_2')(net)
     >>> print(tensor)
 
     """
@@ -271,10 +271,10 @@ class Conv2d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
-        self.conv2d = tl.ops.Conv2D(
+        self.conv2d = tlx.ops.Conv2D(
             strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
             out_channel=self.n_filter, k_size=(self.filter_size[0], self.filter_size[1])
         )
@@ -286,7 +286,7 @@ class Conv2d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
@@ -331,10 +331,10 @@ class Conv3d(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 20, 20, 20, 3], name='input')
-    >>> conv3d = tl.layers.Conv3d(n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), b_init=None, in_channels=3, name='conv3d_1')
+    >>> net = tlx.nn.Input([8, 20, 20, 20, 3], name='input')
+    >>> conv3d = tlx.nn.Conv3d(n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), b_init=None, in_channels=3, name='conv3d_1')
     >>> print(conv3d)
-    >>> tensor = tl.layers.Conv3d(n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), act=tl.ReLU, name='conv3d_2')(net)
+    >>> tensor = tlx.nn.Conv3d(n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), act=tlx.ReLU, name='conv3d_2')(net)
     >>> print(tensor)
 
     """
@@ -416,10 +416,10 @@ class Conv3d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
-        self.conv3d = tl.ops.Conv3D(
+        self.conv3d = tlx.ops.Conv3D(
             strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
             out_channel=self.n_filter, k_size=(self.filter_size[0], self.filter_size[1], self.filter_size[2])
         )
@@ -431,7 +431,7 @@ class Conv3d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
@@ -477,10 +477,10 @@ class DeConv1d(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 100, 1], name='input')
-    >>> conv1d = tl.layers.DeConv1d(n_filter=32, filter_size=5, stride=2, b_init=None, in_channels=1, name='Deonv1d_1')
+    >>> net = tlx.nn.Input([8, 100, 1], name='input')
+    >>> conv1d = tlx.nn.DeConv1d(n_filter=32, filter_size=5, stride=2, b_init=None, in_channels=1, name='Deonv1d_1')
     >>> print(conv1d)
-    >>> tensor = tl.layers.DeConv1d(n_filter=32, filter_size=5, stride=2, act=tl.ReLU, name='Deconv1d_2')(net)
+    >>> tensor = tlx.nn.DeConv1d(n_filter=32, filter_size=5, stride=2, act=tlx.ReLU, name='Deconv1d_2')(net)
     >>> print(tensor)
 
     """
@@ -557,10 +557,10 @@ class DeConv1d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
-        self.conv1d_transpose = tl.ops.Conv1d_transpose(
+        self.conv1d_transpose = tlx.ops.Conv1d_transpose(
             stride=self.stride,
             padding=self.padding,
             data_format=self.data_format,
@@ -577,7 +577,7 @@ class DeConv1d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
@@ -624,10 +624,10 @@ class DeConv2d(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 400, 400, 3], name='input')
-    >>> conv2d_transpose = tl.layers.DeConv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), b_init=None, in_channels=3, name='conv2d_transpose_1')
+    >>> net = tlx.nn.Input([8, 400, 400, 3], name='input')
+    >>> conv2d_transpose = tlx.nn.DeConv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), b_init=None, in_channels=3, name='conv2d_transpose_1')
     >>> print(conv2d_transpose)
-    >>> tensor = tl.layers.DeConv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), act=tl.ReLU, name='conv2d_transpose_2')(net)
+    >>> tensor = tlx.nn.DeConv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), act=tlx.ReLU, name='conv2d_transpose_2')(net)
     >>> print(tensor)
 
     """
@@ -703,10 +703,10 @@ class DeConv2d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
-        self.conv2d_transpose = tl.ops.Conv2d_transpose(
+        self.conv2d_transpose = tlx.ops.Conv2d_transpose(
             strides=self.strides, padding=self.padding, data_format=self.data_format, dilations=self.dilation_rate,
             out_channel=self.n_filter, k_size=(self.filter_size[0], self.filter_size[1]), in_channels=self.in_channels
         )
@@ -718,7 +718,7 @@ class DeConv2d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
@@ -765,10 +765,10 @@ class DeConv3d(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 20, 20, 20, 3], name='input')
-    >>> deconv3d = tl.layers.DeConv3d(n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), b_init=None, in_channels=3, name='deconv3d_1')
+    >>> net = tlx.nn.Input([8, 20, 20, 20, 3], name='input')
+    >>> deconv3d = tlx.nn.DeConv3d(n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), b_init=None, in_channels=3, name='deconv3d_1')
     >>> print(deconv3d)
-    >>> tensor = tl.layers.DeConv3d(n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), act=tl.ReLU, name='deconv3d_2')(net)
+    >>> tensor = tlx.nn.DeConv3d(n_filter=32, filter_size=(3, 3, 3), strides=(2, 2, 2), act=tlx.ReLU, name='deconv3d_2')(net)
     >>> print(tensor)
 
     """
@@ -849,10 +849,10 @@ class DeConv3d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
-        self.conv3d_transpose = tl.ops.Conv3d_transpose(
+        self.conv3d_transpose = tlx.ops.Conv3d_transpose(
             strides=self.strides, padding=self.padding, data_format=self.data_format, dilations=self.dilation_rate,
             out_channel=self.n_filter, k_size=(self.filter_size[0], self.filter_size[1], self.filter_size[2]),
             in_channels=self.in_channels
@@ -865,7 +865,7 @@ class DeConv3d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

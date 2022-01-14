@@ -4,7 +4,7 @@
 from .common import str2act, str2init
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from mindspore.nn import Cell
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from collections import OrderedDict
 from mindspore import log as logger
 import inspect
@@ -91,7 +91,7 @@ class Module(Cell):
         raise Exception("The build(self, inputs_shape) method must be implemented by inherited class")
 
     def _get_weights(
-        self, var_name, shape, init=tl.nn.initializers.random_normal(), trainable=True, transposed=False,
+        self, var_name, shape, init=tlx.nn.initializers.random_normal(), trainable=True, transposed=False,
         order=False
     ):
         """ Get trainable variables. """
@@ -100,7 +100,7 @@ class Module(Cell):
         # TODO 2D mindspore transposed shape [in_channel, out_channel, kernel_h, kernel_w]
         if order:
             initial_value = init(shape=shape)
-            return tl.Variable(initial_value=initial_value, name=var_name, trainable=trainable)
+            return tlx.Variable(initial_value=initial_value, name=var_name, trainable=trainable)
 
         if len(shape) == 3:
             shape = shape[::-1]
@@ -113,7 +113,7 @@ class Module(Cell):
             shape = (shape[4], shape[3], shape[0], shape[1], shape[2])
 
         initial_value = init(shape=shape)
-        var = tl.Variable(initial_value=initial_value, name=var_name, trainable=trainable)
+        var = tlx.Variable(initial_value=initial_value, name=var_name, trainable=trainable)
         self.trainable = trainable
         return var
 
@@ -134,9 +134,9 @@ class Module(Cell):
     @staticmethod
     def _compute_shape(tensors):
         if isinstance(tensors, list):
-            shape_mem = [tl.get_tensor_shape(t) for t in tensors]
+            shape_mem = [tlx.get_tensor_shape(t) for t in tensors]
         else:
-            shape_mem = tl.get_tensor_shape(tensors)
+            shape_mem = tlx.get_tensor_shape(tensors)
         return shape_mem
 
     def __call__(self, *inputs, **kwargs):
@@ -227,8 +227,8 @@ class Module(Cell):
 
         Examples
         --------
-        >>> import tensorlayerx as tl
-        >>> net = tl.model.vgg16()
+        >>> import tensorlayerx as tlx
+        >>> net = tlx.model.vgg16()
         >>> net.eval()
         # do evaluation
 
@@ -338,10 +338,10 @@ class SequentialLayer(Module):
 
     Examples
     ---------
-    >>> conv = tl.layers.Conv2d(3, 2, 3, pad_mode='valid')
-    >>> bn = tl.layers.BatchNorm2d(2)
-    >>> seq = tl.layers.SequentialLayer([conv, bn])
-    >>> x = tl.layers.Input((1, 3, 4, 4))
+    >>> conv = tlx.nn.Conv2d(3, 2, 3, pad_mode='valid')
+    >>> bn = tlx.nn.BatchNorm2d(2)
+    >>> seq = tlx.nn.SequentialLayer([conv, bn])
+    >>> x = tlx.nn.Input((1, 3, 4, 4))
     >>> seq(x)
 
     """
@@ -439,10 +439,10 @@ class LayerList(Module):
     Examples
     ---------
     >>> from tensorlayerx.nn import Module, LayerList, Dense
-    >>> import tensorlayerx as tl
-    >>> d1 = Dense(n_units=800, act=tl.ReLU, in_channels=784, name='Dense1')
-    >>> d2 = Dense(n_units=800, act=tl.ReLU, in_channels=800, name='Dense2')
-    >>> d3 = Dense(n_units=10, act=tl.ReLU, in_channels=800, name='Dense3')
+    >>> import tensorlayerx as tlx
+    >>> d1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='Dense1')
+    >>> d2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800, name='Dense2')
+    >>> d3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800, name='Dense3')
     >>> layer_list = LayerList([d1, d2])
     >>> # Inserts a given d2 before a given index in the list
     >>> layer_list.insert(1, d2)

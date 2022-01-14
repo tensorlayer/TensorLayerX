@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -24,12 +24,12 @@ class Stack(Module):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> ni = tl.layers.Input([10, 784], name='input')
-    >>> net1 = tl.layers.Dense(10, name='dense1')(ni)
-    >>> net2 = tl.layers.Dense(10, name='dense2')(ni)
-    >>> net3 = tl.layers.Dense(10, name='dense3')(ni)
-    >>> net = tl.layers.Stack(axis=1, name='stack')([net1, net2, net3])
+    >>> import tensorlayerx as tlx
+    >>> ni = tlx.nn.Input([10, 784], name='input')
+    >>> net1 = tlx.nn.Dense(10, name='dense1')(ni)
+    >>> net2 = tlx.nn.Dense(10, name='dense2')(ni)
+    >>> net3 = tlx.nn.Dense(10, name='dense3')(ni)
+    >>> net = tlx.nn.Stack(axis=1, name='stack')([net1, net2, net3])
     (10, 3, 10)
 
     """
@@ -54,7 +54,7 @@ class Stack(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        self.stack = tl.ops.Stack(axis=self.axis)
+        self.stack = tlx.ops.Stack(axis=self.axis)
 
     def forward(self, inputs):
         outputs = self.stack(inputs)
@@ -81,9 +81,9 @@ class UnStack(Module):
 
     Examples
     --------
-    >>> ni = tl.layers.Input([4, 10], name='input')
-    >>> nn = tl.layers.Dense(n_units=5)(ni)
-    >>> nn = tl.layers.UnStack(axis=1)(nn)  # unstack in channel axis
+    >>> ni = tlx.nn.Input([4, 10], name='input')
+    >>> nn = tlx.nn.Dense(n_units=5)(ni)
+    >>> nn = tlx.nn.UnStack(axis=1)(nn)  # unstack in channel axis
     >>> len(nn)  # 5
     >>> nn[0].shape  # (4,)
 
@@ -106,7 +106,7 @@ class UnStack(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        self.unstack = tl.ops.Unstack(num=self.num, axis=self.axis)
+        self.unstack = tlx.ops.Unstack(num=self.num, axis=self.axis)
 
     def forward(self, inputs):
         outputs = self.unstack(inputs)

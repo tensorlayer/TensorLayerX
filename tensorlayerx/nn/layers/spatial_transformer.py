@@ -3,7 +3,7 @@
 
 import numpy as np
 from six.moves import xrange
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -53,43 +53,43 @@ def transformer(U, theta, out_size, name='SpatialTransformer2dAffine'):
     """
 
     def _repeat(x, n_repeats):
-        rep = tl.transpose(a=tl.expand_dims(tl.ones(shape=tl.stack([
+        rep = tlx.transpose(a=tlx.expand_dims(tlx.ones(shape=tlx.stack([
             n_repeats,
         ])), axis=1), perm=[1, 0])
-        rep = tl.cast(rep, 'int32')
-        x = tl.matmul(tl.reshape(x, (-1, 1)), rep)
-        return tl.reshape(x, [-1])
+        rep = tlx.cast(rep, 'int32')
+        x = tlx.matmul(tlx.reshape(x, (-1, 1)), rep)
+        return tlx.reshape(x, [-1])
 
     def _interpolate(im, x, y, out_size):
         # constants
-        num_batch, height, width, channels = tl.get_tensor_shape(im)
-        x = tl.cast(x, 'float32')
-        y = tl.cast(y, 'float32')
-        height_f = tl.cast(height, 'float32')
-        width_f = tl.cast(width, 'float32')
+        num_batch, height, width, channels = tlx.get_tensor_shape(im)
+        x = tlx.cast(x, 'float32')
+        y = tlx.cast(y, 'float32')
+        height_f = tlx.cast(height, 'float32')
+        width_f = tlx.cast(width, 'float32')
         out_height = out_size[0]
         out_width = out_size[1]
-        zero = tl.zeros([], dtype='int32')
-        max_y = tl.cast(height - 1, 'int32')
-        max_x = tl.cast(width - 1, 'int32')
+        zero = tlx.zeros([], dtype='int32')
+        max_y = tlx.cast(height - 1, 'int32')
+        max_x = tlx.cast(width - 1, 'int32')
 
         # scale indices from [-1, 1] to [0, width/height]
         x = (x + 1.0) * (width_f) / 2.0
         y = (y + 1.0) * (height_f) / 2.0
 
         # do sampling
-        x0 = tl.cast(tl.floor(x), 'int32')
+        x0 = tlx.cast(tlx.floor(x), 'int32')
         x1 = x0 + 1
-        y0 = tl.cast(tl.floor(y), 'int32')
+        y0 = tlx.cast(tlx.floor(y), 'int32')
         y1 = y0 + 1
 
-        x0 = tl.clip_by_value(x0, zero, max_x)
-        x1 = tl.clip_by_value(x1, zero, max_x)
-        y0 = tl.clip_by_value(y0, zero, max_y)
-        y1 = tl.clip_by_value(y1, zero, max_y)
+        x0 = tlx.clip_by_value(x0, zero, max_x)
+        x1 = tlx.clip_by_value(x1, zero, max_x)
+        y0 = tlx.clip_by_value(y0, zero, max_y)
+        y1 = tlx.clip_by_value(y1, zero, max_y)
         dim2 = width
         dim1 = width * height
-        base = _repeat(tl.range(num_batch) * dim1, out_height * out_width)
+        base = _repeat(tlx.range(num_batch) * dim1, out_height * out_width)
         base_y0 = base + y0 * dim2
         base_y1 = base + y1 * dim2
         idx_a = base_y0 + x0
@@ -99,23 +99,23 @@ def transformer(U, theta, out_size, name='SpatialTransformer2dAffine'):
 
         # use indices to lookup pixels in the flat image and restore
         # channels dim
-        im_flat = tl.reshape(im, tl.stack([-1, channels]))
-        im_flat = tl.cast(im_flat, 'float32')
-        Ia = tl.gather(im_flat, idx_a)
-        Ib = tl.gather(im_flat, idx_b)
-        Ic = tl.gather(im_flat, idx_c)
-        Id = tl.gather(im_flat, idx_d)
+        im_flat = tlx.reshape(im, tlx.stack([-1, channels]))
+        im_flat = tlx.cast(im_flat, 'float32')
+        Ia = tlx.gather(im_flat, idx_a)
+        Ib = tlx.gather(im_flat, idx_b)
+        Ic = tlx.gather(im_flat, idx_c)
+        Id = tlx.gather(im_flat, idx_d)
 
         # and finally calculate interpolated values
-        x0_f = tl.cast(x0, 'float32')
-        x1_f = tl.cast(x1, 'float32')
-        y0_f = tl.cast(y0, 'float32')
-        y1_f = tl.cast(y1, 'float32')
-        wa = tl.expand_dims(((x1_f - x) * (y1_f - y)), 1)
-        wb = tl.expand_dims(((x1_f - x) * (y - y0_f)), 1)
-        wc = tl.expand_dims(((x - x0_f) * (y1_f - y)), 1)
-        wd = tl.expand_dims(((x - x0_f) * (y - y0_f)), 1)
-        output = tl.add_n([wa * Ia, wb * Ib, wc * Ic, wd * Id])
+        x0_f = tlx.cast(x0, 'float32')
+        x1_f = tlx.cast(x1, 'float32')
+        y0_f = tlx.cast(y0, 'float32')
+        y1_f = tlx.cast(y1, 'float32')
+        wa = tlx.expand_dims(((x1_f - x) * (y1_f - y)), 1)
+        wb = tlx.expand_dims(((x1_f - x) * (y - y0_f)), 1)
+        wc = tlx.expand_dims(((x - x0_f) * (y1_f - y)), 1)
+        wd = tlx.expand_dims(((x - x0_f) * (y - y0_f)), 1)
+        output = tlx.add_n([wa * Ia, wb * Ib, wc * Ic, wd * Id])
         return output
 
     def _meshgrid(height, width):
@@ -124,43 +124,43 @@ def transformer(U, theta, out_size, name='SpatialTransformer2dAffine'):
         #                         np.linspace(-1, 1, height))
         #  ones = np.ones(np.prod(x_t.shape))
         #  grid = np.vstack([x_t.flatten(), y_t.flatten(), ones])
-        x_t = tl.matmul(
-            tl.ones(shape=tl.stack([height, 1])),
-            tl.transpose(a=tl.expand_dims(tl.linspace(-1.0, 1.0, width), 1), perm=[1, 0])
+        x_t = tlx.matmul(
+            tlx.ones(shape=tlx.stack([height, 1])),
+            tlx.transpose(a=tlx.expand_dims(tlx.linspace(-1.0, 1.0, width), 1), perm=[1, 0])
         )
-        y_t = tl.matmul(tl.expand_dims(tl.linspace(-1.0, 1.0, height), 1), tl.ones(shape=tl.stack([1, width])))
+        y_t = tlx.matmul(tlx.expand_dims(tlx.linspace(-1.0, 1.0, height), 1), tlx.ones(shape=tlx.stack([1, width])))
 
-        x_t_flat = tl.reshape(x_t, (1, -1))
-        y_t_flat = tl.reshape(y_t, (1, -1))
+        x_t_flat = tlx.reshape(x_t, (1, -1))
+        y_t_flat = tlx.reshape(y_t, (1, -1))
 
-        ones = tl.ones(shape=tl.get_tensor_shape(x_t_flat))
-        grid = tl.concat(axis=0, values=[x_t_flat, y_t_flat, ones])
+        ones = tlx.ones(shape=tlx.get_tensor_shape(x_t_flat))
+        grid = tlx.concat(axis=0, values=[x_t_flat, y_t_flat, ones])
         return grid
 
     def _transform(theta, input_dim, out_size):
-        num_batch, _, _, num_channels = tl.get_tensor_shape(input_dim)
-        theta = tl.reshape(theta, (-1, 2, 3))
-        theta = tl.cast(theta, 'float32')
+        num_batch, _, _, num_channels = tlx.get_tensor_shape(input_dim)
+        theta = tlx.reshape(theta, (-1, 2, 3))
+        theta = tlx.cast(theta, 'float32')
 
         # grid of (x_t, y_t, 1), eq (1) in ref [1]
         out_height = out_size[0]
         out_width = out_size[1]
         grid = _meshgrid(out_height, out_width)
-        grid = tl.expand_dims(grid, 0)
-        grid = tl.reshape(grid, [-1])
-        grid = tl.tile(grid, tl.stack([num_batch]))
-        grid = tl.reshape(grid, tl.stack([num_batch, 3, -1]))
+        grid = tlx.expand_dims(grid, 0)
+        grid = tlx.reshape(grid, [-1])
+        grid = tlx.tile(grid, tlx.stack([num_batch]))
+        grid = tlx.reshape(grid, tlx.stack([num_batch, 3, -1]))
 
         # Transform A x (x_t, y_t, 1)^T -> (x_s, y_s)
-        T_g = tl.matmul(theta, grid)
-        x_s = tl.slice(T_g, [0, 0, 0], [-1, 1, -1])
-        y_s = tl.slice(T_g, [0, 1, 0], [-1, 1, -1])
-        x_s_flat = tl.reshape(x_s, [-1])
-        y_s_flat = tl.reshape(y_s, [-1])
+        T_g = tlx.matmul(theta, grid)
+        x_s = tlx.slice(T_g, [0, 0, 0], [-1, 1, -1])
+        y_s = tlx.slice(T_g, [0, 1, 0], [-1, 1, -1])
+        x_s_flat = tlx.reshape(x_s, [-1])
+        y_s_flat = tlx.reshape(y_s, [-1])
 
         input_transformed = _interpolate(input_dim, x_s_flat, y_s_flat, out_size)
 
-        output = tl.reshape(input_transformed, tl.stack([num_batch, out_height, out_width, num_channels]))
+        output = tlx.reshape(input_transformed, tlx.stack([num_batch, out_height, out_width, num_channels]))
         return output
 
     output = _transform(theta, U, out_size)
@@ -190,7 +190,7 @@ def batch_transformer(U, thetas, out_size, name='BatchSpatialTransformer2dAffine
     # with tf.compat.v1.variable_scope(name):
     num_batch, num_transforms = map(int, thetas.get_shape().as_list()[:2])
     indices = [[i] * num_transforms for i in xrange(num_batch)]
-    input_repeated = tl.gather(U, tl.reshape(indices, [-1]))
+    input_repeated = tlx.gather(U, tlx.reshape(indices, [-1]))
     return transformer(input_repeated, thetas, out_size)
 
 
@@ -253,9 +253,9 @@ class SpatialTransformer2dAffine(Module):
             # shape = [inputs_shape[1], 6]
             self.in_channels = inputs_shape[0][-1]  # zsdonghao
             shape = [self.in_channels, 6]
-        self.W = self._get_weights("weights", shape=tuple(shape), init=tl.nn.initializers.Zeros())
+        self.W = self._get_weights("weights", shape=tuple(shape), init=tlx.nn.initializers.Zeros())
         identity = np.reshape(np.array([[1, 0, 0], [0, 1, 0]], dtype=np.float32), newshape=(6, ))
-        self.b = self._get_weights("biases", shape=(6, ), init=tl.nn.initializers.Constant(identity))
+        self.b = self._get_weights("biases", shape=(6, ), init=tlx.nn.initializers.Constant(identity))
 
     def forward(self, inputs):
         """
@@ -267,14 +267,14 @@ class SpatialTransformer2dAffine(Module):
                     n_channels is identical to that of U.
         """
         theta_input, U = inputs
-        theta = tl.tanh(tl.matmul(theta_input, self.W) + self.b)
+        theta = tlx.tanh(tlx.matmul(theta_input, self.W) + self.b)
         outputs = transformer(U, theta, out_size=self.out_size)
         # automatically set batch_size and channels
         # e.g. [?, 40, 40, ?] --> [64, 40, 40, 1] or [64, 20, 20, 4]
         batch_size = theta_input.shape[0]
         n_channels = U.shape[-1]
         if self.data_format == 'channel_last':
-            outputs = tl.reshape(outputs, shape=[batch_size, self.out_size[0], self.out_size[1], n_channels])
+            outputs = tlx.reshape(outputs, shape=[batch_size, self.out_size[0], self.out_size[1], n_channels])
         else:
             raise Exception("unimplement data_format {}".format(self.data_format))
         return outputs

@@ -27,7 +27,7 @@ class Initializer(object):
         shape : tuple of int.
             The shape of the tensor.
         dtype : Optional dtype of the tensor.
-            If not provided will return tensor of `tl.float32`.
+            If not provided will return tensor of `tlx.float32`.
 
         Returns
         -------

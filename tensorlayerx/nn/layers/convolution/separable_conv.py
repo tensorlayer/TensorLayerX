@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 from tensorlayerx.backend import BACKEND
@@ -49,8 +49,8 @@ class SeparableConv1d(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([8, 50, 64], name='input')
-    >>> separableconv1d = tl.layers.SeparableConv1d(n_filter=32, filter_size=3, stride=2, padding='SAME', act=tl.ReLU, name='separable_1d')(net)
+    >>> net = tlx.nn.Input([8, 50, 64], name='input')
+    >>> separableconv1d = tlx.nn.SeparableConv1d(n_filter=32, filter_size=3, stride=2, padding='SAME', act=tlx.ReLU, name='separable_1d')(net)
     >>> print(separableconv1d)
     >>> output shape : (8, 25, 32)
 
@@ -132,7 +132,7 @@ class SeparableConv1d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
         self.act_init_flag = False
@@ -140,7 +140,7 @@ class SeparableConv1d(Module):
             self.activate = self.act
             self.act_init_flag = True
 
-        self.separable_conv1d = tl.ops.SeparableConv1D(
+        self.separable_conv1d = tlx.ops.SeparableConv1D(
             stride=self.stride, padding=self.padding, data_format=self.data_format, dilations=self.dilation_rate,
             out_channel=self.n_filter, k_size=self.filter_size, in_channel=self.in_channels,
             depth_multiplier=self.depth_multiplier
@@ -149,7 +149,7 @@ class SeparableConv1d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
@@ -198,8 +198,8 @@ class SeparableConv2d(Module):
         --------
         With TensorLayer
 
-        >>> net = tl.layers.Input([8, 50, 50, 64], name='input')
-        >>> separableconv2d = tl.layers.SeparableConv2d(n_filter=32, filter_size=(3,3), strides=(2,2), depth_multiplier = 3 , padding='SAME', act=tl.ReLU, name='separable_2d')(net)
+        >>> net = tlx.nn.Input([8, 50, 50, 64], name='input')
+        >>> separableconv2d = tlx.nn.SeparableConv2d(n_filter=32, filter_size=(3,3), strides=(2,2), depth_multiplier = 3 , padding='SAME', act=tlx.ReLU, name='separable_2d')(net)
         >>> print(separableconv2d)
         >>> output shape : (8, 24, 24, 32)
 
@@ -289,14 +289,14 @@ class SeparableConv2d(Module):
         self.b_init_flag = False
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
-            self.bias_add = tl.ops.BiasAdd(self.data_format)
+            self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
         self.act_init_flag = False
         if self.act:
             self.act_init_flag = True
 
-        self.separable_conv2d = tl.ops.SeparableConv2D(
+        self.separable_conv2d = tlx.ops.SeparableConv2D(
             strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
             out_channel=self.n_filter, k_size=self.filter_size, in_channel=self.in_channels,
             depth_multiplier=self.depth_multiplier
@@ -305,7 +305,7 @@ class SeparableConv2d(Module):
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
-                self.build(tl.get_tensor_shape(inputs))
+                self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 

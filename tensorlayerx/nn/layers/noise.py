@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
@@ -32,9 +32,9 @@ class GaussianNoise(Module):
     --------
     With TensorLayer
 
-    >>> net = tl.layers.Input([64, 200], name='input')
-    >>> net = tl.layers.Dense(in_channels=200, n_units=100, act=tl.ReLU, name='dense')(net)
-    >>> gaussianlayer = tl.layers.GaussianNoise(name='gaussian')(net)
+    >>> net = tlx.nn.Input([64, 200], name='input')
+    >>> net = tlx.nn.Dense(in_channels=200, n_units=100, act=tlx.ReLU, name='dense')(net)
+    >>> gaussianlayer = tlx.nn.GaussianNoise(name='gaussian')(net)
     >>> print(gaussianlayer)
     >>> output shape : (64, 100)
 
@@ -73,7 +73,7 @@ class GaussianNoise(Module):
         if (self.is_train or self.is_always) is False:
             return inputs
         else:
-            shapes = tl.get_tensor_shape(inputs)
-            noise = tl.ops.random_normal(shape=shapes, mean=self.mean, stddev=self.stddev, seed=self.seed)
+            shapes = tlx.get_tensor_shape(inputs)
+            noise = tlx.ops.random_normal(shape=shapes, mean=self.mean, stddev=self.stddev, seed=self.seed)
             outputs = inputs + noise
         return outputs
