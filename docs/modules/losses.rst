@@ -1,4 +1,4 @@
-API - losses
+API - Losses
 ==================
 
 To make TensorLayerX simple, we minimize the number of cost functions as much as we can.

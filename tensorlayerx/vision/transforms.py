@@ -1,9 +1,10 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorlayerx.vision.functional as F
+from .functional import *
 import numbers
 import numpy as np
+
 __all__ = [
     'Crop',
     'CentralCrop',
@@ -74,7 +75,7 @@ class ToTensor(object):
 
     def __call__(self, image):
 
-        return F.to_tensor(image, self.data_format)
+        return to_tensor(image, self.data_format)
 
 
 class CentralCrop(object):
@@ -118,7 +119,7 @@ class CentralCrop(object):
 
     def __call__(self, image):
 
-        return F.central_crop(image, self.size, self.central_fraction)
+        return central_crop(image, self.size, self.central_fraction)
 
 
 class Compose(object):
@@ -191,7 +192,7 @@ class Crop(object):
 
     def __call__(self, image):
 
-        return F.crop(image, self.top, self.left, self.height, self.width)
+        return crop(image, self.top, self.left, self.height, self.width)
 
 
 class Pad(object):
@@ -233,7 +234,7 @@ class Pad(object):
     def __call__(self, image):
         if self.mode not in ['constant', 'reflect', 'symmetric', 'edge']:
             raise TypeError("Padding mode should be 'constant',  'reflect', 'symmetric', or 'edge'.")
-        return F.pad(image, self.padding, self.padding_value, self.mode)
+        return pad(image, self.padding, self.padding_value, self.mode)
 
 
 class Resize(object):
@@ -270,7 +271,7 @@ class Resize(object):
     def __call__(self, image):
         if self.interpolation not in ['nearest', 'bilinear', 'bicubic', 'area', 'lanczos']:
             raise ValueError("This interpolation mode should be 'nearest', 'bilinear' or 'bicubic'")
-        return F.resize(image, self.size, self.interpolation)
+        return resize(image, self.size, self.interpolation)
 
 
 class Transpose(object):
@@ -300,7 +301,7 @@ class Transpose(object):
 
     def __call__(self, image):
 
-        return F.transpose(image, self.order)
+        return transpose(image, self.order)
 
 
 class HWC2CHW(object):
@@ -321,7 +322,7 @@ class HWC2CHW(object):
 
     def __call__(self, image):
 
-        return F.hwc_to_chw(image)
+        return hwc_to_chw(image)
 
 
 class CHW2HWC(object):
@@ -342,7 +343,7 @@ class CHW2HWC(object):
 
     def __call__(self, image):
 
-        return F.chw_to_hwc(image)
+        return chw_to_hwc(image)
 
 
 class RgbToHsv(object):
@@ -363,7 +364,7 @@ class RgbToHsv(object):
 
     def __call__(self, image):
 
-        return F.rgb_to_hsv(image)
+        return rgb_to_hsv(image)
 
 
 class HsvToRgb(object):
@@ -384,7 +385,7 @@ class HsvToRgb(object):
 
     def __call__(self, image):
 
-        return F.hsv_to_rgb(image)
+        return hsv_to_rgb(image)
 
 
 class RgbToGray(object):
@@ -414,7 +415,7 @@ class RgbToGray(object):
 
     def __call__(self, image):
 
-        return F.rgb_to_gray(image, self.num_output_channels)
+        return rgb_to_gray(image, self.num_output_channels)
 
 
 class AdjustBrightness(object):
@@ -443,7 +444,7 @@ class AdjustBrightness(object):
 
     def __call__(self, image):
 
-        return F.adjust_brightness(image, self.brightness_factor)
+        return adjust_brightness(image, self.brightness_factor)
 
 
 class AdjustContrast(object):
@@ -473,7 +474,7 @@ class AdjustContrast(object):
 
     def __call__(self, image):
 
-        return F.adjust_contrast(image, self.contrast_factor)
+        return adjust_contrast(image, self.contrast_factor)
 
 
 class AdjustHue(object):
@@ -505,7 +506,7 @@ class AdjustHue(object):
 
     def __call__(self, image):
 
-        return F.adjust_hue(image, self.hue_factor)
+        return adjust_hue(image, self.hue_factor)
 
 
 class AdjustSaturation(object):
@@ -535,7 +536,7 @@ class AdjustSaturation(object):
 
     def __call__(self, image):
 
-        return F.adjust_saturation(image, self.saturation_factor)
+        return adjust_saturation(image, self.saturation_factor)
 
 
 class FlipHorizontal(object):
@@ -555,7 +556,7 @@ class FlipHorizontal(object):
 
     def __call__(self, image):
 
-        return F.hflip(image)
+        return hflip(image)
 
 
 class FlipVertical(object):
@@ -575,7 +576,7 @@ class FlipVertical(object):
 
     def __call__(self, image):
 
-        return F.vflip(image)
+        return vflip(image)
 
 
 class PadToBoundingbox(object):
@@ -615,7 +616,7 @@ class PadToBoundingbox(object):
 
     def __call__(self, image):
 
-        return F.padtoboundingbox(image, self.top, self.left, self.height, self.width, self.padding_value)
+        return padtoboundingbox(image, self.top, self.left, self.height, self.width, self.padding_value)
 
 
 class Normalize(object):
@@ -650,7 +651,7 @@ class Normalize(object):
 
     def __call__(self, image):
 
-        return F.normalize(image, self.mean, self.std, self.data_format)
+        return normalize(image, self.mean, self.std, self.data_format)
 
 
 class StandardizePerImage(object):
@@ -672,7 +673,7 @@ class StandardizePerImage(object):
 
     def __call__(self, image):
 
-        return F.standardize(image)
+        return standardize(image)
 
 
 class RandomBrightness(object):
@@ -702,7 +703,7 @@ class RandomBrightness(object):
 
     def __call__(self, image):
 
-        return F.random_brightness(image, self.brighthness_factor)
+        return random_brightness(image, self.brighthness_factor)
 
 
 class RandomContrast(object):
@@ -733,7 +734,7 @@ class RandomContrast(object):
 
     def __call__(self, image):
 
-        return F.random_contrast(image, self.contrast_factor)
+        return random_contrast(image, self.contrast_factor)
 
 
 class RandomSaturation(object):
@@ -764,7 +765,7 @@ class RandomSaturation(object):
 
     def __call__(self, image):
 
-        return F.random_saturation(image, self.saturation_factor)
+        return random_saturation(image, self.saturation_factor)
 
 
 class RandomHue(object):
@@ -795,7 +796,7 @@ class RandomHue(object):
 
     def __call__(self, image):
 
-        return F.random_hue(image, self.hue_factor)
+        return random_hue(image, self.hue_factor)
 
 
 class RandomCrop(object):
@@ -846,7 +847,7 @@ class RandomCrop(object):
     def __call__(self, image):
         if self.padding_mode not in ['constant', 'reflect', 'symmetric']:
             raise TypeError("Padding mode should be 'constant',  'reflect', or 'symmetric'.")
-        return F.random_crop(
+        return random_crop(
             image,
             size=self.size,
             padding=self.padding,
@@ -894,7 +895,7 @@ class RandomResizedCrop(object):
 
     def __call__(self, image):
 
-        return F.random_resized_crop(image, self.size, self.scale, self.ratio, self.interpolation)
+        return random_resized_crop(image, self.size, self.scale, self.ratio, self.interpolation)
 
 
 class RandomFlipVertical(object):
@@ -923,7 +924,7 @@ class RandomFlipVertical(object):
 
     def __call__(self, image):
 
-        return F.random_vflip(image, self.prob)
+        return random_vflip(image, self.prob)
 
 
 class RandomFlipHorizontal(object):
@@ -952,7 +953,7 @@ class RandomFlipHorizontal(object):
 
     def __call__(self, image):
 
-        return F.random_hflip(image, self.prob)
+        return random_hflip(image, self.prob)
 
 
 class RandomRotation(object):
@@ -1000,7 +1001,7 @@ class RandomRotation(object):
 
     def __call__(self, image):
 
-        return F.random_rotation(image, self.degrees, self.interpolation, self.expand, self.center, self.fill)
+        return random_rotation(image, self.degrees, self.interpolation, self.expand, self.center, self.fill)
 
 
 class RandomShear(object):
@@ -1039,7 +1040,7 @@ class RandomShear(object):
 
     def __call__(self, image):
 
-        return F.random_shear(image, self.shear, self.interpolation, self.fill)
+        return random_shear(image, self.shear, self.interpolation, self.fill)
 
 
 class RandomShift(object):
@@ -1077,7 +1078,7 @@ class RandomShift(object):
 
     def __call__(self, image):
 
-        return F.random_shift(image, self.shift, self.interpolation, self.fill)
+        return random_shift(image, self.shift, self.interpolation, self.fill)
 
 
 class RandomZoom(object):
@@ -1113,7 +1114,7 @@ class RandomZoom(object):
 
     def __call__(self, image):
 
-        return F.random_zoom(image, self.zoom, self.interpolation, self.fill)
+        return random_zoom(image, self.zoom, self.interpolation, self.fill)
 
 
 class RandomAffine(object):
@@ -1210,7 +1211,7 @@ class RandomAffine(object):
 
     def __call__(self, image):
 
-        return F.random_affine(image, self.degrees, self.shift, self.zoom, self.shear, self.interpolation, self.fill)
+        return random_affine(image, self.degrees, self.shift, self.zoom, self.shear, self.interpolation, self.fill)
 
 
 class ColorJitter(object):
@@ -1289,13 +1290,13 @@ class ColorJitter(object):
 
         for fn_id in fn_idx:
             if fn_id == 0 and brightness_factor is not None:
-                image = F.adjust_brightness(image, brightness_factor)
+                image = adjust_brightness(image, brightness_factor)
             elif fn_id == 1 and contrast_factor is not None:
-                image = F.adjust_contrast(image, contrast_factor)
+                image = adjust_contrast(image, contrast_factor)
             elif fn_id == 2 and saturation_factor is not None:
-                image = F.adjust_saturation(image, saturation_factor)
+                image = adjust_saturation(image, saturation_factor)
             elif fn_id == 3 and hue_factor is not None:
-                image = F.adjust_hue(image, hue_factor)
+                image = adjust_hue(image, hue_factor)
 
         return image
 
@@ -1339,4 +1340,4 @@ class Rotation(object):
 
     def __call__(self, image):
 
-        return F.rotate(image, self.angel, self.interpolation, self.expand, self.center, self.fill)
+        return rotate(image, self.angel, self.interpolation, self.expand, self.center, self.fill)

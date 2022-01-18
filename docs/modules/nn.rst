@@ -1,4 +1,4 @@
-API - nn
+API - NN
 ============
 
 .. automodule:: tensorlayerx.nn
