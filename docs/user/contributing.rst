@@ -14,7 +14,7 @@ As an open-source project, we highly welcome and value contributions!
 
 **If you are interested in working with us, please contact us at:** `tensorlayer@gmail.com <tensorlayer@gmail.com>`_.
 
-.. image:: ../../img/join_slack.png
+.. image:: my_figs//join_slack.png
   :width: 30 %
   :align: center
   :target: https://join.slack.com/t/tensorlayer/shared_invite/enQtMjUyMjczMzU2Njg4LWI0MWU0MDFkOWY2YjQ4YjVhMzI5M2VlZmE4YTNhNGY1NjZhMzUwMmQ2MTc0YWRjMjQzMjdjMTg2MWQ2ZWJhYzc
@@ -25,7 +25,7 @@ Project Maintainers
 
 The TensorLayer project was started by `Hao Dong <https://zsdonghao.github.io>`_ at Imperial College London in June 2016. 
 
-For TensorLayer 3.x, it is now actively developing and maintaining by the following people *(in alphabetical order)*:
+For TensorLayerX, it is now actively developing and maintaining by the following people *(in alphabetical order)*:
 
 - **Cheng Lai** (`@Laicheng0830 <https://github.com/Laicheng0830>`_) - `<https://Laicheng0830.github.io>`_
 - **Hao Dong** (`@zsdonghao <https://github.com/zsdonghao>`_) - `<https://zsdonghao.github.io>`_
@@ -69,23 +69,23 @@ If you have a new method or example in terms of Deep learning or Reinforcement l
 Report bugs
 ~~~~~~~~~~~
 
-Report bugs at the `OpenI <https://git.openi.org.cn/TensorLayer/tensorlayer3.0>`__ or `GitHub <https://github.com/tensorlayer/tensorlayer>`__, we normally will fix it in 5 hours.
+Report bugs at the `GitHub <https://github.com/tensorlayer/TensorLayerX>`__  or `OpenI <https://git.openi.org.cn/OpenI/TensorLayerX>`__, we normally will fix it in 5 hours.
 If you are reporting a bug, please include:
 
-* your TensorLayer, TensorFlow, MindSpore, PaddlePaddle and Python version.
+* your TensorLayerX, TensorFlow, MindSpore, PaddlePaddle, PyTorch and Python version.
 * steps to reproduce the bug, ideally reduced to a few Python commands.
 * the results you obtain, and the results you expected instead.
 
 If you are unsure whether the behavior you experience is a bug, or if you are
-unsure whether it is related to TensorLayer or TensorFlow, MindSpore, PaddlePaddle, please just ask on `our
+unsure whether it is related to TensorLayer or TensorFlow, MindSpore, PaddlePaddle, PyTorch, please just ask on `our
 mailing list`_ first.
 
 
 Fix bugs
 ~~~~~~~~
 
-Look through the OpenI issues or GitHub issues for bug reports. Anything tagged with "bug" is
-open to whoever wants to implement it. If you discover a bug in TensorLayer you can
+Look through the GitHub issues or OpenI issues for bug reports. Anything tagged with "bug" is
+open to whoever wants to implement it. If you discover a bug in TensorLayerX you can
 fix yourself, by all means feel free to just implement a fix and not report it
 first.
 
@@ -94,7 +94,7 @@ Write documentation
 ~~~~~~~~~~~~~~~~~~~
 
 Whenever you find something not explained well, misleading, glossed over or
-just wrong, please update it! The *Edit on OpenI* link on the top right of
+just wrong, please update it! The *Edit on Github* link on the top right of
 every documentation page and the *[source]* link for every documented entity
 in the API reference will help you to quickly locate the origin of any text.
 
@@ -103,17 +103,17 @@ in the API reference will help you to quickly locate the origin of any text.
 How to contribute
 -----------------
 
-Edit on OpenI
+Edit on Github
 ~~~~~~~~~~~~~~
 
 As a very easy way of just fixing issues in the documentation, use the
-*Edit on OpenI* link on the top right of a documentation page or the *[source]* link
+*Edit on Github* link on the top right of a documentation page or the *[source]* link
 of an entity in the API reference to open the corresponding source file in
-OpenI, then click the *Edit this file* link to edit the file in your browser
-and send us a Pull Request. All you need for this is a free OpenI account.
+Github, then click the *Edit this file* link to edit the file in your browser
+and send us a Pull Request. All you need for this is a free Github account.
 
 For any more substantial changes, please follow the steps below to setup
-TensorLayer for development.
+TensorLayerX for development.
 
 
 Documentation
@@ -162,7 +162,7 @@ syntax and conventions used, please refer to the following documents:
 Testing
 ~~~~~~~
 
-TensorLayer has a code coverage of 100%, which has proven very helpful in the past,
+TensorLayerX has a code coverage of 100%, which has proven very helpful in the past,
 but also creates some duties:
 
 * Whenever you change any code, you should test whether it breaks existing
@@ -176,15 +176,15 @@ Sending Pull Requests
 
 When you're satisfied with your addition, the tests pass and the documentation
 looks good without any markup errors, commit your changes to a new branch, push
-that branch to your fork and send us a Pull Request via OpenI's web interface.
+that branch to your fork and send us a Pull Request via Github's web interface.
 
 
 When filing your Pull Request, please include a description of what it does, to
 help us reviewing it. If it is fixing an open issue, say, issue #123, add
 *Fixes #123*, *Resolves #123* or *Closes #123* to the description text, so
-OpenI will close it when your request is merged.
+Github will close it when your request is merged.
 
 
-.. _Release: https://git.openi.org.cn/TensorLayer/tensorlayer3.0/releases
-.. _OpenI: https://git.openi.org.cn/TensorLayer/tensorlayer3.0
+.. _Release: https://github.com/tensorlayer/TensorLayerX/releases
+.. _OpenI: https://git.openi.org.cn/OpenI/TensorLayerX
 .. _our mailing list: hao.dong11@imperial.ac.uk

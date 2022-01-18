@@ -1,13 +1,13 @@
-API - Cost
+API - losses
 ==================
 
-To make TensorLayer3 simple, we minimize the number of cost functions as much as
-we can. So we encourage you to use TensorFlow's function, , see `TensorFlow API <https://www.tensorflow.org/versions/r2.0/api_docs/python/tf>`_.
+To make TensorLayerX simple, we minimize the number of cost functions as much as we can.
+For more complex activation, TensorFlow(MindSpore, PaddlePaddle, PyTorch) API will be required.
 
 .. note::
-    Please refer to `Getting Started <https://github.com/tensorlayer/tensorlayer/tree/master/docs/user>`_ for getting specific weights for weight regularization.
+    Please refer to `Getting Started <https://github.com/tensorlayer/TensorLayerX/tree/master/docs/user>`_ for getting specific weights for weight regularization.
 
-.. automodule:: tensorlayer.cost
+.. automodule:: tensorlayerx.losses
 
 .. autosummary::
 

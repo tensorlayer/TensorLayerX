@@ -1,7 +1,7 @@
 API - Dataflow
 ==============
 
-.. automodule:: tensorlayer.dataflow
+.. automodule:: tensorlayerx.dataflow
 
 .. -----------------------------------------------------------
 ..                        Dataflow List

@@ -10,10 +10,10 @@ Your activation
 
 Customizes activation function in TensorLayerX is very easy.
 The following example implements an activation that multiplies its input by 2.
-For more complex activation, TensorFlow(MindSpore, PaddlePaddle, PyTorch) API will be required.
 
 .. code-block:: python
-  from tensorlayerx.nn.core import Module
+
+  from tensorlayerx.nn import Module
   class DoubleActivation(Module):
     def __init__(self):
         pass
@@ -21,9 +21,15 @@ For more complex activation, TensorFlow(MindSpore, PaddlePaddle, PyTorch) API wi
         return x * 2
   double_activation = DoubleActivation()
 
-.. automodule:: tensorlayerx.nn
+For more complex activation, TensorFlow(MindSpore, PaddlePaddle, PyTorch) API will be required.
+
+.. automodule:: tensorlayerx.nn.activation
+
+activation list
+----------------
 
 .. autosummary::
+
    ELU
    PRelu
    PRelu6
@@ -37,10 +43,13 @@ For more complex activation, TensorFlow(MindSpore, PaddlePaddle, PyTorch) API wi
    Ramp
    Swish
    HardTanh
-   Mish
    Tanh
    Sigmoid
    Softmax
+   Mish
+
+TensorLayerX Activations
+--------------------------------
 
 ELU
 ------
@@ -56,7 +65,7 @@ PRelu6
 
 PTRelu6
 ------------
-.. autofunction:: PTRelu6
+.. autoclass:: PTRelu6
 
 ReLU
 -----------------
@@ -88,7 +97,7 @@ Ramp
 
 Swish
 --------------------
-.. autofunction:: Swish
+.. autoclass:: Swish
 
 HardTanh
 ----------------

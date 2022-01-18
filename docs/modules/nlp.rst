@@ -3,7 +3,7 @@ API - Natural Language Processing
 
 Natural Language Processing and Word Representation.
 
-.. automodule:: tensorlayer.nlp
+.. automodule:: tensorlayerx.text.nlp
 
 .. autosummary::
 

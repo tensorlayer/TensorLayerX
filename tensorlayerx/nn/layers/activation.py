@@ -105,9 +105,7 @@ class PRelu6(Module):
     """
     The :class:`PRelu6` class is Parametric Rectified Linear layer integrating ReLU6 behaviour.
 
-    This Layer is a modified version of the :class:`PRelu`.
-
-    This activation layer use a modified version :func:`tlx.act.leaky_relu` introduced by the following paper:
+    This activation layer use a modified version :func:`tlx.nn.LeakyReLU` introduced by the following paper:
     `Rectifier Nonlinearities Improve Neural Network Acoustic Models [A. L. Maas et al., 2013] <https://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf>`__
 
     This activation function also use a modified version of the activation function :func:`tf.nn.relu6` introduced by the following paper:
@@ -216,9 +214,7 @@ class PTRelu6(Module):
     """
     The :class:`PTRelu6` class is Parametric Rectified Linear layer integrating ReLU6 behaviour.
 
-    This Layer is a modified version of the :class:`PRelu`.
-
-    This activation layer use a modified version :func:`tlx.act.leaky_relu` introduced by the following paper:
+    This activation layer use a modified version :func:`tlx.nn.LeakyReLU` introduced by the following paper:
     `Rectifier Nonlinearities Improve Neural Network Acoustic Models [A. L. Maas et al., 2013] <https://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf>`__
 
     This activation function also use a modified version of the activation function :func:`tf.nn.relu6` introduced by the following paper:
@@ -332,28 +328,28 @@ class PTRelu6(Module):
 class Ramp(Module):
     """Ramp activation function.
 
-        Reference: [tf.clip_by_value]<https://www.tensorflow.org/api_docs/python/tf/clip_by_value>
+    Reference: [tf.clip_by_value]<https://www.tensorflow.org/api_docs/python/tf/clip_by_value>
 
-        Parameters
-        ----------
-        x : Tensor
-            input.
-        v_min : float
-            cap input to v_min as a lower bound.
-        v_max : float
-            cap input to v_max as a upper bound.
+    Parameters
+    ----------
+    x : Tensor
+        input.
+    v_min : float
+        cap input to v_min as a lower bound.
+    v_max : float
+        cap input to v_max as a upper bound.
 
-        Returns
-        -------
-        Tensor
-            A ``Tensor`` in the same type as ``x``.
+    Returns
+    -------
+    Tensor
+        A ``Tensor`` in the same type as ``x``.
 
-        Examples
-        -----------
-        >>> inputs = tlx.nn.Input([10, 5])
-        >>> prelulayer = tlx.nn.Ramp()(inputs)
+    Examples
+    -----------
+    >>> inputs = tlx.nn.Input([10, 5])
+    >>> prelulayer = tlx.nn.Ramp()(inputs)
 
-        """
+    """
 
     def __init__(self, v_min=0, v_max=1):
         super(Ramp, self).__init__()
@@ -366,13 +362,13 @@ class Ramp(Module):
 
 
 class ELU(Module):
-    """
-    This function is a modified version of ReLU. It is continuous and differentiable at all points.
+    """This function is a modified version of ReLU. It is continuous and differentiable at all points.
+
     The function return the following results:
       - When x < 0:  ``f(x) = alpha * (exp(x) - 1)``.
       - When x >= 0:  ``f(x) = x``.
 
-     Parameters
+    Parameters
     ----------
     x : Tensor
         Support input type ``float``, ``double``, ``int32``, ``int64``, ``uint8``, ``int16``, or ``int8``.
@@ -380,16 +376,17 @@ class ELU(Module):
         Scale for the negative factor.
     name : str
         The function name (optional).
-    
-     Examples
-    --------
-    >>> net = tlx.nn.Input([10, 200])
-    >>> net = tlx.nn.ELU(alpha=0.5)(net)
 
     Returns
     -------
     Tensor
         A ``Tensor`` in the same type as ``x``.
+
+    Examples
+    --------
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.ELU(alpha=0.5)(net)
+
     """
 
     def __init__(self, alpha=1.0):
@@ -669,7 +666,7 @@ class LeakyReLU6(Module):
         ----------
         - `Rectifier Nonlinearities Improve Neural Network Acoustic Models [A. L. Maas et al., 2013] <https://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf>`__
         - `Convolutional Deep Belief Networks on CIFAR-10 [A. Krizhevsky, 2010] <http://www.cs.utoronto.ca/~kriz/conv-cifar10-aug2010.pdf>`__
-        """
+    """
 
     def __init__(self, alpha=0.2):
         super(LeakyReLU6, self).__init__()
@@ -727,7 +724,7 @@ class LeakyTwiceRelu6(Module):
         - `Rectifier Nonlinearities Improve Neural Network Acoustic Models [A. L. Maas et al., 2013] <https://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf>`__
         - `Convolutional Deep Belief Networks on CIFAR-10 [A. Krizhevsky, 2010] <http://www.cs.utoronto.ca/~kriz/conv-cifar10-aug2010.pdf>`__
 
-        """
+    """
 
     def __init__(self, alpha_low=0.2, alpha_high=0.2):
         super(LeakyTwiceRelu6, self).__init__()
@@ -771,7 +768,7 @@ class Swish(Module):
         Tensor
             A ``Tensor`` in the same type as ``x``.
 
-        """
+    """
 
     def __init__(self):
         super(Swish, self).__init__()
@@ -804,7 +801,7 @@ class HardTanh(Module):
         Tensor
             A ``Tensor`` in the same type as ``x``.
 
-        """
+    """
 
     def __init__(self):
         super(HardTanh, self).__init__()
@@ -834,7 +831,7 @@ class Mish(Module):
         Tensor
             A ``Tensor`` in the same type as ``x``.
 
-        """
+    """
 
     def __init__(self):
         super(Mish, self).__init__()

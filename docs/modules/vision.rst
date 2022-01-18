@@ -1,7 +1,7 @@
 API - Vision
 ============
 
-.. automodule:: tensorlayer.vision.transforms
+.. automodule:: tensorlayerx.vision.transforms
 
 .. -----------------------------------------------------------
 ..                        Vision Transforms List
@@ -42,6 +42,7 @@ Vision Transforms list
    RandomFlipHorizontal
    RandomFlipVertical
 
+   Rotation
    RandomRotation
    RandomShift
    RandomShear
@@ -55,6 +56,23 @@ Vision Transforms list
    Normalize
    StandardizePerImage
 
+
+.. automodule:: tensorlayerx.vision.utils
+
+.. -----------------------------------------------------------
+..                        Vision IO
+.. -----------------------------------------------------------
+
+Vision IO list
+----------------------
+
+.. autosummary::
+
+   load_image
+   save_image
+   load_images
+   save_images
+
 .. -----------------------------------------------------------
 ..                        Vision Transforms
 .. -----------------------------------------------------------
@@ -64,141 +82,169 @@ Vision Transforms
 
 ToTensor
 ^^^^^^^^^^^^^^^^
-.. autoclass:: ToTensor
+.. autoclass:: tensorlayerx.vision.transforms.ToTensor
 
 
 Compose
 ^^^^^^^^^^^^^^^^
-.. autoclass:: Compose
+.. autoclass:: tensorlayerx.vision.transforms.Compose
 
 Crop
 ^^^^^^^^^^^^^^^^
-.. autoclass:: Crop
+.. autoclass:: tensorlayerx.vision.transforms.Crop
 
 CentralCrop
 ^^^^^^^^^^^^^^^^
-.. autoclass:: CentralCrop
+.. autoclass:: tensorlayerx.vision.transforms.CentralCrop
 
 RandomCrop
 ^^^^^^^^^^^^^^^^
-.. autoclass:: RandomCrop
+.. autoclass:: tensorlayerx.vision.transforms.RandomCrop
 
 Pad
 ^^^^^^^^^^^^^^^^
-.. autoclass:: Pad
+.. autoclass:: tensorlayerx.vision.transforms.Pad
 
 PadToBoundingbox
 ^^^^^^^^^^^^^^^^
-.. autoclass:: PadToBoundingbox
+.. autoclass:: tensorlayerx.vision.transforms.PadToBoundingbox
 
 Resize
 ^^^^^^^^^^^^^^^^
-.. autoclass:: Resize
+.. autoclass:: tensorlayerx.vision.transforms.Resize
 
 RandomResizedCrop
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomResizedCrop
+.. autoclass:: tensorlayerx.vision.transforms.RandomResizedCrop
 
 RgbToGray
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RgbToGray
+.. autoclass:: tensorlayerx.vision.transforms.RgbToGray
 
 HsvToRgb
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: HsvToRgb
+.. autoclass:: tensorlayerx.vision.transforms.HsvToRgb
 
 RgbToHsv
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RgbToHsv
+.. autoclass:: tensorlayerx.vision.transforms.RgbToHsv
 
 AdjustBrightness
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: AdjustBrightness
+.. autoclass:: tensorlayerx.vision.transforms.AdjustBrightness
 
 AdjustContrast
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: AdjustContrast
+.. autoclass:: tensorlayerx.vision.transforms.AdjustContrast
 
 AdjustHue
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: AdjustHue
+.. autoclass:: tensorlayerx.vision.transforms.AdjustHue
 
 AdjustSaturation
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: AdjustSaturation
+.. autoclass:: tensorlayerx.vision.transforms.AdjustSaturation
 
 RandomBrightness
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomBrightness
+.. autoclass:: tensorlayerx.vision.transforms.RandomBrightness
 
 RandomContrast
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomContrast
+.. autoclass:: tensorlayerx.vision.transforms.RandomContrast
 
 RandomHue
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomHue
+.. autoclass:: tensorlayerx.vision.transforms.RandomHue
 
 RandomSaturation
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomSaturation
+.. autoclass:: tensorlayerx.vision.transforms.RandomSaturation
 
 ColorJitter
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: ColorJitter
+.. autoclass:: tensorlayerx.vision.transforms.ColorJitter
 
 FlipHorizontal
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: FlipHorizontal
+.. autoclass:: tensorlayerx.vision.transforms.FlipHorizontal
 
 FlipVertical
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: FlipVertical
+.. autoclass:: tensorlayerx.vision.transforms.FlipVertical
 
 RandomFlipHorizontal
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomFlipHorizontal
+.. autoclass:: tensorlayerx.vision.transforms.RandomFlipHorizontal
 
 RandomFlipVertical
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomFlipVertical
+.. autoclass:: tensorlayerx.vision.transforms.RandomFlipVertical
+
+Rotation
+^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: tensorlayerx.vision.transforms.Rotation
 
 RandomRotation
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomRotation
+.. autoclass:: tensorlayerx.vision.transforms.RandomRotation
 
 RandomShift
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomShift
+.. autoclass:: tensorlayerx.vision.transforms.RandomShift
 
 RandomShear
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomShear
+.. autoclass:: tensorlayerx.vision.transforms.RandomShear
 
 RandomZoom
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomZoom
+.. autoclass:: tensorlayerx.vision.transforms.RandomZoom
 
 RandomAffine
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: RandomAffine
+.. autoclass:: tensorlayerx.vision.transforms.RandomAffine
 
 Transpose
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: Transpose
+.. autoclass:: tensorlayerx.vision.transforms.Transpose
 
 HWC2CHW
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: HWC2CHW
+.. autoclass:: tensorlayerx.vision.transforms.HWC2CHW
 
 CHW2HWC
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: CHW2HWC
+.. autoclass:: tensorlayerx.vision.transforms.CHW2HWC
 
 Normalize
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: Normalize
+.. autoclass:: tensorlayerx.vision.transforms.Normalize
 
 StandardizePerImage
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: StandardizePerImage
+.. autoclass:: tensorlayerx.vision.transforms.StandardizePerImage
+
+
+.. -----------------------------------------------------------
+..                        Vision IO
+.. -----------------------------------------------------------
+
+Vision IO
+----------------------
+
+load_image
+^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: load_image
+
+save_image
+^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: save_image
+
+load_images
+^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: load_images
+
+save_image
+^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: save_images

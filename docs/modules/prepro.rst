@@ -1,7 +1,7 @@
 API - Data Pre-Processing
 =========================
 
-.. automodule:: tensorlayer.prepro
+.. automodule:: tensorlayerx.utils.prepro
 
 .. autosummary::
 

@@ -12,7 +12,7 @@ __all__ = [
 ]
 
 def load_image(path):
-    '''
+    '''Load an image
 
     Parameters
     ----------
@@ -23,6 +23,16 @@ def load_image(path):
     -------
         a numpy RGB image
 
+
+    Examples
+    ----------
+    With TensorLayerX
+
+    >>> import tensorlayerx as tlx
+    >>> path = './data/1.png'
+    >>> image = tlx.vision.load_image(path)
+    >>> print(image)
+
     '''
     image = cv2.imread(path)
     if image is None:
@@ -32,7 +42,7 @@ def load_image(path):
 
 
 def save_image(image, file_name, path):
-    '''
+    '''Save an image
 
     Parameters
     ----------
@@ -43,21 +53,38 @@ def save_image(image, file_name, path):
     path : str
         path to save image
 
+    Examples
+    ----------
+    With TensorLayerX
+
+    >>> import tensorlayerx as tlx
+    >>> load_path = './data/1.png'
+    >>> save_path = './test/'
+    >>> image = tlx.vision.load_image(path)
+    >>> tlx.vision.save_image(image, file_name='1.png',path=save_path)
+
     '''
     cv2.imwrite(os.path.join(path, file_name), image)
 
 def load_images(path):
-    '''
+    '''Load images from file
 
     Parameters
     ----------
     path : str
         path of the images.
 
-
     Returns : list
     -------
         a list of numpy RGB images
+
+    Examples
+    ----------
+    With TensorLayerX
+
+    >>> import tensorlayerx as tlx
+    >>> load_path = './data/'
+    >>> image = tlx.vision.load_images(path)
     '''
     images = []
     files = os.listdir(path)
@@ -71,8 +98,7 @@ def load_images(path):
 
 
 def save_images(images, file_names, path):
-
-    '''
+    '''Save images
 
     Parameters
     ----------
@@ -83,6 +109,16 @@ def save_images(images, file_names, path):
     path : str
         path to save images
 
+    Examples
+    ----------
+    With TensorLayerX
+
+    >>> import tensorlayerx as tlx
+    >>> load_path = './data/'
+    >>> save_path = './test/'
+    >>> images = tlx.vision.load_images(path)
+    >>> name_list = user_define
+    >>> tlx.vision.save_images(images, file_names=name_list,path=save_path)
     '''
     if len(images) != len(file_names):
         raise ValueError(" The number of images should be equal to the number of file names.")

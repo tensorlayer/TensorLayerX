@@ -110,7 +110,7 @@ API - Operations
    unsorted_segment_min
    unsorted_segment_max
 
-TensorLayer Tensor Operations
+TensorLayerX Tensor Operations
 --------------------------------
 
 get_tensor_shape

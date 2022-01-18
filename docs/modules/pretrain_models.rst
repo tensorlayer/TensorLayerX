@@ -1,7 +1,7 @@
 API - Pretrained Models
 ================================
 
-TensorLayer provides many pretrained models, you can easily use the whole or a part of the pretrained models via these APIs.
+TensorLayerX provides many pretrained models, you can easily use the whole or a part of the pretrained models via these APIs.
 
 .. automodule:: examples.model_zoo
 

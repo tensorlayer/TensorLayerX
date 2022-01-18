@@ -4,7 +4,7 @@ API - Iteration
 Data iteration.
 
 
-.. automodule:: tensorlayer.iterate
+.. automodule:: tensorlayerx.utils.iterate
 
 .. autosummary::
 

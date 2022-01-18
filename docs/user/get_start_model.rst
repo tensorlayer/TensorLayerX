@@ -4,7 +4,7 @@
 Define a model
 ===============
 
-TensorLayer3.0 provides two ways to define a model.
+TensorLayerX provides two ways to define a model.
 Sequential model allows you to build model in a fluent way while dynamic model allows you to fully control the forward process.
 
 Sequential model
@@ -12,15 +12,15 @@ Sequential model
 
 .. code-block:: python
 
-  from tensorlayer.layers import SequentialLayer
-  from tensorlayer.layers import Dense
-  import tensorlayer as tl
+  from tensorlayerx.nn import SequentialLayer
+  from tensorlayerx.nn import Dense
+  import tensorlayerx as tlx
 
   def get_model():
       layer_list = []
-      layer_list.append(Dense(n_units=800, act=tl.ReLU, in_channels=784, name='Dense1'))
-      layer_list.append(Dense(n_units=800, act=tl.ReLU, in_channels=800, name='Dense2'))
-      layer_list.append(Dense(n_units=10, act=tl.ReLU, in_channels=800, name='Dense3'))
+      layer_list.append(Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='Dense1'))
+      layer_list.append(Dense(n_units=800, act=tlx.ReLU, in_channels=800, name='Dense2'))
+      layer_list.append(Dense(n_units=10, act=tlx.ReLU, in_channels=800, name='Dense3'))
       MLP = SequentialLayer(layer_list)
       return MLP
 
@@ -34,18 +34,18 @@ In this case, you need to manually input the output shape of the previous layer 
 
 .. code-block:: python
 
-  import tensorlayer as tl
-  from tensorlayer.layers import Module
-  from tensorlayer.layers import Dropout, Dense
+  import tensorlayerx as tlx
+  from tensorlayerx.nn import Module
+  from tensorlayerx.nn import Dropout, Dense
   class CustomModel(Module):
 
       def __init__(self):
           super(CustomModel, self).__init__()
 
           self.dropout1 = Dropout(keep=0.8)
-          self.dense1 = Dense(n_units=800, act=tl.ReLU, in_channels=784)
+          self.dense1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784)
           self.dropout2 = Dropout(keep=0.8)
-          self.dense2 = Dense(n_units=800, act=tl.ReLU, in_channels=800)
+          self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800)
           self.dropout3 = Dropout(keep=0.8)
           self.dense3 = Dense(n_units=10, act=None, in_channels=800)
 
@@ -57,7 +57,7 @@ In this case, you need to manually input the output shape of the previous layer 
           z = self.dropout3(z)
           out = self.dense3(z)
           if foo:
-              out = tf.nn.softmax(out)
+              out = tlx.softmax(out)
           return out
 
   MLP = CustomModel()
@@ -74,18 +74,18 @@ In this case, you do not manually input the output shape of the previous layer t
 
 .. code-block:: python
 
-  import tensorlayer as tl
-  from tensorlayer.layers import Module
-  from tensorlayer.layers import Dropout, Dense
+  import tensorlayerx as tlx
+  from tensorlayerx.nn import Module
+  from tensorlayerx.nn import Dropout, Dense
   class CustomModel(Module):
 
       def __init__(self):
           super(CustomModel, self).__init__()
 
           self.dropout1 = Dropout(keep=0.8)
-          self.dense1 = Dense(n_units=800, act=tl.ReLU)
+          self.dense1 = Dense(n_units=800, act=tlx.ReLU)
           self.dropout2 = Dropout(keep=0.8)
-          self.dense2 = Dense(n_units=800, act=tl.ReLU)
+          self.dense2 = Dense(n_units=800, act=tlx.ReLU)
           self.dropout3 = Dropout(keep=0.8)
           self.dense3 = Dense(n_units=10, act=None)
 
@@ -97,11 +97,11 @@ In this case, you do not manually input the output shape of the previous layer t
           z = self.dropout3(z)
           out = self.dense3(z)
           if foo:
-              out = tf.nn.softmax(out)
+              out = tlx.softmax(out)
           return out
 
   MLP = CustomModel()
-  MLP.init_build(tl.layers.Input(shape=(1, 784))) # init_build must be called to initialize the weights.
+  MLP.init_build(tlx.nn.Input(shape=(1, 784))) # init_build must be called to initialize the weights.
   MLP.set_eval()
   outputs = MLP(data, foo=True) # controls the forward here
   outputs = MLP(data, foo=False)
@@ -120,7 +120,7 @@ Switching train/test modes
   ... # testing code here
   
   # method 2: Using packaged training modules
-  model = tl.models.Model(network=MLP, loss_fn=tl.cost.softmax_cross_entropy_with_logits, optimizer=optimizer)
+  model = tlx.model.Model(network=MLP, loss_fn=tlx.losses.softmax_cross_entropy_with_logits, optimizer=optimizer)
   model.train(n_epoch=n_epoch, train_dataset=train_ds)
 
 Reuse weights
@@ -130,14 +130,14 @@ For dynamic model, call the layer multiple time in forward function
 
 .. code-block:: python
 
-  import tensorlayer as tl
-  from tensorlayer.layers import Module, Dense, Concat
+  import tensorlayerx as tlx
+  from tensorlayerx.nn import Module, Dense, Concat
   class MyModel(Module):
       def __init__(self):
           super(MyModel, self).__init__()
-          self.dense_shared = Dense(n_units=800, act=tl.ReLU, in_channels=784)
-          self.dense1 = Dense(n_units=10, act=tl.ReLU, in_channels=800)
-          self.dense2 = Dense(n_units=10, act=tl.ReLU, in_channels=800)
+          self.dense_shared = Dense(n_units=800, act=tlx.ReLU, in_channels=784)
+          self.dense1 = Dense(n_units=10, act=tlx.ReLU, in_channels=800)
+          self.dense2 = Dense(n_units=10, act=tlx.ReLU, in_channels=800)
           self.cat = Concat()
 
       def forward(self, x):
@@ -198,7 +198,7 @@ Save model weights (optional)
 .. code-block:: python
 
   # When using packaged training modules. Saving and loading the model can be done as follows
-  model = tl.models.Model(network=MLP, loss_fn=tl.cost.softmax_cross_entropy_with_logits, optimizer=optimizer)
+  model = tlx.model.Model(network=MLP, loss_fn=tlx.losses.softmax_cross_entropy_with_logits, optimizer=optimizer)
   model.train(n_epoch=n_epoch, train_dataset=train_ds)
   model.save_weights('./model.npz', format='npz_dict')
   model.load_weights('./model.npz', format='npz_dict')

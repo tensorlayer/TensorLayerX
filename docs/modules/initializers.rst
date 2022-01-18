@@ -1,9 +1,8 @@
 API - Initializers
 =========================
 
-To make TensorLayerx simple, TensorLayerx only warps some basic initializers. For more advanced initializer,
-e.g. ``tf.initializers.he_normal``, please refer to TensorFlow provided initializers
-`here <https://www.tensorflow.org/versions/r2.0/api_docs/python/tf/initializers>`_.
+To make TensorLayerX simple, TensorLayerX only warps some basic initializers.
+For more complex activation, TensorFlow(MindSpore, PaddlePaddle, PyTorch) API will be required.
 
 .. automodule:: tensorlayerx.nn.initializers
 

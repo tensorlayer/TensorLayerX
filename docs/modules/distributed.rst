@@ -6,7 +6,7 @@ API - Distributed Training
 Helper API to run a distributed training.
 Check these `examples <https://github.com/tensorlayer/tensorlayer/tree/master/examples/distributed_training>`_.
 
-.. automodule:: tensorlayer.distributed
+.. automodule:: tensorlayerx.utils.distributed
 
 .. autosummary::
 

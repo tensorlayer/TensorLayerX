@@ -1,13 +1,13 @@
 API - Optimizers
 ================
 
-.. automodule:: tensorlayer.optimizers
+.. automodule:: tensorlayerx.optimizers
 
-TensorLayer3 provides simple API and tools to ease research, development and reduce the time to production.
-Therefore, we provide the latest state of the art optimizers that work with Tensorflow, MindSpore and PaddlePaddle.
-The optimizers functions provided by TensorFlow, MindSpore and PaddlePaddle can be used in TensorLayer3.
-We have also wrapped the optimizers functions for each framework, which can be found in tensorlayer.optimizers.
-In addition, we provide the latest state of Optimizers Dynamic Learning Rate that work with Tensorflow, MindSpore and PaddlePaddle.
+TensorLayerX provides simple API and tools to ease research, development and reduce the time to production.
+Therefore, we provide the latest state of the art optimizers that work with Tensorflow, MindSpore, PaddlePaddle and PyTorch.
+The optimizers functions provided by Tensorflow, MindSpore, PaddlePaddle and PyTorch can be used in TensorLayerX.
+We have also wrapped the optimizers functions for each framework, which can be found in tensorlayerx.optimizers.
+In addition, we provide the latest state of Optimizers Dynamic Learning Rate that work with Tensorflow, MindSpore, PaddlePaddle and PyTorch.
 
 Optimizers List
 ---------------
@@ -26,7 +26,7 @@ Optimizers List
    Lamb
    LARS
 
-.. automodule:: tensorlayer.optimizers.lr
+.. automodule:: tensorlayerx.optimizers.lr
 
 Optimizers Dynamic Learning Rate List
 --------------------------------------
@@ -50,47 +50,47 @@ Optimizers Dynamic Learning Rate List
 
 Adadelta
 ^^^^^^^^^^
-.. autoclass:: tensorlayer.optimizers.Adadelta
+.. autoclass:: tensorlayerx.optimizers.Adadelta
 
 Adagrad
 ^^^^^^^^^^^^^^^^
-.. autoclass:: tensorlayer.optimizers.Adagrad
+.. autoclass:: tensorlayerx.optimizers.Adagrad
 
 Adam
 ^^^^^^^^^^^^^^^^
-.. autoclass:: tensorlayer.optimizers.Adam
+.. autoclass:: tensorlayerx.optimizers.Adam
 
 Adamax
 ^^^^^^^^^^^^^^^^
-.. autoclass:: tensorlayer.optimizers.Adamax
+.. autoclass:: tensorlayerx.optimizers.Adamax
 
 Ftrl
 ^^^^^^^^^^^^^^^^
-.. autoclass:: tensorlayer.optimizers.Ftrl
+.. autoclass:: tensorlayerx.optimizers.Ftrl
 
 Nadam
 ^^^^^^^^^^^^^^^^
-.. autoclass:: tensorlayer.optimizers.Nadam
+.. autoclass:: tensorlayerx.optimizers.Nadam
 
 RMSprop
 ^^^^^^^^^^^^^^^^
-.. autoclass:: tensorlayer.optimizers.RMSprop
+.. autoclass:: tensorlayerx.optimizers.RMSprop
 
 SGD
 ^^^^^^^^^^^^^^^^
-.. autoclass:: tensorlayer.optimizers.SGD
+.. autoclass:: tensorlayerx.optimizers.SGD
 
 Momentum
 ^^^^^^^^^^^^^^^^
-.. autoclass:: tensorlayer.optimizers.Momentum
+.. autoclass:: tensorlayerx.optimizers.Momentum
 
 Lamb
 ^^^^^^^^^^^^^^^^
-.. autoclass:: tensorlayer.optimizers.Lamb
+.. autoclass:: tensorlayerx.optimizers.Lamb
 
 LARS
 ^^^^^^^^^^^^^^^^
-.. autoclass:: tensorlayer.optimizers.LARS
+.. autoclass:: tensorlayerx.optimizers.LARS
 
 
 

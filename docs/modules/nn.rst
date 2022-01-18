@@ -1,7 +1,7 @@
-API - Layers
+API - nn
 ============
 
-.. automodule:: tensorlayer.layers
+.. automodule:: tensorlayerx.nn
 
 .. -----------------------------------------------------------
 ..                        Layer List
@@ -114,10 +114,6 @@ Layer list
 
    MaskedConv3d
 
-   PRelu
-   PRelu6
-   PTRelu6
-
 .. -----------------------------------------------------------
 ..                        Basic Layers
 .. -----------------------------------------------------------
@@ -164,28 +160,6 @@ Embedding Layer
 Average Embedding Layer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: AverageEmbedding
-
-.. -----------------------------------------------------------
-..                     Activation Layers
-.. -----------------------------------------------------------
-
-
-Activation Layers
----------------------------
-
-PReLU Layer
-^^^^^^^^^^^^^^^^^
-.. autoclass:: PRelu
-
-
-PReLU6 Layer
-^^^^^^^^^^^^^^^^^^
-.. autoclass:: PRelu6
-
-
-PTReLU6 Layer
-^^^^^^^^^^^^^^^^^^^
-.. autoclass:: PTRelu6
 
 
 .. -----------------------------------------------------------

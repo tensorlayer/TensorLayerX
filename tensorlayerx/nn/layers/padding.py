@@ -191,8 +191,7 @@ class ZeroPad3d(Module):
     padding : int, or tuple of 2 ints, or tuple of 2 tuples of 2 ints.
             - If int, the same symmetric padding is applied to width and height.
             - If tuple of 2 ints, interpreted as two different symmetric padding values for height and width as ``(symmetric_dim1_pad, symmetric_dim2_pad, symmetric_dim3_pad)``.
-            - If tuple of 2 tuples of 2 ints, interpreted as
-            ``((left_dim1_pad, right_dim1_pad), (left_dim2_pad, right_dim2_pad), (left_dim3_pad, right_dim3_pad))``.
+            - If tuple of 2 tuples of 2 ints, interpreted as ``((left_dim1_pad, right_dim1_pad), (left_dim2_pad, right_dim2_pad), (left_dim3_pad, right_dim3_pad))``.
     name : None or str
         A unique layer name.
 

@@ -15,7 +15,8 @@ The fully-connected layer is `a = f(x*W+b)`, the most simple implementation is a
 
 .. code-block:: python
 
-  from tensorlayer.layers import Module
+  import tensorlayerx as tlx
+  from tensorlayerx.nn import Module
 
   class Dense(Module):
     """The :class:`Dense` class is a fully connected layer.
@@ -33,7 +34,7 @@ The fully-connected layer is `a = f(x*W+b)`, the most simple implementation is a
     def __init__(
             self,
             n_units,   # the number of units/channels of this layer
-            act=None,  # None: no activation, tf.nn.relu or 'relu': ReLU ...
+            act=None,  # None: no activation, tlx.relu or 'relu': ReLU ...
             name=None, # the name of this layer (optional)
             in_channels = None
     ):
@@ -49,7 +50,7 @@ The fully-connected layer is `a = f(x*W+b)`, the most simple implementation is a
         self.b = self._get_weights("biases", shape=(self.n_units, ), init=self.b_init)
 
     def forward(self, inputs): # call function
-        z = tf.matmul(inputs, self.W) + self.b
+        z = tlx.matmul(inputs, self.W) + self.b
         if self.act: # is not None
             z = self.act(z)
         return z
@@ -80,15 +81,15 @@ The full implementation is as follow, which supports both automatic inference in
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
-    >>> net = tl.layers.Input([100, 50], name='input')
-    >>> dense = tl.layers.Dense(n_units=800, act=tl.ReLU, in_channels=50, name='dense_1')
+    >>> net = tlx.nn.Input([100, 50], name='input')
+    >>> dense = tlx.nn.Dense(n_units=800, act=tlx.ReLU, in_channels=50, name='dense_1')
     >>> print(dense)
     Dense(n_units=800, relu, in_channels='50', name='dense_1')
-    >>> tensor = tl.layers.Dense(n_units=800, act=tl.ReLU, name='dense_2')(net)
+    >>> tensor = tl.layers.Dense(n_units=800, act=tlx.ReLU, name='dense_2')(net)
     >>> print(tensor)
-    tf.Tensor([...], shape=(100, 800), dtype=float32)
+    Tensor([...], shape=(100, 800), dtype=float32)
 
     Notes
     -----
@@ -100,8 +101,8 @@ The full implementation is as follow, which supports both automatic inference in
         self,
         n_units,
         act=None,
-        W_init=tl.initializers.truncated_normal(stddev=0.05),
-        b_init=tl.initializers.constant(value=0.0),
+        W_init=tlx.nn.initializers.truncated_normal(stddev=0.05),
+        b_init=tlx.nn.initializers.constant(value=0.0),
         in_channels=None,
         name=None,  # 'dense',
     ):
@@ -147,13 +148,13 @@ The full implementation is as follow, which supports both automatic inference in
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.n_units, ), init=self.b_init)
             self.b_init_flag = True
-            self.bias_add = tl.ops.BiasAdd()
+            self.bias_add = tlx.BiasAdd()
 
         self.act_init_flag = False
         if self.act:
             self.act_init_flag = True
 
-        self.matmul = tl.ops.MatMul()
+        self.matmul = tlx.MatMul()
 
     def forward(self, inputs):
         if self._forward_state == False:
@@ -194,8 +195,8 @@ We use Dropout as an example here:
 
     Examples
     --------
-    >>> net = tl.layers.Input([10, 200])
-    >>> net = tl.layers.Dropout(keep=0.2)(net)
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.Dropout(keep=0.2)(net)
 
     """
 
@@ -217,7 +218,7 @@ We use Dropout as an example here:
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.dropout = tl.ops.Dropout(keep=self.keep, seed=self.seed)
+        self.dropout = tlx.ops.Dropout(keep=self.keep, seed=self.seed)
 
     def forward(self, inputs):
         if self.is_train:
@@ -235,13 +236,13 @@ Get entire CNN
 .. code-block:: python
 
 
-  import tensorlayer as tl
+  import tensorlayerx as tlx
   import numpy as np
-  from tensorlayer.models.imagenet_classes import class_names
+  from tensorlayerx.models.imagenet_classes import class_names
   from examples.model_zoo import vgg16
 
   vgg = vgg16(pretrained=True)
-  img = tl.vis.read_image('data/tiger.jpeg')
-  img = tl.prepro.imresize(img, (224, 224)).astype(tl.float32) / 255
+  img = tlx.utils.visualize.read_image('data/tiger.jpeg')
+  img = tlx.utils.prepro.imresize(img, (224, 224)).astype(tlx.float32) / 255
   output = vgg(img, is_train=False)
 

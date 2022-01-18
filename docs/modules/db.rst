@@ -97,7 +97,7 @@ In the following example, we connect to MongoDB on a local machine with the IP `
 
 .. code-block:: python
 
-  db = tl.db.TensorHub(ip='localhost', port=27017, dbname='temp',
+  db = tlx.utils.db.TensorHub(ip='localhost', port=27017, dbname='temp',
         username=None, password='password', project_name='tutorial')
 
 Dataset management
@@ -254,7 +254,7 @@ See `here <https://github.com/tensorlayer/tensorlayer/tree/master/example/databa
 TensorHub API
 ---------------------
 
-.. automodule:: tensorlayer.db
+.. automodule:: tensorlayerx.utils.db
 
 .. autoclass:: TensorHub
    :members:

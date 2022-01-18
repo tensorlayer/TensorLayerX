@@ -41,6 +41,7 @@ __all__ = [
     'RandomResizedCrop',
     'RandomAffine',
     'ColorJitter',
+    'Rotation',
 ]
 
 
@@ -84,9 +85,9 @@ class CentralCrop(object):
     Parameters
     ----------
     size : int or sequence of int
-        The output size of the cropped image.
-        If size is an integer, a square crop of size (size, size) is returned.
-        If size is a sequence of length 2, it should be (height, width).
+        - The output size of the cropped image.
+        - If size is an integer, a square crop of size (size, size) is returned.
+        - If size is a sequence of length 2, it should be (height, width).
     central_fraction : float
         float (0, 1], fraction of size to crop
 
@@ -199,10 +200,10 @@ class Pad(object):
     Parameters
     ----------
     padding : int or sequenece
-        Padding on each border.
-        If a single int is provided， this is used to pad all borders.
-        If sequence of length 2 is provided， this is the padding on left/right and top/bottom respectively.
-        If a sequence of length 4 is provided， this is the padding for the left, top, right and bottom borders respectively.
+        - Padding on each border.
+        - If a single int is provided， this is used to pad all borders.
+        - If sequence of length 2 is provided， this is the padding on left/right and top/bottom respectively.
+        - If a sequence of length 4 is provided， this is the padding for the left, top, right and bottom borders respectively.
     padding_value : number or sequenece
         Pixel fill value for constant fill. Default is 0.
         If a tuple or list of length 3, it is used to fill R, G, B channels respectively. tuple and list only is supported for PIL Image.
@@ -241,10 +242,10 @@ class Resize(object):
     Parameters
     ----------
     size : int or sequenece
-        Desired output size.
-        If size is a sequence like (h, w), output size will be matched to this.
-        If size is an int, smaller edge of the image will be matched to this number.
-        i.e, if height > width, then image will be rescaled to (size * height / width, size).
+        - Desired output size.
+        - If size is a sequence like (h, w), output size will be matched to this.
+        - If size is an int, smaller edge of the image will be matched to this number.
+        - i.e, if height > width, then image will be rescaled to (size * height / width, size).
     interpolation : str
         Interpolation method. Default: 'bilinear'. 'nearest', 'bilinear', 'bicubic', 'area' and 'lanczos' are supported.
 
@@ -680,9 +681,9 @@ class RandomBrightness(object):
     Parameters
     ----------
     brightness_factor: float or sequence
-        Brightness adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-brightness_factor), 1+brightness_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
+        - Brightness adjustment factor (default=(1, 1)).
+        - If it is a float, the factor is uniformly chosen from the range [max(0, 1-brightness_factor), 1+brightness_factor].
+        - If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
 
     Examples
     ----------
@@ -710,9 +711,9 @@ class RandomContrast(object):
     Parameters
     ----------
     contrast_factor: float or sequence
-        Contrast adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-contrast_factor), 1+contrast_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
+        - Contrast adjustment factor (default=(1, 1)).
+        - If it is a float, the factor is uniformly chosen from the range [max(0, 1-contrast_factor), 1+contrast_factor].
+        - If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
 
     Examples
     ----------
@@ -741,9 +742,9 @@ class RandomSaturation(object):
     Parameters
     ----------
     saturation_factor: float or sequence
-        Saturation adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-saturation_factor), 1+saturation_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
+        - Saturation adjustment factor (default=(1, 1)).
+        - If it is a float, the factor is uniformly chosen from the range [max(0, 1-saturation_factor), 1+saturation_factor].
+        - If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
 
     Examples
     ----------
@@ -772,9 +773,9 @@ class RandomHue(object):
     Parameters
     ----------
     hue_factor: float or sequence
-        Hue adjustment factor (default=(0, 0)).
-        If it is a float, the factor is uniformly chosen from the range [-hue_factor, hue_factor].
-        If it is a sequence, it should be [min, max] for the range.Should have 0<= hue <= 0.5 or -0.5 <= min <= max <= 0.5.
+        - Hue adjustment factor (default=(0, 0)).
+        - If it is a float, the factor is uniformly chosen from the range [-hue_factor, hue_factor].
+        - If it is a sequence, it should be [min, max] for the range.Should have 0<= hue <= 0.5 or -0.5 <= min <= max <= 0.5.
 
     Examples
     ----------
@@ -803,15 +804,15 @@ class RandomCrop(object):
     Parameters
     ----------
     size: int or sequence
-        Desired output size of the crop.
-        If size is an int instead of sequence like (h, w), a square crop (size, size) is made.
-        If provided a sequence of length 1, it will be interpreted as (size[0], size[0]).
+        - Desired output size of the crop.
+        - If size is an int instead of sequence like (h, w), a square crop (size, size) is made.
+        - If provided a sequence of length 1, it will be interpreted as (size[0], size[0]).
     padding: int or sequence, optional
-        Optional padding on each border of the image.
-        If a single int is provided this is used to pad all borders.
-        If sequence of length 2 is provided this is the padding on left/right and top/bottom respectively.
-        If a sequence of length 4 is provided, it is used to pad left, top, right, bottom borders respectively.
-        Default: 0.
+        - Optional padding on each border of the image.
+        - If a single int is provided this is used to pad all borders.
+        - If sequence of length 2 is provided this is the padding on left/right and top/bottom respectively.
+        - If a sequence of length 4 is provided, it is used to pad left, top, right, bottom borders respectively.
+        - Default: 0.
     pad_if_needed: boolean
         It will pad the image if smaller than the desired size to avoid raising an exception.
         Since cropping is done after padding, the padding seems to be done at a random offset.
@@ -861,9 +862,9 @@ class RandomResizedCrop(object):
     Parameters
     ----------
     size: int or sequence
-        Desired output size of the crop.
-        If size is an int instead of sequence like (h, w), a square crop (size, size) is made.
-        If provided a sequence of length 1, it will be interpreted as (size[0], size[0]).
+        - Desired output size of the crop.
+        - If size is an int instead of sequence like (h, w), a square crop (size, size) is made.
+        - If provided a sequence of length 1, it will be interpreted as (size[0], size[0]).
     scale: tuple of float
         scale range of the cropped image before resizing, relatively to the origin image.
     ratio: tuple of float
@@ -960,15 +961,15 @@ class RandomRotation(object):
     Parameters
     ----------
     degrees: number or sequnence
-        Range of degrees to select from.
-        If degrees is a number, the range of degrees will be (-degrees, +degrees).
-        If degrees is a sequence, the range of degrees will (degrees[0], degrees[1]).
+        - Range of degrees to select from.
+        - If degrees is a number, the range of degrees will be (-degrees, +degrees).
+        - If degrees is a sequence, the range of degrees will (degrees[0], degrees[1]).
     interpolation: str
         Interpolation method. Default is 'bilinear'. 'nearest','bilinear' are supported.
     expand: boolean
-        If true, expands the output to make it large enough to hold the entire rotated image.
-        If false or omitted, make the output image the same size as the input image.
-        Note that the expand flag assumes rotation around the center and no translation.
+        - If true, expands the output to make it large enough to hold the entire rotated image.
+        - If false or omitted, make the output image the same size as the input image.
+        - Note that the expand flag assumes rotation around the center and no translation.
     center: sequence or None
         Optional center of rotation, (x, y). Origin is the upper left corner.
         Default is the center of the image.
@@ -1008,10 +1009,10 @@ class RandomShear(object):
     Parameters
     ----------
     shear: number or sequnence
-        Range of degrees to select from.
-        If shear is a number, a shear parallel to the x axis in the range (-shear, +shear) will be applied.
-        If shear is a sequence of 2 values a shear parallel to the x axis in the range (shear[0], shear[1]) will be applied.
-        If shear is a sequence of 4 values, a x-axis shear in (shear[0], shear[1]) and y-axis shear in (shear[2], shear[3]) will be applied.
+        - Range of degrees to select from.
+        - If shear is a number, a shear parallel to the x axis in the range (-shear, +shear) will be applied.
+        - If shear is a sequence of 2 values a shear parallel to the x axis in the range (shear[0], shear[1]) will be applied.
+        - If shear is a sequence of 4 values, a x-axis shear in (shear[0], shear[1]) and y-axis shear in (shear[2], shear[3]) will be applied.
     interpolation: str
         Interpolation method. Default is 'bilinear'.'nearest','bilinear' are supported.
     fill: number or sequence
@@ -1121,21 +1122,21 @@ class RandomAffine(object):
     Parameters
     ----------
     degrees: number or sequnence
-        Range of degrees to select from.
-        If degrees is a number, the range of degrees will be (-degrees, +degrees).
-        If degrees is a sequence, the range of degrees will (degrees[0], degrees[1]).
-        Set to 0 to deactivate rotations.
+        - Range of degrees to select from.
+        - If degrees is a number, the range of degrees will be (-degrees, +degrees).
+        - If degrees is a sequence, the range of degrees will (degrees[0], degrees[1]).
+        - Set to 0 to deactivate rotations.
     shift: sequence or None
-        Maximum absolute fraction for horizontal and vertical translations.
-        shift=(a, b), then horizontal shift is randomly sampled in the range -img_width * a < dx < img_width * a.
-        vertical shift is randomly sampled in the range -img_height * b < dy < img_height * b.
-        Will not shift by default.
+        - Maximum absolute fraction for horizontal and vertical translations.
+        - shift=(a, b), then horizontal shift is randomly sampled in the range -img_width * a < dx < img_width * a.
+        - vertical shift is randomly sampled in the range -img_height * b < dy < img_height * b.
+        - Will not shift by default.
     shear: number or sequnence or None
-        Range of degrees to select from.
-        If degrees is a number, a shear parallel to the x axis in the range (-shear, +shear) will be applied.
-        If shear is a sequence of 2 values a shear parallel to the x axis in the range (shear[0], shear[1]) will be applied.
-        If shear is a sequence of 4 values, a x-axis shear in (shear[0], shear[1]) and y-axis shear in (shear[2], shear[3]) will be applied.
-        Will not apply shear by default.
+        - Range of degrees to select from.
+        - If degrees is a number, a shear parallel to the x axis in the range (-shear, +shear) will be applied.
+        - If shear is a sequence of 2 values a shear parallel to the x axis in the range (shear[0], shear[1]) will be applied.
+        - If shear is a sequence of 4 values, a x-axis shear in (shear[0], shear[1]) and y-axis shear in (shear[2], shear[3]) will be applied.
+        - Will not apply shear by default.
     zoom: sequence or None
         Scaling factor interval, e.g (a, b), then scale is randomly sampled from the range a <= scale <= b.
         Will not zoom by default.
@@ -1218,21 +1219,21 @@ class ColorJitter(object):
     Parameters
     ----------
     brightness: float or sequence
-        Brightness adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-brightness_factor), 1+brightness_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
+        - Brightness adjustment factor (default=(1, 1)).
+        - If it is a float, the factor is uniformly chosen from the range [max(0, 1-brightness_factor), 1+brightness_factor].
+        - If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
     contrast: float or sequence
-        Contrast adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-contrast_factor), 1+contrast_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
+        - Contrast adjustment factor (default=(1, 1)).
+        - If it is a float, the factor is uniformly chosen from the range [max(0, 1-contrast_factor), 1+contrast_factor].
+        - If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
     saturation: float or sequence
-        Saturation adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-saturation_factor), 1+saturation_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
+        - Saturation adjustment factor (default=(1, 1)).
+        - If it is a float, the factor is uniformly chosen from the range [max(0, 1-saturation_factor), 1+saturation_factor].
+        - If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
     hue: float or sequence
-        Hue adjustment factor (default=(0, 0)).
-        If it is a float, the factor is uniformly chosen from the range [-hue_factor, hue_factor].
-        If it is a sequence, it should be [min, max] for the range.Should have 0<= hue <= 0.5 or -0.5 <= min <= max <= 0.5.
+        - Hue adjustment factor (default=(0, 0)).
+        - If it is a float, the factor is uniformly chosen from the range [-hue_factor, hue_factor].
+        - If it is a sequence, it should be [min, max] for the range.Should have 0<= hue <= 0.5 or -0.5 <= min <= max <= 0.5.
 
     Examples
     ----------
@@ -1299,26 +1300,23 @@ class ColorJitter(object):
         return image
 
 class Rotation(object):
-    """Randomly change the brightness, contrast, saturation and hue of an image.
+    """Rotate the image by angle.
 
     Parameters
     ----------
-    brightness: float or sequence
-        Brightness adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-brightness_factor), 1+brightness_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
-    contrast: float or sequence
-        Contrast adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-contrast_factor), 1+contrast_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
-    saturation: float or sequence
-        Saturation adjustment factor (default=(1, 1)).
-        If it is a float, the factor is uniformly chosen from the range [max(0, 1-saturation_factor), 1+saturation_factor].
-        If it is a sequence, it should be [min, max] for the range.Should be non negative numbers.
-    hue: float or sequence
-        Hue adjustment factor (default=(0, 0)).
-        If it is a float, the factor is uniformly chosen from the range [-hue_factor, hue_factor].
-        If it is a sequence, it should be [min, max] for the range.Should have 0<= hue <= 0.5 or -0.5 <= min <= max <= 0.5.
+    degrees: number
+        degrees to rotate.
+    interpolation: str
+        Interpolation method. Default is 'bilinear'. 'nearest','bilinear' are supported.
+    expand: boolean
+        - If true, expands the output to make it large enough to hold the entire rotated image.
+        - If false or omitted, make the output image the same size as the input image.
+        - Note that the expand flag assumes rotation around the center and no translation.
+    center: sequence or None
+        Optional center of rotation, (x, y). Origin is the upper left corner.
+        Default is the center of the image.
+    fill: number or sequence
+        Pixel fill value for the area outside the rotated image. Default is 0.
 
     Examples
     ----------
