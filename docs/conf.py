@@ -21,8 +21,8 @@ import os, sys, datetime
 sys.path.insert(0, os.path.abspath("../"))  # Important
 sys.path.insert(0, os.path.abspath(os.path.join("..", "tensorlayerx")))  # Important
 
-from tensorlayerx.package_info import __shortversion__
-from tensorlayerx.package_info import __version__
+from package_info import __shortversion__
+from package_info import __version__
 
 # -- General configuration ------------------------------------------------
 
