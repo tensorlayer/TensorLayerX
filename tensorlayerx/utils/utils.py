@@ -245,7 +245,7 @@ def predict(network, X, batch_size=None):
         return y_pred
     else:
         result = None
-        for X_a, _ in tensorlayerx.utils.iterate.minibatches(X, X, batch_size, shuffle=False):
+        for X_a, _ in tlx.utils.iterate.minibatches(X, X, batch_size, shuffle=False):
             result_a = network(X_a)
             if result is None:
                 result = result_a
@@ -595,7 +595,7 @@ def train_epoch(
     loss_ep = 0
     acc_ep = 0
     n_step = 0
-    for X_batch, y_batch in tensorlayerx.utils.iterate.minibatches(X, y, batch_size, shuffle=shuffle):
+    for X_batch, y_batch in tlx.utils.iterate.minibatches(X, y, batch_size, shuffle=shuffle):
         _loss, _acc = _train_step(network, X_batch, y_batch, cost=cost, train_op=train_op, acc=acc)
 
         loss_ep += _loss
@@ -640,7 +640,7 @@ def run_epoch(network, X, y, cost=None, acc=None, batch_size=100, shuffle=False)
     loss_ep = 0
     acc_ep = 0
     n_step = 0
-    for X_batch, y_batch in tensorlayerx.utils.iterate.minibatches(X, y, batch_size, shuffle=shuffle):
+    for X_batch, y_batch in tlx.utils.iterate.minibatches(X, y, batch_size, shuffle=shuffle):
         _loss, _acc = _run_step(network, X_batch, y_batch, cost=cost, acc=acc)
         if cost is not None:
             loss_ep += _loss
