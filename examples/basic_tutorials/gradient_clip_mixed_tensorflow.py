@@ -57,7 +57,7 @@ for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
         train_loss, train_acc, n_iter = 0, 0, 0
         for X_batch, y_batch in tlx.utils.iterate.minibatches(X_train, y_train, batch_size, shuffle=False):
             _logits = MLP(X_batch)
-            train_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch, name='eval_loss')
+            train_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch)
             train_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
             n_iter += 1
         print("   train loss: {}".format(train_loss / n_iter))

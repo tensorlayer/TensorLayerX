@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 
-def softmax_cross_entropy_with_logits(output, target):
+def softmax_cross_entropy_with_logits(output, target, reduction='mean'):
     """Softmax cross-entropy operation, returns the TensorFlow expression of cross-entropy for two distributions,
     it implements softmax internally. See ``tf.ops.sparse_softmax_cross_entropy_with_logits``.
 
@@ -34,8 +34,6 @@ def softmax_cross_entropy_with_logits(output, target):
         A batch of distribution with shape: [batch_size, num of classes].
     target : Tensor
         A batch of index with shape: [batch_size, ].
-    name : string
-        Name of this loss.
 
     Examples
     --------
@@ -49,10 +47,10 @@ def softmax_cross_entropy_with_logits(output, target):
 
     """
 
-    raise NotImplementedError("Not Implemented.")
+    return torch.nn.CrossEntropyLoss(reduction=reduction)(output, target)
 
 
-def sigmoid_cross_entropy(output, target):
+def sigmoid_cross_entropy(output, target, reduction='mean'):
     """Sigmoid cross-entropy operation, see ``tf.ops.sigmoid_cross_entropy_with_logits``.
 
     Parameters
@@ -60,16 +58,16 @@ def sigmoid_cross_entropy(output, target):
     output : Tensor
         A batch of distribution with shape: [batch_size, num of classes].
     target : Tensor
-        A batch of index with shape: [batch_size, ].
-    name : string
-        Name of this loss.
+        same shape as the input.
+    reduction : str
+        The optional values are “mean”, “sum”, and “none”. If “none”, do not perform reduction.
 
     """
 
-    raise NotImplementedError("Not Implemented.")
+    return torch.nn.BCEWithLogitsLoss(reduction=reduction)(output, target)
 
 
-def binary_cross_entropy(output, target, epsilon=1e-8):
+def binary_cross_entropy(output, target, reduction='mean'):
     """Binary cross entropy operation.
 
     Parameters
@@ -78,10 +76,6 @@ def binary_cross_entropy(output, target, epsilon=1e-8):
         Tensor with type of `float32` or `float64`.
     target : Tensor
         The target distribution, format the same with `output`.
-    epsilon : float
-        A small value to avoid output to be zero.
-    name : str
-        An optional name to attach to this function.
 
     References
     -----------
@@ -89,10 +83,10 @@ def binary_cross_entropy(output, target, epsilon=1e-8):
 
     """
 
-    raise NotImplementedError("Not Implemented.")
+    return torch.nn.BCELoss(reduction=reduction)(output, target)
 
 
-def mean_squared_error(output, target, is_mean=False, axis=-1, name="mean_squared_error"):
+def mean_squared_error(output, target, reduction='mean'):
     """Return the TensorFlow expression of mean-square-error (L2) of two batch of data.
 
     Parameters
@@ -101,14 +95,6 @@ def mean_squared_error(output, target, is_mean=False, axis=-1, name="mean_square
         2D, 3D or 4D tensor i.e. [batch_size, n_feature], [batch_size, height, width] or [batch_size, height, width, channel].
     target : Tensor
         The target distribution, format the same with `output`.
-    is_mean : boolean
-        Whether compute the mean or sum for each example.
-            - If True, use ``tf.reduce_mean`` to compute the loss between one target and predict data.
-            - If False, use ``tf.reduce_sum`` (default).
-    axis : int or list of int
-        The dimensions to reduce.
-    name : str
-        An optional name to attach to this function.
 
     References
     ------------
@@ -116,10 +102,10 @@ def mean_squared_error(output, target, is_mean=False, axis=-1, name="mean_square
 
     """
 
-    raise NotImplementedError("Not Implemented.")
+    return torch.nn.MSELoss(reduction=reduction)(output, target)
 
 
-def normalized_mean_square_error(output, target, axis=-1, name="normalized_mean_squared_error_loss"):
+def normalized_mean_square_error(output, target, reduction='mean'):
     """Return the TensorFlow expression of normalized mean-square-error of two distributions.
 
     Parameters
@@ -128,17 +114,24 @@ def normalized_mean_square_error(output, target, axis=-1, name="normalized_mean_
         2D, 3D or 4D tensor i.e. [batch_size, n_feature], [batch_size, height, width] or [batch_size, height, width, channel].
     target : Tensor
         The target distribution, format the same with `output`.
-    axis : int or list of int
-        The dimensions to reduce.
-    name : str
-        An optional name to attach to this function.
 
     """
 
-    raise NotImplementedError("Not Implemented.")
+    nmse_a = torch.sqrt(torch.sum(torch.square(output - target), dim=-1))
+    nmse_b = torch.sqrt(torch.sum(torch.square(target), dim=-1))
+
+    if reduction == 'mean':
+        nmse = torch.mean(nmse_a / nmse_b)
+    elif reduction == 'sum':
+        nmse = torch.sum(nmse_a / nmse_b)
+    elif reduction == 'none':
+        nmse = nmse_a / nmse_b
+    else:
+        raise Exception("The reduction values are 'mean', 'sum', and 'none'.")
+    return nmse
 
 
-def absolute_difference_error(output, target, is_mean=False, axis=-1, name="absolute_difference_error_loss"):
+def absolute_difference_error(output, target, reduction='mean'):
     """Return the TensorFlow expression of absolute difference error (L1) of two batch of data.
 
     Parameters
@@ -147,18 +140,18 @@ def absolute_difference_error(output, target, is_mean=False, axis=-1, name="abso
         2D, 3D or 4D tensor i.e. [batch_size, n_feature], [batch_size, height, width] or [batch_size, height, width, channel].
     target : Tensor
         The target distribution, format the same with `output`.
-    is_mean : boolean
-        Whether compute the mean or sum for each example.
-            - If True, use ``tf.reduce_mean`` to compute the loss between one target and predict data.
-            - If False, use ``tf.reduce_sum`` (default).
-    axis : int or list of int
-        The dimensions to reduce.
-    name : str
-        An optional name to attach to this function.
 
     """
 
-    raise NotImplementedError("Not Implemented.")
+    if reduction == 'mean':
+        loss = torch.mean(torch.abs(output - target))
+    elif reduction == 'sum':
+        loss = torch.sum(torch.abs(output - target))
+    elif reduction == 'none':
+        loss = torch.abs(output - target)
+    else:
+        raise Exception("The reduction values are 'mean', 'sum', and 'none'.")
+    return loss
 
 
 def dice_coe(output, target, loss_type='jaccard', axis=(1, 2, 3), smooth=1e-5):
@@ -193,7 +186,18 @@ def dice_coe(output, target, loss_type='jaccard', axis=(1, 2, 3), smooth=1e-5):
 
     """
 
-    raise NotImplementedError("Not Implemented.")
+    inse = torch.sum(output * target, dim=axis)
+    if loss_type == 'jaccard':
+        l = torch.sum(output * output, dim=axis)
+        r = torch.sum(target * target, dim=axis)
+    elif loss_type == 'sorensen':
+        l = torch.sum(output, dim=axis)
+        r = torch.sum(target, dim=axis)
+    else:
+        raise Exception("Unknow loss_type")
+    dice = (2. * inse + smooth) / (l + r + smooth)
+    dice = torch.mean(dice)
+    return dice
 
 
 def dice_hard_coe(output, target, threshold=0.5, axis=(1, 2, 3), smooth=1e-5):
@@ -220,7 +224,14 @@ def dice_hard_coe(output, target, threshold=0.5, axis=(1, 2, 3), smooth=1e-5):
 
     """
 
-    raise NotImplementedError("Not Implemented.")
+    output = _cast(output, threshold)
+    target = _cast(target, threshold)
+    inse = torch.sum(torch.multiply(output, target), dim=axis)
+    l = torch.sum(output, dim=axis)
+    r = torch.sum(target, dim=axis)
+    hard_dice = (2. * inse + smooth) / (l + r + smooth)
+    hard_dice = torch.mean(hard_dice)
+    return hard_dice
 
 
 def iou_coe(output, target, threshold=0.5, axis=(1, 2, 3), smooth=1e-5):
@@ -247,7 +258,13 @@ def iou_coe(output, target, threshold=0.5, axis=(1, 2, 3), smooth=1e-5):
 
     """
 
-    raise NotImplementedError("Not Implemented.")
+    pre = _cast(output, threshold)
+    truth = _cast(target, threshold)
+    inse = torch.sum(torch.multiply(pre, truth), dim=axis)
+    union = torch.sum(_cast(torch.add(pre, truth) , 1.0, flag=True), dim=axis)
+    batch_iou = (inse + smooth) / (union + smooth)
+    iou = torch.mean(batch_iou)
+    return iou
 
 
 def sequence_loss_by_example(
@@ -375,7 +392,9 @@ def cosine_similarity(v1, v2):
 
     """
 
-    raise NotImplementedError("Not Implemented.")
+    return torch.sum(torch.multiply(v1, v2), 1) / \
+        (torch.sqrt(torch.sum(torch.multiply(v1, v1), 1)) *
+         torch.sqrt(torch.sum(torch.multiply(v2, v2), 1)))
 
 
 # Regularization Functions
@@ -532,3 +551,15 @@ def huber_loss(
     """
 
     raise NotImplementedError("Not Implemented.")
+
+
+def _cast(a, threshold, flag=False):
+    zero = torch.zeros_like(a)
+    one = torch.ones_like(a)
+    if flag == False:
+        a = torch.where(a > threshold, one, a)
+        a = torch.where(a <= threshold, zero, a)
+    else:
+        a = torch.where(a >= threshold, one, a)
+        a = torch.where(a < threshold, zero, a)
+    return a

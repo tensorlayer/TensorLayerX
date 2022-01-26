@@ -30,8 +30,8 @@ __all__ = [
 ]
 
 
-def softmax_cross_entropy_with_logits(output, target, name=None):
-    """Softmax cross-entropy operation, returns the TensorFlow expression of cross-entropy for two distributions,
+def softmax_cross_entropy_with_logits(output, target, reduction='mean'):
+    """Softmax cross-entropy operation, returns the TensorLayerX expression of cross-entropy for two distributions,
     it implements softmax internally. See ``tf.ops.sparse_softmax_cross_entropy_with_logits``.
 
     Parameters
@@ -40,13 +40,15 @@ def softmax_cross_entropy_with_logits(output, target, name=None):
         A batch of distribution with shape: [batch_size, num of classes].
     target : Tensor
         A batch of index with shape: [batch_size, ].
-    name : string
-        Name of this loss.
+    reduction : str
+        The optional values are “mean”, “sum”, and “none”. If “none”, do not perform reduction.
 
     Examples
     --------
     >>> import tensorlayerx as tlx
-    >>> ce = tlx.losses.softmax_cross_entropy_with_logits(y_logits, y_target_logits, 'my_loss')
+    >>> logits = tlx.convert_to_tensor([[4.0, 2.0, 1.0], [0.0, 5.0, 1.0]])
+    >>> labels = tlx.convert_to_tensor([[1], [2]])
+    >>> loss = tlx.losses.softmax_cross_entropy_with_logits(logits, labels)
 
     References
     -----------
@@ -54,12 +56,18 @@ def softmax_cross_entropy_with_logits(output, target, name=None):
     - The code is borrowed from: `<https://en.wikipedia.org/wiki/Cross_entropy>`__.
 
     """
-    # if name is None:
-    #     raise Exception("Please give a unique name to tl.losses.cross_entropy for TF1.0+")
-    return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=target, logits=output), name=name)
+
+    if reduction == 'mean':
+        return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=target, logits=output))
+    elif reduction == 'sum':
+        return tf.reduce_sum(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=target, logits=output))
+    elif reduction == 'none':
+        return tf.nn.sparse_softmax_cross_entropy_with_logits(labels=target, logits=output)
+    else:
+        raise Exception("The reduction values are 'mean', 'sum', and 'none'.")
 
 
-def sigmoid_cross_entropy(output, target, name=None):
+def sigmoid_cross_entropy(output, target, reduction='mean'):
     """Sigmoid cross-entropy operation, see ``tf.ops.sigmoid_cross_entropy_with_logits``.
 
     Parameters
@@ -67,20 +75,30 @@ def sigmoid_cross_entropy(output, target, name=None):
     output : Tensor
         A batch of distribution with shape: [batch_size, num of classes].
     target : Tensor
-        A batch of index with shape: [batch_size, ].
-    name : string
-        Name of this loss.
+        same shape as the input.
+    reduction : str
+        The optional values are “mean”, “sum”, and “none”. If “none”, do not perform reduction.
 
     Examples
     --------
     >>> import tensorlayerx as tlx
-    >>> losses = tlx.losses.sigmoid_cross_entropy(y_logits, y_target_logits)
+    >>> logits = tlx.convert_to_tensor([[4.0, 2.0, 1.0], [0.0, 5.0, 1.0]])
+    >>> labels = tlx.convert_to_tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    >>> losses = tlx.losses.sigmoid_cross_entropy(logits, labels)
 
     """
-    return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=target, logits=output), name=name)
+
+    if reduction == 'mean':
+        return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=target, logits=output))
+    elif reduction == 'sum':
+        return tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(labels=target, logits=output))
+    elif reduction == 'none':
+        return tf.nn.sigmoid_cross_entropy_with_logits(labels=target, logits=output)
+    else:
+        raise Exception("The reduction values are 'mean', 'sum', and 'none'.")
 
 
-def binary_cross_entropy(output, target, epsilon=1e-8, name='bce_loss'):
+def binary_cross_entropy(output, target, reduction='mean'):
     """Binary cross entropy operation.
 
     Parameters
@@ -89,39 +107,39 @@ def binary_cross_entropy(output, target, epsilon=1e-8, name='bce_loss'):
         Tensor with type of `float32` or `float64`.
     target : Tensor
         The target distribution, format the same with `output`.
-    epsilon : float
-        A small value to avoid output to be zero.
-    name : str
-        An optional name to attach to this function.
+    reduction : str
+        The optional values are “mean”, “sum”, and “none”. If “none”, do not perform reduction.
 
     Examples
     --------
     >>> import tensorlayerx as tlx
-    >>> losses = tlx.losses.binary_cross_entropy(y_logits, y_target_logits)
+    >>> logits = tlx.convert_to_tensor([[0.4, 0.2, 0.8], [1.1, 0.5, 0.3]])
+    >>> labels = tlx.convert_to_tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    >>> losses = tlx.losses.binary_cross_entropy(logits, labels)
 
     References
     -----------
     - `ericjang-DRAW <https://github.com/ericjang/draw/blob/master/draw.py#L73>`__
 
     """
-    #     with ops.op_scope([output, target], name, "bce_loss") as name:
-    #         output = ops.convert_to_tensor(output, name="preds")
-    #         target = ops.convert_to_tensor(targets, name="target")
 
-    # with tf.name_scope(name):
-    return tf.reduce_mean(
-        tf.reduce_sum(
-            -(target * tf.math.log(output + epsilon) + (1. - target) * tf.math.log(1. - output + epsilon)), axis=1
-        ), name=name
-    )
+    if False in tf.less_equal(output, [1.0]).numpy() or False in tf.greater_equal(output, [0.0]).numpy():
+        raise Exception("all elements of input should be between 0 and 1")
 
-    # For brevity, let `x = output`, `z = target`.  The binary cross entropy loss is
-    #
-    #     loss(x, z) = - sum_i (x[i] * log(z[i]) + (1 - x[i]) * log(1 - z[i]))
+    epsilon = 3.6e-44
+    cal_loss = -(target * tf.math.log(output + epsilon) + (1. - target) * tf.math.log(1. - output + epsilon))
+    if reduction == 'mean':
+        return tf.reduce_mean(cal_loss)
+    elif reduction == 'sum':
+        return tf.reduce_sum(cal_loss)
+    elif reduction == 'none':
+        return cal_loss
+    else:
+        raise Exception("The reduction values are 'mean', 'sum', and 'none'.")
 
 
-def mean_squared_error(output, target, is_mean=False, axis=-1, name="mean_squared_error"):
-    """Return the TensorFlow expression of mean-square-error (L2) of two batch of data.
+def mean_squared_error(output, target, reduction='mean'):
+    """Return the TensorLayerX expression of mean-square-error (L2) of two batch of data.
 
     Parameters
     ----------
@@ -129,44 +147,35 @@ def mean_squared_error(output, target, is_mean=False, axis=-1, name="mean_square
         2D, 3D or 4D tensor i.e. [batch_size, n_feature], [batch_size, height, width] or [batch_size, height, width, channel].
     target : Tensor
         The target distribution, format the same with `output`.
-    is_mean : boolean
-        Whether compute the mean or sum for each example.
-            - If True, use ``tf.reduce_mean`` to compute the loss between one target and predict data.
-            - If False, use ``tf.reduce_sum`` (default).
-    axis : int or list of int
-        The dimensions to reduce.
-    name : str
-        An optional name to attach to this function.
+    reduction : str
+        The optional values are “mean”, “sum”, and “none”. If “none”, do not perform reduction.
 
-        Examples
+    Examples
     --------
     >>> import tensorlayerx as tlx
-    >>> losses = tlx.losses.mean_squared_error(y_logits, y_target_logits)
+    >>> logits = tlx.convert_to_tensor([[0.4, 0.2, 0.8], [1.1, 0.5, 0.3]])
+    >>> labels = tlx.convert_to_tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    >>> losses = tlx.losses.mean_squared_error(logits, labels)
 
     References
     ------------
     - `Wiki Mean Squared Error <https://en.wikipedia.org/wiki/Mean_squared_error>`__
 
     """
-    # with tf.name_scope(name):
-    # if len(output.shape) == 2:  # [batch_size, n_feature]
-    #     axis = 1
-    # elif len(output.shape) == 3:  # [batch_size, w, h]
-    #     axis = [1, 2]
-    # elif len(output.shape) == 4:  # [batch_size, w, h, c]
-    #     axis = [1, 2, 3]
-    # else:
-    #     raise Exception("Unknow dimension")
 
-    if is_mean:
-        mse = tf.reduce_mean(tf.reduce_mean(tf.math.squared_difference(output, target), axis), name=name)
+    if reduction == 'mean':
+        mse = tf.reduce_mean(tf.math.squared_difference(output, target))
+    elif reduction == 'sum':
+        mse = tf.reduce_sum(tf.math.squared_difference(output, target))
+    elif reduction == 'none':
+        mse = tf.math.squared_difference(output, target)
     else:
-        mse = tf.reduce_mean(tf.reduce_sum(tf.math.squared_difference(output, target), axis), name=name)
+        raise Exception("The reduction values are 'mean', 'sum', and 'none'.")
     return mse
 
 
-def normalized_mean_square_error(output, target, axis=-1, name="normalized_mean_squared_error_loss"):
-    """Return the TensorFlow expression of normalized mean-square-error of two distributions.
+def normalized_mean_square_error(output, target, reduction='mean'):
+    """Return the TensorLayerX expression of normalized mean-square-error of two distributions.
 
     Parameters
     ----------
@@ -174,32 +183,34 @@ def normalized_mean_square_error(output, target, axis=-1, name="normalized_mean_
         2D, 3D or 4D tensor i.e. [batch_size, n_feature], [batch_size, height, width] or [batch_size, height, width, channel].
     target : Tensor
         The target distribution, format the same with `output`.
-    axis : int or list of int
-        The dimensions to reduce.
-    name : str
-        An optional name to attach to this function.
+    reduction : str
+        The optional values are “mean”, “sum”, and “none”. If “none”, do not perform reduction.
 
     Examples
     --------
     >>> import tensorlayerx as tlx
-    >>> losses = tlx.losses.normalized_mean_square_error(y_logits, y_target_logits)
+    >>> logits = tlx.convert_to_tensor([[0.4, 0.2, 0.8], [1.1, 0.5, 0.3]])
+    >>> labels = tlx.convert_to_tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    >>> losses = tlx.losses.normalized_mean_square_error(logits, labels)
 
     """
-    with tf.name_scope("normalized_mean_squared_error_loss"):
-        # if len(output.shape) == 2:  # [batch_size, n_feature]
-        #     axis = 1
-        # elif len(output.shape) == 3:  # [batch_size, w, h]
-        #     axis = [1, 2]
-        # elif len(output.shape) == 4:  # [batch_size, w, h, c]
-        #     axis = [1, 2, 3]
-        nmse_a = tf.sqrt(tf.reduce_sum(tf.math.squared_difference(output, target), axis=axis))
-        nmse_b = tf.sqrt(tf.reduce_sum(tf.square(target), axis=axis))
-        nmse = tf.reduce_mean(nmse_a / nmse_b, name=name)
+
+    nmse_a = tf.sqrt(tf.reduce_sum(tf.math.squared_difference(output, target), axis=-1))
+    nmse_b = tf.sqrt(tf.reduce_sum(tf.square(target), axis=-1))
+
+    if reduction == 'mean':
+        nmse = tf.reduce_mean(nmse_a / nmse_b)
+    elif reduction == 'sum':
+        nmse = tf.reduce_sum(nmse_a / nmse_b)
+    elif reduction == 'none':
+        nmse = nmse_a / nmse_b
+    else:
+        raise Exception("The reduction values are 'mean', 'sum', and 'none'.")
     return nmse
 
 
-def absolute_difference_error(output, target, is_mean=False, axis=-1, name="absolute_difference_error_loss"):
-    """Return the TensorFlow expression of absolute difference error (L1) of two batch of data.
+def absolute_difference_error(output, target, reduction='mean'):
+    """Return the TensorLayerX expression of absolute difference error (L1) of two batch of data.
 
     Parameters
     ----------
@@ -207,34 +218,26 @@ def absolute_difference_error(output, target, is_mean=False, axis=-1, name="abso
         2D, 3D or 4D tensor i.e. [batch_size, n_feature], [batch_size, height, width] or [batch_size, height, width, channel].
     target : Tensor
         The target distribution, format the same with `output`.
-    is_mean : boolean
-        Whether compute the mean or sum for each example.
-            - If True, use ``tf.reduce_mean`` to compute the loss between one target and predict data.
-            - If False, use ``tf.reduce_sum`` (default).
-    axis : int or list of int
-        The dimensions to reduce.
-    name : str
-        An optional name to attach to this function.
+    reduction : str
+        The optional values are “mean”, “sum”, and “none”. If “none”, do not perform reduction.
 
     Examples
     --------
     >>> import tensorlayerx as tlx
-    >>> losses = tlx.losses.absolute_difference_error(y_logits, y_target_logits)
+    >>> logits = tlx.convert_to_tensor([[0.4, 0.2, 0.8], [1.1, 0.5, 0.3]])
+    >>> labels = tlx.convert_to_tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    >>> losses = tlx.losses.absolute_difference_error(logits, labels)
 
     """
-    # # with tf.name_scope("absolute_difference_error_loss"):
-    # if len(output.shape) == 2:  # [batch_size, n_feature]
-    #     axis = 1
-    # elif len(output.shape) == 3:  # [batch_size, w, h]
-    #     axis = [1, 2]
-    # elif len(output.shape) == 4:  # [batch_size, w, h, c]
-    #     axis = [1, 2, 3]
-    # else:
-    #     raise Exception("Unknow dimension")
-    if is_mean:
-        loss = tf.reduce_mean(tf.reduce_mean(tf.abs(output - target), axis), name=name)
+
+    if reduction == 'mean':
+        loss = tf.reduce_mean(tf.abs(output - target))
+    elif reduction == 'sum':
+        loss = tf.reduce_sum(tf.abs(output - target))
+    elif reduction == 'none':
+        loss = tf.abs(output - target)
     else:
-        loss = tf.reduce_mean(tf.reduce_sum(tf.abs(output - target), axis), name=name)
+        raise Exception("The reduction values are 'mean', 'sum', and 'none'.")
     return loss
 
 
@@ -261,14 +264,16 @@ def dice_coe(output, target, loss_type='jaccard', axis=(1, 2, 3), smooth=1e-5):
     Examples
     ---------
     >>> import tensorlayerx as tlx
-    >>> outputs = tlx.softmax(outputs)
-    >>> dice_loss = 1 - tlx.losses.dice_coe(outputs, y_)
+    >>> logits = tlx.convert_to_tensor([[0.4, 0.2, 0.8], [1.1, 0.5, 0.3]])
+    >>> labels = tlx.convert_to_tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    >>> dice_loss = tlx.losses.dice_coe(logits, labels, axis=-1)
 
     References
     -----------
     - `Wiki-Dice <https://en.wikipedia.org/wiki/Sørensen–Dice_coefficient>`__
 
     """
+
     inse = tf.reduce_sum(output * target, axis=axis)
     if loss_type == 'jaccard':
         l = tf.reduce_sum(output * output, axis=axis)
@@ -278,13 +283,7 @@ def dice_coe(output, target, loss_type='jaccard', axis=(1, 2, 3), smooth=1e-5):
         r = tf.reduce_sum(target, axis=axis)
     else:
         raise Exception("Unknow loss_type")
-    # old axis=[0,1,2,3]
-    # dice = 2 * (inse) / (l + r)
-    # epsilon = 1e-5
-    # dice = tf.clip_by_value(dice, 0, 1.0-epsilon) # if all empty, dice = 1
-    # new haodong
     dice = (2. * inse + smooth) / (l + r + smooth)
-    ##
     dice = tf.reduce_mean(dice, name='dice_coe')
     return dice
 
@@ -307,23 +306,25 @@ def dice_hard_coe(output, target, threshold=0.5, axis=(1, 2, 3), smooth=1e-5):
     smooth : float
         This small value will be added to the numerator and denominator, see ``dice_coe``.
 
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> logits = tlx.convert_to_tensor([[0.4, 0.2, 0.8], [1.1, 0.5, 0.3]])
+    >>> labels = tlx.convert_to_tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    >>> dice_loss = tlx.losses.dice_hard_coe(logits, labels, axis=-1)
+
     References
     -----------
     - `Wiki-Dice <https://en.wikipedia.org/wiki/Sørensen–Dice_coefficient>`__
 
     """
+
     output = tf.cast(output > threshold, dtype=tf.float32)
     target = tf.cast(target > threshold, dtype=tf.float32)
     inse = tf.reduce_sum(tf.multiply(output, target), axis=axis)
     l = tf.reduce_sum(output, axis=axis)
     r = tf.reduce_sum(target, axis=axis)
-    # old axis=[0,1,2,3]
-    # hard_dice = 2 * (inse) / (l + r)
-    # epsilon = 1e-5
-    # hard_dice = tf.clip_by_value(hard_dice, 0, 1.0-epsilon)
-    # new haodong
     hard_dice = (2. * inse + smooth) / (l + r + smooth)
-    ##
     hard_dice = tf.reduce_mean(hard_dice, name='hard_dice')
     return hard_dice
 
@@ -346,56 +347,26 @@ def iou_coe(output, target, threshold=0.5, axis=(1, 2, 3), smooth=1e-5):
     smooth : float
         This small value will be added to the numerator and denominator, see ``dice_coe``.
 
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> logits = tlx.convert_to_tensor([[0.4, 0.2, 0.8], [1.1, 0.5, 0.3]])
+    >>> labels = tlx.convert_to_tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    >>> dice_loss = tlx.losses.iou_coe(logits, labels, axis=-1)
+
     Notes
     ------
     - IoU cannot be used as training loss, people usually use dice coefficient for training, IoU and hard-dice for evaluating.
 
     """
+
     pre = tf.cast(output > threshold, dtype=tf.float32)
     truth = tf.cast(target > threshold, dtype=tf.float32)
     inse = tf.reduce_sum(tf.multiply(pre, truth), axis=axis)  # AND
     union = tf.reduce_sum(tf.cast(tf.add(pre, truth) >= 1, dtype=tf.float32), axis=axis)  # OR
-    # old axis=[0,1,2,3]
-    # epsilon = 1e-5
-    # batch_iou = inse / (union + epsilon)
-    # new haodong
     batch_iou = (inse + smooth) / (union + smooth)
     iou = tf.reduce_mean(batch_iou, name='iou_coe')
-    return iou  # , pre, truth, inse, union
-
-
-# ## test soft/hard dice and iou
-# import numpy as np
-# y = np.zeros((1,10,10,1))
-# # y[0,0:5,0:5]=1.0
-# o = np.zeros((1,10,10,1))
-# # o[:,:,:,:] = 0            # what we want: dice=0   iou=0  OK
-# # o[0,0:2,0:2]=0.3          # what we want: dice larger iou=0  OK
-# # o[0,0:2,0:2]=0.6          # what we want: dice larger  iou small  OK
-# # o[0,0:3,0:3]=0.6          # what we want: dice larger iou larger OK
-# # o[0,0:3,0:3]=1            # what we want: dice larger iou same OK
-# # o[0,0:5,0:5]=1            # what we want: dice=1 iou=1  OK
-# # o[0,0:5,0:5]=0.3          # what we want: dice smaller  iou=0  OK
-# # o[0,0:5,0:5]=1e-2           # what we want: dice≈0 iou=0  OK
-# # o[0,8:10,8:10]=1.0        # what we want: dice=0 iou=0  OK
-# # o[0,8:10,8:10]=1e-10        # what we want: dice=0 iou=0  OK
-# # y[:,:,:,:] = o[:,:,:,:] = 0 # what we want: dice=1 iou=1  OK
-# ## why in u-net, dice=1 hard-dice=1 iou=1 exist?? print bug?
-#
-# d = dice_coe(o, y, 'jaccard', smooth=1.)
-# hd = dice_hard_coe(o, y, smooth=1e-5)
-# i = iou_coe(o, y, smooth=1e-5)
-# sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
-# # sess.run(tf.local_variables_initializer())
-# print(sess.run([d,hd,i]))
-# # p, t, i, u = sess.run([pre, truth, inse, union])
-# # import pprint
-# # pprint.pprint(((y>0.5)*(o>0.5)).astype(int).tolist())
-# # pprint.pprint(p.tolist())
-# # pprint.pprint(t.tolist())
-# # pprint.pprint(i)
-# # pprint.pprint(u)
-# exit()
+    return iou
 
 
 def sequence_loss_by_example(
