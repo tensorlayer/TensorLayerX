@@ -164,7 +164,7 @@ setup(
     # $ pip install -e .[test]
     extras_require=extras_require,
     ext_modules=ext_modules,
-    scripts=[
-        'tl',
-    ],
+    # scripts=[
+    #     'tl',
+    # ],
 )
