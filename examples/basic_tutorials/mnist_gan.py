@@ -119,8 +119,8 @@ g_weights = G.trainable_weights
 d_weights = D.trainable_weights
 net_with_loss_G = WithLossG(G, D, loss_fn)
 net_with_loss_D = WithLossD(G, D, loss_fn)
-train_one_setp_g = TrainOneStep(net_with_loss_G, optimizer_g, g_weights)
-train_one_setp_d = TrainOneStep(net_with_loss_D, optimizer_d, d_weights)
+train_one_step_g = TrainOneStep(net_with_loss_G, optimizer_g, g_weights)
+train_one_step_d = TrainOneStep(net_with_loss_D, optimizer_d, d_weights)
 n_epoch = 50
 
 
@@ -141,8 +141,8 @@ for epoch in range(n_epoch):
     for data, label in train_loader:
         noise = tlx.convert_to_tensor(np.random.random(size=(batch_size, 100)), dtype=tlx.float32)
 
-        _loss_d = train_one_setp_d(data, noise)
-        _loss_g = train_one_setp_g(noise, label)
+        _loss_d = train_one_step_d(data, noise)
+        _loss_g = train_one_step_g(noise, label)
         d_loss += _loss_d
         g_loss += _loss_g
 

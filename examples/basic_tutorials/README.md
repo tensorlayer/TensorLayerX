@@ -3,7 +3,7 @@
 Please read this [DOCS](https://tensorlayerx.readthedocs.io/en/latest/user/get_start_model.html) before you start.
 
 ## Define a model
-TensorLayer3.0 provides Sequential and Subclass define a model. Sequential model allows you to build model in a fluent way while Subclass allows you to fully control the forward process.
+TensorLayerX provides Sequential and Subclass define a model. Sequential model allows you to build model in a fluent way while Subclass allows you to fully control the forward process.
 - [Sequential Model](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_SequentialLayer.py)
 - [Layer List](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tutorial_LayerList.py)
 - [Nested Usage of Layer](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/nested_usage_of_layer.py) 
