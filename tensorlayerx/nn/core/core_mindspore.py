@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .common import str2act, str2init
+from .common import str2act, str2init, random_normal
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from mindspore.nn import Cell
 import tensorlayerx as tlx
@@ -10,8 +10,7 @@ from mindspore import log as logger
 import inspect
 from mindspore import context
 import numpy
-import mindspore as ms
-from mindspore.common.api import _pynative_exec
+from mindspore.common.api import _pynative_executor
 from mindspore.common.parameter import Parameter
 
 __all__ = ['Module', 'SequentialLayer', 'LayerList']
@@ -23,7 +22,9 @@ class Module(Cell):
 
     def __init__(self, name=None, act=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        # mindspore auto-naming is set to False
+        self._auto_prefix = False
+        # Uniform parameter naming
         global _global_layer_name_dict
         if name is None:
             prefix = self.__class__.__name__.lower()
@@ -91,7 +92,7 @@ class Module(Cell):
         raise Exception("The build(self, inputs_shape) method must be implemented by inherited class")
 
     def _get_weights(
-        self, var_name, shape, init=tlx.nn.initializers.random_normal(), trainable=True, transposed=False,
+        self, var_name, shape, init=random_normal(), trainable=True, transposed=False,
         order=False
     ):
         """ Get trainable variables. """
@@ -141,55 +142,51 @@ class Module(Cell):
 
     def __call__(self, *inputs, **kwargs):
         if self.__class__.construct is Cell.construct:
-            logger.warning(
-                f"The '{self.__class__}' does not override the method 'construct', "
-                f"will call the super class(Cell) 'construct'."
-            )
+            logger.warning(f"The '{self.__class__}' does not override the method 'construct', "
+                           f"will call the super class(Cell) 'construct'.")
         if kwargs:
             bound_args = inspect.signature(self.construct).bind(*inputs, **kwargs)
             inputs = bound_args.args
             kwargs = bound_args.kwargs
 
+        # Run in Graph mode.
         if context.get_context("mode") == context.GRAPH_MODE:
             raise NotImplemented("GRAPH MODE is not supported, please select PYNATIVE MODE.")
 
-        # if context.get_context("mode") == context.GRAPH_MODE:
-        #     if kwargs:
-        #         raise ValueError("For 'graph' mode, the outermost network does not support passing "
-        #                          "variable key-value pair parameters.")
-        #     if self.enable_hook:
-        #         raise ValueError("The graph mode does not support hook function.")
-        #     out = self.compile_and_run(*inputs)
-        #     return out
+        # Run in PyNative mode.
+        if _pynative_executor.is_top_cell():
+            _pynative_executor.set_lazy_build(True)
+            # There many Casts in parameter_broadcast. Enable lazy_build and build faster.
+            self._do_parameter_broadcast()
 
-        self.do_parameter_broadcast()
         for item in inputs:
             if isinstance(item, numpy.ndarray):
-                raise TypeError("cell inputs should not be numpy array.")
-        origin_grad = []
+                raise TypeError("The cell inputs should not be numpy arrays.")
         if self.requires_grad is True:
-            _pynative_exec.set_grad_flag(True)
-            _pynative_exec.new_graph(self, *inputs, **kwargs)
-            for cell in self.cells():
-                origin_grad.append(cell.requires_grad)
-                cell.set_grad(True)
-        else:
-            _pynative_exec.set_grad_flag(False)
+            _pynative_executor.set_grad_flag(True)
+        _pynative_executor.new_graph(self, *inputs, **kwargs)
         cast_inputs = list()
         if hasattr(self, "_mindspore_flags"):
             if self._mindspore_flags.get('fp16'):
-                cast_inputs = self._cast_mixed_precision_inputs(inputs, ms.float16)
+                cast_inputs = self._cast_mixed_precision_inputs(inputs, tlx.float16)
             if self._mindspore_flags.get('fp32'):
-                cast_inputs = self._cast_mixed_precision_inputs(inputs, ms.float32)
+                cast_inputs = self._cast_mixed_precision_inputs(inputs, tlx.float32)
         if not cast_inputs:
             cast_inputs = inputs
-        output = self.run_construct(cast_inputs, kwargs)
+
+        with self.CellGuard():
+            try:
+                output = self.run_construct(cast_inputs, kwargs)
+            except Exception as err:
+                _pynative_executor.clear_res()
+                raise err
+
+        if _pynative_executor.is_top_cell():
+            _pynative_executor.execute_all_task()
+
         if isinstance(output, Parameter):
             output = output.data
-        if self.requires_grad is True:
-            _pynative_exec.end_graph(self, output, *inputs, **kwargs)
-            for i, cell in enumerate(self.cells()):
-                cell.set_grad(origin_grad[i])
+        _pynative_executor.end_graph(self, output, *inputs, **kwargs)
         return output
 
     def _add_node(self, input_tensors, output_tensors):
