@@ -7,12 +7,12 @@
 <!--- [![PyPI Version](https://badge.fury.io/py/tensorlayer.svg)](https://pypi.org/project/tensorlayerx/) --->
 <!--- ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tensorlayer.svg)) --->
 
-[![GitHub last commit (branch)](https://img.shields.io/github/last-commit/tensorlayer/tensorlayerx/master.svg)](https://github.com/tensorlayer/TensorLayerX)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/tensorlayer/tensorlayerx/main.svg)
 [![Documentation Status](https://readthedocs.org/projects/tensorlayerx/badge/)]( https://tensorlayerx.readthedocs.io/en/latest/)
 [![Build Status](https://travis-ci.org/tensorlayer/tensorlayerx.svg?branch=master)](https://travis-ci.org/tensorlayer/tensorlayerx)
 [![Downloads](http://pepy.tech/badge/tensorlayerx)](http://pepy.tech/project/tensorlayerx)
 [![Downloads](https://pepy.tech/badge/tensorlayerx/week)](https://pepy.tech/project/tensorlayerx/week)
-[![Docker Pulls](https://img.shields.io/docker/pulls/tensorlayer/tensorlayerx.svg)](https://hub.docker.com/r/tensorlayer/tensorlayerx/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/tensorlayer/tensorlayer.svg)](https://hub.docker.com/r/tensorlayer/tensorlayer/)
 
 🇬🇧 TensorLayerX is a multi-backend AI framework, which can run on almost all operation systems and AI hardwares, and support hybrid-framework programming. The currently version supports TensorFlow, MindSpore, PaddlePaddle and PyTorch(partial) as the backends.[layer list](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z). 
 
