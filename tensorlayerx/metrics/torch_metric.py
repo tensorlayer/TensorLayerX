@@ -65,8 +65,8 @@ class Accuracy(Metric):
         return res
 
     def reset(self):
-        self.total = [0.] * len(self.topk)
-        self.count = [0] * len(self.topk)
+        self.total = [0.] * self.topk
+        self.count = [0] * self.topk
 
 
 class Auc(object):
