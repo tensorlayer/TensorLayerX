@@ -10,6 +10,7 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 
 from tensorlayerx.nn import Module, Dense
+import tensorlayerx as tlx
 
 # Download training data from open datasets.
 training_data = datasets.FashionMNIST(
@@ -80,8 +81,11 @@ class NeuralNetwork(Module):
 
 model = NeuralNetwork().to(device)
 
-loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.trainable_weights, lr=1e-3)
+# loss_fn = nn.CrossEntropyLoss()
+loss_fn = tlx.losses.softmax_cross_entropy_with_logits
+
+# optimizer = torch.optim.SGD(model.trainable_weights, lr=1e-3)
+optimizer = tlx.optimizers.SGD(learning_rate=1e-3)
 
 
 def train(dataloader, model, loss_fn, optimizer):
@@ -95,9 +99,11 @@ def train(dataloader, model, loss_fn, optimizer):
         loss = loss_fn(pred, y)
 
         # Backpropagation
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        # optimizer.zero_grad()
+        # loss.backward()
+        # optimizer.step()
+        grads = optimizer.gradient(loss, model.trainable_weights)
+        optimizer.apply_gradients(zip(grads, model.trainable_weights))
 
         if batch % 100 == 0:
             loss, current = loss.item(), batch * len(X)

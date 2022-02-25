@@ -399,7 +399,7 @@ def reshape(tensor, shape):
 
 class Concat(object):
 
-    def __init__(self, axis):
+    def __init__(self, axis=0):
         super(Concat, self).__init__()
         self.axis = axis
 
@@ -407,7 +407,7 @@ class Concat(object):
         return pd.concat(values, axis=self.axis)
 
 
-def concat(values, axis):
+def concat(values, axis=0):
     """
     Concatenates tensors along one dimension.
 
@@ -620,7 +620,7 @@ def pad(tensor, paddings, mode='CONSTANT', constant_values=0):
 
 class Unstack(object):
 
-    def __init__(self, axis, num=None):
+    def __init__(self, axis=0, num=None):
         self.axis = axis
         self.num = num
 
@@ -630,7 +630,7 @@ class Unstack(object):
 
 class Stack(object):
 
-    def __init__(self, axis):
+    def __init__(self, axis=0):
         self.axis = axis
 
     def __call__(self, values):
@@ -711,7 +711,7 @@ def range(start, limit=None, delta=1, dtype=None):
 
 class ExpandDims(object):
 
-    def __init__(self, axis):
+    def __init__(self, axis=0):
         self.axis = axis
 
     def __call__(self, input):

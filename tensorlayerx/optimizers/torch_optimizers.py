@@ -25,7 +25,7 @@ class Adadelta(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_adadelta.step()
 
-    def gradient(self, loss, weights=None):
+    def gradient(self, loss, weights=None, return_grad=True):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -35,6 +35,11 @@ class Adadelta(object):
             self.init_optim = True
         self.optimizer_adadelta.zero_grad()
         loss.backward()
+
+        if return_grad == True:
+            return _grads(weights)
+        else:
+            return None
 
 
 class Adagrad(object):
@@ -55,7 +60,7 @@ class Adagrad(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_adagrad.step()
 
-    def gradient(self, loss, weights=None):
+    def gradient(self, loss, weights=None, return_grad=True):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -65,6 +70,11 @@ class Adagrad(object):
             self.init_optim = True
         self.optimizer_adagrad.zero_grad()
         loss.backward()
+
+        if return_grad == True:
+            return _grads(weights)
+        else:
+            return None
 
 
 class Adam(object):
@@ -87,7 +97,7 @@ class Adam(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_adam.step()
 
-    def gradient(self, loss, weights=None):
+    def gradient(self, loss, weights=None, return_grad=True):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -97,6 +107,11 @@ class Adam(object):
             self.init_optim = True
         self.optimizer_adam.zero_grad()
         loss.backward()
+
+        if return_grad == True:
+            return _grads(weights)
+        else:
+            return None
 
 
 class Adamax(object):
@@ -113,7 +128,7 @@ class Adamax(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_adamax.step()
 
-    def gradient(self, loss, weights=None):
+    def gradient(self, loss, weights=None, return_grad=True):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -123,6 +138,11 @@ class Adamax(object):
             self.init_optim = True
         self.optimizer_adamax.zero_grad()
         loss.backward()
+
+        if return_grad == True:
+            return _grads(weights)
+        else:
+            return None
 
 
 class Ftrl(object):
@@ -164,7 +184,7 @@ class RMSprop(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_rmsprop.step()
 
-    def gradient(self, loss, weights=None):
+    def gradient(self, loss, weights=None, return_grad=True):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -175,6 +195,11 @@ class RMSprop(object):
             self.init_optim = True
         self.optimizer_rmsprop.zero_grad()
         loss.backward()
+
+        if return_grad == True:
+            return _grads(weights)
+        else:
+            return None
 
 
 class SGD(object):
@@ -189,7 +214,7 @@ class SGD(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_sgd.step()
 
-    def gradient(self, loss, weights=None):
+    def gradient(self, loss, weights=None, return_grad=True):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -197,7 +222,11 @@ class SGD(object):
             self.init_optim = True
         self.optimizer_sgd.zero_grad()
         loss.backward()
-        return None
+
+        if return_grad == True:
+            return _grads(weights)
+        else:
+            return None
 
 
 class Momentum(object):
@@ -212,7 +241,7 @@ class Momentum(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_momentum.step()
 
-    def gradient(self, loss, weights=None):
+    def gradient(self, loss, weights=None, return_grad=True):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -221,6 +250,11 @@ class Momentum(object):
         self.optimizer_momentum.zero_grad()
         loss.backward()
 
+        if return_grad == True:
+            return _grads(weights)
+        else:
+            return None
+
 
 def Lamb(**kwargs):
     raise Exception('Lamb optimizer function not implemented')
@@ -228,3 +262,11 @@ def Lamb(**kwargs):
 
 def LARS(**kwargs):
     raise Exception('LARS optimizer function not implemented')
+
+
+def _grads(weights):
+    grads = []
+    for w in weights:
+        grads.append(w.grad)
+    return grads
+

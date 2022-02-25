@@ -66,7 +66,8 @@ def zeros(shape, dtype=None):
         A Tensor with all elements set to zero.
 
     """
-    raise NotImplementedError
+
+    return torch.zeros(size=shape, dtype=dtype)
 
 
 def ones(shape, dtype=None):
@@ -85,7 +86,8 @@ def ones(shape, dtype=None):
         A Tensor with all elements set to zero.
 
     """
-    raise NotImplementedError
+
+    return torch.ones(size=shape, dtype=dtype)
 
 
 def constant(value, dtype=None, shape=None):
@@ -94,7 +96,7 @@ def constant(value, dtype=None, shape=None):
 
     Parameters
     ----------
-    value : list
+    value : int
         A constant value (or list) of output type dtype.
     dtype : tensor
          The type of the elements of the resulting tensor.
@@ -106,10 +108,12 @@ def constant(value, dtype=None, shape=None):
         A Constant Tensor.
 
     """
-    raise NotImplementedError
+
+    w = torch.empty(size=shape, dtype=dtype)
+    return torch.nn.init.constant_(w, value)
 
 
-def random_uniform(shape, minval=0, maxval=None, dtype=None, seed=None):
+def random_uniform(shape, minval=0, maxval=1, dtype=None, seed=None):
     """
     Outputs random values from a uniform distribution.
 
@@ -130,7 +134,14 @@ def random_uniform(shape, minval=0, maxval=None, dtype=None, seed=None):
         A tensor of the specified shape filled with random uniform values.
 
     """
-    raise NotImplementedError
+
+    if seed is None:
+        torch.random.seed()
+    else:
+        torch.random.manual_seed(seed)
+    w = torch.randn(size=shape, dtype=dtype)
+    out = w.uniform_(minval, maxval)
+    return out
 
 
 def random_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
@@ -155,7 +166,14 @@ def random_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
         A tensor of the specified shape filled with random normal values.
 
     """
-    raise NotImplementedError
+
+    if seed is None:
+        torch.random.seed()
+    else:
+        torch.random.manual_seed(seed)
+    w = torch.randn(size=shape, dtype=dtype)
+    out = w.normal_(mean=mean, std=stddev)
+    return out
 
 
 def truncated_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
@@ -180,10 +198,13 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
         A tensor of the specified shape filled with random truncated normal values.
 
     """
-    raise NotImplementedError
+
+    tensor = torch.empty(size=shape, dtype=dtype)
+    out = torch.nn.init.trunc_normal_(tensor, mean=mean, std=stddev)
+    return out
 
 
-def he_normal(shape, dtype, seed=None):
+def he_normal(shape, dtype=None, seed=None):
     """
     He normal initializer.
 
@@ -200,18 +221,23 @@ def he_normal(shape, dtype, seed=None):
     -------
         A tensor of the specified shape filled with he normal values.
     """
-    raise NotImplementedError
+
+    tensor = torch.empty(size=shape, dtype=dtype)
+    out = torch.nn.init.kaiming_normal_(tensor)
+    return out
 
 
-def xavier_normal(shape, dtype, seed=None):
-    raise NotImplementedError
+def xavier_normal(shape, dtype=None, seed=None):
+    _tensor = torch.empty(size=shape, dtype=dtype)
+    return torch.nn.init.xavier_normal_(_tensor)
 
 
-def xavier_uniform(shape, dtype, seed=None):
-    raise NotImplementedError
+def xavier_uniform(shape, dtype=None, seed=None):
+    _tensor = torch.empty(size=shape, dtype=dtype)
+    return torch.nn.init.xavier_uniform_(_tensor)
 
 
-def Variable(initial_value, name, trainable=True):
+def Variable(initial_value, name=None, trainable=True):
     """
     Creates a new variable with value initial_value.
 
@@ -225,7 +251,7 @@ def Variable(initial_value, name, trainable=True):
     -------
         Variable
     """
-    raise NotImplementedError
+    return torch.nn.Parameter(data=initial_value, requires_grad=trainable)
 
 
 class MatMul(object):
@@ -288,7 +314,9 @@ def dtypes(dt):
     -------
         Data dtypes
     """
-    raise NotImplementedError
+    if dt not in _dtypeDict.keys():
+        raise Exception("Unsupported dtype: {}".format(dt))
+    return _dtypeDict[dt]
 
 
 class Maximum(object):
@@ -297,7 +325,7 @@ class Maximum(object):
         pass
 
     def __call__(self, x, y):
-        raise NotImplementedError
+        return torch.maximum(x, y)
 
 
 class Minimum(object):
@@ -306,7 +334,7 @@ class Minimum(object):
         pass
 
     def __call__(self, x, y):
-        raise NotImplementedError
+        return torch.minimum(x, y)
 
 
 def minimum(x, y):
@@ -325,7 +353,7 @@ def minimum(x, y):
         A Tensor. Has the same type as x
     """
 
-    raise NotImplementedError
+    return torch.minimum(x, y)
 
 
 class FlattenReshape(object):
@@ -346,7 +374,7 @@ class Reshape(object):
         self.shape = shape
 
     def __call__(self, tensor):
-        raise NotImplementedError
+        return torch.reshape(tensor, self.shape)
 
 
 def reshape(tensor, shape):
@@ -364,20 +392,20 @@ def reshape(tensor, shape):
         A Tensor. Has the same type as tensor
     """
 
-    raise NotImplementedError
+    return torch.reshape(tensor, shape)
 
 
 class Concat(object):
 
-    def __init__(self, axis):
+    def __init__(self, axis=0):
         super(Concat, self).__init__()
         self.axis = axis
 
     def __call__(self, values):
-        raise NotImplementedError
+        return torch.cat(tensors=values, dim=self.axis)
 
 
-def concat(values, axis):
+def concat(values, axis=0):
     """
     Concatenates tensors along one dimension.
 
@@ -392,7 +420,7 @@ def concat(values, axis):
         A Tensor resulting from concatenation of the input tensors.
     """
 
-    raise NotImplementedError
+    return torch.cat(values, axis)
 
 
 def convert_to_tensor(value, dtype=None):
@@ -431,7 +459,7 @@ def sqrt(x):
     -------
         A Tensor. Has the same type as x.
     """
-    raise NotImplementedError
+    return torch.sqrt(x)
 
 
 class ReduceSum(object):
@@ -440,17 +468,22 @@ class ReduceSum(object):
         self.axis = axis
 
     def __call__(self, input):
-        raise NotImplementedError
+        if self.axis is not None:
+            return torch.sum(input=input, dim=self.axis).values
+        else:
+            return torch.sum(input=input)
 
 
 class ReduceMean(object):
 
-    def __init__(self, axis):
+    def __init__(self, axis=None):
         self.axis = axis
 
     def __call__(self, inputs):
-        raise NotImplementedError
-
+        if self.axis is not None:
+            return torch.mean(input=inputs, dim=self.axis).values
+        else:
+            return torch.mean(inputs)
 
 def reduce_mean(input_tensor, axis=None):
     """
@@ -471,16 +504,22 @@ def reduce_mean(input_tensor, axis=None):
         The reduced tensor.
     """
 
-    raise NotImplementedError
+    if axis is not None:
+        return torch.mean(input=input_tensor, dim=axis).values
+    else:
+        return torch.mean(input_tensor)
 
 
 class ReduceMax(object):
 
-    def __init__(self, axis):
+    def __init__(self, axis=None):
         self.axis = axis
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        if self.axis is not None:
+            return torch.max(input=inputs, dim=self.axis).values
+        else:
+            return torch.max(inputs)
 
 
 def reduce_max(input_tensor, axis=None):
@@ -502,7 +541,10 @@ def reduce_max(input_tensor, axis=None):
         The reduced tensor.
     """
 
-    raise NotImplementedError
+    if axis is not None:
+        return torch.max(input_tensor, dim=axis).values
+    else:
+        return torch.max(input_tensor)
 
 
 def reduce_min(input_tensor, axis=None):
@@ -524,20 +566,55 @@ def reduce_min(input_tensor, axis=None):
         The reduced tensor.
     """
 
-    raise NotImplementedError
+    if axis is not None:
+        return torch.min(input=input_tensor, dim=axis).values
+    else:
+        return torch.min(input_tensor)
 
 
 class Pad(object):
 
-    def __init__(self, paddings, mode="REFLECT", constant_values=0):
+    def __init__(self, paddings, mode="REFLECT", constant_values=0.0):
         if mode not in ['CONSTANT', 'REFLECT', 'SYMMETRIC']:
             raise Exception("Unsupported mode: {}".format(mode))
-        self.paddings = paddings
-        self.mode = mode
+        self.paddings = self.correct_paddings(paddings)
+        self.mode = mode.lower()
         self.constant_values = constant_values
 
     def __call__(self, x):
-        raise NotImplementedError
+        if self.mode in ['symmetric', 'reflect']:
+            if len(x.shape) == 3 and self.paddings[0:2] + self.paddings[4:] == (0, 0, 0, 0):
+                self.paddings = (self.paddings[2], self.paddings[3])
+                x = torch.transpose(x, 1, 2)
+            elif len(x.shape) == 4 and self.paddings[0:2] + self.paddings[6:] == (0, 0, 0, 0):
+                self.paddings = (self.paddings[2:6])[::-1]
+                x = torch.transpose(x, 1, 3)
+            elif len(x.shape) == 5 and self.paddings[0:2] + self.paddings[8:] == (0, 0, 0, 0):
+                self.paddings = (self.paddings[2:8])[::-1]
+                x = torch.transpose(x, 1, 4)
+                print(self.paddings)
+            else:
+                raise NotImplementedError("Only constant padding is implemented for arbitrary dimensions.")
+
+        out = torch.nn.functional.pad(x, self.paddings, mode=self.mode, value=self.constant_values)
+
+        if self.mode in ['symmetric', 'reflect']:
+            if len(x.shape) == 3:
+                out = torch.transpose(out, 1, 2)
+            if len(x.shape) == 4:
+                out = torch.transpose(out, 1, 3)
+            if len(x.shape) == 5:
+                out = torch.transpose(out, 1, 4)
+        return out
+
+    def correct_paddings(self, paddings):
+        paddings = paddings[::-1]
+        _padding = []
+        for p_i in paddings:
+            for pj in p_i:
+                _padding.append(pj)
+        return tuple(_padding)
+
 
 
 def pad(tensor, paddings, mode='CONSTANT', constant_values=0):
@@ -559,7 +636,8 @@ def pad(tensor, paddings, mode='CONSTANT', constant_values=0):
     -------
         A Tensor. Has the same type as tensor.
     """
-    raise NotImplementedError
+    pad_obj = Pad(paddings, mode, constant_values=constant_values)
+    return pad_obj(tensor)
 
 
 class Unstack(object):
@@ -569,7 +647,10 @@ class Unstack(object):
         self.num = num
 
     def __call__(self, values):
-        raise NotImplementedError
+        out = []
+        for o in torch.chunk(values, chunks=self.num, dim=self.axis):
+            out.append(torch.squeeze(o))
+        return out
 
 
 class Stack(object):
@@ -578,7 +659,7 @@ class Stack(object):
         self.axis = axis
 
     def __call__(self, values):
-        raise NotImplementedError
+        return torch.stack(values, dim=self.axis)
 
 
 def stack(values, axis=0):
@@ -598,7 +679,7 @@ def stack(values, axis=0):
         A stacked Tensor with the same type as values.
     """
 
-    raise NotImplementedError
+    return torch.stack(values, dim=axis)
 
 
 class Meshgrid(object):
@@ -607,8 +688,8 @@ class Meshgrid(object):
         super(Meshgrid, self).__init__()
         self.index = indexing
 
-    def __call__(self, inputs):
-        raise NotImplementedError
+    def __call__(self, *inputs):
+        return torch.meshgrid(*inputs, indexing=self.index)
 
 
 def meshgrid(*args, **kwargs):
@@ -627,7 +708,7 @@ def meshgrid(*args, **kwargs):
         A list of N Tensors with rank N.
     """
 
-    raise NotImplementedError
+    return torch.meshgrid(*args)
 
 
 def range(start, limit=None, delta=1, dtype=None):
@@ -644,7 +725,7 @@ def range(start, limit=None, delta=1, dtype=None):
          defaults to the value of start while the first entry of the range defaults to 0.
     delta : tensor
         A 0-D Tensor (scalar). Number that increments start. Defaults to 1.
-    dtype : type
+    dtype : None or dtype
         The type of the elements of the resulting tensor.
 
     Returns
@@ -652,16 +733,16 @@ def range(start, limit=None, delta=1, dtype=None):
         An 1-D Tensor of type dtype.
     """
 
-    raise NotImplementedError
+    return torch.range(start=start, end=limit, step=delta, dtype=dtype)
 
 
 class ExpandDims(object):
 
-    def __init__(self, axis):
+    def __init__(self, axis=0):
         self.axis = axis
 
     def __call__(self, input):
-        raise NotImplementedError
+        return torch.unsqueeze(input=input, dim=self.axis)
 
 
 def expand_dims(input, axis):
@@ -681,7 +762,7 @@ def expand_dims(input, axis):
         A Tensor with the same data as input, but its shape has an additional dimension of size 1 added.
     """
 
-    raise NotImplementedError
+    return torch.unsqueeze(input, axis)
 
 
 class Tile(object):
