@@ -12,18 +12,21 @@ Dataflow list
 
 .. autosummary::
 
+   DataLoader
    Dataset
    IterableDataset
-   FromGenerator
-   FromSlices
-   Dataloader
+   TensorDataset
+   ChainDataset
+   ConcatDataset
+   Subset
+   random_split
+   Sampler
+   BatchSampler
+   RandomSampler
+   SequentialSampler
+   WeightedRandomSampler
+   SubsetRandomSampler
 
-   Concat
-   Zip
-   Batch
-   Map
-   Repeat
-   Shuffle
 
 .. -----------------------------------------------------------
 ..                        Dataflow
@@ -31,6 +34,10 @@ Dataflow list
 
 Dataflow
 -----------------
+DataLoader
+^^^^^^^^^^^^^^^^
+.. autoclass:: DataLoader
+
 
 Dataset
 ^^^^^^^^^^^^^^^^
@@ -41,39 +48,46 @@ IterableDataset
 ^^^^^^^^^^^^^^^^
 .. autoclass:: IterableDataset
 
-FromGenerator
+TensorDataset
 ^^^^^^^^^^^^^^^^
-.. autoclass:: FromGenerator
+.. autoclass:: TensorDataset
 
-FromSlices
+ChainDataset
 ^^^^^^^^^^^^^^^^
-.. autoclass:: FromSlices
+.. autoclass:: ChainDataset
 
-Dataloader
+ConcatDataset
 ^^^^^^^^^^^^^^^^
-.. autoclass:: Dataloader
+.. autoclass:: ConcatDataset
 
-Concat
+Subset
 ^^^^^^^^^^^^^^^^
-.. autoclass:: Concat
+.. autoclass:: Subset
 
-Zip
+random_split
 ^^^^^^^^^^^^^^^^
-.. autoclass:: Zip
+.. autoclass:: random_split
 
-Batch
+Sampler
 ^^^^^^^^^^^^^^^^
-.. autoclass:: Batch
+.. autoclass:: Sampler
 
-Map
+BatchSampler
+^^^^^^^^^^^^^^^^
+.. autoclass:: BatchSampler
+
+RandomSampler
+^^^^^^^^^^^^^^^^
+.. autoclass:: RandomSampler
+
+SequentialSampler
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: Map
+.. autoclass:: SequentialSampler
 
-Repeat
-^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: Repeat
+WeightedRandomSampler
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: WeightedRandomSampler
 
-Shuffle
-^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: Shuffle
-
+SubsetRandomSampler
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autoclass:: SubsetRandomSampler
