@@ -10,7 +10,7 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Dense, Dropout
-from tensorlayerx.dataflow import Dataset
+from tensorlayerx.dataflow import Dataset, DataLoader
 
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
 
@@ -63,12 +63,11 @@ optimizer = tlx.optimizers.Momentum(0.05, 0.9)
 metric = tlx.metrics.Accuracy()
 loss_fn = tlx.losses.softmax_cross_entropy_with_logits
 train_dataset = mnistdataset(data=X_train, label=y_train)
-train_dataset = tlx.dataflow.FromGenerator(
-    train_dataset, output_types=[tlx.float32, tlx.int64], column_names=['data', 'label']
-)
-train_loader = tlx.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
+train_loader = tlx.dataflow.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 model = tlx.model.Model(network=MLP, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
 model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=False)
 model.save_weights('./model.npz', format='npz_dict')
 model.load_weights('./model.npz', format='npz_dict')
+
+

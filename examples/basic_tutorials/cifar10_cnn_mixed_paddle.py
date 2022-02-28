@@ -8,7 +8,7 @@ import time
 import paddle as pd
 from tensorlayerx.nn import Module
 import tensorlayerx as tlx
-from tensorlayerx.dataflow import Dataset, Dataloader
+from tensorlayerx.dataflow import Dataset, DataLoader
 from tensorlayerx.nn import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
 from tensorlayerx.vision.transforms import (
     Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop
@@ -108,11 +108,8 @@ test_transforms = Compose([Resize(size=(24, 24)), StandardizePerImage()])
 train_dataset = make_dataset(data=X_train, label=y_train, transforms=train_transforms)
 test_dataset = make_dataset(data=X_test, label=y_test, transforms=test_transforms)
 
-train_dataset = tlx.dataflow.FromGenerator(train_dataset, output_types=(tlx.float32, tlx.int64))
-test_dataset = tlx.dataflow.FromGenerator(test_dataset, output_types=(tlx.float32, tlx.int64))
-
-train_dataset = Dataloader(train_dataset, batch_size=batch_size, shuffle=True, shuffle_buffer_size=128)
-test_dataset = Dataloader(test_dataset, batch_size=batch_size)
+train_dataset = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_dataset = DataLoader(test_dataset, batch_size=batch_size)
 
 for epoch in range(n_epoch):
     train_loss, train_acc, n_iter = 0, 0, 0

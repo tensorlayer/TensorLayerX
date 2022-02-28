@@ -60,10 +60,7 @@ batch_size = 64
 print_freq = 2
 
 train_dataset = imdbdataset(X=X_train, y=y_train)
-train_dataset = tlx.dataflow.FromGenerator(
-    train_dataset, output_types=[tlx.int64, tlx.int64], column_names=['data', 'label']
-)
-train_loader = tlx.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
+train_loader = tlx.dataflow.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 net = ImdbNet()
 train_weights = net.trainable_weights

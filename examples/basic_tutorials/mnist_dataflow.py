@@ -75,10 +75,7 @@ class MLP(Module):
 
 
 train_dataset = mnistdataset1(data=X_train, label=y_train, transform=transform)
-train_dataset = tlx.dataflow.FromGenerator(
-    train_dataset, output_types=[tlx.float32, tlx.int64], column_names=['data', 'label']
-)
-train_loader = tlx.dataflow.Dataloader(train_dataset, batch_size=128, shuffle=False)
+train_loader = tlx.dataflow.DataLoader(train_dataset, batch_size=128, shuffle=False)
 
 for i in train_loader:
     print(i[0].shape, i[1])

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import os
-# os.environ['TL_BACKEND'] = 'paddle'
-os.environ['TL_BACKEND'] = 'tensorflow'
+os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 
 import time
-from tensorlayerx.dataflow import Dataset, Dataloader
+from tensorlayerx.dataflow import Dataset, DataLoader
 from tensorlayerx.vision.transforms import (
     Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop
 )
@@ -110,11 +110,8 @@ test_transforms = Compose([Resize(size=(24, 24)), StandardizePerImage()])
 train_dataset = make_dataset(data=X_train, label=y_train, transforms=train_transforms)
 test_dataset = make_dataset(data=X_test, label=y_test, transforms=test_transforms)
 
-train_dataset = tlx.dataflow.FromGenerator(train_dataset, output_types=(tlx.float32, tlx.int64))
-test_dataset = tlx.dataflow.FromGenerator(test_dataset, output_types=(tlx.float32, tlx.int64))
-
-train_dataset = Dataloader(train_dataset, batch_size=batch_size, shuffle=True, shuffle_buffer_size=128)
-test_dataset = Dataloader(test_dataset, batch_size=batch_size)
+train_dataset = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_dataset = DataLoader(test_dataset, batch_size=batch_size)
 
 
 class WithLoss(Module):

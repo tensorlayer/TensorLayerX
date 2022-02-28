@@ -10,7 +10,7 @@ import time
 import numpy as np
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module, Dense
-from tensorlayerx.dataflow import Dataset
+from tensorlayerx.dataflow import Dataset, DataLoader
 from tensorlayerx.model import TrainOneStep
 
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
@@ -33,10 +33,7 @@ class mnistdataset(Dataset):
 
 batch_size = 128
 train_dataset = mnistdataset(data=X_train, label=y_train)
-train_dataset = tlx.dataflow.FromGenerator(
-    train_dataset, output_types=[tlx.float32, tlx.int64], column_names=['data', 'label']
-)
-train_loader = tlx.dataflow.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
+train_loader = tlx.dataflow.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 
 class generator(Module):
