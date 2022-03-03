@@ -1133,7 +1133,7 @@ def split(value, num_or_size_splits, axis=0):
     ----------
     value : tensor
         The Tensor to split.
-    num_or_size_splits : list
+    num_or_size_splits : int or list
         Either an integer indicating the number of splits along split_dim or a 1-D integer Tensor or
         Python list containing the sizes of each output tensor along split_dim.
     axis : int
@@ -1153,7 +1153,7 @@ def split(value, num_or_size_splits, axis=0):
 
     """
 
-    return tf.split(value=value, num_or_size_splits=num_or_size_splits, axis=axis, num=num)
+    return tf.split(value=value, num_or_size_splits=num_or_size_splits, axis=axis)
 
 
 class Floor(object):
@@ -1230,7 +1230,7 @@ def add_n(inputs):
 
 class OneHot(object):
 
-    def __init__(self, depth, on_value, off_value, axis, dtype):
+    def __init__(self, depth, on_value=None, off_value=None, axis=None, dtype=None):
         self.depth = depth
         self.on_value = on_value
         self.off_value = off_value

@@ -771,7 +771,7 @@ class Tile(object):
         pass
 
     def __call__(self, input, multiples):
-        raise NotImplementedError
+        return torch.tile(input, dims=multiples)
 
 
 def tile(input, multiples):
@@ -791,19 +791,19 @@ def tile(input, multiples):
         A Tensor. Has the same type as input.
     """
 
-    raise NotImplementedError
+    return torch.tile(input, multiples)
 
 
 class Cast(object):
 
-    def __init__(self, dtype):
+    def __init__(self, dtype=None):
         self.dtype = dtype
 
     def __call__(self, x):
-        raise NotImplementedError
+        return x.type(self.dtype)
 
 
-def cast(x, dtype):
+def cast(x, dtype=None):
     """
     Casts a tensor to a new type.
 
@@ -820,7 +820,7 @@ def cast(x, dtype):
         A Tensor or SparseTensor or IndexedSlices with same shape as x and same type as dtype.
     """
 
-    raise NotImplementedError
+    return x.type(dtype)
 
 
 class Transpose(object):
@@ -830,7 +830,7 @@ class Transpose(object):
         self.conjugate = conjugate
 
     def __call__(self, a):
-        raise NotImplementedError
+        return transpose(a, self.perm, self.conjugate)
 
 
 def transpose(a, perm=None, conjugate=False):
@@ -850,8 +850,19 @@ def transpose(a, perm=None, conjugate=False):
     -------
         A transposed Tensor.
     """
-
-    raise NotImplementedError
+    if perm == None:
+        if len(a.shape) <= 2:
+            return torch.t(a)
+        if len(a.shape) == 3:
+            perm = [2, 1, 0]
+        if len(a.shape) == 4:
+            perm = [3, 2, 1, 0]
+        if len(a.shape) == 5:
+            perm = [4, 3, 2, 1, 0]
+    out = torch.permute(a, perm)
+    if conjugate:
+        out = torch.conj_physical(out)
+    return out
 
 
 def gather_nd(params, indices, batch_dims=0):
@@ -872,7 +883,18 @@ def gather_nd(params, indices, batch_dims=0):
         A Tensor. Has the same type as params.
     """
 
-    raise NotImplementedError
+    out_shape = indices.shape[:-1]
+    indices = indices.unsqueeze(0).transpose(0, -1)
+    ndim = indices.shape[0]
+    indices = indices.long()
+    idx = torch.zeros_like(indices[0], device=indices.device).long()
+    m = 1
+
+    for i in range(ndim)[::-1]:
+        idx += indices[i] * m
+        m *= params.size(i)
+    out = torch.take(params, idx)
+    return out.view(out_shape)
 
 
 def clip_by_value(t, clip_value_min, clip_value_max):
@@ -893,10 +915,15 @@ def clip_by_value(t, clip_value_min, clip_value_max):
         A clipped Tensor or IndexedSlices.
     """
 
-    raise NotImplementedError
+    t_min = clip_value_min
+    t_max = clip_value_max
+
+    result = (t >= t_min) * t + (t < t_min) * t_min
+    result = (result <= t_max) * result + (result > t_max) * t_max
+    return result
 
 
-def split(value, num_or_size_splits, axis=0, num=None):
+def split(value, num_or_size_splits, axis=0):
     """
     Splits a tensor into sub tensors.
 
@@ -917,25 +944,25 @@ def split(value, num_or_size_splits, axis=0, num=None):
         Tensor objects resulting from splitting value.
     """
 
-    raise NotImplementedError
+    return torch.split(value, num_or_size_splits, dim=axis)
 
 
 class Floor(object):
 
     def __call__(self, x):
-        raise NotImplementedError
+        return torch.floor(x)
 
 
 def floor(x):
-    raise NotImplementedError
+    return torch.floor(x)
 
 
 def gather(params, indices):
-    raise NotImplementedError
+    return gather_nd(params, indices)
 
 
 def linspace(start, stop, num):
-    raise NotImplementedError
+    return torch.linspace(start=start, end=stop, steps=num)
 
 
 def slice(inputs, starts, sizes):
@@ -943,12 +970,16 @@ def slice(inputs, starts, sizes):
 
 
 def add_n(inputs):
-    raise NotImplementedError
+    a = inputs[0]
+    for b in inputs[1:]:
+        a += b
+    return a
+
 
 
 class OneHot(object):
 
-    def __init__(self, depth, on_value, off_value, axis, dtype):
+    def __init__(self, depth=-1, on_value=None, off_value=None, axis=None, dtype=None):
         self.depth = depth
         self.on_value = on_value
         self.off_value = off_value
@@ -956,7 +987,15 @@ class OneHot(object):
         self.dtype = dtype
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        if [self.on_value, self.off_value] == [None, None]:
+            return torch.nn.functional.one_hot(inputs, self.depth)
+        else:
+            out = torch.nn.functional.one_hot(inputs, self.depth)
+            out = cast(out, torch.float64)
+            out = torch.where(out==1, self.on_value, out)
+            out = torch.where(out==0, self.off_value, out)
+            out = cast(out, torch.int)
+            return out
 
 
 class L2Normalize(object):

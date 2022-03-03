@@ -869,7 +869,7 @@ def clip_by_value(t, clip_value_min, clip_value_max):
     return pd.clip(t, clip_value_min, clip_value_max)
 
 
-def split(value, num_or_size_splits, axis=0, num=None):
+def split(value, num_or_size_splits, axis=0):
     """
     Splits a tensor into sub tensors.
 
