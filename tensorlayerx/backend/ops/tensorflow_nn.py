@@ -1940,7 +1940,7 @@ class rnncell(object):
         self.bias_hh = bias_hh
         self.act_fn = tf.nn.relu if act == 'relu' else tf.nn.tanh
 
-    def __call__(self, input, h, c=None):
+    def __call__(self, input, h):
 
         i2h = tf.matmul(input, self.weight_ih, transpose_b=True)
         if self.bias_ih is not None:
@@ -1963,7 +1963,6 @@ class lstmcell(object):
         self.act_fn = tf.tanh
 
     def __call__(self, input, h, c):
-
         gates = tf.matmul(input, self.weight_ih, transpose_b=True)
         if self.bias_ih is not None:
             gates = gates + self.bias_ih
@@ -1991,7 +1990,7 @@ class grucell(object):
         self.gate_act_fn = tf.sigmoid
         self.act_fn = tf.tanh
 
-    def __call__(self, input, h, c=None):
+    def __call__(self, input, h):
 
         x_gates = tf.matmul(input, self.weight_ih, transpose_b=True)
         if self.bias_ih is not None:
@@ -2024,10 +2023,10 @@ class rnnbase(object):
         dropout,
         bidirectional,
         is_train,
-        weights_fw,
-        weights_bw,
-        bias_fw,
-        bias_bw,
+        w_ih,
+        w_hh,
+        b_ih,
+        b_hh,
     ):
         self.mode = mode
         self.input_size = input_size
@@ -2048,13 +2047,10 @@ class rnnbase(object):
             )
         self.bidirect = 2 if bidirectional else 1
 
-        self.weights_fw = weights_fw
-        self.bias_fw = bias_fw
-        self.weights_bw = weights_bw
-        self.bias_bw = bias_bw
-
-        # stdv = 1.0 / np.sqrt(self.hidden_size)
-        # _init = tf.random_uniform_initializer(minval=-stdv, maxval=stdv)
+        self.w_ih = w_ih
+        self.w_hh = w_hh
+        self.b_ih = b_ih
+        self.b_hh = b_hh
 
         self.act_fn = None
         if mode == 'LSTM':
@@ -2072,46 +2068,6 @@ class rnnbase(object):
             self.rnn_cell = rnncell
             self.act_fn = 'relu'
 
-        # for layer in range(num_layers):
-        #     for direction in range(self.bidirect):
-        #         layer_input_size = input_size if layer==0 else hidden_size*self.bidirect
-        #         if direction == 0:
-        #             self.w_ih = tf.Variable(initial_value= _init(shape=(gate_size, layer_input_size)),name = 'weight_ih_l'+str(layer), trainable=True)
-        #             self.w_hh = tf.Variable(initial_value=_init(shape=(gate_size, hidden_size)),
-        #                                name='weight_hh_l'+str(layer), trainable=True)
-        #             # self.w_ih = self.weights_init('weight_ih_l'+str(layer), shape = (gate_size, layer_input_size), init = _init)
-        #             # self.w_hh = self.weights_init('weight_ih_l' + str(layer), shape=(gate_size, hidden_size),
-        #             #                               init=_init)
-        #             self.weights_fw.append(self.w_ih)
-        #             self.weights_fw.append(self.w_hh)
-        #             if bias:
-        #                 self.b_ih  = tf.Variable(initial_value=_init(shape=(gate_size,)),
-        #                                    name='bias_ih_l'+str(layer), trainable=True)
-        #                 self.b_hh  = tf.Variable(initial_value=_init(shape=(gate_size,)),
-        #                                    name='bias_hh_l'+str(layer), trainable=True)
-        #                 # self.b_ih = self.weights_init('bias_ih_l'+str(layer), shape=(gate_size,), init=_init)
-        #                 # self.b_hh = self.weights_init('bias_hh_l'+str(layer), shape=(gate_size,), init=_init)
-        #                 self.bias_fw.append(self.b_ih)
-        #                 self.bias_fw.append(self.b_hh)
-        #         else:
-        #             self.w_ih = tf.Variable(initial_value= _init(shape=(gate_size, layer_input_size)),name = 'weight_ih_l'+str(layer)+'_reverse', trainable=True)
-        #             self.w_hh = tf.Variable(initial_value=_init(shape=(gate_size, hidden_size)),
-        #                                name='weight_hh_l'+str(layer)+'_reverse', trainable=True)
-        #             # self.w_ih = self.weights_init('weight_ih_l'+str(layer)+'_reverse', shape = (gate_size, layer_input_size), init = _init)
-        #             # self.w_hh = self.weights_init('weight_hh_l'+str(layer)+'_reverse', shape=(gate_size, hidden_size),
-        #             #                               init=_init)
-        #             self.weights_bw.append(self.w_ih)
-        #             self.weights_bw.append(self.w_hh)
-        #             if bias:
-        #                 self.b_ih  = tf.Variable(initial_value=_init(shape=(gate_size,)),
-        #                                    name='bias_ih_l'+str(layer)+'_reverse', trainable=True)
-        #                 self.b_hh  = tf.Variable(initial_value=_init(shape=(gate_size,)),
-        #                                    name='bias_hh_l'+str(layer)+'_reverse', trainable=True)
-        #                 # self.b_ih = self.weights_init('bias_ih_l'+str(layer)+'_reverse', shape=(gate_size,), init=_init)
-        #                 # self.b_hh = self.weights_init('bias_hh_l'+str(layer)+'_reverse', shape=(gate_size,), init=_init)
-        #                 self.bias_bw.append(self.b_ih)
-        #                 self.bias_bw.append(self.b_hh)
-
     def _bi_rnn_forward(self, x, h, c=None):
         time_step, batch_size, input_size = x.shape
         h_out = []
@@ -2119,15 +2075,15 @@ class rnnbase(object):
         y = []
         pre_layer = x
         for i in range(self.num_layers):
-            weight_ih_fw = self.weights_fw[2 * i]
-            weight_hh_fw = self.weights_fw[2 * i + 1]
-            weight_ih_bw = self.weights_bw[2 * i]
-            weight_hh_bw = self.weights_bw[2 * i + 1]
+            weight_ih_fw = self.w_ih[2 * i]
+            weight_hh_fw = self.w_hh[2 * i]
+            weight_ih_bw = self.w_ih[2 * i + 1]
+            weight_hh_bw = self.w_hh[2 * i + 1]
             if self.bias:
-                bias_ih_fw = self.bias_fw[2 * i]
-                bias_hh_fw = self.bias_fw[2 * i + 1]
-                bias_ih_bw = self.bias_bw[2 * i]
-                bias_hh_bw = self.bias_bw[2 * i + 1]
+                bias_ih_fw = self.b_ih[2 * i]
+                bias_hh_fw = self.b_hh[2 * i]
+                bias_ih_bw = self.b_ih[2 * i + 1]
+                bias_hh_bw = self.b_hh[2 * i + 1]
             else:
                 bias_ih_fw = None
                 bias_hh_fw = None
@@ -2183,11 +2139,11 @@ class rnnbase(object):
         y = []
         time_step, batch_size, input_size = x.shape
         for i in range(self.num_layers):
-            weight_ih = self.weights_fw[2 * i]
-            weight_hh = self.weights_fw[2 * i + 1]
+            weight_ih = self.w_ih[i]
+            weight_hh = self.w_hh[i]
             if self.bias:
-                bias_ih = self.bias_fw[2 * i]
-                bias_hh = self.bias_fw[2 * i + 1]
+                bias_ih = self.b_ih[i]
+                bias_hh = self.b_hh[i]
             else:
                 bias_ih = None
                 bias_hh = None
@@ -2234,7 +2190,7 @@ class rnnbase(object):
         if h.shape != expected_hidden_size:
             raise ValueError('Expected hidden size {}, got {}.'.format(expected_hidden_size, h.shape))
 
-    def __call__(self, input, states):
+    def __call__(self, input, initial_states=None):
         if self.batch_first:
             input = tf.transpose(input, perm=(1, 0, 2))
         input_dtype = input.dtype
@@ -2242,8 +2198,8 @@ class rnnbase(object):
         time_step, batch_size, input_size = input_shape
         self.check_input(input_shape)
         if self.mode == "LSTM":
-            if states is not None:
-                h, c = states
+            if initial_states is not None:
+                h, c = initial_states
                 self.check_hidden(h, batch_size)
                 self.check_hidden(c, batch_size)
             else:
@@ -2255,8 +2211,8 @@ class rnnbase(object):
                 y, new_h, new_c = self._bi_rnn_forward(input, h, c)
             new_states = (new_h, new_c)
         else:
-            if states is not None:
-                h = states
+            if initial_states is not None:
+                h = initial_states
                 self.check_hidden(h, batch_size)
             else:
                 h = tf.zeros(shape=(self.num_layers * self.bidirect, batch_size, self.hidden_size), dtype=input_dtype)

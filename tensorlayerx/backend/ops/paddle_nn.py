@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import paddle as pd
+from paddle import framework
 import paddle.nn.functional as F
 import numpy as np
 import paddle.fluid as fluid
 from paddle.nn import initializer as I
 from paddle.fluid.layers.utils import map_structure, flatten, pack_sequence_as
 from paddle.fluid.data_feeder import convert_dtype
-from paddle.fluid.dygraph import Layer
+from paddle.fluid.dygraph import Layer, LayerList
+from paddle.nn.layer import RNNCellBase
 import warnings
 import math
 
@@ -1385,17 +1387,18 @@ class DorefaConv2D(object):
         raise NotImplementedError
 
 
-class rnncell(object):
+class rnncell(RNNCellBase):
 
-    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh, bias, act):
+    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh, act):
+        super(rnncell, self).__init__()
         self.weight_ih = weight_ih
         self.weight_hh = weight_hh
         self.bias_ih = bias_ih
         self.bias_hh = bias_hh
-        self.bias = bias
         self.act_fn = F.relu if act == 'relu' else F.tanh
+        self.input_size = weight_ih.shape[1]
 
-    def __call__(self, input, h):
+    def forward(self, input, h):
 
         i2h = pd.matmul(input, self.weight_ih, transpose_y=True)
         if self.bias_ih is not None:
@@ -1407,19 +1410,19 @@ class rnncell(object):
         return h, h
 
 
-class lstmcell(object):
+class lstmcell(RNNCellBase):
 
-    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh, bias):
+    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh, act=None):
+        super(lstmcell, self).__init__()
         self.weight_ih = weight_ih
         self.weight_hh = weight_hh
         self.bias_ih = bias_ih
         self.bias_hh = bias_hh
-        self.bias = bias
         self.gate_act_fn = F.sigmoid
         self.act_fn = F.tanh
+        self.input_size = weight_ih.shape[1]
 
-    def __call__(self, inputs, h, c):
-
+    def forward(self, inputs, h, c):
         gates = pd.matmul(inputs, self.weight_ih, transpose_y=True)
         if self.bias_ih is not None:
             gates += self.bias_ih
@@ -1438,18 +1441,19 @@ class lstmcell(object):
         return h, h, c
 
 
-class grucell(object):
+class grucell(RNNCellBase):
 
-    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh, bias):
+    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh, act=None):
+        super(grucell, self).__init__()
         self.weight_ih = weight_ih
         self.weight_hh = weight_hh
         self.bias_ih = bias_ih
         self.bias_hh = bias_hh
-        self.bias = bias
         self.gate_act_fn = F.sigmoid
         self.act_fn = F.tanh
+        self.input_size = weight_ih.shape[1]
 
-    def __call__(self, input, h):
+    def forward(self, input, h):
 
         x_gates = pd.matmul(input, self.weight_ih, transpose_y=True)
         if self.bias_ih is not None:
@@ -1470,42 +1474,6 @@ class grucell(object):
 
 
 def split_states(states, bidirectional=False, state_components=1):
-    r"""
-    Split states of RNN network into possibly nested list or tuple of
-    states of each RNN cells of the RNN network.
-
-    Parameters:
-        states (Tensor|tuple|list): the concatenated states for RNN network.
-            When `state_components` is 1, states in a Tensor with shape
-            `(L*D, N, C)` where `L` is the number of layers of the RNN
-            network, `D` is the number of directions of the RNN network(1
-            for unidirectional RNNs and 2 for bidirectional RNNs), `N` is
-            the batch size of the input to the RNN network, `C` is the
-            hidden size of the RNN network.
-
-            When `state_components` is larger than 1, `states` is a tuple of
-            `state_components` Tensors that meet the requirements described
-            above.
-
-            For SimpleRNNs and GRUs, `state_components` is 1, and for LSTMs,
-            `state_components` is 2.
-        bidirectional (bool): whether the state is of a bidirectional RNN
-            network. Defaults to False.
-        state_components (int): the number of the components of the states. see
-            `states` above. Defaults to 1.
-
-    Returns:
-        A nested list or tuple of RNN cell states.
-        If `bidirectional` is True, it can be indexed twice to get an RNN
-        cell state. The first index indicates the layer, the second index
-        indicates the direction.
-        If `bidirectional` is False, it can be indexed once to get an RNN
-        cell state. The index indicates the layer.
-        Note that if `state_components` is larger than 1, an RNN cell state
-        can be indexed one more time to get a tensor of shape(N, C), where
-        `N` is the batch size of the input to the RNN cell, and `C` is the
-        hidden size of the RNN cell.
-    """
     if state_components == 1:
         states = pd.unstack(states)
         if not bidirectional:
@@ -1523,37 +1491,6 @@ def split_states(states, bidirectional=False, state_components=1):
 
 
 def concat_states(states, bidirectional=False, state_components=1):
-    r"""
-    Concatenate a possibly nested list or tuple of RNN cell states into a
-    compact form.
-
-    Parameters:
-        states (list|tuple): a possibly nested list or tuple of RNN cell
-            states.
-            If `bidirectional` is True, it can be indexed twice to get an
-            RNN cell state. The first index indicates the layer, the second
-            index indicates the direction.
-            If `bidirectional` is False, it can be indexed once to get an RNN
-            cell state. The index indicates the layer.
-            Note that if `state_components` is larger than 1, an RNN cell
-            state can be indexed one more time to get a tensor of shape(N, C),
-            where `N` is the batch size of the input to the RNN cell, and
-            `C` is the hidden size of the RNN cell.
-        bidirectional (bool): whether the state is of a bidirectional RNN
-            network. Defaults to False.
-        state_components (int): the number of the components of the states. see
-            `states` above. Defaults to 1.
-
-    Returns:
-        Concatenated states for RNN network.
-        When `state_components` is 1, states in a Tensor with shape
-        `(L\*D, N, C)` where `L` is the number of layers of the RNN
-        network, `D` is the number of directions of the RNN network(1 for
-        unidirectional RNNs and 2 for bidirectional RNNs), `N` is the batch
-        size of the input to the RNN network, `C` is the hidden size of the
-        RNN network.
-
-    """
     if state_components == 1:
         return pd.stack(flatten(states))
     else:
@@ -1564,7 +1501,7 @@ def concat_states(states, bidirectional=False, state_components=1):
         return tuple([pd.stack(item) for item in componnets])
 
 
-class rnnbase(Layer):
+class rnnbase(LayerList):
 
     def __init__(
         self,
@@ -1577,6 +1514,10 @@ class rnnbase(Layer):
         dropout,
         bidirectional,
         is_train,
+        w_ih,
+        w_hh,
+        b_ih,
+        b_hh,
     ):
         super(rnnbase, self).__init__()
         self.mode = mode
@@ -1587,25 +1528,18 @@ class rnnbase(Layer):
         self.dropout = dropout
         self.bidirect = 2 if bidirectional else 1
         self.state_components = 2 if mode == 'LSTM' else 1
-        self.rnn = pd.nn.LayerList()
+        self.training = is_train
+        self.w_ih = w_ih
+        self.w_hh = w_hh
+        self.b_ih = b_ih
+        self.b_hh = b_hh
+        self.bias = bias
         RNN = pd.nn.RNN
         BiRNN = pd.nn.BiRNN
-        weight_ih_attr = None
-        weight_hh_attr = None
-        if bias:
-            bias_ih_attr = None
-            bias_hh_attr = None
-        else:
-            bias_ih_attr = False
-            bias_hh_attr = False
 
-        kwargs = {
-            "weight_ih_attr": weight_ih_attr,
-            "weight_hh_attr": weight_hh_attr,
-            "bias_ih_attr": bias_ih_attr,
-            "bias_hh_attr": bias_hh_attr
-        }
-
+        kwargs = {"weight_ih_attr": None, "weight_hh_attr": None, "bias_ih_attr": self.bias, "bias_hh_attr": self.bias}
+        act = None
+        rnn_cls = None
         if mode == "LSTM":
             rnn_cls = pd.nn.LSTMCell
         elif mode == "GRU":
@@ -1619,71 +1553,84 @@ class rnnbase(Layer):
 
         if not bidirectional:
             is_reverse = False
-            cell = rnn_cls(input_size, hidden_size, **kwargs)
-            self.rnn.append(RNN(cell, is_reverse, self.time_major))
-            for i in range(1, num_layers):
-                cell = rnn_cls(hidden_size, hidden_size, **kwargs)
-                self.rnn.append(RNN(cell, is_reverse, self.time_major))
+            for i in range(self.num_layers):
+                weight_ih = self.w_ih[i]
+                weight_hh = self.w_hh[i]
+                if self.bias:
+                    bias_ih = self.b_ih[i]
+                    bias_hh = self.b_hh[i]
+                else:
+                    bias_ih = None
+                    bias_hh = None
+                cell = rnn_cls(input_size=self.input_size, hidden_size=self.hidden_size, **kwargs)
+                cell.weight_ih = weight_ih
+                cell.weight_hh = weight_hh
+                cell.bias_ih = bias_ih
+                cell.bias_hh = bias_hh
+                # cell = rnn_cls(weight_ih, weight_hh, bias_ih, bias_hh, act)
+                self.append(RNN(cell, is_reverse, self.time_major))
         else:
-            cell_fw = rnn_cls(input_size, hidden_size, **kwargs)
-            cell_bw = rnn_cls(input_size, hidden_size, **kwargs)
-            self.rnn.append(BiRNN(cell_fw, cell_bw, self.time_major))
-            for i in range(1, num_layers):
-                cell_fw = rnn_cls(2 * hidden_size, hidden_size, **kwargs)
-                cell_bw = rnn_cls(2 * hidden_size, hidden_size, **kwargs)
-                self.rnn.append(BiRNN(cell_fw, cell_bw, self.time_major))
-
+            for i in range(self.num_layers):
+                weight_ih_fw = self.w_ih[2 * i]
+                weight_hh_fw = self.w_hh[2 * i]
+                weight_ih_bw = self.w_ih[2 * i + 1]
+                weight_hh_bw = self.w_hh[2 * i + 1]
+                if self.bias:
+                    bias_ih_fw = self.b_ih[2 * i]
+                    bias_hh_fw = self.b_hh[2 * i]
+                    bias_ih_bw = self.b_ih[2 * i + 1]
+                    bias_hh_bw = self.b_hh[2 * i + 1]
+                else:
+                    bias_ih_fw = None
+                    bias_hh_fw = None
+                    bias_ih_bw = None
+                    bias_hh_bw = None
+                layer_input_size = self.input_size if i == 0 else self.hidden_size * self.bidirect
+                cell_fw = rnn_cls(input_size=layer_input_size, hidden_size=self.hidden_size, **kwargs)
+                cell_fw.weight_ih = weight_ih_fw
+                cell_fw.weight_hh = weight_hh_fw
+                cell_fw.bias_ih = bias_ih_fw
+                cell_fw.bias_hh = bias_hh_fw
+                cell_bw = rnn_cls(input_size=layer_input_size, hidden_size=self.hidden_size, **kwargs)
+                cell_bw.weight_ih = weight_ih_bw
+                cell_bw.weight_hh = weight_hh_bw
+                cell_bw.bias_ih = bias_ih_bw
+                cell_bw.bias_hh = bias_hh_bw
+                self.append(BiRNN(cell_fw, cell_bw, self.time_major))
         self.could_use_cudnn = True
-        self.could_use_cudnn &= len(self.rnn.parameters()) == num_layers * 4 * self.bidirect
+        self.could_use_cudnn &= len(self.parameters()) == num_layers * 4 * self.bidirect
 
         param_names = []
         for layer in range(self.num_layers):
             for direction in range(self.bidirect):
                 suffix = '_reverse' if direction == 1 else ''
                 param_names.extend(['weight_ih_l{}{}', 'weight_hh_l{}{}'])
-                if bias_ih_attr != False: param_names.append('bias_ih_l{}{}')
-                if bias_hh_attr != False: param_names.append('bias_hh_l{}{}')
+                if bias != False: param_names.append('bias_ih_l{}{}')
+                if bias != False: param_names.append('bias_hh_l{}{}')
                 param_names = [x.format(layer, suffix) for x in param_names]
-        for name, param in zip(param_names, self.rnn.parameters()):
-            setattr(self.rnn, name, param)
+        for name, param in zip(param_names, self.parameters()):
+            setattr(self, name, param)
 
         self.flatten_parameters()
 
     def flatten_parameters(self):
-        """
-        Resets parameter data pointer to address in continuous memory block for
-        cudnn usage.
-        """
         if self.could_use_cudnn:
-            # layer.parameters() is depth first and ordered
-            # for i in layer: for j in direct: w_ih, w_hh, b_ih, b_hh
-            # need to reorganize to cudnn param layout:
-            # all bias following all weights
-            params = self.rnn.parameters(include_sublayers=False)
+            params = self.parameters(include_sublayers=False)
             shape = [np.prod(param.shape) for param in params]
             self._all_weights = [None] * len(params)
             for i, param in enumerate(params):
                 offset = 0 if i % 4 < 2 else (2 * self.num_layers * self.bidirect)
                 layer_idx = i // 4
                 self._all_weights[offset + layer_idx * 2 + i % 2] = param
-
-            # Wrap using a list to avoid registed into params and saving, maybe
-            # need a better way to handle this later. Use `create_parameter` to
-            # add both to main_program and startup_program for static-graph.
-            # Use Constant initializer to avoid make effect on random generator.
             self._flat_weight = [
-                self.rnn.create_parameter(
+                self.create_parameter(
                     shape=[np.sum(shape)], dtype=params[0].dtype, default_initializer=I.Constant(0.0)
                 )
             ]
-
-            # dropout state may also can be hided and avoid saving
-            # should dropout state be persistable for static-graph
-            self._dropout_state = self.rnn.create_variable(dtype=fluid.core.VarDesc.VarType.UINT8)
-            # for static-graph, append coalesce_tensor into startup program
+            self._dropout_state = self.create_variable(dtype=fluid.core.VarDesc.VarType.UINT8)
             with fluid.program_guard(fluid.default_startup_program(), fluid.default_startup_program()):
-                with pd.framework.no_grad():
-                    self.rnn._helper.append_op(
+                with framework.no_grad():
+                    self._helper.append_op(
                         type="coalesce_tensor", inputs={"Input": self._all_weights}, outputs={
                             "Output": self._all_weights,
                             "FusedOutput": self._flat_weight
@@ -1697,11 +1644,9 @@ class rnnbase(Layer):
     def _cudnn_impl(self, inputs, initial_states, sequence_length):
         if not self.time_major:
             inputs = pd.tensor.transpose(inputs, [1, 0, 2])
-        out = self.rnn._helper.create_variable_for_type_inference(inputs.dtype)
-        state = [
-            self.rnn._helper.create_variable_for_type_inference(inputs.dtype) for i in range(self.state_components)
-        ]
-        reserve = self.rnn._helper.create_variable_for_type_inference(
+        out = self._helper.create_variable_for_type_inference(inputs.dtype)
+        state = [self._helper.create_variable_for_type_inference(inputs.dtype) for i in range(self.state_components)]
+        reserve = self._helper.create_variable_for_type_inference(
             dtype=fluid.core.VarDesc.VarType.UINT8, stop_gradient=True
         )
 
@@ -1718,7 +1663,7 @@ class rnnbase(Layer):
             'hidden_size': self.hidden_size,
             'num_layers': self.num_layers,
             'mode': self.mode,
-            'is_test': not self.rnn.training
+            'is_test': not self.training
         }
 
         outputs = {
@@ -1727,39 +1672,37 @@ class rnnbase(Layer):
             'Reserve': reserve,
             'DropoutState': self._dropout_state,
         }
-
-        self.rnn._helper.append_op(type="rnn", inputs=inputs, outputs=outputs, attrs=attrs)
+        self._helper.append_op(type="rnn", inputs=inputs, outputs=outputs, attrs=attrs)
         out = pd.tensor.transpose(out, [1, 0, 2]) if not self.time_major else out
         return out, tuple(state) if len(state) > 1 else state[0]
 
-    def forward(self, inputs, initial_states=None, sequence_length=None):
+    def forward(self, inputs, initial_states=None):
         batch_index = 1 if self.time_major else 0
         dtype = inputs.dtype
+        sequence_length = None
         if initial_states is None:
-            state_shape = [self.num_layers * self.bidirect, -1, self.hidden_size]
+            state_shape = (self.num_layers * self.bidirect, -1, self.hidden_size)
             if self.state_components == 1:
-                initial_states = fluid.layers.fill_constant_batch_size_like(
+                initial_states = pd.fluid.layers.fill_constant_batch_size_like(
                     inputs, state_shape, dtype, 0, batch_index, 1
                 )
             else:
                 initial_states = tuple(
                     [
-                        fluid.layers.fill_constant_batch_size_like(inputs, state_shape, dtype, 0, batch_index, 1)
+                        pd.fluid.layers.fill_constant_batch_size_like(inputs, state_shape, dtype, 0, batch_index, 1)
                         for _ in range(self.state_components)
                     ]
                 )
-
         if self.could_use_cudnn:
             # Add CPU kernel and dispatch in backend later
             return self._cudnn_impl(inputs, initial_states, sequence_length)
 
         states = split_states(initial_states, self.bidirect == 2, self.state_components)
-
         final_states = []
 
-        for i, rnn_layer in enumerate(self.rnn):
+        for i, rnn_layer in enumerate(self):
             if i > 0:
-                inputs = F.dropout(inputs, self.dropout, training=self.rnn.training, mode="upscale_in_train")
+                inputs = F.dropout(inputs, self.dropout, training=self.training, mode="upscale_in_train")
             outputs, final_state = rnn_layer(inputs, states[i], sequence_length)
             final_states.append(final_state)
             inputs = outputs

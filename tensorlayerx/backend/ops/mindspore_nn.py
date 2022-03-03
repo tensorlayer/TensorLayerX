@@ -6,6 +6,7 @@ import itertools
 import mindspore as ms
 import mindspore.ops as P
 from mindspore import context
+from mindspore.ops.primitive import constexpr
 from mindspore.nn.cell import Cell
 from mindspore._checkparam import Rel
 from mindspore.ops import functional as F
@@ -17,6 +18,8 @@ from mindspore._checkparam import Validator as validator
 from mindspore.communication.management import get_group_size, get_rank
 from mindspore.ops.operations import LayerNorm
 import mindspore.numpy as np
+from mindspore.common.parameter import ParameterTuple
+from mindspore.nn.layer.rnns import _DynamicRNN
 import warnings
 import math
 
@@ -833,7 +836,9 @@ class AvgPool(Cell):
         self.data_format, self.padding = preprocess_2d_format(data_format=data_format, padding=padding)
         ms_ksize = ksize[1]
         ms_strides = strides[1]
-        self.avgpool = P.AvgPool(kernel_size=ms_ksize, strides=ms_strides, pad_mode=padding, data_format=self.data_format)
+        self.avgpool = P.AvgPool(
+            kernel_size=ms_ksize, strides=ms_strides, pad_mode=padding, data_format=self.data_format
+        )
 
     def construct(self, inputs):
         outputs = self.avgpool(inputs)
@@ -930,7 +935,7 @@ class AvgPool3d(Cell):
         if data_format == 'NCDHW':
             strides = (strides[2], strides[3], strides[4])
         print(ksize, strides, padding)
-        self.avg_pool = P.AvgPool3D(kernel_size=ksize, strides = strides, pad_mode=padding, data_format=data_format)
+        self.avg_pool = P.AvgPool3D(kernel_size=ksize, strides=strides, pad_mode=padding, data_format=data_format)
 
     def __call__(self, inputs):
         return self.avg_pool(inputs)
@@ -1838,15 +1843,12 @@ class rnncell(Cell):
         self.bias_ih = bias_ih
         self.bias_hh = bias_hh
         self.act_fn = P.ReLU() if act == 'relu' else P.Tanh()
-        self.transpose = P.Transpose()
 
     def construct(self, input, h):
-        self.weight_ih = self.transpose(self.weight_ih, (1, 0))
-        i2h = P.matmul(input, self.weight_ih)
+        i2h = P.MatMul(False, True)(input, self.weight_ih)
         if self.bias_ih is not None:
             i2h += self.bias_ih
-        self.weight_hh = self.transpose(self.weight_hh, (1, 0))
-        h2h = P.matmul(h, self.weight_hh)
+        h2h = P.MatMul(False, True)(h, self.weight_hh)
         if self.bias_hh is not None:
             h2h += self.bias_hh
         h = self.act_fn(i2h + h2h)
@@ -1863,17 +1865,14 @@ class lstmcell(Cell):
         self.bias_hh = bias_hh
         self.gate_act_fn = P.Sigmoid()
         self.act_fn = P.Tanh()
-        self.transpose = P.Transpose()
         self.split = P.Split(axis=-1, output_num=4)
 
     def construct(self, input, h, c):
 
-        self.weight_ih = self.transpose(self.weight_ih, (1, 0))
-        gates = P.matmul(input, self.weight_ih)
+        gates = P.MatMul(False, True)(input, self.weight_ih)
         if self.bias_ih is not None:
             gates += self.bias_ih
-        self.weight_hh = self.transpose(self.weight_hh, (1, 0))
-        gates += P.matmul(h, self.weight_hh)
+        gates += P.MatMul(False, True)(h, self.weight_hh)
         if self.bias_hh is not None:
             gates += self.bias_hh
 
@@ -1902,12 +1901,10 @@ class grucell(Cell):
 
     def construct(self, input, h):
 
-        self.weight_ih = self.transpose(self.weight_ih, (1, 0))
-        x_gates = P.matmul(input, self.weight_ih)
+        x_gates = P.MatMul(False, True)(input, self.weight_ih)
         if self.bias_ih is not None:
             x_gates += self.bias_ih
-        self.weight_hh = self.transpose(self.weight_hh, (1, 0))
-        h_gates = P.matmul(h, self.weight_hh)
+        h_gates = P.MatMul(False, True)(h, self.weight_hh)
         if self.bias_hh is not None:
             h_gates += self.bias_hh
 
@@ -1935,47 +1932,171 @@ class rnnbase(Cell):
         dropout,
         bidirectional,
         is_train,
+        w_ih,
+        w_hh,
+        b_ih,
+        b_hh,
     ):
         super(rnnbase, self).__init__()
+        if not 0 <= dropout < 1:
+            raise ValueError("dropout should be a number in range [0, 1).")
+        if dropout > 0 and num_layers == 1:
+            raise ValueError(
+                "dropout option adds dropout after all but last "
+                "recurrent layer, so non-zero dropout expects "
+                "num_layers greater than 1, but got dropout={} and "
+                "num_layers={}".format(dropout, num_layers)
+            )
         self.mode = mode
+        self.reverse = P.ReverseV2([0])
+        self.reverse_sequence = P.ReverseSequence(0, 1)
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.bidirect = 2 if bidirectional else 1
+        self.dropout = dropout
+        self.dropout_op = ms.nn.Dropout(float(1 - dropout))
+        self.has_bias = bias
+        self.bidirectional = bidirectional
         self.batch_first = batch_first
-        if mode == 'LSTM':
-            self.lstm = ms.nn.LSTM(
-                input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, has_bias=bias,
-                batch_first=batch_first, dropout=dropout, bidirectional=bidirectional
-            )
-        elif mode == 'GRU':
-
-            raise NotImplementedError
-
-        elif mode == 'RNN_TANH':
-
-            raise NotImplementedError
-
-        elif mode == 'RNN_RELU':
-
-            raise NotImplementedError
+        self.train = is_train
+        self.w_ih = ParameterTuple(w_ih)
+        self.w_hh = ParameterTuple(w_hh)
+        self.b_ih = ParameterTuple(b_ih)
+        self.b_hh = ParameterTuple(b_hh)
+        self.rnn = _DynamicRNN(mode)
+        self.is_lstm = mode == "LSTM"
 
         self.zeros = P.Zeros()
 
-    def construct(self, input, states):
-        input_shape = input.shape
-        input_dtype = input.dtype
-        if self.mode == 'LSTM':
-            if self.batch_first:
-                batch_size = input_shape[0]
+    def _stacked_bi_dynamic_rnn(self, x, h, seq_length):
+        """stacked bidirectional dynamic_rnn"""
+        pre_layer = x
+        h_n = ()
+        c_n = ()
+        output = 0
+        for i in range(self.num_layers):
+            offset = i * 2
+            if self.has_bias:
+                w_f_ih, w_f_hh, b_f_ih, b_f_hh = \
+                    self.w_ih_list[offset], self.w_hh_list[offset], \
+                    self.b_ih_list[offset], self.b_hh_list[offset]
+                w_b_ih, w_b_hh, b_b_ih, b_b_hh = \
+                    self.w_ih_list[offset + 1], self.w_hh_list[offset + 1], \
+                    self.b_ih_list[offset + 1], self.b_hh_list[offset + 1]
             else:
-                batch_size = input_shape[1]
-            if states is None:
-                h = self.zeros((self.bidirect * self.num_layers, batch_size, self.hidden_size), input_dtype)
-                c = self.zeros((self.bidirect * self.num_layers, batch_size, self.hidden_size), input_dtype)
-                states = (h, c)
-            output, (h, c) = self.lstm(input, states)
-            return output, (h, c)
+                w_f_ih, w_f_hh = self.w_ih_list[offset], self.w_hh_list[offset]
+                w_b_ih, w_b_hh = self.w_ih_list[offset + 1], self.w_hh_list[offset + 1]
+                b_f_ih, b_f_hh, b_b_ih, b_b_hh = None, None, None, None
+            if self.is_lstm:
+                h_f_i = (h[0][offset], h[1][offset])
+                h_b_i = (h[0][offset + 1], h[1][offset + 1])
+            else:
+                h_f_i = h[offset]
+                h_b_i = h[offset + 1]
+            if seq_length is None:
+                x_b = self.reverse(pre_layer)
+            else:
+                x_b = self.reverse_sequence(pre_layer, seq_length)
+            output_f, h_t_f = self.rnn(pre_layer, h_f_i, seq_length, w_f_ih, w_f_hh, b_f_ih, b_f_hh)
+            output_b, h_t_b = self.rnn(x_b, h_b_i, seq_length, w_b_ih, w_b_hh, b_b_ih, b_b_hh)
+            if seq_length is None:
+                output_b = self.reverse(output_b)
+            else:
+                output_b = self.reverse_sequence(output_b, seq_length)
+            output = P.Concat(2)((output_f, output_b))
+            pre_layer = self.dropout_op(output) if (self.dropout != 0 and i < self.num_layers - 1) else output
+            if self.is_lstm:
+                h_n += (
+                    h_t_f[0],
+                    h_t_b[0],
+                )
+                c_n += (
+                    h_t_f[1],
+                    h_t_b[1],
+                )
+            else:
+                h_n += (
+                    h_t_f,
+                    h_t_b,
+                )
+        if self.is_lstm:
+            h_n = P.Concat(0)(h_n)
+            c_n = P.Concat(0)(c_n)
+            h_n = h_n.view(h[0].shape)
+            c_n = c_n.view(h[1].shape)
+            return output, (h_n.view(h[0].shape), c_n.view(h[1].shape))
+        h_n = P.Concat(0)(h_n)
+        return output, h_n.view(h.shape)
+
+    def _stacked_dynamic_rnn(self, x, h, seq_length):
+        """stacked mutil_layer dynamic_rnn"""
+        pre_layer = x
+        h_n = ()
+        c_n = ()
+        output = 0
+        for i in range(self.num_layers):
+            if self.has_bias:
+                w_ih, w_hh, b_ih, b_hh = self.w_ih_list[i], self.w_hh_list[i], self.b_ih_list[i], self.b_hh_list[i]
+            else:
+                w_ih, w_hh = self.w_ih_list[i], self.w_hh_list[i]
+                b_ih, b_hh = None, None
+            if self.is_lstm:
+                h_i = (h[0][i], h[1][i])
+            else:
+                h_i = h[i]
+            output, h_t = self.rnn(pre_layer, h_i, seq_length, w_ih, w_hh, b_ih, b_hh)
+            pre_layer = self.dropout_op(output) if (self.dropout != 0 and i < self.num_layers - 1) else output
+            if self.is_lstm:
+                h_n += (h_t[0], )
+                c_n += (h_t[1], )
+            else:
+                h_n += (h_t, )
+        if self.is_lstm:
+            h_n = P.Concat(0)(h_n)
+            c_n = P.Concat(0)(c_n)
+            h_n = h_n.view(h[0].shape)
+            c_n = c_n.view(h[1].shape)
+            return output, (h_n.view(h[0].shape), c_n.view(h[1].shape))
+        h_n = P.Concat(0)(h_n)
+        return output, h_n.view(h.shape)
+
+    @constexpr
+    def _init_state(shape, dtype, is_lstm):
+        hx = ms.Tensor(np.zeros(shape), dtype)
+        cx = ms.Tensor(np.zeros(shape), dtype)
+        if is_lstm:
+            return (hx, cx)
+        return hx
+
+    @constexpr
+    def _check_input_dtype(input_dtype, param_name, allow_dtypes, cls_name):
+        validator.check_type_name(param_name, input_dtype, allow_dtypes, cls_name)
+
+    def construct(self, x, hx=None, seq_length=None):
+        '''Defines the RNN like operators performed'''
+        x_dtype = P.dtype(x)
+        hx_dtype = P.dtype(hx)
+        self._check_input_dtype(x_dtype, "x", [ms.float32], self.cls_name)
+        self._check_input_dtype(hx_dtype, "hx", [ms.float32], self.cls_name)
+        if seq_length is not None:
+            seq_length_dtype = P.dtype(seq_length)
+            self._check_input_dtype(seq_length_dtype, "seq_length", [ms.int32, ms.int64], self.cls_name)
+
+        max_batch_size = x.shape[0] if self.batch_first else x.shape[1]
+        num_directions = 2 if self.bidirectional else 1
+        if hx is None:
+            hx = self._init_state(
+                (self.num_layers * num_directions, max_batch_size, self.hidden_size), x.dtype, self.is_lstm
+            )
+        if self.batch_first:
+            x = P.Transpose()(x, (1, 0, 2))
+        if self.bidirectional:
+            x, h = self._stacked_bi_dynamic_rnn(x, hx, seq_length)
+        else:
+            x, h = self._stacked_dynamic_rnn(x, hx, seq_length)
+        if self.batch_first:
+            x = P.Transpose()(x, (1, 0, 2))
+        return x, h
 
 
 class layernorm(Cell):

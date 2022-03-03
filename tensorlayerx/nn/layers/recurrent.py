@@ -125,7 +125,7 @@ class RNNCell(Module):
 
         Examples
         --------
-        With TensorLayer
+        With TensorLayerx
 
         >>> input = tlx.nn.Input([4, 16], name='input')
         >>> prev_h = tlx.nn.Input([4,32])
@@ -245,7 +245,7 @@ class LSTMCell(Module):
 
         Examples
         --------
-        With TensorLayer
+        With TensorLayerx
 
         >>> input = tlx.nn.Input([4, 16], name='input')
         >>> prev_h = tlx.nn.Input([4,32])
@@ -371,7 +371,7 @@ class GRUCell(Module):
 
         Examples
         --------
-        With TensorLayer
+        With TensorLayerx
 
         >>> input = tlx.nn.Input([4, 16], name='input')
         >>> prev_h = tlx.nn.Input([4,32])
@@ -436,74 +436,53 @@ class RNNBase(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        if BACKEND == 'tensorflow':
-            bidirect = 2 if self.bidirectional else 1
-            self.weights_fw = []
-            self.bias_fw = []
-            self.weights_bw = []
-            self.bias_bw = []
-            stdv = 1.0 / np.sqrt(self.hidden_size)
-            _init = tlx.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
-            if self.mode == 'LSTM':
-                gate_size = 4 * self.hidden_size
-            elif self.mode == 'GRU':
-                gate_size = 3 * self.hidden_size
-            else:
-                gate_size = self.hidden_size
-            for layer in range(self.num_layers):
-                for direction in range(bidirect):
-                    layer_input_size = self.input_size if layer == 0 else self.hidden_size * bidirect
-                    if direction == 0:
-                        self.w_ih = self._get_weights(
-                            'weight_ih_l' + str(layer), shape=(gate_size, layer_input_size), init=_init
-                        )
-                        self.w_hh = self._get_weights(
-                            'weight_ih_l' + str(layer), shape=(gate_size, self.hidden_size), init=_init
-                        )
-                        self.weights_fw.append(self.w_ih)
-                        self.weights_fw.append(self.w_hh)
-                        if self.bias:
-                            self.b_ih = self._get_weights('bias_ih_l' + str(layer), shape=(gate_size, ), init=_init)
-                            self.b_hh = self._get_weights('bias_hh_l' + str(layer), shape=(gate_size, ), init=_init)
-                            self.bias_fw.append(self.b_ih)
-                            self.bias_fw.append(self.b_hh)
-                    else:
-                        self.w_ih = self._get_weights(
-                            'weight_ih_l' + str(layer) + '_reverse', shape=(gate_size, layer_input_size), init=_init
-                        )
-                        self.w_hh = self._get_weights(
-                            'weight_hh_l' + str(layer) + '_reverse', shape=(gate_size, self.hidden_size), init=_init
-                        )
-                        self.weights_bw.append(self.w_ih)
-                        self.weights_bw.append(self.w_hh)
-                        if self.bias:
-                            self.b_ih = self._get_weights(
-                                'bias_ih_l' + str(layer) + '_reverse', shape=(gate_size, ), init=_init
-                            )
-                            self.b_hh = self._get_weights(
-                                'bias_hh_l' + str(layer) + '_reverse', shape=(gate_size, ), init=_init
-                            )
-                            self.bias_bw.append(self.b_ih)
-                            self.bias_bw.append(self.b_hh)
-
-            self.rnn = tlx.ops.rnnbase(
-                mode=self.mode, input_size=self.input_size, hidden_size=self.hidden_size, num_layers=self.num_layers,
-                bias=self.bias, batch_first=self.batch_first, dropout=self.dropout, bidirectional=self.bidirectional,
-                is_train=self.is_train, weights_fw=self.weights_fw, weights_bw=self.weights_bw, bias_fw=self.bias_fw,
-                bias_bw=self.bias_bw
-            )
+        bidirect = 2 if self.bidirectional else 1
+        self.w_ih = []
+        self.w_hh = []
+        self.b_ih = []
+        self.b_hh = []
+        stdv = 1.0 / np.sqrt(self.hidden_size)
+        _init = tlx.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
+        if self.mode == 'LSTM':
+            gate_size = 4 * self.hidden_size
+        elif self.mode == 'GRU':
+            gate_size = 3 * self.hidden_size
         else:
-            self.rnn = tlx.ops.rnnbase(
-                mode=self.mode,
-                input_size=self.input_size,
-                hidden_size=self.hidden_size,
-                num_layers=self.num_layers,
-                bias=self.bias,
-                batch_first=self.batch_first,
-                dropout=self.dropout,
-                bidirectional=self.bidirectional,
-                is_train=self.is_train,
-            )
+            gate_size = self.hidden_size
+        for layer in range(self.num_layers):
+            for direction in range(bidirect):
+                layer_input_size = self.input_size if layer == 0 else self.hidden_size * bidirect
+                suffix = '_reverse' if direction == 1 else ''
+
+                self.w_ih.append(
+                    self._get_weights(
+                        var_name='weight_ih_l{}{}'.format(layer, suffix), shape=(gate_size, layer_input_size),
+                        init=_init
+                    )
+                )
+                self.w_hh.append(
+                    self._get_weights(
+                        var_name='weight_hh_l{}{}'.format(layer, suffix), shape=(gate_size, self.hidden_size),
+                        init=_init
+                    )
+                )
+                if self.bias:
+                    self.b_ih.append(
+                        self._get_weights(
+                            var_name='bias_ih_l{}{}'.format(layer, suffix), shape=(gate_size, ), init=_init
+                        )
+                    )
+                    self.b_hh.append(
+                        self._get_weights(
+                            var_name='bias_hh_l{}{}'.format(layer, suffix), shape=(gate_size, ), init=_init
+                        )
+                    )
+
+        self.rnn = tlx.ops.rnnbase(
+            mode=self.mode, input_size=self.input_size, hidden_size=self.hidden_size, num_layers=self.num_layers,
+            bias=self.bias, batch_first=self.batch_first, dropout=self.dropout, bidirectional=self.bidirectional,
+            is_train=self.is_train, w_ih=self.w_ih, w_hh=self.w_hh, b_ih=self.b_ih, b_hh=self.b_hh
+        )
 
     def forward(self, input, states=None):
 
@@ -657,7 +636,7 @@ class LSTM(RNNBase):
 
         Examples
         --------
-        With TensorLayer
+        With TensorLayerx
 
         >>> input = tlx.nn.Input([23, 32, 16], name='input')
         >>> prev_h = tlx.nn.Input([4, 32, 32])
@@ -733,7 +712,7 @@ class GRU(RNNBase):
 
         Examples
         --------
-        With TensorLayer
+        With TensorLayerx
 
         >>> input = tlx.nn.Input([23, 32, 16], name='input')
         >>> prev_h = tlx.nn.Input([4, 32, 32])
