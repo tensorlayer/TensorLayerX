@@ -1919,6 +1919,19 @@ class grucell(Cell):
         return h, h
 
 
+@constexpr
+def _init_state(shape, dtype, is_lstm):
+    hx = ms.Tensor(np.zeros(shape), dtype)
+    cx = ms.Tensor(np.zeros(shape), dtype)
+    if is_lstm:
+        return (hx, cx)
+    return hx
+
+@constexpr
+def _check_input_dtype_same_and_valid(args_name, args_value, valid_values, cls_name):
+    args = {args_name[i]: args_value[i] for i in range(len(args_value))}
+    validator.check_types_same_and_valid(args, valid_values, cls_name)
+
 class rnnbase(Cell):
 
     def __init__(
@@ -1959,10 +1972,10 @@ class rnnbase(Cell):
         self.bidirectional = bidirectional
         self.batch_first = batch_first
         self.train = is_train
-        self.w_ih = ParameterTuple(w_ih)
-        self.w_hh = ParameterTuple(w_hh)
-        self.b_ih = ParameterTuple(b_ih)
-        self.b_hh = ParameterTuple(b_hh)
+        self.w_ih_list = ParameterTuple(w_ih)
+        self.w_hh_list = ParameterTuple(w_hh)
+        self.b_ih_list = ParameterTuple(b_ih)
+        self.b_hh_list = ParameterTuple(b_hh)
         self.rnn = _DynamicRNN(mode)
         self.is_lstm = mode == "LSTM"
 
@@ -2060,43 +2073,31 @@ class rnnbase(Cell):
         h_n = P.Concat(0)(h_n)
         return output, h_n.view(h.shape)
 
-    @constexpr
-    def _init_state(shape, dtype, is_lstm):
-        hx = ms.Tensor(np.zeros(shape), dtype)
-        cx = ms.Tensor(np.zeros(shape), dtype)
-        if is_lstm:
-            return (hx, cx)
-        return hx
-
-    @constexpr
-    def _check_input_dtype(input_dtype, param_name, allow_dtypes, cls_name):
-        validator.check_type_name(param_name, input_dtype, allow_dtypes, cls_name)
-
     def construct(self, x, hx=None, seq_length=None):
         '''Defines the RNN like operators performed'''
-        x_dtype = P.dtype(x)
-        hx_dtype = P.dtype(hx)
-        self._check_input_dtype(x_dtype, "x", [ms.float32], self.cls_name)
-        self._check_input_dtype(hx_dtype, "hx", [ms.float32], self.cls_name)
-        if seq_length is not None:
-            seq_length_dtype = P.dtype(seq_length)
-            self._check_input_dtype(seq_length_dtype, "seq_length", [ms.int32, ms.int64], self.cls_name)
-
         max_batch_size = x.shape[0] if self.batch_first else x.shape[1]
         num_directions = 2 if self.bidirectional else 1
-        if hx is None:
-            hx = self._init_state(
-                (self.num_layers * num_directions, max_batch_size, self.hidden_size), x.dtype, self.is_lstm
-            )
+        x_dtype = x.dtype
+        if hx is not None:
+            if not self.is_lstm:
+                _check_input_dtype_same_and_valid(['x', 'hx'], [x_dtype, hx.dtype], \
+                                                  [ms.float32, ms.float16], self.cls_name)
+            else:
+                _check_input_dtype_same_and_valid(['x', 'hx[0]', 'hx[1]'], [x_dtype, hx[0].dtype, hx[1].dtype], \
+                                                 [ms.float32, ms.float16], self.cls_name)
+        else:
+            hx = _init_state((self.num_layers * num_directions, max_batch_size, self.hidden_size), x_dtype, self.is_lstm)
         if self.batch_first:
             x = P.Transpose()(x, (1, 0, 2))
         if self.bidirectional:
-            x, h = self._stacked_bi_dynamic_rnn(x, hx, seq_length)
+            x_n, hx_n = self._stacked_bi_dynamic_rnn(x, hx, seq_length)
         else:
-            x, h = self._stacked_dynamic_rnn(x, hx, seq_length)
+            x_n, hx_n = self._stacked_dynamic_rnn(x, hx, seq_length)
         if self.batch_first:
-            x = P.Transpose()(x, (1, 0, 2))
-        return x, h
+            x_n = P.Transpose()(x_n, (1, 0, 2))
+        if not self.is_lstm:
+            return x_n.astype(x_dtype), hx_n.astype(x_dtype)
+        return x_n.astype(x_dtype), (hx_n[0].astype(x_dtype), hx_n[1].astype(x_dtype))
 
 
 class layernorm(Cell):
