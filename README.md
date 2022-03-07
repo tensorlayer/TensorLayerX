@@ -40,8 +40,6 @@ Comparison of TensorLayer version
 
 - ***Parallel***: In order to improve the efficiency of neural network model training, parallel computing is indispensable. 
 
-🔥**Feel free to use TensorLayerX and make suggestions. We need more people to join the dev team, if you are interested, please email hao.dong@pku.edu.cn**
-
 # Quick Start
 
 - Installation
