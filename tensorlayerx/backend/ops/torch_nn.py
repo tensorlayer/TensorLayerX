@@ -3,6 +3,8 @@
 
 import torch
 import torch.nn.functional as F
+from torch import _VF
+from torch.nn import Module
 
 
 def padding_format(padding):
@@ -1419,9 +1421,28 @@ class rnncell(object):
         self.weight_hh = weight_hh
         self.bias_ih = bias_ih
         self.bias_hh = bias_hh
+        self.act = act
 
-    def __call__(self, input, h, c=None):
-        raise NotImplementedError
+    def __call__(self, input, h):
+        if self.act == 'tanh':
+            h = _VF.rnn_tanh_cell(
+                input,
+                h,
+                self.weight_ih,
+                self.weight_hh,
+                self.bias_ih,
+                self.bias_hh,
+            )
+        else:
+            h = _VF.rnn_relu_cell(
+                input,
+                h,
+                self.weight_ih,
+                self.weight_hh,
+                self.bias_ih,
+                self.bias_hh,
+            )
+        return h, h
 
 
 class lstmcell(object):
@@ -1433,7 +1454,16 @@ class lstmcell(object):
         self.bias_hh = bias_hh
 
     def __call__(self, input, h, c):
-        raise NotImplementedError
+        h = (h, c)
+        h, c = _VF.lstm_cell(
+            input,
+            h,
+            self.weight_ih,
+            self.weight_hh,
+            self.bias_ih,
+            self.bias_hh,
+        )
+        return h, h, c
 
 
 class grucell(object):
@@ -1444,11 +1474,19 @@ class grucell(object):
         self.bias_ih = bias_ih
         self.bias_hh = bias_hh
 
-    def __call__(self, input, h, c=None):
-        raise NotImplementedError
+    def __call__(self, input, h):
+        h = _VF.gru_cell(
+            input,
+            h,
+            self.weight_ih,
+            self.weight_hh,
+            self.bias_ih,
+            self.bias_hh,
+        )
+        return h, h
 
 
-class rnnbase(object):
+class rnnbase(Module):
 
     def __init__(
         self,
@@ -1461,11 +1499,12 @@ class rnnbase(object):
         dropout,
         bidirectional,
         is_train,
-        weights_fw,
-        weights_bw,
-        bias_fw,
-        bias_bw,
+        w_ih,
+        w_hh,
+        b_ih,
+        b_hh,
     ):
+        super(rnnbase, self).__init__()
         self.mode = mode
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -1483,37 +1522,84 @@ class rnnbase(object):
                 "num_layers greater than 1, but got dropout={} and "
                 "num_layers={}".format(dropout, num_layers)
             )
-        self.bidirect = 2 if bidirectional else 1
-
-        self.weights_fw = weights_fw
-        self.bias_fw = bias_fw
-        self.weights_bw = weights_bw
-        self.bias_bw = bias_bw
+        self.bidirectional = bidirectional
+        self.num_directions = 2 if bidirectional else 1
+        self.rnn_impls = {
+            'RNN_TANH': _VF.rnn_tanh,
+            'RNN_RELU': _VF.rnn_relu,
+            'GRU': _VF.gru,
+        }
+        self.w_ih = w_ih
+        self.w_hh = w_hh
+        self.b_ih = b_ih
+        self.b_hh = b_hh
 
         # stdv = 1.0 / np.sqrt(self.hidden_size)
         # _init = tf.random_uniform_initializer(minval=-stdv, maxval=stdv)
-
+        self.proj_size = 0
         self.act_fn = None
-        if mode == 'LSTM':
-            # gate_size = 4 * hidden_size
-            self.rnn_cell = lstmcell
-        elif mode == 'GRU':
-            # gate_size = 3 * hidden_size
-            self.rnn_cell = grucell
-        elif mode == 'RNN_TANH':
-            # gate_size = hidden_size
-            self.rnn_cell = rnncell
-            self.act_fn = 'tanh'
-        elif mode == 'RNN_RELU':
-            # gate_size = hidden_size
-            self.rnn_cell = rnncell
-            self.act_fn = 'relu'
+        self._flat_weights_names = []
+        self._all_weights = []
+        cur = 0
+        for layer in range(num_layers):
+            for direction in range(self.num_directions):
+                if bias:
+                    layer_params = (w_ih[cur], w_hh[cur], b_ih[cur], b_hh[cur])
+                else:
+                    layer_params = (w_ih[cur], w_hh[cur])
 
-    def _bi_rnn_forward(self, x, h, c=None):
-        raise NotImplementedError
+                suffix = '_reverse' if direction == 1 else ''
+                param_names = ['weight_ih_l{}{}', 'weight_hh_l{}{}']
+                if bias:
+                    param_names += ['bias_ih_l{}{}', 'bias_hh_l{}{}']
+                param_names = [x.format(layer, suffix) for x in param_names]
 
-    def _rnn_forward(self, x, h, c=None):
-        raise NotImplementedError
+                for name, param in zip(param_names, layer_params):
+                    setattr(self, name, param)
+                self._flat_weights_names.extend(param_names)
+                self._all_weights.append(param_names)
+                cur += 1
+        self._flat_weights = [
+            (lambda wn: getattr(self, wn) if hasattr(self, wn) else None)(wn) for wn in self._flat_weights_names
+        ]
+        self.flatten_parameters()
+
+    def flatten_parameters(self):
+        if len(self._flat_weights) != len(self._flat_weights_names):
+            return
+
+        for w in self._flat_weights:
+            if not isinstance(w, torch.Tensor):
+                return
+        first_fw = self._flat_weights[0]
+        dtype = first_fw.dtype
+        for fw in self._flat_weights:
+            if (not isinstance(fw.data, torch.Tensor) or not (fw.data.dtype == dtype) or not fw.data.is_cuda or
+                    not torch.backends.cudnn.is_acceptable(fw.data)):
+                return
+        unique_data_ptrs = set(p.data_ptr() for p in self._flat_weights)
+        if len(unique_data_ptrs) != len(self._flat_weights):
+            return
+
+        with torch.cuda.device_of(first_fw):
+            import torch.backends.cudnn.rnn as rnn
+            with torch.no_grad():
+                if torch._use_cudnn_rnn_flatten_weight():
+                    num_weights = 4 if self.bias else 2
+                    if self.proj_size > 0:
+                        num_weights += 1
+                    torch._cudnn_rnn_flatten_weight(
+                        self._flat_weights, num_weights, self.input_size, rnn.get_cudnn_mode(self.mode),
+                        self.hidden_size, self.proj_size, self.num_layers, self.batch_first, bool(self.bidirectional)
+                    )
+
+    def _apply(self, fn):
+        ret = super(rnnbase, self)._apply(fn)
+        self._flat_weights = [
+            (lambda wn: getattr(self, wn) if hasattr(self, wn) else None)(wn) for wn in self._flat_weights_names
+        ]
+        self.flatten_parameters()
+        return ret
 
     def check_input(self, input_shape):
         if len(input_shape) != 3:
@@ -1530,8 +1616,45 @@ class rnnbase(object):
         if h.shape != expected_hidden_size:
             raise ValueError('Expected hidden size {}, got {}.'.format(expected_hidden_size, h.shape))
 
-    def __call__(self, input, states):
-        raise NotImplementedError
+    def forward(self, input, states):
+        batch_size = input.shape[0] if self.batch_first else input.shape[1]
+        input_shape = input.shape
+        self.check_input(input_shape)
+        if self.mode == 'LSTM':
+            if states is None:
+                h = torch.zeros(
+                    self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
+                    device=input.device
+                )
+                c = torch.zeros(
+                    self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
+                    device=input.device
+                )
+                states = (h, c)
+            else:
+                h, c = states
+                self.check_hidden(h, batch_size)
+                self.check_hidden(c, batch_size)
+            result = _VF.lstm(
+                input, states, self._flat_weights, self.bias, self.num_layers, self.dropout, self.training,
+                self.bidirectional, self.batch_first
+            )
+            return result[0], result[1:]
+        else:
+            if states is None:
+                h = torch.zeros(
+                    self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
+                    device=input.device
+                )
+                states = h
+            else:
+                self.check_hidden(states, batch_size)
+            impl = self.rnn_impls[self.mode]
+            result = impl(
+                input, states, self._flat_weights, self.bias, self.num_layers, self.dropout, self.training,
+                self.bidirectional, self.batch_first
+            )
+            return result[0], result[1]
 
 
 class layernorm(object):

@@ -674,7 +674,6 @@ def random_affine(image, degrees, shift, zoom, shear, interpolation, fill):
         scale = 1.0
 
     shear_x = shear_y = 0.0
-    print(shear)
     if shear is not None:
         shear_x = float(np.random.uniform(shear[0], shear[1]))
         if len(shear) == 4:

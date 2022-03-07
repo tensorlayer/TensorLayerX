@@ -485,6 +485,7 @@ class ReduceMean(object):
         else:
             return torch.mean(inputs)
 
+
 def reduce_mean(input_tensor, axis=None):
     """
     Computes the mean of elements across dimensions of a tensor.
@@ -614,7 +615,6 @@ class Pad(object):
             for pj in p_i:
                 _padding.append(pj)
         return tuple(_padding)
-
 
 
 def pad(tensor, paddings, mode='CONSTANT', constant_values=0):
@@ -976,7 +976,6 @@ def add_n(inputs):
     return a
 
 
-
 class OneHot(object):
 
     def __init__(self, depth=-1, on_value=None, off_value=None, axis=None, dtype=None):
@@ -992,8 +991,8 @@ class OneHot(object):
         else:
             out = torch.nn.functional.one_hot(inputs, self.depth)
             out = cast(out, torch.float64)
-            out = torch.where(out==1, self.on_value, out)
-            out = torch.where(out==0, self.off_value, out)
+            out = torch.where(out == 1, self.on_value, out)
+            out = torch.where(out == 0, self.off_value, out)
             out = cast(out, torch.int)
             return out
 
@@ -1012,9 +1011,15 @@ class EmbeddingLookup(object):
 
     def __init__(self, max_norm=None):
         self.max_norm = max_norm
+        self.padding_idx = None
+        self.norm_type = 2.0
+        self.scale_grad_by_freq = False
+        self.sparse = False
 
     def __call__(self, params, ids):
-        raise NotImplementedError
+        return F.embedding(
+            ids, params, self.padding_idx, self.max_norm, self.norm_type, self.scale_grad_by_freq, self.sparse
+        )
 
 
 class NCELoss(object):

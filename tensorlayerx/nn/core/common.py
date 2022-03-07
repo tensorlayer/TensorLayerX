@@ -108,7 +108,7 @@ def _save_weights(net, file_path, format=None):
 
     """
 
-    if tlx.BACKEND is not 'torch' and net.all_weights is None or len(net.all_weights) == 0:
+    if tlx.BACKEND != 'torch' and net.all_weights is None or len(net.all_weights) == 0:
         logging.warning("Model contains no weights or layers haven't been built, nothing will be saved")
         return
 
@@ -277,7 +277,7 @@ def save_standard_npz_dict(save_list=None, name='model.npz'):
     """
     if save_list is None:
         save_list = []
-    if tlx.BACKEND is not 'torch':
+    if tlx.BACKEND != 'torch':
         save_list_names = [tensor.name for tensor in save_list]
 
     if tlx.BACKEND == 'tensorflow':
