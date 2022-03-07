@@ -1,6 +1,6 @@
 <a href="https://tensorlayerx.readthedocs.io/">
     <div align="center">
-        <img src="https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/tlx-LOGO-04.png" width="50%" height="30%"/>
+        <img src="https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/tlx-LOGO--02.jpg" width="50%" height="30%"/>
     </div>
 </a>
 
@@ -18,18 +18,13 @@
 
 🇨🇳 TensorLayerX 是一个跨平台开发框架，可以运行在各类操作系统和AI硬件上，并支持混合框架的开发。目前支持TensorFlow、MindSpore、PaddlePaddle框架常用神经网络层以及算子，PyTorch支持特性正在开发中，[支持列表](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)。
 
+# News
+🔥 **TensorLayerX has been released, it supports TensorFlow、MindSpore and PaddlePaddle backends, and supports some PyTorch operator backends, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend. Feel free to use it and make suggestions.**
 
-<details>
-    <summary>🇷🇺 TensorLayerX</summary>
-input text here.
-</details>
+🔥 **We need more people to join the dev team, if you are interested, please email hao.dong@pku.edu.cn**
 
-<details>
-    <summary>🇸🇦 TensorLayerX</summary>
-input text here.
-</details>
 
-# TensorLayerX
+# Design Features
 
 Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), TensorLayerX （TLX) is a brand new seperated project for platform-agnostic purpose. 
 
@@ -47,13 +42,6 @@ Comparison of TensorLayer version
 
 🔥**Feel free to use TensorLayerX and make suggestions. We need more people to join the dev team, if you are interested, please email hao.dong@pku.edu.cn**
 
-# Examples
-
-- [Basic Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples)
-- [TLCV]**Coming soon!**
-
-
-
 # Quick Start
 
 - Installation
@@ -62,34 +50,49 @@ Comparison of TensorLayer version
 pip3 install tensorlayerx 
 # install from Github
 pip3 install git+https://github.com/tensorlayer/tensorlayerx.git 
-# install from OpenI
-pip3 install git+https://git.openi.org.cn/OpenI/tensorlayerX.git
 ```
-If you want to use TensorFlow backend, you should install TensorFlow：
-```bash
-pip3 install tensorflow # if you want to use GPUs, CUDA and CuDNN are required.
+For more installation instructions, please refer to [Installtion](https://tensorlayerx.readthedocs.io/en/latest/user/installation.html)
+
+- Define a model
+
+You can immediately use tensorlayerx to define a model, using your favourite framework in the background, like so:
+```python
+import os
+os.environ['TL_BACKEND'] = 'tensorflow' # change to any framework!
+
+import tensorlayerx as tlx
+from tensorlayerx.nn import Module
+from tensorlayerx.nn import Dense
+class CustomModel(Module):
+
+  def __init__(self):
+      super(CustomModel, self).__init__()
+
+      self.dense1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784)
+      self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800)
+      self.dense3 = Dense(n_units=10, act=None, in_channels=800)
+
+  def forward(self, x, foo=False):
+      z = self.dense1(x)
+      z = self.dense2(z)
+      out = self.dense3(z)
+      if foo:
+          out = tlx.softmax(out)
+      return out
+
+MLP = CustomModel()
+MLP.set_eval()
 ```
 
+# Document
+TensorLayer has extensive documentation for both beginners and professionals. 
 
-If you want to use MindSpore backend, you should install mindspore>=1.2.1
-```bash
-pip install https://ms-release.obs.cn-north-4.myhuaweicloud.com/1.2.1/MindSpore/gpu/ubuntu_x86/cuda-10.1/mindspore_gpu-1.2.1-cp37-cp37m-linux_x86_64.whl --trusted-host ms-release.obs.cn-north-4.myhuaweicloud.com -i https://pypi.tuna.tsinghua.edu.cn/simple
-```
+[![English Documentation](https://img.shields.io/badge/documentation-english-blue.svg)](https://tensorlayerx.readthedocs.io/en/latest/)
 
-If you want to use paddlepaddle backend, you should install paddlepaddle>=2.1.1
-```bash
-python -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
-```
+# Examples
 
-If you want to use PyTorch backend, you should install PyTorch>=1.8.0
-```bash
-pip3 install torch==1.8.2+cu102 torchvision==0.9.2+cu102 torchaudio===0.8.2 -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
-```
-
-- [Tutorial](https://github.com/tensorlayer/TensorLayerX/tree/main/examples/basic_tutorials)
-
-- Discussion: [Slack](https://join.slack.com/t/tensorlayer/shared_invite/enQtODk1NTQ5NTY1OTM5LTQyMGZhN2UzZDBhM2I3YjYzZDBkNGExYzcyZDNmOGQzNmYzNjc3ZjE3MzhiMjlkMmNiMmM3Nzc4ZDY2YmNkMTY) , [QQ-Group] , [WeChat-Group]
-
+- [Basic Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples)
+- [TLCV]**Coming soon!**
 
 
 # Contact

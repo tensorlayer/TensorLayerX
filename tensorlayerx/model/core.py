@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from collections.abc import Iterable
-from tensorlayerx.nn.core.common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
+from tensorlayerx.nn.core.common import _save_weights, _load_weights, \
+    _save_standard_weights_dict, _load_standard_weights_dict
+from .utils import WithLoss, WithGradPD, WithGradMS, WithGradTF, TrainOneStepWithPD, \
+    TrainOneStepWithMS, TrainOneStepWithTH, TrainOneStepWithTF, GradWrap
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 import numpy as np
@@ -11,9 +14,7 @@ import time
 if tlx.BACKEND == 'tensorflow':
     import tensorflow as tf
 if tlx.BACKEND == 'mindspore':
-    from mindspore.ops import composite
     from mindspore.ops import operations as P
-    from mindspore.common import ParameterTuple
 if tlx.BACKEND == 'paddle':
     import paddle as pd
 if tlx.BACKEND == 'torch':
@@ -104,6 +105,12 @@ class Model:
             )
         elif tlx.BACKEND == 'paddle':
             self.pd_train(
+                n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
+                train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
+                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
+            )
+        elif tlx.BACKEND == 'torch':
+            self.th_train(
                 n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
                 train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
                 print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
@@ -436,10 +443,9 @@ class Model:
 
                 train_loss += loss
                 if metrics:
-                    pass
-                    # metrics.update(output, y_batch)
-                    # train_acc += metrics.result()
-                    # metrics.reset()
+                    metrics.update(output, y_batch)
+                    train_acc += metrics.result()
+                    metrics.reset()
                 else:
                     train_acc += (output.argmax(1) == y_batch).type(torch.float).sum().item()
                 n_iter += 1
@@ -454,180 +460,23 @@ class Model:
                 print("   train loss: {}".format(train_loss / n_iter))
                 print("   train acc:  {}".format(train_acc / n_iter))
 
-
-class WithLoss(Module):
-    """
-    High-Level API for Training or Testing.
-
-    Wraps the network with loss function. This Module accepts data and label as inputs and
-    the computed loss will be returned.
-
-    Parameters
-    ----------
-    backbone : tensorlayer model
-        The tensorlayer network.
-    loss_fn : function
-        Objective function
-
-    Methods
-    ---------
-    forward()
-        Model inference.
-
-    Examples
-    --------
-    >>> import tensorlayerx as tlx
-    >>> net = vgg16()
-    >>> loss_fn = tlx.losses.softmax_cross_entropy_with_logits
-    >>> net_with_loss = tlx.model.WithLoss(net, loss_fn)
-
-    """
-
-    def __init__(self, backbone, loss_fn):
-        super(WithLoss, self).__init__()
-        self._backbone = backbone
-        self._loss_fn = loss_fn
-
-    def forward(self, data, label):
-        out = self._backbone(data)
-        return self._loss_fn(out, label)
-
-    @property
-    def backbone_network(self):
-        return self._backbone
-
-
-class GradWrap(Module):
-    """ GradWrap definition """
-
-    def __init__(self, network, trainable_weights):
-        super(GradWrap, self).__init__(auto_prefix=False)
-        self.network = network
-        self.weights = ParameterTuple(trainable_weights)
-
-    def forward(self, x, label):
-        return composite.GradOperation(get_by_list=True)(self.network, self.weights)(x, label)
-
-
-class WithGradMS(Module):
-    "Module that returns the gradients."
-
-    def __init__(self, network, loss_fn=None, sens=None, optimizer=None):
-        super(WithGradMS, self).__init__()
-        self.network = network
-        self.loss_fn = loss_fn
-        self.weights = ParameterTuple(network.trainable_weights)
-        self.grad = composite.GradOperation(get_by_list=True, sens_param=(sens is not None))
-        self.sens = sens
-        self.optimizer = optimizer
-        if self.loss_fn is None:
-            self.network_with_loss = network
-        else:
-            self.network_with_loss = WithLoss(self.network, self.loss_fn)
-        self.network.set_train()
-
-    def forward(self, inputs, label):
-        grads = self.grad(self.network_with_loss, self.weights)(inputs, label)
-        return grads
-
-
-class WithGradTF(object):
-
-    def __init__(self, network, loss_fn=None, optimizer=None):
-        self.network = network
-        self.loss_fn = loss_fn
-        self.train_weights = self.network.trainable_weights
-        self.optimizer = optimizer
-        if loss_fn is None:
-            self.network_with_loss = network
-        else:
-            self.network_with_loss = WithLoss(self.network, self.loss_fn)
-        self.network.set_train()
-
-    def __call__(self, inputs, label):
-        with tf.GradientTape() as tape:
-            loss = self.network_with_loss(inputs, label)
-        grads = tape.gradient(loss, self.train_weights)
-        return grads
-
-
-class WithGradPD(object):
-
-    def __init__(self, network, loss_fn=None, optimizer=None):
-        self.network = network
-        self.loss_fn = loss_fn
-        self.train_weights = self.network.trainable_weights
-        self.optimizer = optimizer
-        if loss_fn is None:
-            self.network_with_loss = network
-        else:
-            self.network_with_loss = WithLoss(self.network, self.loss_fn)
-        self.network.set_train()
-
-    def __call__(self, inputs, label):
-        loss = self.network_with_loss(inputs, label)
-        grads = self.optimizer.gradient(loss, self.train_weights)
-        return grads
-
-
-class TrainOneStepWithTF(object):
-
-    def __init__(self, net_with_loss, optimizer, train_weights):
-        self.net_with_loss = net_with_loss
-        self.optimzer = optimizer
-        self.train_weights = train_weights
-
-    def __call__(self, data, label):
-        with tf.GradientTape() as tape:
-            loss = self.net_with_loss(data, label)
-        grad = tape.gradient(loss, self.train_weights)
-        self.optimzer.apply_gradients(zip(grad, self.train_weights))
-        return loss
-
-
-class TrainOneStepWithMS(object):
-
-    def __init__(self, net_with_loss, optimizer, train_weights):
-        self.net_with_loss = net_with_loss
-        self.optimizer = optimizer
-        self.train_weights = train_weights
-        self.net_with_loss = net_with_loss
-        self.train_network = GradWrap(net_with_loss, train_weights)
-
-    def __call__(self, data, label):
-        loss = self.net_with_loss(data, label)
-        grads = self.train_network(data, label)
-        self.optimizer.apply_gradients(zip(grads, self.train_weights))
-        loss = loss.asnumpy()
-        return loss
-
-
-class TrainOneStepWithPD(object):
-
-    def __init__(self, net_with_loss, optimizer, train_weights):
-        self.net_with_loss = net_with_loss
-        self.optimizer = optimizer
-        self.train_weights = train_weights
-
-    def __call__(self, data, label):
-        loss = self.net_with_loss(data, label)
-        grads = self.optimizer.gradient(loss, self.train_weights)
-        self.optimizer.apply_gradients(zip(grads, self.train_weights))
-        return loss.numpy()
-
-
-class TrainOneStepWithTH(object):
-
-    def __init__(self, net_with_loss, optimizer, train_weights):
-        self.net_with_loss = net_with_loss
-        self.optimizer = optimizer
-        self.train_weights = train_weights
-
-    def __call__(self, data, label):
-        loss = self.net_with_loss(data, label)
-        grads = self.optimizer.gradient(loss, self.train_weights)
-        self.optimizer.apply_gradients(zip(grads, self.train_weights))
-        return loss
+            if test_dataset:
+                # use training and evaluation sets to evaluate the model every print_freq epoch
+                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+                    network.set_eval()
+                    val_loss, val_acc, n_iter = 0, 0, 0
+                    for X_batch, y_batch in test_dataset:
+                        _logits = network(X_batch)  # is_train=False, disable dropout
+                        val_loss += loss_fn(_logits, y_batch, name='eval_loss')
+                        if metrics:
+                            metrics.update(_logits, y_batch)
+                            val_acc += metrics.result()
+                            metrics.reset()
+                        else:
+                            val_acc += (_logits.argmax(1) == y_batch).type(torch.float).sum().item()
+                        n_iter += 1
+                    print("   val loss: {}".format(val_loss / n_iter))
+                    print("   val acc:  {}".format(val_acc / n_iter))
 
 
 class WithGrad(object):
@@ -713,3 +562,11 @@ class TrainOneStep(object):
     def __call__(self, data, label):
         loss = self.net_with_train(data, label)
         return loss
+
+
+class TrainOneStepWithGradientClipping(object):
+    def __init__(self):
+        pass
+
+    def __call__(self, data, label):
+        pass

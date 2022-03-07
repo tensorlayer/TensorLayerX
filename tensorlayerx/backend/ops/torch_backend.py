@@ -1005,7 +1005,7 @@ class L2Normalize(object):
         self.epsilon = epsilon
 
     def __call__(self, input, *args, **kwargs):
-        raise NotImplementedError
+        return torch.linalg.norm(input, ord=2, dim=self.axis)
 
 
 class EmbeddingLookup(object):
