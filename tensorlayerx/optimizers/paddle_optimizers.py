@@ -24,14 +24,14 @@ class Adadelta(Optimizer):
         self.grad_succeed = True
         self.init_optim = False
 
-    def gradient(self, loss, weights):
+    def gradient(self, loss, weights, grad_clip=None):
         if loss is None:
             raise ValueError('loss is not set.')
         if weights is None:
             raise ValueError('weights is not set.')
         if not self.init_optim:
             self.adadelta = paddle.optimizer.Adadelta(
-                learning_rate=self.learning_rate, epsilon=self.epsilon, rho=self.rho, parameters=weights
+                learning_rate=self.learning_rate, epsilon=self.epsilon, rho=self.rho, parameters=weights, grad_clip=grad_clip
             )
             self.init_optim = True
         loss.backward()
@@ -66,7 +66,7 @@ class Adagrad(Optimizer):
         self.grad_succeed = True
         self.init_optim = False
 
-    def gradient(self, loss, weights):
+    def gradient(self, loss, weights, grad_clip=None):
         if loss is None:
             raise ValueError('loss is not set.')
         if weights is None:
@@ -74,7 +74,7 @@ class Adagrad(Optimizer):
         if not self.init_optim:
             self.adagrad = paddle.optimizer.Adagrad(
                 learning_rate=self.learning_rate, epsilon=self.epsilon,
-                initial_accumulator_value=self.initial_accumulator_value, parameters=weights
+                initial_accumulator_value=self.initial_accumulator_value, parameters=weights, grad_clip=grad_clip
             )
             self.init_optim = True
         loss.backward()
@@ -117,7 +117,7 @@ class Adam(Optimizer):
         self.init_optim = False
         self.grad_succeed = True
 
-    def gradient(self, loss, weights):
+    def gradient(self, loss, weights, grad_clip=None):
         if loss is None:
             raise ValueError('loss is not set.')
         if weights is None:
@@ -125,7 +125,7 @@ class Adam(Optimizer):
         if not self.init_optim:
             self.adam = paddle.optimizer.Adam(
                 learning_rate=self.learning_rate, beta1=self.beta_1, beta2=self.beta_2, epsilon=self.epsilon,
-                parameters=weights
+                parameters=weights, grad_clip=grad_clip
             )
             self.init_optim = True
         loss.backward()
@@ -168,7 +168,7 @@ class Adamax(Optimizer):
         self.grad_succeed = True
         self.init_optim = False
 
-    def gradient(self, loss, weights):
+    def gradient(self, loss, weights, grad_clip=None):
         if loss is None:
             raise ValueError('loss is not set.')
         if weights is None:
@@ -176,7 +176,7 @@ class Adamax(Optimizer):
         if not self.init_optim:
             self.adamax = paddle.optimizer.Adamax(
                 learning_rate=self.learning_rate, beta1=self.beta_1, beta2=self.beta_2, epsilon=self.epsilon,
-                parameters=weights
+                parameters=weights, grad_clip=grad_clip
             )
             self.init_optim = True
         loss.backward()
@@ -234,7 +234,7 @@ class RMSprop(Optimizer):
         self.grad_succeed = True
         self.init_optim = False
 
-    def gradient(self, loss, weights):
+    def gradient(self, loss, weights, grad_clip=None):
         if loss is None:
             raise ValueError('loss is not set.')
         if weights is None:
@@ -242,7 +242,7 @@ class RMSprop(Optimizer):
         if not self.init_optim:
             self.rmsprop = paddle.optimizer.RMSProp(
                 learning_rate=self.learning_rate, epsilon=self.epsilon, rho=self.rho, momentum=self.momentum,
-                parameters=weights
+                parameters=weights, grad_clip=grad_clip
             )
             self.init_optim = True
         loss.backward()
@@ -270,13 +270,13 @@ class SGD(Optimizer):
         self.grad_succeed = True
         self.init_optim = False
 
-    def gradient(self, loss, weights):
+    def gradient(self, loss, weights, grad_clip=None):
         if loss is None:
             raise ValueError('loss is not set.')
         if weights is None:
             raise ValueError('weights is not set.')
         if not self.init_optim:
-            self.sgd = paddle.optimizer.SGD(learning_rate=self.learning_rate, parameters=weights)
+            self.sgd = paddle.optimizer.SGD(learning_rate=self.learning_rate, parameters=weights, grad_clip=grad_clip)
             self.init_optim = True
         loss.backward()
         grads_and_vars = self.sgd.backward(loss=loss, parameters=weights)
@@ -307,14 +307,15 @@ class Momentum(Optimizer):
         self.grad_succeed = True
         self.init_optim = False
 
-    def gradient(self, loss, weights):
+    def gradient(self, loss, weights, grad_clip=None):
         if loss is None:
             raise ValueError('loss is not set.')
         if weights is None:
             raise ValueError('weights is not set.')
         if not self.init_optim:
             self.moment = paddle.optimizer.Momentum(
-                learning_rate=self.learning_rate, momentum=self.momentum, parameters=weights, use_nesterov=self.nesterov
+                learning_rate=self.learning_rate, momentum=self.momentum, parameters=weights,
+                use_nesterov=self.nesterov, grad_clip=grad_clip
             )
             self.init_optim = True
         loss.backward()
@@ -360,7 +361,7 @@ class Lamb(Optimizer):
         self.grad_succeed = True
         self.init_optim = False
 
-    def gradient(self, loss, weights):
+    def gradient(self, loss, weights, grad_clip=None):
         if loss is None:
             raise ValueError('loss is not set.')
         if weights is None:
@@ -368,7 +369,7 @@ class Lamb(Optimizer):
         if not self.init_optim:
             self.lamb = paddle.optimizer.Lamb(
                 learning_rate=self.learning_rate, lamb_weight_decay=self.lamb_weight_decay, beta1=self.beta_1,
-                beta2=self.beta_2, epsilon=self.epsilon, parameters=weights
+                beta2=self.beta_2, epsilon=self.epsilon, parameters=weights, grad_clip=grad_clip
             )
             self.init_optim = True
         loss.backward()

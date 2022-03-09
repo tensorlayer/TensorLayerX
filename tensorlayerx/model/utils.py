@@ -132,14 +132,14 @@ class TrainOneStepWithTF(object):
 
     def __init__(self, net_with_loss, optimizer, train_weights):
         self.net_with_loss = net_with_loss
-        self.optimzer = optimizer
+        self.optimizer = optimizer
         self.train_weights = train_weights
 
     def __call__(self, data, label):
         with tf.GradientTape() as tape:
             loss = self.net_with_loss(data, label)
         grad = tape.gradient(loss, self.train_weights)
-        self.optimzer.apply_gradients(zip(grad, self.train_weights))
+        self.optimizer.apply_gradients(zip(grad, self.train_weights))
         return loss
 
 
@@ -184,5 +184,64 @@ class TrainOneStepWithTH(object):
     def __call__(self, data, label):
         loss = self.net_with_loss(data, label)
         grads = self.optimizer.gradient(loss, self.train_weights)
+        self.optimizer.apply_gradients(zip(grads, self.train_weights))
+        return loss
+
+class TrainOneStepWithGradientClippingTF(object):
+    def __init__(self, net_with_loss, optimizer, train_weights, gradient_clipping):
+        self.net_with_loss = net_with_loss
+        self.optimizer = optimizer
+        self.train_weights = train_weights
+        self.gradient_clipping = gradient_clipping
+
+    def __call__(self, data, label):
+        with tf.GradientTape() as tape:
+            loss = self.net_with_loss(data, label)
+        grad = tape.gradient(loss, self.train_weights)
+        if isinstance(self.gradient_clipping, tlx.ops.ClipByGlobalNorm):
+            clip_grad, _ = self.gradient_clipping(grad)
+        else:
+            clip_grad = []
+            for g in grad:
+                clip_grad.append(self.gradient_clipping(g))
+        self.optimizer.apply_gradients(zip(clip_grad, self.train_weights))
+        return loss
+
+
+class TrainOneStepWithGradientClippingPD(object):
+    def __init__(self, net_with_loss, optimizer, train_weights, gradient_clipping):
+        self.net_with_loss = net_with_loss
+        self.optimizer = optimizer
+        self.train_weights = train_weights
+        self.gradient_clipping = gradient_clipping
+
+    def __call__(self, data, label):
+        loss = self.net_with_loss(data, label)
+        grads = self.optimizer.gradient(loss, self.train_weights, grad_clip=self.gradient_clipping)
+        self.optimizer.apply_gradients(zip(grads, self.train_weights))
+        return loss.numpy()
+
+
+class TrainOneStepWithGradientClippingMS(object):
+    def __init__(self, net_with_loss, optimizer, train_weights, gradient_clipping):
+        self.net_with_loss = net_with_loss
+        self.optimizer = optimizer
+        self.train_weights = train_weights
+        self.gradient_clipping = gradient_clipping
+
+    def __call__(self, data, label):
+        raise NotImplementedError
+
+
+class TrainOneStepWithGradientClippingTH(object):
+    def __init__(self, net_with_loss, optimizer, train_weights, gradient_clipping):
+        self.net_with_loss = net_with_loss
+        self.optimizer = optimizer
+        self.train_weights = train_weights
+        self.gradient_clipping = gradient_clipping
+
+    def __call__(self, data, label):
+        loss = self.net_with_loss(data, label)
+        grads = self.optimizer.gradient(loss, self.train_weights, grad_clip=self.gradient_clipping)
         self.optimizer.apply_gradients(zip(grads, self.train_weights))
         return loss

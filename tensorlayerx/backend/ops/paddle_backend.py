@@ -848,6 +848,21 @@ def gather_nd(params, indices, batch_dims=0):
     return pd.gather_nd(params, indices)
 
 
+class ClipGradByValue(pd.nn.ClipGradByValue):
+    def __init__(self, clip_min=-1, clip_max=1):
+        super().__init__(max=clip_max, min=clip_min)
+
+
+class ClipGradByNorm(pd.nn.ClipGradByNorm):
+    def __init__(self, clip_norm=0.1):
+        super().__init__(clip_norm=clip_norm)
+
+
+class ClipByGlobalNorm(pd.nn.ClipGradByGlobalNorm):
+    def __init__(self, clip_norm=0.1):
+        super().__init__(clip_norm=clip_norm)
+
+
 def clip_by_value(t, clip_value_min, clip_value_max):
     """
     Clips tensor values to a specified min and max.

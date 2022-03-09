@@ -25,7 +25,7 @@ class Adadelta(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_adadelta.step()
 
-    def gradient(self, loss, weights=None, return_grad=True):
+    def gradient(self, loss, weights=None, return_grad=True, grad_clip=None):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -35,6 +35,9 @@ class Adadelta(object):
             self.init_optim = True
         self.optimizer_adadelta.zero_grad()
         loss.backward()
+
+        if grad_clip is not None:
+            grad_clip(weights)
 
         if return_grad == True:
             return _grads(weights)
@@ -60,7 +63,7 @@ class Adagrad(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_adagrad.step()
 
-    def gradient(self, loss, weights=None, return_grad=True):
+    def gradient(self, loss, weights=None, return_grad=True, grad_clip=None):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -70,6 +73,9 @@ class Adagrad(object):
             self.init_optim = True
         self.optimizer_adagrad.zero_grad()
         loss.backward()
+
+        if grad_clip is not None:
+            grad_clip(weights)
 
         if return_grad == True:
             return _grads(weights)
@@ -97,7 +103,7 @@ class Adam(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_adam.step()
 
-    def gradient(self, loss, weights=None, return_grad=True):
+    def gradient(self, loss, weights=None, return_grad=True, grad_clip=None):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -107,6 +113,9 @@ class Adam(object):
             self.init_optim = True
         self.optimizer_adam.zero_grad()
         loss.backward()
+
+        if grad_clip is not None:
+            grad_clip(weights)
 
         if return_grad == True:
             return _grads(weights)
@@ -128,7 +137,7 @@ class Adamax(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_adamax.step()
 
-    def gradient(self, loss, weights=None, return_grad=True):
+    def gradient(self, loss, weights=None, return_grad=True, grad_clip=None):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -138,6 +147,9 @@ class Adamax(object):
             self.init_optim = True
         self.optimizer_adamax.zero_grad()
         loss.backward()
+
+        if grad_clip is not None:
+            grad_clip(weights)
 
         if return_grad == True:
             return _grads(weights)
@@ -184,7 +196,7 @@ class RMSprop(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_rmsprop.step()
 
-    def gradient(self, loss, weights=None, return_grad=True):
+    def gradient(self, loss, weights=None, return_grad=True, grad_clip=None):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -195,6 +207,9 @@ class RMSprop(object):
             self.init_optim = True
         self.optimizer_rmsprop.zero_grad()
         loss.backward()
+
+        if grad_clip is not None:
+            grad_clip(weights)
 
         if return_grad == True:
             return _grads(weights)
@@ -214,7 +229,7 @@ class SGD(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_sgd.step()
 
-    def gradient(self, loss, weights=None, return_grad=True):
+    def gradient(self, loss, weights=None, return_grad=True, grad_clip=None):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -222,6 +237,9 @@ class SGD(object):
             self.init_optim = True
         self.optimizer_sgd.zero_grad()
         loss.backward()
+
+        if grad_clip is not None:
+            grad_clip(weights)
 
         if return_grad == True:
             return _grads(weights)
@@ -241,7 +259,7 @@ class Momentum(object):
             raise AttributeError("Can not apply gradients before zero_grad call.")
         self.optimizer_momentum.step()
 
-    def gradient(self, loss, weights=None, return_grad=True):
+    def gradient(self, loss, weights=None, return_grad=True, grad_clip=None):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
@@ -249,6 +267,9 @@ class Momentum(object):
             self.init_optim = True
         self.optimizer_momentum.zero_grad()
         loss.backward()
+
+        if grad_clip is not None:
+            grad_clip(weights)
 
         if return_grad == True:
             return _grads(weights)

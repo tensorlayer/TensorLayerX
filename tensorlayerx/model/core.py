@@ -5,7 +5,8 @@ from collections.abc import Iterable
 from tensorlayerx.nn.core.common import _save_weights, _load_weights, \
     _save_standard_weights_dict, _load_standard_weights_dict
 from .utils import WithLoss, WithGradPD, WithGradMS, WithGradTF, TrainOneStepWithPD, \
-    TrainOneStepWithMS, TrainOneStepWithTH, TrainOneStepWithTF, GradWrap
+    TrainOneStepWithMS, TrainOneStepWithTH, TrainOneStepWithTF, GradWrap, \
+    TrainOneStepWithGradientClippingTF, TrainOneStepWithGradientClippingPD, TrainOneStepWithGradientClippingTH
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 import numpy as np
@@ -20,7 +21,7 @@ if tlx.BACKEND == 'paddle':
 if tlx.BACKEND == 'torch':
     import torch
 
-__all__ = ['Model', 'WithLoss', 'WithGrad', 'TrainOneStep']
+__all__ = ['Model', 'WithLoss', 'WithGrad', 'TrainOneStep', 'TrainOneStepWithGradientClipping']
 
 
 class Model:
@@ -565,8 +566,19 @@ class TrainOneStep(object):
 
 
 class TrainOneStepWithGradientClipping(object):
-    def __init__(self):
-        pass
+    def __init__(self, net_with_loss, optimizer, train_weights, gradient_clipping=tlx.ops.ClipByGlobalNorm(0.1)):
+        if gradient_clipping is None:
+            raise Exception("This method must input the gradient clipping function, eg tlx.ops.ClipByGlobalNorm(0.1).")
+
+        if tlx.BACKEND == 'tensorflow':
+            self.net_weith_train = TrainOneStepWithGradientClippingTF(net_with_loss, optimizer, train_weights, gradient_clipping)
+        elif tlx.BACKEND == 'paddle':
+            self.net_weith_train = TrainOneStepWithGradientClippingPD(net_with_loss, optimizer, train_weights, gradient_clipping)
+        elif tlx.BACKEND == 'torch':
+            self.net_weith_train = TrainOneStepWithGradientClippingTH(net_with_loss, optimizer, train_weights, gradient_clipping)
+        else:
+            raise NotImplementedError("This backend is not supported")
 
     def __call__(self, data, label):
-        pass
+        loss = self.net_weith_train(data, label)
+        return loss

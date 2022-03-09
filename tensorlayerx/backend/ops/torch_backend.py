@@ -897,6 +897,31 @@ def gather_nd(params, indices, batch_dims=0):
     return out.view(out_shape)
 
 
+class ClipGradByValue(object):
+    def __init__(self, clip_min=-1, clip_max=1):
+        self.min = clip_min
+        self.max = clip_max
+
+    def __call__(self, inputs):
+        torch.nn.utils.clip_grad_value_(inputs, clip_value=self.max)
+
+
+class ClipGradByNorm(object):
+    def __init__(self, clip_norm=0.1):
+        self.clip_norm = clip_norm
+
+    def __call__(self, inputs):
+        torch.nn.utils.clip_grad_norm_(inputs, max_norm=self.clip_norm, norm_type=2)
+
+
+class ClipByGlobalNorm(object):
+    def __init__(self, clip_norm):
+        self.clip_norm = clip_norm
+
+    def __call__(self, inputs):
+        raise NotImplementedError
+
+
 def clip_by_value(t, clip_value_min, clip_value_max):
     """
     Clips tensor values to a specified min and max.

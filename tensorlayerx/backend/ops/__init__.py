@@ -234,3 +234,6 @@ from .load_backend import Maximum
 from .load_backend import Meshgrid
 from .load_backend import BatchToSpace
 from .load_backend import DepthToSpace
+from .load_backend import ClipGradByValue
+from .load_backend import ClipGradByNorm
+from .load_backend import ClipByGlobalNorm
