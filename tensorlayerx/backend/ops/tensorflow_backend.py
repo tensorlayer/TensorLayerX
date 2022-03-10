@@ -3330,7 +3330,7 @@ def where(condition, x, y):
 
     """
 
-    return tf.where(condition=condition, x=x, y=x)
+    return tf.where(condition=condition, x=x, y=y)
 
 
 def ones_like(x, dtype=None):
