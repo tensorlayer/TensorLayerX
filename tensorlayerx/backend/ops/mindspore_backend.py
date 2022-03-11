@@ -434,14 +434,15 @@ def Variable(initial_value, name, trainable=True):
 
 class MatMul(Cell):
 
-    def __init__(self):
+    def __init__(self, transpose_a=False, transpose_b=False):
+        self.matmul = ms.ops.MatMul(transpose_a=transpose_a, transpose_b=transpose_b)
         super(MatMul, self).__init__()
 
     def construct(self, a, b):
-        return ms.ops.matmul(a, b)
+        return self.matmul(a, b)
 
 
-def matmul(a, b):
+def matmul(a, b, transpose_a=False, transpose_b=False):
     """
     Multiplies matrix a by matrix b, producing a * b.
 
@@ -456,7 +457,7 @@ def matmul(a, b):
     -------
         A Tensor of the same type as a and b
     """
-
+    matmul = ms.ops.MatMul(transpose_a=transpose_a, transpose_b=transpose_b)
     outputs = ms.ops.matmul(a, b)
     return outputs
 

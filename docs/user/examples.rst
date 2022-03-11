@@ -21,20 +21,9 @@ Basics
 ============
 
  - Multi-layer perceptron (MNIST), simple usage and supports multiple backends. Classification task, see `mnist_mlp.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp.py>`__.
- - Multi-layer perceptron (MNIST), mix of tensorlayerx and tensorflow. Classification with dropout using iterator, see `mnist_mlp_mixed_tensorflow.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_tensorflow.py>`__.
- - Multi-layer perceptron (MNIST), mix of tensorlayerx and mindspore. Classification task, see `mnist_mlp_mixed_mindspore.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_mindspore.py>`__.
- - Multi-layer perceptron (MNIST), mix of tensorlayerx and paddlepaddle. Classification task, see `mnist_mlp_mixed_paddle.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_paddle.py>`__.
- - Multi-layer perceptron (MNIST), mix of tensorlayerx and pytorch. Classification task, see `mnist_mlp_mixed_torch.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_torch.py>`__.
-
  - Generative Adversarial Networks (MNIST), simple usage and supports multiple backends. See `mnist_gan.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_gan.py>`__.
-
  - Convolutional Network (CIFAR-10), simple usage and supports multiple backends. Classification task, see `cifar10_cnn.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn.py>`__.
- - Convolutional Network (CIFAR-10). mix of tensorlayerx and tensorflow. Classification task, see `cifar10_cnn_mixed_tensorflow.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn_mixed_tensorflow.py>`__.
- - Convolutional Network (CIFAR-10). mix of tensorlayerx and mindspore. Classification task, see `cifar10_cnn_mixed_mindspore.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn_mixed_mindspore.py>`__.
- - Convolutional Network (CIFAR-10). mix of tensorlayerx and paddle. Classification task, see `cifar10_cnn_mixed_paddle.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn_mixed_paddle.py>`__.
-
  - Recurrent Neural Network (IMDB), simple usage and supports multiple backends. Text classification task, see `imdb_LSTM_simple.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/imdb_LSTM_simple.py>`__.
-
  - Using tensorlayerx to automatic inference input shape. See `automatic_inference_input _shape.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/automatic_inference_input%20_shape.py>`__.
  - Using Layerlist in tensorlayerx. See `tutorial_LayerList.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tutorial_LayerList.py>`__.
  - Using SequentialLayer in tensorlayerx. See `mnist_SequentialLayer.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_SequentialLayer.py>`__.

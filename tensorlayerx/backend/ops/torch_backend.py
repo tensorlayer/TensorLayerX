@@ -256,14 +256,15 @@ def Variable(initial_value, name=None, trainable=True):
 
 class MatMul(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, transpose_a=False, transpose_b=False):
+        self.transpose_a = transpose_a
+        self.transpose_b = transpose_b
 
     def __call__(self, a, b):
         return torch.matmul(a, b)
 
 
-def matmul(a, b):
+def matmul(a, b, transpose_a=False, transpose_b=False):
     """
     Multiplies matrix a by matrix b, producing a * b.
 
@@ -593,7 +594,6 @@ class Pad(object):
             elif len(x.shape) == 5 and self.paddings[0:2] + self.paddings[8:] == (0, 0, 0, 0):
                 self.paddings = (self.paddings[2:8])[::-1]
                 x = torch.transpose(x, 1, 4)
-                print(self.paddings)
             else:
                 raise NotImplementedError("Only constant padding is implemented for arbitrary dimensions.")
 
@@ -991,7 +991,19 @@ def linspace(start, stop, num):
 
 
 def slice(inputs, starts, sizes):
-    raise NotImplementedError
+
+    ends = [starts[i] + sizes[i] for i in range(len(starts))]
+
+    if len(inputs.shape) == 1:
+        return inputs[starts[0] : ends[0]]
+    if len(inputs.shape) == 2:
+        return inputs[starts[0] : ends[0], starts[1]:ends[1]]
+    if len(inputs.shape) == 3:
+        return inputs[starts[0] : ends[0], starts[1]:ends[1], starts[2]:ends[2]]
+    if len(inputs.shape) == 4:
+        return inputs[starts[0]: ends[0], starts[1]:ends[1], starts[2]:ends[2], starts[3]:ends[3]]
+    if len(inputs.shape) == 5:
+        return inputs[starts[0]: ends[0], starts[1]:ends[1], starts[2]:ends[2], starts[3]:ends[3], starts[4]:ends[4]]
 
 
 def add_n(inputs):
@@ -1029,7 +1041,9 @@ class L2Normalize(object):
         self.epsilon = epsilon
 
     def __call__(self, input, *args, **kwargs):
-        return torch.linalg.norm(input, ord=2, dim=self.axis)
+
+        return torch.nn.functional.normalize(input, p = 2, dim=self.axis, eps=self.epsilon)
+
 
 
 class EmbeddingLookup(object):
@@ -1064,7 +1078,7 @@ class NotEqual(object):
         pass
 
     def __call__(self, x, y):
-        raise NotImplementedError
+        return torch.ne(x, y)
 
 
 class CountNonzero(object):
@@ -1074,7 +1088,8 @@ class CountNonzero(object):
         self.dtype = dtype
 
     def __call__(self, input, axis=None):
-        raise NotImplementedError
+
+        return torch.count_nonzero(input, dim=axis)
 
 
 class Resize:
@@ -1086,38 +1101,46 @@ class Resize:
         self.data_format = data_format
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        if self.data_format == "channels_last":
+            inputs = nhwc_to_nchw(inputs)
+        outputs = F.interpolate(inputs, scale_factor=self.scale, mode=self.method, align_corners=self.antialias)
+        if self.data_format == "channels_last":
+            outputs = nchw_to_nhwc(outputs)
+        return outputs
 
 
 def resize(inputs, output_size, method, antialias):
-    raise NotImplementedError
+    return F.interpolate(inputs, size=output_size, mode=method, align_corners=antialias)
 
 
 class ZeroPadding1D(object):
 
     def __init__(self, padding):
-        raise NotImplementedError
+        padding = ((0, 0), padding, (0, 0))
+        self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        return self.pad(inputs)
 
 
 class ZeroPadding2D(object):
 
     def __init__(self, padding):
-        raise NotImplementedError
+        padding = ((0, 0), padding[0], padding[1], (0, 0))
+        self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        return self.pad(inputs)
 
 
 class ZeroPadding3D(object):
 
     def __init__(self, padding):
-        raise NotImplementedError
+        padding = ((0, 0), padding[0], padding[1], padding[2], (0, 0))
+        self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        return self.pad(inputs)
 
 
 class Sign(object):
@@ -1126,28 +1149,29 @@ class Sign(object):
         pass
 
     def __call__(self, x):
-        raise NotImplementedError
+        return torch.sign(x)
 
 
 class Ceil(object):
 
     def __call__(self, x):
-        raise NotImplementedError
+        return torch.ceil(x)
 
 
 def ceil(x):
-    raise NotImplementedError
+    return torch.ceil(x)
 
 
 def multiply(x, y):
-    raise NotImplementedError
+    return torch.multiply(x, y)
 
 
 def divide(x, y):
-    raise NotImplementedError
+    return torch.divide(x, y)
 
 
 def identity(x):
+
     raise NotImplementedError
 
 
@@ -1168,15 +1192,27 @@ class DepthToSpace(object):
         self.data_format = data_format
 
     def __call__(self, input):
-        raise NotImplementedError
-
+        if self.data_format == 'NHWC':
+            input = nhwc_to_nchw(input)
+        bH = self.block_size
+        bW = self.block_size
+        N, C, H, W = input.shape
+        oC, oH, oW = C // (self.block_size * self.block_size), bH * H, bW * W
+        output = input.reshape(N, C, bH, bW, H, W)
+        output = output.permute(0, 1, 4, 2, 5, 3)
+        output = output.reshape(N, oC, oH, oW)
+        if  self.data_format == 'NHWC':
+            output = nchw_to_nhwc(output)
+        return output
 
 def triu(data, diagonal=0):
-    raise NotImplementedError
+
+    return torch.triu(data, diagonal)
 
 
 def tril(data, diagonal=0):
-    raise NotImplementedError
+
+    return torch.tril(data, diagonal)
 
 
 def abs(x):
@@ -1318,39 +1354,45 @@ def reciprocal(x):
 
 
 def reduce_prod(x, axis=None, keepdims=False):
-    raise NotImplementedError
+    return torch.prod(x, dim=axis, keepdim=keepdims)
 
 
 def reduce_std(x, axis=None, keepdims=False):
-    raise NotImplementedError
+    return torch.std(x, dim=axis, keepdim=keepdims)
 
 
 def reduce_sum(x, axis=None, keepdims=False):
-    raise NotImplementedError
+    return torch.sum(x, dim=axis, keepdim=keepdims)
 
 
 def reduce_variance(x, axis=None, keepdims=False):
-    raise NotImplementedError
+    return torch.var(x, dim=axis, keepdim=keepdims)
 
 
 def round(x):
-    raise NotImplementedError
+    return torch.round(x)
 
 
 def rsqrt(x):
-    raise NotImplementedError
+    return torch.rsqrt(x)
 
 
 def segment_max(x, segment_ids):
-    raise NotImplementedError
+
+    num_segments = len(torch.unique(segment_ids))
+    return unsorted_segment_max(x, segment_ids, num_segments)
 
 
 def segment_mean(x, segment_ids):
-    raise NotImplementedError
+
+    num_segments = len(torch.unique(segment_ids))
+    return unsorted_segment_mean(x, segment_ids, num_segments)
 
 
 def segment_min(x, segment_ids):
-    raise NotImplementedError
+
+    num_segments = len(torch.unique(segment_ids))
+    return unsorted_segment_min(x, segment_ids, num_segments)
 
 
 def segment_prod(x, segment_ids):
@@ -1358,23 +1400,25 @@ def segment_prod(x, segment_ids):
 
 
 def segment_sum(x, segment_ids):
-    raise NotImplementedError
+
+    num_segments = len(torch.unique(segment_ids))
+    return unsorted_segment_sum(x, segment_ids, num_segments)
 
 
 def sigmoid(x):
-    raise NotImplementedError
+    return torch.sigmoid(x)
 
 
 def sign(x):
-    raise NotImplementedError
+    return torch.sign(x)
 
 
 def sin(x):
-    raise NotImplementedError
+    return torch.sin(x)
 
 
 def sinh(x):
-    raise NotImplementedError
+    return torch.sinh(x)
 
 
 def softplus(x):
@@ -1396,19 +1440,19 @@ def softplus(x):
 
 
 def square(x):
-    raise NotImplementedError
+    return torch.square(x)
 
 
 def squared_difference(x, y):
-    raise NotImplementedError
+    return torch.square(x-y)
 
 
 def subtract(x, y):
-    raise NotImplementedError
+    return torch.subtract(x, y)
 
 
 def tan(x):
-    raise NotImplementedError
+    return torch.tan(x)
 
 
 def tanh(x):
@@ -1429,64 +1473,104 @@ def tanh(x):
 
 
 def any(x, axis=None, keepdims=False):
-    raise NotImplementedError
+    return torch.any(x, dim=axis, keepdim=keepdims)
 
 
 def all(x, axis=None, keepdims=False):
-    raise NotImplementedError
+    return  torch.all(x, dim=axis, keepdim=keepdims)
 
 
 def logical_and(x, y):
-    raise NotImplementedError
+    return torch.logical_and(x, y)
 
 
 def logical_or(x, y):
-    raise NotImplementedError
+    return torch.logical_or(x, y)
 
 
 def logical_not(x):
-    raise NotImplementedError
+    return torch.logical_not(x)
 
 
 def logical_xor(x, y):
-    raise NotImplementedError
+    return torch.logical_xor(x, y)
 
 
 def argsort(x, axis=-1, descending=False):
-    raise NotImplementedError
+    return torch.argsort(x, dim=axis, descending=descending)
 
 
 def bmm(x, y):
-    raise NotImplementedError
+    return torch.bmm(x, y)
 
 
 def where(condition, x, y):
-    raise NotImplementedError
+    return torch.where(condition,x, y)
 
 
 def ones_like(x, dtype=None):
-    raise NotImplementedError
+    return torch.ones_like(x)
 
 
 def zeros_like(x, dtype=None):
-    raise NotImplementedError
+    return torch.zeros_like(x)
 
 
 def squeeze(x, axis=None):
-    raise NotImplementedError
+    return torch.squeeze(x, dim=axis)
 
 
 def unsorted_segment_sum(x, segment_ids, num_segments):
-    raise NotImplementedError
+
+
+    assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
+
+    if len(segment_ids.shape) == 1:
+        s = torch.prod(torch.tensor(x.shape[1:]))
+        segment_ids = segment_ids.repeat_interleave(s).view(segment_ids.shape[0], *x.shape[1:])
+
+    assert x.shape == segment_ids.shape, "data.shape and segment_ids.shape should be equal"
+
+    shape = [num_segments] + list(x.shape[1:])
+    tensor = torch.zeros(*shape, dtype=x.dtype).scatter_add(0, segment_ids, x)
+    return tensor
 
 
 def unsorted_segment_mean(x, segment_ids, num_segments):
-    raise NotImplementedError
 
+    assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
+
+    if len(segment_ids.shape) == 1:
+        s = torch.prod(torch.tensor(x.shape[1:]))
+        segment_ids = segment_ids.repeat_interleave(s).view(segment_ids.shape[0], *x.shape[1:])
+
+    assert x.shape == segment_ids.shape, "data.shape and segment_ids.shape should be equal"
+
+    shape = [num_segments] + list(x.shape[1:])
+    ones_data = torch.ones_like(x, dtype=x.dtype)
+    tensor = torch.zeros(*shape, x.dtype).scatter_add(0, segment_ids, x)
+    tensor_nums = torch.zeros(*shape, x.dtype).scatter_add(0, segment_ids, ones_data)
+    tensor = tensor / tensor_nums
+
+    return tensor
 
 def unsorted_segment_min(x, segment_ids, num_segments):
-    raise NotImplementedError
+
+    assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
+
+    res = []
+    for i in range(num_segments):
+        res.append(torch.min(x[segment_ids == i], dim=0)[0])
+    return torch.stack(res, dim=0)
 
 
 def unsorted_segment_max(x, segment_ids, num_segments):
-    raise NotImplementedError
+
+
+    assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
+
+    res = []
+    for i in range(num_segments):
+        res.append(torch.max(x[segment_ids == i], dim=0)[0])
+    return torch.stack(res, dim=0)
+

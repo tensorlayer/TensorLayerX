@@ -71,9 +71,9 @@ def get_tensor_shape(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x_in = tl.layers.Input((32, 3, 3, 32))
-    >>> x_shape = tl.ops.get_tensor_shape(x_in)
+    >>> import tensorlayerx as tlx
+    >>> x_in = tlx.layers.Input((32, 3, 3, 32))
+    >>> x_shape = tlx.ops.get_tensor_shape(x_in)
 
     """
 
@@ -98,9 +98,9 @@ def zeros(shape, dtype='float32'):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.zeros((32, 3, 3, 32), dtype=tl.int32)
-    >>> y = tl.ops.zeros((10, 25, 25, 10), dtype='float32')
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.zeros((32, 3, 3, 32), dtype=tlx.int32)
+    >>> y = tlx.ops.zeros((10, 25, 25, 10), dtype='float32')
 
     """
 
@@ -124,9 +124,9 @@ def ones(shape, dtype='float32'):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.ones((32, 3, 3, 32), dtype=tl.int32)
-    >>> y = tl.ops.ones((10, 25, 25, 10), dtype='float32')
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.ones((32, 3, 3, 32), dtype=tlx.int32)
+    >>> y = tlx.ops.ones((10, 25, 25, 10), dtype='float32')
 
     """
 
@@ -152,9 +152,9 @@ def constant(value, dtype='float32', shape=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(0.5, (32, 3, 3, 32), dtype=tl.int32)
-    >>> y = tl.ops.constant(0.5, (10, 25, 25, 10), dtype='float32')
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(0.5, (32, 3, 3, 32), dtype=tlx.int32)
+    >>> y = tlx.ops.constant(0.5, (10, 25, 25, 10), dtype='float32')
 
     """
 
@@ -183,9 +183,9 @@ def random_uniform(shape, minval=0, maxval=None, dtype='float32', seed=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.random_uniform((32, 3, 3, 32), maxval=1.0, dtype=tl.int32)
-    >>> y = tl.ops.random_uniform((10, 25, 25, 10), maxval=1.0, dtype='float32')
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.random_uniform((32, 3, 3, 32), maxval=1.0, dtype=tlx.int32)
+    >>> y = tlx.ops.random_uniform((10, 25, 25, 10), maxval=1.0, dtype='float32')
 
     """
 
@@ -216,9 +216,9 @@ def random_normal(shape, mean=0.0, stddev=1.0, dtype='float32', seed=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.random_normal((32, 3, 3, 32), dtype=tl.int32)
-    >>> y = tl.ops.random_normal((10, 25, 25, 10), dtype='float32')
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.random_normal((32, 3, 3, 32), dtype=tlx.int32)
+    >>> y = tlx.ops.random_normal((10, 25, 25, 10), dtype='float32')
 
     """
 
@@ -249,9 +249,9 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype='float32', seed=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.truncated_normal((32, 3, 3, 32), dtype=tl.int32)
-    >>> y = tl.ops.truncated_normal((10, 25, 25, 10), dtype='float32')
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.truncated_normal((32, 3, 3, 32), dtype=tlx.int32)
+    >>> y = tlx.ops.truncated_normal((10, 25, 25, 10), dtype='float32')
 
     """
 
@@ -278,9 +278,9 @@ def he_normal(shape, dtype='float32', seed=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.he_normal((32, 3, 3, 32), dtype=tl.int32)
-    >>> y = tl.ops.he_normal((10, 25, 25, 10), dtype='float32')
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.he_normal((32, 3, 3, 32), dtype=tlx.int32)
+    >>> y = tlx.ops.he_normal((10, 25, 25, 10), dtype='float32')
 
     """
 
@@ -306,9 +306,9 @@ def xavier_normal(shape, dtype='float32', seed=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.xavier_normal((32, 3, 3, 32), dtype=tl.int32)
-    >>> y = tl.ops.xavier_normal((10, 25, 25, 10), dtype='float32')
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.xavier_normal((32, 3, 3, 32), dtype=tlx.int32)
+    >>> y = tlx.ops.xavier_normal((10, 25, 25, 10), dtype='float32')
 
     """
 
@@ -334,9 +334,9 @@ def xavier_uniform(shape, dtype='float32', seed=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.xavier_uniform((32, 3, 3, 32), dtype=tl.int32)
-    >>> y = tl.ops.xavier_uniform((10, 25, 25, 10), dtype='float32')
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.xavier_uniform((32, 3, 3, 32), dtype=tlx.int32)
+    >>> y = tlx.ops.xavier_uniform((10, 25, 25, 10), dtype='float32')
 
     """
 
@@ -359,8 +359,8 @@ def Variable(initial_value, name, trainable=True):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.Variable(tl.ops.ones(shape=(10, 20)), name='w')
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.Variable(tlx.ops.ones(shape=(10, 20)), name='w')
 
     """
 
@@ -399,11 +399,11 @@ def matmul(a, b, transpose_a=False, transpose_b=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.convert_to_tensor(np.random.random([2,3,2]), dtype="float32")
-    >>> y = tl.convert_to_tensor(np.random.random([2,2,3]), dtype="float32")
-    >>> z = tl.ops.matmul(x, y)
+    >>> x = tlx.convert_to_tensor(np.random.random([2,3,2]), dtype="float32")
+    >>> y = tlx.convert_to_tensor(np.random.random([2,2,3]), dtype="float32")
+    >>> z = tlx.ops.matmul(x, y)
     >>> print(z.shape)
     >>> [2,3,3]
     """
@@ -430,10 +430,10 @@ def add(value, bias):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> value = tl.ones(shape=(10, 20))
-    >>> bias = tl.ones(shape=(20))
-    >>> x = tl.ops.add(value, bias)
+    >>> import tensorlayerx as tlx
+    >>> value = tlx.ones(shape=(10, 20))
+    >>> bias = tlx.ones(shape=(20))
+    >>> x = tlx.ops.add(value, bias)
 
     """
 
@@ -497,10 +497,10 @@ def minimum(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant([0., 0., 0., 0.])
-    >>> y = tl.ops.constant([-5., -2., 0., 3.])
-    >>> z = tl.ops.minimum(x, y)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant([0., 0., 0., 0.])
+    >>> y = tlx.ops.constant([-5., -2., 0., 3.])
+    >>> z = tlx.ops.minimum(x, y)
 
     """
 
@@ -544,9 +544,9 @@ def reshape(tensor, shape):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant([0., 1., 2., 3.])
-    >>> z = tl.ops.reshape(x, [2, 2])
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant([0., 1., 2., 3.])
+    >>> z = tlx.ops.reshape(x, [2, 2])
 
     """
 
@@ -579,10 +579,10 @@ def concat(values, axis):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant([0., 0., 0., 0.])
-    >>> y = tl.ops.constant([-5., -2., 0., 3.])
-    >>> z = tl.ops.concat([x, y], 0)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant([0., 0., 0., 0.])
+    >>> y = tlx.ops.constant([-5., -2., 0., 3.])
+    >>> z = tlx.ops.concat([x, y], 0)
 
     """
 
@@ -606,10 +606,10 @@ def convert_to_tensor(value, dtype=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
     >>> x = np.ones(shape=(10, 10))
-    >>> y = tl.ops.convert_to_tensor(x)
+    >>> y = tlx.ops.convert_to_tensor(x)
 
     """
 
@@ -631,9 +631,9 @@ def convert_to_numpy(value):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.ones(shape=(10, 10))
-    >>> y = tl.ops.convert_to_numpy(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.ones(shape=(10, 10))
+    >>> y = tlx.ops.convert_to_numpy(x)
 
     """
 
@@ -656,10 +656,10 @@ def sqrt(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([0.0, 1.0, 4.0]), dtype=tl.float32)
-    >>> x = tl.ops.sqrt(x)
+    >>> x = tlx.ops.convert_to_tensor(np.array([0.0, 1.0, 4.0]), dtype=tlx.float32)
+    >>> x = tlx.ops.sqrt(x)
     >>> print(x)
     >>> [0.0, 1.0, 2.0]
 
@@ -709,11 +709,11 @@ def reduce_mean(input_tensor, axis=None, keepdims=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.random.randn(3, 4))
-    >>> x1 = tl.ops.reduce_mean(x, axis=1, keepdims=False)
-    >>> x2 = tl.ops.reduce_mean(x, axis=1, keepdims=True)
+    >>> x = tlx.ops.convert_to_tensor(np.random.randn(3, 4))
+    >>> x1 = tlx.ops.reduce_mean(x, axis=1, keepdims=False)
+    >>> x2 = tlx.ops.reduce_mean(x, axis=1, keepdims=True)
 
     """
 
@@ -753,11 +753,11 @@ def reduce_max(x, axis=None, keepdims=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.random.randn(3, 4))
-    >>> x1 = tl.ops.reduce_max(x, axis=1, keepdims=False)
-    >>> x2 = tl.ops.reduce_max(x, axis=1, keepdims=True)
+    >>> x = tlx.ops.convert_to_tensor(np.random.randn(3, 4))
+    >>> x1 = tlx.ops.reduce_max(x, axis=1, keepdims=False)
+    >>> x2 = tlx.ops.reduce_max(x, axis=1, keepdims=True)
 
 
     """
@@ -786,11 +786,11 @@ def reduce_min(x, axis=None, keepdims=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.random.randn(3, 4))
-    >>> x1 = tl.ops.reduce_min(x, axis=1, keepdims=False)
-    >>> x2 = tl.ops.reduce_min(x, axis=1, keepdims=True)
+    >>> x = tlx.ops.convert_to_tensor(np.random.randn(3, 4))
+    >>> x1 = tlx.ops.reduce_min(x, axis=1, keepdims=False)
+    >>> x2 = tlx.ops.reduce_min(x, axis=1, keepdims=True)
 
     """
 
@@ -819,16 +819,28 @@ def pad(tensor, paddings, mode='CONSTANT', constant_values=0):
     ----------
     tensor : tensor
         A Tensor.
-    paddings : tensor
-        A Tensor of type int32.
+    paddings : list or tuple
+         paddings is an list or tuple with size [n, 2], where n is the rank of tensor.
+         For each dimension D of input, paddings[D, :] indicates how many values to add before the contents of tensor in that dimension,
     mode : str
-        One of "CONSTANT", "REFLECT", or "SYMMETRIC" (case-insensitive)
+        One of "CONSTANT", "REFLECT", or "SYMMETRIC" (case-insensitive), default is "CONSTANT".
     constant_values : int
         In "CONSTANT" mode, the scalar pad value to use. Must be same type as tensor.
 
     Returns
     -------
         A Tensor. Has the same type as tensor.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant([[1, 2, 3], [4, 5, 6]])
+    >>> paddings = [[1,1], [2, 2]]
+    >>> res = tlx.ops.pad(x, paddings)
+    >>> [[0, 0, 0, 0, 0, 0, 0],
+    >>> [0, 0, 1, 2, 3, 0, 0],
+    >>> [0, 0, 4, 5, 6, 0, 0],
+    >>> [0, 0, 0, 0, 0, 0, 0]]
     """
 
     if mode not in ['CONSTANT', 'REFLECT', 'SYMMETRIC']:
@@ -874,10 +886,10 @@ def stack(values, axis=0):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant([1,2,3])
-    >>> y = tl.ops.constant([1,2,3])
-    >>> res = tl.ops.stack([x, y])
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant([1,2,3])
+    >>> y = tlx.ops.constant([1,2,3])
+    >>> res = tlx.ops.stack([x, y])
     >>> [[1, 2, 3],
     >>>  [1, 2, 3]]
 
@@ -971,9 +983,9 @@ def expand_dims(input, axis):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.ones([1,2,3])
-    >>> res = tl.ops.expand_dims(x, axis=0)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.ones([1,2,3])
+    >>> res = tlx.ops.expand_dims(x, axis=0)
     >>> print(res.shape)
     >>>  [1, 1, 2, 3]
 
@@ -1010,9 +1022,9 @@ def tile(input, multiples):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant([[1,2,3],[1,2,3]])
-    >>> y = tl.ops.tile(x, [2, 1])
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant([[1,2,3],[1,2,3]])
+    >>> y = tlx.ops.tile(x, [2, 1])
     >>> [[1, 2, 3],
     >>>  [1, 2, 3],
     >>>  [1, 2, 3],
@@ -1171,10 +1183,10 @@ def split(value, num_or_size_splits, axis=0):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.ones([3, 9, 5])
-    >>> y1, y2, y3 = tl.ops.split(x, 3, axis=1)
-    >>> y1, y2, y3 = tl.ops.split(x, [1,3,5], axis=1)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.ones([3, 9, 5])
+    >>> y1, y2, y3 = tlx.ops.split(x, 3, axis=1)
+    >>> y1, y2, y3 = tlx.ops.split(x, [1,3,5], axis=1)
 
     """
 
@@ -1202,9 +1214,9 @@ def floor(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1.23, 2.56, 3.589])
-    >>> y = tl.ops.floor(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1.23, 2.56, 3.589])
+    >>> y = tlx.ops.floor(x)
 
     """
 
@@ -1229,12 +1241,12 @@ def gather(params, indices, axis=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[[0, 1.0, 2.0],
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[[0, 1.0, 2.0],
     >>>                  [10.0, 11.0, 12.0],
     >>>                  [20.0, 21.0, 22.0],
     >>>                  [30.0, 31.0, 32.0]])
-    >>> y = tl.ops.gather(x, indices=[3,1])
+    >>> y = tlx.ops.gather(x, indices=[3,1])
 
 
     """
@@ -1406,9 +1418,9 @@ def ceil(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[0.9142202  0.72091234])
-    >>> y = tl.ops.ceil(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[0.9142202  0.72091234])
+    >>> y = tlx.ops.ceil(x)
 
     """
 
@@ -1433,9 +1445,9 @@ def multiply(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[0.9142202  0.72091234])
-    >>> y = tl.ops.multiply(x, x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[0.9142202  0.72091234])
+    >>> y = tlx.ops.multiply(x, x)
 
     """
 
@@ -1459,9 +1471,9 @@ def divide(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[0.9142202  0.72091234])
-    >>> y = tl.ops.divide(x, x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[0.9142202  0.72091234])
+    >>> y = tlx.ops.divide(x, x)
 
     """
 
@@ -1513,9 +1525,9 @@ def triu(x, diagonal=0):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.convert_to_tensor(np.arange(1, 10, dtype="int32").reshape(3,-1))
-    >>> y = tl.ops.triu(x, diagonal=1)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.convert_to_tensor(np.arange(1, 10, dtype="int32").reshape(3,-1))
+    >>> y = tlx.ops.triu(x, diagonal=1)
     >>> print(y)
     >>> [[0, 2, 3],
     >>> [ 0, 0, 6],
@@ -1545,9 +1557,9 @@ def tril(x, diagonal=0):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.convert_to_tensor(np.arange(1, 10, dtype="int32").reshape(3,-1))
-    >>> y = tl.ops.tril(x, diagonal=1)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.convert_to_tensor(np.arange(1, 10, dtype="int32").reshape(3,-1))
+    >>> y = tlx.ops.tril(x, diagonal=1)
     >>> print(y)
     >>> [[0, 0, 0],
     >>> [ 4, 0, 0],
@@ -1573,9 +1585,9 @@ def abs(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.layers.Input((32, 3, 3, 32))
-    >>> y = tl.ops.abs(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.layers.Input((32, 3, 3, 32))
+    >>> y = tlx.ops.abs(x)
 
     """
 
@@ -1597,9 +1609,9 @@ def acos(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.layers.Input((32, 3, 3, 32))
-    >>> y = tl.ops.acos(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.layers.Input((32, 3, 3, 32))
+    >>> y = tlx.ops.acos(x)
 
     """
 
@@ -1621,9 +1633,9 @@ def acosh(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.layers.Input((32, 3, 3, 32))
-    >>> y = tl.ops.acosh(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.layers.Input((32, 3, 3, 32))
+    >>> y = tlx.ops.acosh(x)
 
     """
 
@@ -1645,9 +1657,9 @@ def angle(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[2.15 + 3.57j, 3.89 + 6.54j])
-    >>> y = tl.ops.angle(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[2.15 + 3.57j, 3.89 + 6.54j])
+    >>> y = tlx.ops.angle(x)
 
     """
 
@@ -1673,9 +1685,9 @@ def argmax(x, axis=None, dtype='int64'):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[10, 20, 5, 6, 15])
-    >>> y = tl.ops.argmax(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[10, 20, 5, 6, 15])
+    >>> y = tlx.ops.argmax(x)
 
     """
 
@@ -1701,9 +1713,9 @@ def argmin(x, axis=None, dtype='int64'):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[10, 20, 5, 6, 15])
-    >>> y = tl.ops.argmin(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[10, 20, 5, 6, 15])
+    >>> y = tlx.ops.argmin(x)
 
     """
 
@@ -1725,9 +1737,9 @@ def asin(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[10, 20, 5, 6, 15])
-    >>> y = tl.ops.asin(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[10, 20, 5, 6, 15])
+    >>> y = tlx.ops.asin(x)
 
     """
 
@@ -1749,9 +1761,9 @@ def asinh(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[0.9142202  0.72091234])
-    >>> y = tl.ops.asinh(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[0.9142202  0.72091234])
+    >>> y = tlx.ops.asinh(x)
 
     """
 
@@ -1773,9 +1785,9 @@ def atan(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[0.9142202  0.72091234])
-    >>> y = tl.ops.atan(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[0.9142202  0.72091234])
+    >>> y = tlx.ops.atan(x)
 
     """
 
@@ -1797,9 +1809,9 @@ def atanh(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[0.9142202  0.72091234])
-    >>> y = tl.ops.atanh(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[0.9142202  0.72091234])
+    >>> y = tlx.ops.atanh(x)
 
     """
 
@@ -1821,9 +1833,9 @@ def cos(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[0.9142202  0.72091234])
-    >>> y = tl.ops.cos(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[0.9142202  0.72091234])
+    >>> y = tlx.ops.cos(x)
 
     """
 
@@ -1845,9 +1857,9 @@ def cosh(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[0.9142202  0.72091234])
-    >>> y = tl.ops.cosh(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[0.9142202  0.72091234])
+    >>> y = tlx.ops.cosh(x)
 
     """
 
@@ -1875,9 +1887,9 @@ def count_nonzero(x, axis=None, keepdims=None, dtype="int64"):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=["", "a", "c", "b", " "])
-    >>> y = tl.ops.count_nonzero(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=["", "a", "c", "b", " "])
+    >>> y = tlx.ops.count_nonzero(x)
 
     """
 
@@ -1906,10 +1918,10 @@ def cumprod(x, axis=0, exclusive=False, reverse=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[3, 2, 1])
-    >>> y = tl.ops.cumprod(x)
-    >>> y = tl.ops.cumprod(x, exclusive=True, reverse=True)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[3, 2, 1])
+    >>> y = tlx.ops.cumprod(x)
+    >>> y = tlx.ops.cumprod(x, exclusive=True, reverse=True)
 
     """
 
@@ -1938,10 +1950,10 @@ def cumsum(x, axis=0, exclusive=False, reverse=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.cumsum(x)
-    >>> y = tl.ops.cumsum(x, exclusive=True, reverse=True)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.cumsum(x)
+    >>> y = tlx.ops.cumsum(x, exclusive=True, reverse=True)
 
     """
 
@@ -1965,9 +1977,9 @@ def equal(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.equal(x, x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.equal(x, x)
 
     """
 
@@ -1989,9 +2001,9 @@ def exp(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.exp(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.exp(x)
 
     """
 
@@ -2015,9 +2027,9 @@ def floordiv(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.floordiv(x, x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.floordiv(x, x)
 
     """
 
@@ -2044,9 +2056,9 @@ def floormod(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.floormod(x, x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.floormod(x, x)
 
     """
 
@@ -2071,9 +2083,9 @@ def greater(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.greater(x, x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.greater(x, x)
 
     """
 
@@ -2098,9 +2110,9 @@ def greater_equal(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.greater_equal(x, x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.greater_equal(x, x)
 
     """
 
@@ -2122,10 +2134,10 @@ def is_inf(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.constant(value=[1, 2, 3, np.inf])
-    >>> y = tl.ops.is_inf(x)
+    >>> x = tlx.ops.constant(value=[1, 2, 3, np.inf])
+    >>> y = tlx.ops.is_inf(x)
 
     """
 
@@ -2147,10 +2159,10 @@ def is_nan(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.constant(value=[1, 2, 3, np.nan])
-    >>> y = tl.ops.is_nan(x)
+    >>> x = tlx.ops.constant(value=[1, 2, 3, np.nan])
+    >>> y = tlx.ops.is_nan(x)
 
     """
 
@@ -2177,10 +2189,10 @@ def l2_normalize(x, axis=None, eps=1e-12):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.constant(value=[1, 2, 3, np.nan])
-    >>> y = tl.ops.l2_normalize(x)
+    >>> x = tlx.ops.constant(value=[1, 2, 3, np.nan])
+    >>> y = tlx.ops.l2_normalize(x)
 
     """
 
@@ -2205,9 +2217,9 @@ def less(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.less(x, x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.less(x, x)
 
     """
     return tf.math.less(x, y)
@@ -2231,9 +2243,9 @@ def less_equal(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.less_equal(x, x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.less_equal(x, x)
 
     """
     return tf.math.less_equal(x, y)
@@ -2254,9 +2266,9 @@ def log(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.log(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.log(x)
 
     """
 
@@ -2278,9 +2290,9 @@ def log_sigmoid(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.log_sigmoid(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.log_sigmoid(x)
 
     """
 
@@ -2305,9 +2317,9 @@ def maximum(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.maximum(x, x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.maximum(x, x)
 
     """
 
@@ -2331,9 +2343,9 @@ def negative(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.negative(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.negative(x)
 
     """
 
@@ -2358,10 +2370,10 @@ def not_equal(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.constant(value=[1, 3, 5])
-    >>> x = tl.ops.not_equal(x, y)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.constant(value=[1, 3, 5])
+    >>> x = tlx.ops.not_equal(x, y)
 
     """
 
@@ -2386,10 +2398,10 @@ def pow(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[1, 2, 3])
-    >>> y = tl.ops.constant(value=[1, 3, 5])
-    >>> x = tl.ops.pow(x, y)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[1, 2, 3])
+    >>> y = tlx.ops.constant(value=[1, 3, 5])
+    >>> x = tlx.ops.pow(x, y)
 
     """
 
@@ -2411,9 +2423,9 @@ def real(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[-2.25 + 4.75j, 3.25 + 5.75j])
-    >>> y = tl.ops.real(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[-2.25 + 4.75j, 3.25 + 5.75j])
+    >>> y = tlx.ops.real(x)
 
     """
 
@@ -2436,9 +2448,9 @@ def reciprocal(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant(value=[-2.25, 3.25])
-    >>> y = tl.ops.reciprocal(x)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant(value=[-2.25, 3.25])
+    >>> y = tlx.ops.reciprocal(x)
 
     """
 
@@ -2466,11 +2478,11 @@ def reduce_prod(x, axis=None, keepdims=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.random.randn(3, 4))
-    >>> x1 = tl.ops.reduce_prod(x, axis=1, keepdims=False)
-    >>> x2 = tl.ops.reduce_prod(x, axis=1, keepdims=True)
+    >>> x = tlx.ops.convert_to_tensor(np.random.randn(3, 4))
+    >>> x1 = tlx.ops.reduce_prod(x, axis=1, keepdims=False)
+    >>> x2 = tlx.ops.reduce_prod(x, axis=1, keepdims=True)
 
     """
 
@@ -2498,11 +2510,11 @@ def reduce_std(x, axis=None, keepdims=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.random.randn(3, 4))
-    >>> x1 = tl.ops.reduce_std(x, axis=1, keepdims=False)
-    >>> x2 = tl.ops.reduce_std(x, axis=1, keepdims=True)
+    >>> x = tlx.ops.convert_to_tensor(np.random.randn(3, 4))
+    >>> x1 = tlx.ops.reduce_std(x, axis=1, keepdims=False)
+    >>> x2 = tlx.ops.reduce_std(x, axis=1, keepdims=True)
 
     """
 
@@ -2530,11 +2542,11 @@ def reduce_sum(x, axis=None, keepdims=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.random.randn(3, 4))
-    >>> x1 = tl.ops.reduce_sum(x, axis=1, keepdims=False)
-    >>> x2 = tl.ops.reduce_sum(x, axis=1, keepdims=True)
+    >>> x = tlx.ops.convert_to_tensor(np.random.randn(3, 4))
+    >>> x1 = tlx.ops.reduce_sum(x, axis=1, keepdims=False)
+    >>> x2 = tlx.ops.reduce_sum(x, axis=1, keepdims=True)
 
     """
 
@@ -2562,11 +2574,11 @@ def reduce_variance(x, axis=None, keepdims=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.random.randn(3, 4))
-    >>> x1 = tl.ops.reduce_variance(x, axis=1, keepdims=False)
-    >>> x2 = tl.ops.reduce_variance(x, axis=1, keepdims=True)
+    >>> x = tlx.ops.convert_to_tensor(np.random.randn(3, 4))
+    >>> x1 = tlx.ops.reduce_variance(x, axis=1, keepdims=False)
+    >>> x2 = tlx.ops.reduce_variance(x, axis=1, keepdims=True)
 
     """
     return tf.math.reduce_variance(x, axis=axis, keepdims=keepdims)
@@ -2587,10 +2599,10 @@ def round(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([0.9, 2.5, 2.3, 1.5, -4.5]))
-    >>> x = tl.ops.round(x)
+    >>> x = tlx.ops.convert_to_tensor(np.array([0.9, 2.5, 2.3, 1.5, -4.5]))
+    >>> x = tlx.ops.round(x)
 
     """
     return tf.round(x)
@@ -2611,10 +2623,10 @@ def rsqrt(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([0.9, 2.5, 2.3, 1.5]))
-    >>> x = tl.ops.rsqrt(x)
+    >>> x = tlx.ops.convert_to_tensor(np.array([0.9, 2.5, 2.3, 1.5]))
+    >>> x = tlx.ops.rsqrt(x)
 
     """
     return tf.math.rsqrt(x)
@@ -2637,11 +2649,11 @@ def segment_max(x, segment_ids):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]]))
-    >>> id = tl.ops.convert_to_tensor([0, 0, 1])
-    >>> x = tl.ops.segment_max(x, id)
+    >>> x = tlx.ops.convert_to_tensor(np.array([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]]))
+    >>> id = tlx.ops.convert_to_tensor([0, 0, 1])
+    >>> x = tlx.ops.segment_max(x, id)
     >>> print(x)
     >>> [[4, 3, 3, 4],
     >>> [5, 6, 7, 8]]
@@ -2668,11 +2680,11 @@ def segment_mean(x, segment_ids):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([[1.0 , 2, 3, 4], [4, 3, 2, 1], [5, 6, 7, 8]]))
-    >>> id = tl.ops.convert_to_tensor([0, 0, 1])
-    >>> x = tl.ops.segment_mean(x, id)
+    >>> x = tlx.ops.convert_to_tensor(np.array([[1.0 , 2, 3, 4], [4, 3, 2, 1], [5, 6, 7, 8]]))
+    >>> id = tlx.ops.convert_to_tensor([0, 0, 1])
+    >>> x = tlx.ops.segment_mean(x, id)
     >>> print(x)
     >>> [[2.5, 2.5, 2.5, 2.5],
     >>> [5, 6, 7, 8]]
@@ -2699,11 +2711,11 @@ def segment_min(x, segment_ids):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([[1, 2, 3, 4], [4, 3, 2, 1], [5, 6, 7, 8]]))
-    >>> id = tl.ops.convert_to_tensor([0, 0, 1])
-    >>> x = tl.ops.segment_minimum(x, id)
+    >>> x = tlx.ops.convert_to_tensor(np.array([[1, 2, 3, 4], [4, 3, 2, 1], [5, 6, 7, 8]]))
+    >>> id = tlx.ops.convert_to_tensor([0, 0, 1])
+    >>> x = tlx.ops.segment_minimum(x, id)
     >>> print(x)
     >>> [[1, 2, 2, 1],
     >>> [5, 6, 7, 8]]
@@ -2730,11 +2742,11 @@ def segment_prod(x, segment_ids):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([[1, 2, 3, 4], [4, 3, 2, 1], [5, 6, 7, 8]]))
-    >>> id = tl.ops.convert_to_tensor([0, 0, 1])
-    >>> x = tl.ops.segment_prod(x, id)
+    >>> x = tlx.ops.convert_to_tensor(np.array([[1, 2, 3, 4], [4, 3, 2, 1], [5, 6, 7, 8]]))
+    >>> id = tlx.ops.convert_to_tensor([0, 0, 1])
+    >>> x = tlx.ops.segment_prod(x, id)
     >>> print(x)
     >>> [[4, 6, 6, 4],
     >>> [5, 6, 7, 8]]
@@ -2761,11 +2773,11 @@ def segment_sum(x, segment_ids):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([[1, 2, 3, 4], [4, 3, 2, 1], [5, 6, 7, 8]]))
-    >>> id = tl.ops.convert_to_tensor([0, 0, 1])
-    >>> x = tl.ops.segment_sum(x, id)
+    >>> x = tlx.ops.convert_to_tensor(np.array([[1, 2, 3, 4], [4, 3, 2, 1], [5, 6, 7, 8]]))
+    >>> id = tlx.ops.convert_to_tensor([0, 0, 1])
+    >>> x = tlx.ops.segment_sum(x, id)
     >>> print(x)
     >>> [[5, 5, 5, 5],
     >>> [5, 6, 7, 8]]
@@ -2791,10 +2803,10 @@ def sigmoid(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([-128.0, 0.0, 128.0]), dtype='float32')
-    >>> x = tl.ops.sigmoid(x)
+    >>> x = tlx.ops.convert_to_tensor(np.array([-128.0, 0.0, 128.0]), dtype='float32')
+    >>> x = tlx.ops.sigmoid(x)
     >>> print(x)
     >>> [0., 0.5, 1.]
 
@@ -2817,10 +2829,10 @@ def sign(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([-128.0, 0.0, 128.0]), dtype='float32')
-    >>> x = tl.ops.sign(x)
+    >>> x = tlx.ops.convert_to_tensor(np.array([-128.0, 0.0, 128.0]), dtype='float32')
+    >>> x = tlx.ops.sign(x)
     >>> print(x)
     >>> [-1., 0., 1.]
 
@@ -2843,10 +2855,10 @@ def sin(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([-1.0, 0.0, 1.0]), dtype='float32')
-    >>> x = tl.ops.sin(x)
+    >>> x = tlx.ops.convert_to_tensor(np.array([-1.0, 0.0, 1.0]), dtype='float32')
+    >>> x = tlx.ops.sin(x)
     >>> print(x)
     >>> [-0.84147096, 0., 0.84147096]
 
@@ -2869,10 +2881,10 @@ def sinh(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([-1.0, 0.0, 1.0]), dtype='float32')
-    >>> x = tl.ops.sinh(x)
+    >>> x = tlx.ops.convert_to_tensor(np.array([-1.0, 0.0, 1.0]), dtype='float32')
+    >>> x = tlx.ops.sinh(x)
     >>> print(x)
     >>> [-1.1752012, 0., 1.1752012]
 
@@ -2895,10 +2907,10 @@ def softplus(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([-1.0, 0.0, 1.0]), dtype='float32')
-    >>> x = tl.ops.softplus(x)
+    >>> x = tlx.ops.convert_to_tensor(np.array([-1.0, 0.0, 1.0]), dtype='float32')
+    >>> x = tlx.ops.softplus(x)
     >>> print(x)
     >>> [0.3132617, 0.6931472, 1.3132616]
     """
@@ -2921,10 +2933,10 @@ def square(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([-1.0, 0.0, 1.0]), dtype='float32')
-    >>> x = tl.ops.square(x)
+    >>> x = tlx.ops.convert_to_tensor(np.array([-1.0, 0.0, 1.0]), dtype='float32')
+    >>> x = tlx.ops.square(x)
     >>> print(x)
     >>> [1.0, 0.0, 1.0]
     """
@@ -2948,11 +2960,11 @@ def squared_difference(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([[1,0,1], [2,3,4]]), dtype='float32')
-    >>> y = tl.ops.convert_to_tensor(np.array([[-1,0,1], [2,3,4]]), dtype='float32')
-    >>> res = tl.ops.squared_difference(x, y)
+    >>> x = tlx.ops.convert_to_tensor(np.array([[1,0,1], [2,3,4]]), dtype='float32')
+    >>> y = tlx.ops.convert_to_tensor(np.array([[-1,0,1], [2,3,4]]), dtype='float32')
+    >>> res = tlx.ops.squared_difference(x, y)
     >>> print(res)
     >>> [[4.0, 0.0, 0.0],
     >>> [0.0, 0.0, 0.0]]
@@ -2978,11 +2990,11 @@ def subtract(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([[1,0,1], [2,3,4]]), dtype='float32')
-    >>> y = tl.ops.convert_to_tensor(np.array([[-1,0,1], [2,3,4]]), dtype='float32')
-    >>> res = tl.ops.subtract(x, y)
+    >>> x = tlx.ops.convert_to_tensor(np.array([[1,0,1], [2,3,4]]), dtype='float32')
+    >>> y = tlx.ops.convert_to_tensor(np.array([[-1,0,1], [2,3,4]]), dtype='float32')
+    >>> res = tlx.ops.subtract(x, y)
     >>> print(res)
     >>> [[-2.0, 0.0, 0.0],
     >>> [0.0, 0.0, 0.0]]
@@ -3006,10 +3018,10 @@ def tan(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([1,0,1]), dtype='float32')
-    >>> res = tl.ops.tan(x)
+    >>> x = tlx.ops.convert_to_tensor(np.array([1,0,1]), dtype='float32')
+    >>> res = tlx.ops.tan(x)
     >>> print(res)
     >>> [-1.5574077, 0.0, 1.5574077]
 
@@ -3033,10 +3045,10 @@ def tanh(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([1,0,1]), dtype="float32")
-    >>> res = tl.ops.tanh(x)
+    >>> x = tlx.ops.convert_to_tensor(np.array([1,0,1]), dtype="float32")
+    >>> res = tlx.ops.tanh(x)
     >>> print(res)
     >>> [-0.7615942, 0.0, 0.7615942]
     """
@@ -3064,10 +3076,10 @@ def any(x, axis=None, keepdims=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([1,0,1]), dtype='bool')
-    >>> res = tl.ops.any(x, axis = None, keepdims = False)
+    >>> x = tlx.ops.convert_to_tensor(np.array([1,0,1]), dtype='bool')
+    >>> res = tlx.ops.any(x, axis = None, keepdims = False)
     >>> print(res)
     >>> True
     """
@@ -3095,10 +3107,10 @@ def all(x, axis=None, keepdims=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> import numpy as np
-    >>> x = tl.ops.convert_to_tensor(np.array([1,0,1]), dtype='bool')
-    >>> res = tl.ops.all(x, axis = None, keepdims = False)
+    >>> x = tlx.ops.convert_to_tensor(np.array([1,0,1]), dtype='bool')
+    >>> res = tlx.ops.all(x, axis = None, keepdims = False)
     >>> print(res)
     >>> False
     """
@@ -3123,10 +3135,10 @@ def logical_and(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.constant([False, False, True, True])
-    >>> y = tl.constant([False, True, False, True])
-    >>> res = tl.ops.logical_and(x, y)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.constant([False, False, True, True])
+    >>> y = tlx.constant([False, True, False, True])
+    >>> res = tlx.ops.logical_and(x, y)
     >>> print(res)
     >>> [False, False, False, True]
 
@@ -3152,10 +3164,10 @@ def logical_or(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.constant([False, False, True, True])
-    >>> y = tl.constant([False, True, False, True])
-    >>> res = tl.ops.logical_or(x, y)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.constant([False, False, True, True])
+    >>> y = tlx.constant([False, True, False, True])
+    >>> res = tlx.ops.logical_or(x, y)
     >>> print(res)
     >>> [False, True, True, True]
 
@@ -3179,9 +3191,9 @@ def logical_not(x):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.constant([False, False, True, True])
-    >>> res = tl.ops.logical_not(x, y)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.constant([False, False, True, True])
+    >>> res = tlx.ops.logical_not(x, y)
     >>> print(res)
     >>> [True, True, False, False]
 
@@ -3205,10 +3217,10 @@ def logical_xor(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.constant([False, False, True, True])
-    >>> y = tl.constant([False, True, False, True])
-    >>> res = tl.ops.logical_xor(x, y)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.constant([False, False, True, True])
+    >>> y = tlx.constant([False, True, False, True])
+    >>> res = tlx.ops.logical_xor(x, y)
     >>> print(res)
     >>> [False, True, True, False]
 
@@ -3236,9 +3248,9 @@ def argsort(x, axis=-1, descending=False):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> x = [1, 10, 26.9, 2.8, 166.32, 62.3]
-    >>> y = tl.ops.argsort(x, descending = False)
+    >>> y = tlx.ops.argsort(x, descending = False)
     >>> print(y)
     >>> [0, 3, 1, 2, 5, 4]
 
@@ -3268,10 +3280,10 @@ def bmm(x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.convert_to_tensor([[[1.0, 1.0, 1.0],[2.0, 2.0, 2.0]],[[3.0, 3.0, 3.0],[4.0, 4.0, 4.0]]])
-    >>> y = tl.convert_to_tensor([[[1.0, 1.0],[2.0, 2.0],[3.0, 3.0]],[[4.0, 4.0],[5.0, 5.0],[6.0, 6.0]]])
-    >>> res = tl.ops.bmm(x, y)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.convert_to_tensor([[[1.0, 1.0, 1.0],[2.0, 2.0, 2.0]],[[3.0, 3.0, 3.0],[4.0, 4.0, 4.0]]])
+    >>> y = tlx.convert_to_tensor([[[1.0, 1.0],[2.0, 2.0],[3.0, 3.0]],[[4.0, 4.0],[5.0, 5.0],[6.0, 6.0]]])
+    >>> res = tlx.ops.bmm(x, y)
     >>> print(res)
     >>> [[[6. , 6. ],
     >>> [12., 12.]],
@@ -3321,10 +3333,10 @@ def where(condition, x, y):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.convert_to_tensor([0.9, 0.1, 3.2, 1.2])
-    >>> y = tl.convert_to_tensor([1.0, 1.0, 1.0, 1.0])
-    >>> res = tl.ops.where(x>1, x, y)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.convert_to_tensor([0.9, 0.1, 3.2, 1.2])
+    >>> y = tlx.convert_to_tensor([1.0, 1.0, 1.0, 1.0])
+    >>> res = tlx.ops.where(x>1, x, y)
     >>> print(res)
     >>> [1.0, 1.0, 3.2, 1.2]
 
@@ -3350,9 +3362,9 @@ def ones_like(x, dtype=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.convert_to_tensor([0.9, 0.1, 3.2, 1.2])
-    >>> res = tl.ops.ones_like(x, dtype="int32")
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.convert_to_tensor([0.9, 0.1, 3.2, 1.2])
+    >>> res = tlx.ops.ones_like(x, dtype="int32")
     >>> print(res)
     >>> [1, 1, 1, 1]
 
@@ -3378,9 +3390,9 @@ def zeros_like(x, dtype=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.convert_to_tensor([0.9, 0.1, 3.2, 1.2])
-    >>> res = tl.ops.zeros_like(x, dtype="int32")
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.convert_to_tensor([0.9, 0.1, 3.2, 1.2])
+    >>> res = tlx.ops.zeros_like(x, dtype="int32")
     >>> print(res)
     >>> [0, 0, 0, 0]
 
@@ -3408,9 +3420,9 @@ def squeeze(x, axis=None):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.ones(shape=[1,2,3])
-    >>> res = tl.ops.squeeze(x, axis=0)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.ones(shape=[1,2,3])
+    >>> res = tlx.ops.squeeze(x, axis=0)
     >>> print(res.shape)
     >>> [2, 3]
 
@@ -3437,9 +3449,9 @@ def unsorted_segment_sum(x, segment_ids, num_segments):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant([1,2,3])
-    >>> res = tl.ops.unsorted_segment_sum(x, (0, 0, 1), num_segments=2)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant([1,2,3])
+    >>> res = tlx.ops.unsorted_segment_sum(x, (0, 0, 1), num_segments=2)
     >>> print(res)
     >>> [2, 3]
 
@@ -3466,9 +3478,9 @@ def unsorted_segment_mean(x, segment_ids, num_segments):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant([1.,2.,3.])
-    >>> res = tl.ops.unsorted_segment_mean(x, (0, 0, 1), num_segments=2)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant([1.,2.,3.])
+    >>> res = tlx.ops.unsorted_segment_mean(x, (0, 0, 1), num_segments=2)
     >>> print(res)
     >>> [1.5, 3]
 
@@ -3495,9 +3507,9 @@ def unsorted_segment_min(x, segment_ids, num_segments):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant([1.,2.,3.])
-    >>> res = tl.ops.unsorted_segment_min(x, (0, 0, 1), num_segments=2)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant([1.,2.,3.])
+    >>> res = tlx.ops.unsorted_segment_min(x, (0, 0, 1), num_segments=2)
     >>> print(res)
     >>> [1, 3]
 
@@ -3524,9 +3536,9 @@ def unsorted_segment_max(x, segment_ids, num_segments):
 
     Examples
     ---------
-    >>> import tensorlayerx as tl
-    >>> x = tl.ops.constant([1.,2.,3.])
-    >>> res = tl.ops.unsorted_segment_max(x, (0, 0, 1), num_segments=2)
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.constant([1.,2.,3.])
+    >>> res = tlx.ops.unsorted_segment_max(x, (0, 0, 1), num_segments=2)
     >>> print(res)
     >>> [2, 3]
 
