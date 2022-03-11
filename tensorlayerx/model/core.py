@@ -566,6 +566,37 @@ class TrainOneStep(object):
 
 
 class TrainOneStepWithGradientClipping(object):
+    """
+    High-Level API for Training One Step, And  do gradient clipping.
+
+    Wraps the network with an optimizer. It can be trained in one step using the optimizer to get the loss.
+    It can do gradient clipping using the clipping function.
+
+    Parameters
+    ----------
+    net_with_loss : tensorlayer WithLoss
+        The training or testing network.
+    optimizer : class
+        Optimizer for updating the weights
+    train_weights : class
+        Dict or set of metrics to be evaluated by the model during
+    gradient_clipping : class
+        Clips gradient norm of an iterable of parameters.
+
+    Examples
+    --------
+    >>> import tensorlayerx as tlx
+    >>> net = vgg16()
+    >>> train_weights = net.trainable_weights
+    >>> loss_fn = tlx.losses.softmax_cross_entropy_with_logits
+    >>> optimizer = tlx.optimizers.Adam(learning_rate=1e-3)
+    >>> net_with_loss = tlx.model.WithLoss(net, loss_fn)
+    >>> train_one_step_with_clip = tlx.model.TrainOneStepWithGradientClipping(net_with_loss, optimizer, train_weights, tlx.ops.ClipByGlobalNorm(0.1))
+    >>> inputs, labels = tlx.nn.Input((128, 784), dtype=tlx.float32), tlx.nn.Input((128, 1), dtype=tlx.int32)
+    >>> train_one_step_with_clip(inputs, labels)
+
+    """
+
     def __init__(self, net_with_loss, optimizer, train_weights, gradient_clipping=tlx.ops.ClipByGlobalNorm(0.1)):
         if gradient_clipping is None:
             raise Exception("This method must input the gradient clipping function, eg tlx.ops.ClipByGlobalNorm(0.1).")
