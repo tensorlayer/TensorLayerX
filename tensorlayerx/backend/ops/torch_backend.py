@@ -5,6 +5,8 @@ from __future__ import absolute_import, division, print_function
 from .torch_nn import nchw_to_nhwc, nhwc_to_nchw
 import torch
 import torch.nn.functional as F
+import numpy as np
+import random
 
 _dtypeDict = {
     'DType': torch.dtype,
@@ -1574,3 +1576,10 @@ def unsorted_segment_max(x, segment_ids, num_segments):
         res.append(torch.max(x[segment_ids == i], dim=0)[0])
     return torch.stack(res, dim=0)
 
+def set_seed(seed):
+
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True

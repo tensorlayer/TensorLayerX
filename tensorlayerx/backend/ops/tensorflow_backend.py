@@ -3,6 +3,8 @@
 from __future__ import absolute_import, division, print_function
 from .tensorflow_nn import nchw_to_nhwc, nhwc_to_nchw, preprocess_1d_format, preprocess_2d_format, preprocess_3d_format
 import tensorflow as tf
+import random
+import numpy as np
 
 _dtypeDict = {
     'DType': tf.DType,
@@ -3545,3 +3547,20 @@ def unsorted_segment_max(x, segment_ids, num_segments):
     """
 
     return tf.math.unsorted_segment_max(x, segment_ids, num_segments)
+
+def set_seed(seed):
+    """
+
+    Parameters
+    ----------
+    seed : int
+        The random seed to set.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> tlx.ops.set_seed(42)
+    """
+    tf.random.set_seed(seed)
+    random.seed(seed)
+    np.random.seed(seed)

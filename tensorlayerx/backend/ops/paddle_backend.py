@@ -7,6 +7,7 @@ import paddle.nn as nn
 import numpy as np
 import paddle.nn.functional as F
 from .paddle_nn import nchw_to_nhwc, nhwc_to_nchw, preprocess_2d_format, preprocess_1d_format, preprocess_3d_format
+import random
 
 _dtypeDict = [
     "float16", "float32", "float64", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "bool",
@@ -1450,3 +1451,9 @@ def unsorted_segment_min(x, segment_ids, num_segments):
 
 def unsorted_segment_max(x, segment_ids, num_segments):
     raise NotImplementedError
+
+def set_seed(seed):
+
+    pd.seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
