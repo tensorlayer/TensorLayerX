@@ -1777,3 +1777,8 @@ def unsorted_segment_min(x, segment_ids, num_segments):
 def unsorted_segment_max(x, segment_ids, num_segments):
     op = P.UnsortedSegmentMax()
     return op(x, segment_ids, num_segments)
+
+def set_seed(seed):
+
+    ms.set_seed(seed)
+    random.seed(seed)

@@ -18,14 +18,9 @@ TensorLayerX provides Sequential and Subclass define a model. Sequential model a
 - [CIFAR10 CNN](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn.py)
 - [IMDB LSTM](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/imdb_LSTM_simple.py)
 
-## TensorLayerX and other frameworks
-- [CIFAR10 CNN Mixed MindSpore](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn_mixed_mindspore.py)
-- [CIFAR10 CNN Mixed Paddle](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn_mixed_paddle.py)
-- [CIFAR10 CNN Mixed TensorFlow](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn_mixed_tensorflow.py)
-- [MNIST MLP Mixed MindSpore](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_mindspore.py)
-- [MNIST MLP Mixed Paddle](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_paddle.py)
-- [MNIST MLP Mixed TensorFlow](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_tensorflow.py)
-- [MNIST MLP Mixed PyTorch](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mixed_torch.py)
+## TensorLayerX can be mixed programming with other frameworks.
+- look code comments in [MNIST MLP](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp.py)
+- look code comments in [CIFAR10 CNN](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn.py)
 
 ## Others
 - [Interoperability of Different Back-end Models](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tutorial_tensorlayer_model_load.py)
