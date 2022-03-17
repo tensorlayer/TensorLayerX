@@ -44,7 +44,7 @@ complex128 = torch.complex128
 
 
 def set_context(**kwargs):
-    raise Exception("Using TenosrFlow backend,You don't need to set context")
+    raise Exception("Using PyTorch backend,You don't need to set context")
 
 
 def get_tensor_shape(x):
@@ -441,7 +441,8 @@ def convert_to_tensor(value, dtype=None):
     -------
         A Tensor based on value.
     """
-
+    if isinstance(dtype, str):
+        dtype = _dtypeDict[dtype]
     return torch.tensor(value, dtype=dtype)
 
 

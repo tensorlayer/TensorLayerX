@@ -1671,14 +1671,11 @@ class layernorm(object):
         for dim in self.axis:
             self.broadcast_shape[dim] = input_shape[dim]
 
-    def _broadcast(self, v):
-        raise NotImplementedError
-
     def __call__(self, input):
-        raise NotImplementedError
+        return F.layer_norm(input, self.normalized_shape, self.gamma, self.beta, self.eps)
 
 
-class multiheadattention(object):
+class multiheadattention(Module):
 
     def __init__(
         self,
@@ -1697,7 +1694,7 @@ class multiheadattention(object):
         out_bias,
         train,
     ):
-
+        super(multiheadattention, self).__init__()
         self.embed_dim_check = embed_dim
         self.num_heads = num_heads
         self.dropout = dropout
@@ -1712,9 +1709,34 @@ class multiheadattention(object):
         self.v_bias = v_bias
         self.out_bias = out_bias
         self.train = train
+        self.head_dim = embed_dim // num_heads
+        assert self.head_dim * num_heads == self.embed_dim_check, 'embed_dim must be divisible by num_heads'
+        self.register_parameter('in_proj_weight', None)
 
-    def __call__(self, q, k, v, attn_mask, key_padding_mask):
-        raise NotImplementedError
+        if q_bias is not None:
+            self.in_proj_bias = torch.concat((self.q_bias, self.k_bias, self.v_bias))
+        else:
+            self.register_parameter('in_proj_bias', None)
+
+        self.bias_k = self.bias_v = None
+        self.add_zero_attn = False
+
+    def forward(self, q, k, v, attn_mask, key_padding_mask):
+        k = q if k is None else k
+        v = q if v is None else v
+        if self.batch_first:
+            q, k, v = [x.transpose(1, 0) for x in (q, k, v)]
+        attn_output, attn_output_weights = F.multi_head_attention_forward(
+            q, k, v, self.embed_dim_check, self.num_heads, self.in_proj_weight, self.in_proj_bias, self.bias_k,
+            self.bias_v, self.add_zero_attn, self.dropout, self.out_weight, self.out_bias, training=self.training,
+            key_padding_mask=key_padding_mask, need_weights=self.need_weights, attn_mask=attn_mask,
+            use_separate_proj_weight=True, q_proj_weight=self.q_weight, k_proj_weight=self.k_weight,
+            v_proj_weight=self.v_weight, average_attn_weights=True
+        )
+        if self.batch_first:
+            return attn_output.transpose(1, 0), attn_output_weights
+        else:
+            return attn_output, attn_output_weights
 
 
 class BinaryDense(object):

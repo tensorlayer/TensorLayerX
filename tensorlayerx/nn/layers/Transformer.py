@@ -46,7 +46,7 @@ class MultiheadAttention(Module):
     ---------
     With TensorLayer
 
-    >>> q = tlx.nn.Input(shape=(4,2,128),init=tlx.initializers.ones())
+    >>> q = tlx.nn.Input(shape=(4,2,128))
     >>> attn_mask = tlx.convert_to_tensor(np.zeros((4,4)),dtype='bool')
     >>> layer = MultiheadAttention(embed_dim=128, num_heads=4)
     >>> output = layer(q, attn_mask=attn_mask)
@@ -211,8 +211,8 @@ class Transformer(Module):
     ---------
     With TensorLayer
 
-    >>> src = tlx.nn.Input(shape=(4,2,128),init=tlx.initializers.ones())
-    >>> tgt = tlx.nn.Input(shape=(4,2,128),init=tlx.initializers.ones())
+    >>> src = tlx.nn.Input(shape=(4,2,128))
+    >>> tgt = tlx.nn.Input(shape=(4,2,128))
     >>> layer = Transformer(d_model=128, nhead=4)
     >>> output = layer(src, tgt)
 
@@ -351,7 +351,7 @@ class TransformerEncoder(Module):
     ---------
     With TensorLayer
 
-    >>> q = tlx.nn.Input(shape=(4,2,128),init=tlx.initializers.ones())
+    >>> q = tlx.nn.Input(shape=(4,2,128))
     >>> attn_mask = tlx.convert_to_tensor(np.zeros((4,4)),dtype='bool')
     >>> encoder = TransformerEncoderLayer(128, 2, 256)
     >>> encoder = TransformerEncoder(encoder, num_layers=3)
@@ -408,7 +408,7 @@ class TransformerDecoder(Module):
     ---------
     With TensorLayer
 
-    >>> q = tlx.nn.Input(shape=(4,2,128),init=tlx.initializers.ones())
+    >>> q = tlx.nn.Input(shape=(4,2,128))
     >>> decoder = TransformerDecoderLayer(128, 2, 256)
     >>> decoder = TransformerDecoder(decoder, num_layers=3)
     >>> output = decoder(q, q)
@@ -490,7 +490,7 @@ class TransformerEncoderLayer(Module):
     ---------
     With TensorLayer
 
-    >>> q = tlx.nn.Input(shape=(4,2,128),init=tlx.initializers.ones())
+    >>> q = tlx.nn.Input(shape=(4,2,128))
     >>> attn_mask = tlx.convert_to_tensor(np.zeros((4,4)),dtype='bool')
     >>> encoder = TransformerEncoderLayer(128, 2, 256)
     >>> output = encoder(q, src_mask=attn_mask)
@@ -585,7 +585,7 @@ class TransformerDecoderLayer(Module):
     ---------
     With TensorLayer
 
-    >>> q = tlx.nn.Input(shape=(4,2,128),init=tlx.initializers.ones())
+    >>> q = tlx.nn.Input(shape=(4,2,128))
     >>> encoder = TransformerDecoderLayer(128, 2, 256)
     >>> output = encoder(q, q)
 

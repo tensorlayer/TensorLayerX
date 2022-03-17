@@ -10,7 +10,7 @@ from paddle.nn import initializer as I
 from paddle.fluid.layers.utils import map_structure, flatten, pack_sequence_as
 from paddle.fluid.data_feeder import convert_dtype
 from paddle.fluid.dygraph import Layer, LayerList
-from paddle.nn.layer import RNNCellBase
+from paddle.nn.layer.rnn import RNNCellBase
 import warnings
 import math
 

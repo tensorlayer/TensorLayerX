@@ -293,7 +293,7 @@ class LayerNorm(Module):
     With TensorLayer
 
     >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
-    >>> net = tlx.nn.LayerNorm()(net)
+    >>> net = tlx.nn.LayerNorm((50,50,32))(net)
 
 
     References
