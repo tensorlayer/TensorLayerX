@@ -47,7 +47,17 @@ def preprocess_1d_format(data_format, padding):
     -------
         str "NWC" or "NCW" and "SAME" or "VALID"
     """
-    raise NotImplementedError
+
+    if data_format in ["channels_last", "NWC", "NLC"]:
+        data_format = "NLC"
+    elif data_format in ["channels_first", "NCW", "NCL"]:
+        data_format = "NCL"
+    elif data_format == None:
+        data_format = None
+    else:
+        raise Exception("Unsupported data format: " + str(data_format))
+    padding = padding_format(padding)
+    return data_format, padding
 
 
 def preprocess_2d_format(data_format, padding):
@@ -94,7 +104,16 @@ def preprocess_3d_format(data_format, padding):
         str "NDHWC" or "NCDHW" and "SAME" or "VALID"
     """
 
-    raise NotImplementedError
+    if data_format in ['channels_last', 'NDHWC']:
+        data_format = 'NDHWC'
+    elif data_format in ['channels_first', 'NCDHW']:
+        data_format = 'NCDHW'
+    elif data_format == None:
+        data_format = None
+    else:
+        raise Exception("Unsupported data format: " + str(data_format))
+    padding = padding_format(padding)
+    return data_format, padding
 
 
 def nchw_to_nhwc(x):
@@ -376,14 +395,25 @@ class BiasAdd(object):
         A Tensor with the same type as value.
     """
 
-    def __init__(self, data_format=None):
-        self.data_format = data_format
+    def __init__(self, data_format='channels_last'):
+        super(BiasAdd, self).__init__()
+        if data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
+            self.data_format = 'channels_first'
+        elif data_format in ['channels_last', 'NLC', 'NWC', 'NHWC', 'NDHWC']:
+            self.data_format = 'channels_last'
+        else:
+            raise ("Unsupported data format: " + str(data_format))
 
     def __call__(self, x, bias):
-        return torch.add(x, bias)
+        if len(x.shape) > 2 and self.data_format == 'channels_first':
+            x = nchw_to_nhwc(x)
+        outputs = torch.add(x, bias)
+        if len(x.shape) > 2 and self.data_format == 'channels_first':
+            outputs = nhwc_to_nchw(outputs)
+        return outputs
 
 
-def bias_add(x, bias, data_format=None, name=None):
+def bias_add(x, bias, data_format=None):
     """
     Adds bias to value.
 
@@ -403,7 +433,8 @@ def bias_add(x, bias, data_format=None, name=None):
         A Tensor with the same type as value.
     """
 
-    raise NotImplementedError
+    add_obj = BiasAdd(data_format=data_format)
+    return add_obj(x, bias)
 
 
 class Conv1D(object):
@@ -414,7 +445,14 @@ class Conv1D(object):
         self.data_format, self.padding = preprocess_1d_format(data_format, padding)
 
     def __call__(self, input, filters):
-        raise NotImplementedError
+        if self.data_format == 'NLC':
+            input = nhwc_to_nchw(input)
+        out = F.conv1d(input, filters, stride=self.stride, padding=self.padding, dilation=self.dilations)
+
+        if self.data_format == 'NLC':
+            out = nchw_to_nhwc(out)
+
+        return out
 
 
 def conv1d(input, filters, stride, padding, data_format='NWC', dilations=None):
@@ -446,7 +484,7 @@ def conv1d(input, filters, stride, padding, data_format='NWC', dilations=None):
         A Tensor. Has the same type as input.
     """
 
-    raise NotImplementedError
+    return Conv1D(stride=stride, padding=padding, data_format=data_format, dilations=dilations)(input, filters)
 
 
 def same_padding(input, weight, strides, dilations):
@@ -454,6 +492,8 @@ def same_padding(input, weight, strides, dilations):
     # H(out) = = floor( --------------------------------------------------------------   + 1 )
     #                                        stride[0]
     if isinstance(weight, torch.Tensor):
+        if len(input.shape) == 3:
+            filter_rows = weight.size(2)
         if len(input.shape) == 4:
             filter_rows = weight.size(2)
             filter_cols = weight.size(3)
@@ -462,13 +502,22 @@ def same_padding(input, weight, strides, dilations):
             filter_cols = weight.size(3)
             filter_depth = weight.size(4)
     else:
-        if len(input.shape) == 4:
+        if len(input.shape) == 3:
+            filter_rows = weight[0]
+        elif len(input.shape) == 4:
             filter_rows = weight[0]
             filter_cols = weight[1]
         elif len(input.shape) == 5:
             filter_rows = weight[0]
             filter_cols = weight[1]
             filter_depth = weight[2]
+
+    if len(input.shape) == 3:
+        input_rows = input.size(2)
+        out_rows = (input_rows + strides[0] - 1) // strides[0]
+        padding_rows = max(0, (out_rows - 1) * strides[0] + (filter_rows - 1) * dilations + 1 - input_rows)
+        rows_odd = (padding_rows % 2 != 0)
+        return rows_odd, padding_rows
 
     if len(input.shape) == 4:
         input_rows = input.size(2)
@@ -582,12 +631,38 @@ def conv2d(input, filters, strides, padding, data_format='NHWC', dilations=None)
 class Conv3D(object):
 
     def __init__(self, strides, padding, data_format='NDHWC', dilations=None, out_channel=None, k_size=None):
-        self.strides = strides
-        self.dilations = dilations
+        if data_format is 'NDHWC':
+            self._strides = (strides[1], strides[2], strides[3])
+            self._dilations = (dilations[1], dilations[2], dilations[3])
+        elif data_format is 'NCDHW':
+            self._strides = (strides[2], strides[3], strides[4])
+            self._dilations = (dilations[2], dilations[3], dilations[4])
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
 
     def __call__(self, input, filters):
-        raise NotImplementedError
+        if self.data_format == 'NDHWC':
+            input = nhwc_to_nchw(input)
+
+        if self.padding == 'same':
+            out = self.conv3d_same_padding(input, weight=filters)
+        else:
+            out = F.conv3d(input, weight=filters, stride=self._strides, padding=self.padding, dilation=self._dilations)
+
+        if self.data_format == 'NDHWC':
+            out = nchw_to_nhwc(out)
+
+        return out
+
+    def conv3d_same_padding(self, input, weight, bias=None, groups=1):
+        rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(input, weight,
+                                                                                                self._strides, self._dilations)
+        if rows_odd or cols_odd or depth_odd:
+            input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)])
+
+        return F.conv3d(
+            input, weight, bias, self._strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth//2),
+            dilation=self._dilations, groups=groups
+        )
 
 
 def conv3d(input, filters, strides, padding, data_format='NDHWC', dilations=None):
@@ -625,7 +700,7 @@ def conv3d(input, filters, strides, padding, data_format='NDHWC', dilations=None
         A Tensor. Has the same type as input.
     """
 
-    raise NotImplementedError
+    return Conv3D(strides=strides, padding=padding, data_format=data_format, dilations=dilations)(input, filters)
 
 
 def lrn(inputs, depth_radius, bias, alpha, beta):
@@ -650,7 +725,8 @@ def lrn(inputs, depth_radius, bias, alpha, beta):
         A Tensor. Has the same type as input.
     """
 
-    raise NotImplementedError
+    lrn_obj = torch.nn.LocalResponseNorm(size=depth_radius, alpha=alpha, beta=beta, k=bias)
+    return lrn_obj(inputs)
 
 
 def moments(x, axes, shift=None, keepdims=False):
@@ -680,18 +756,17 @@ class MaxPool1d(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.ksize = ksize
-        self.strides = strides
+        self.max_pool1d = MaxPool(ksize, strides, padding, data_format)
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        return self.max_pool1d(inputs)
 
 
 class MaxPool(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
         self.ksize = ksize
-        self.strides = (strides[1], strides[2])
+        self.strides = strides
         if data_format in ['channels_last', 'NLC', 'NWC', 'NHWC', 'NDHWC']:
             self.data_format = 'channels_last'
         elif data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
@@ -702,40 +777,51 @@ class MaxPool(object):
         if self.data_format == 'channels_last':
             inputs = nhwc_to_nchw(inputs)
         if len(inputs.shape) == 2 or len(inputs.shape) == 3:
-            out = F.max_pool1d(inputs, self.ksize, self.strides)
+            if self.padding in ['SAME', 'same']:
+                out = self.maxpool1d_same_padding(inputs)
+            else:
+                out = F.max_pool1d(inputs, self.ksize, self.strides)
         if len(inputs.shape) == 4:
-            if self.padding == 'SAME':
+            if self.padding in ['SAME', 'same']:
                 out = self.maxpool2d_same_padding(inputs)
             else:
-                out = F.max_pool2d(inputs, self.ksize, self.strides)
+                out = F.max_pool2d(inputs, self.ksize, (self.strides[1], self.strides[2]))
         if len(inputs.shape) == 5:
-            if self.padding == 'SAME':
+            if self.padding in ['SAME', 'same']:
                 out = self.maxpool3d_same_padding(inputs)
             else:
-                out = F.max_pool3d(inputs, self.ksize, self.strides)
+                out = F.max_pool3d(inputs, self.ksize, (self.strides[1], self.strides[2], self.strides[3]))
 
         if self.data_format == 'channels_last':
             return nchw_to_nhwc(out)
         else:
             return out
 
+    def maxpool1d_same_padding(self, input):
+        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides, 1)
+        if rows_odd:
+            input = F.pad(input, [0, int(rows_odd)], 'constant', float('-inf'))
+        return F.max_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2))
+
     def maxpool2d_same_padding(self, input):
-        rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, self.strides, (1, 1))
+        strides = [self.strides[1], self.strides[2]]
+        rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, strides, (1, 1))
         if rows_odd or cols_odd:
             # TODO The fill value for maxpool is -INF.
             input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)], 'constant', float('-inf'))
 
-        return F.max_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2))
+        return F.max_pool2d(input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2))
 
     def maxpool3d_same_padding(self, input):
+        strides = [self.strides[1], self.strides[2], self.strides[3]]
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(
-            input, self.ksize, self.strides, (1, 1, 1)
+            input, self.ksize, strides, (1, 1, 1)
         )
-        if rows_odd or cols_odd:
-            input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), int(depth_odd)])
-            return F.max_pool3d(
-                input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
-            )
+        if rows_odd or cols_odd or depth_odd:
+            input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], 'constant', float('-inf'))
+        return F.max_pool3d(
+                input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
+        )
 
 
 def max_pool(input, ksize, strides, padding, data_format=None):
@@ -764,18 +850,18 @@ def max_pool(input, ksize, strides, padding, data_format=None):
         A Tensor of format specified by data_format. The max pooled output tensor.
     """
 
-    raise NotImplementedError
+    maxpool_obj = MaxPool(ksize, strides, padding, data_format)
+    return maxpool_obj(input)
 
 
 class AvgPool1d(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.ksize = ksize
-        self.strides = strides
+        self.avg_poo1d = AvgPool(ksize, strides, padding, data_format)
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        return self.avg_poo1d(inputs)
 
 
 class AvgPool(object):
@@ -783,11 +869,61 @@ class AvgPool(object):
     def __init__(self, ksize, strides, padding, data_format=None):
         self.ksize = ksize
         self.strides = strides
-        self.data_format = data_format
-        self.padding = padding_format(padding)
+        if data_format in ['channels_last', 'NLC', 'NWC', 'NHWC', 'NDHWC']:
+            self.data_format = 'channels_last'
+        elif data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
+            self.data_format = 'channels_first'
+        self.padding = padding
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        if self.data_format == 'channels_last':
+            inputs = nhwc_to_nchw(inputs)
+        if len(inputs.shape) == 2 or len(inputs.shape) == 3:
+            if self.padding in ['SAME', 'same']:
+                out = self.avgpool1d_same_padding(inputs)
+            else:
+                out = F.avg_pool1d(inputs, self.ksize, self.strides)
+        if len(inputs.shape) == 4:
+            if self.padding in ['SAME', 'same']:
+                out = self.avgpool2d_same_padding(inputs)
+            else:
+                out = F.avg_pool2d(inputs, self.ksize, (self.strides[1], self.strides[2]))
+        if len(inputs.shape) == 5:
+            if self.padding in ['SAME', 'same']:
+                out = self.avgpool3d_same_padding(inputs)
+            else:
+                out = F.avg_pool3d(inputs, self.ksize, (self.strides[1], self.strides[2], self.strides[3]))
+
+        if self.data_format == 'channels_last':
+            return nchw_to_nhwc(out)
+        else:
+            return out
+
+    def avgpool1d_same_padding(self, input):
+        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides, 1)
+        if rows_odd:
+            input = F.pad(input, [0, int(rows_odd)], 'replicate')
+        return F.avg_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2))
+
+    def avgpool2d_same_padding(self, input):
+        strides = [self.strides[1], self.strides[2]]
+        rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, strides, (1, 1))
+        if rows_odd or cols_odd:
+            # TODO The fill value for maxpool is -INF.
+            input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)], mode='replicate')
+
+        return F.avg_pool2d(input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2))
+
+    def avgpool3d_same_padding(self, input):
+        strides = [self.strides[1], self.strides[2], self.strides[3]]
+        rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(
+            input, self.ksize, strides, (1, 1, 1)
+        )
+        if rows_odd or cols_odd or depth_odd:
+            input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], mode='replicate')
+        return F.avg_pool3d(
+                input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
+        )
 
 
 def avg_pool(input, ksize, strides, padding):
@@ -816,18 +952,18 @@ def avg_pool(input, ksize, strides, padding):
         A Tensor of format specified by data_format. The average pooled output tensor.
     """
 
-    raise NotImplementedError
+    avg_pool_obj = AvgPool(ksize, strides, padding)
+    return avg_pool_obj(input)
 
 
 class MaxPool3d(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
-        self.ksize = ksize
-        self.strides = strides
+        self.max_pool3d = MaxPool(ksize, strides, padding, data_format)
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        return self.max_pool3d(inputs)
 
 
 def max_pool3d(input, ksize, strides, padding, data_format=None):
@@ -858,18 +994,19 @@ def max_pool3d(input, ksize, strides, padding, data_format=None):
         A Tensor of format specified by data_format. The max pooled output tensor.
     """
 
-    raise NotImplementedError
+    data_format, padding = preprocess_3d_format(data_format, padding)
+    max_pool3d_obj = MaxPool(ksize, strides, padding, data_format)
+    return max_pool3d_obj(input)
 
 
 class AvgPool3d(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
-        self.ksize = ksize
-        self.strides = strides
+        self.avg_pool3d_obj = AvgPool(ksize, strides, self.padding, self.data_format)
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        return self.avg_pool3d_obj(inputs)
 
 
 def avg_pool3d(input, ksize, strides, padding, data_format=None):
@@ -897,7 +1034,8 @@ def avg_pool3d(input, ksize, strides, padding, data_format=None):
         A Tensor with the same type as value. The average pooled output tensor.
     """
 
-    raise NotImplementedError
+    avg_pool_obj = AvgPool(ksize, strides, padding, data_format)
+    return avg_pool_obj(input)
 
 
 def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_format=None, dilations=None, name=None):
