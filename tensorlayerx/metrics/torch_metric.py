@@ -52,21 +52,16 @@ class Accuracy(Metric):
         correct = correct.to(torch.float32)
         correct = correct.numpy()
         num_samples = np.prod(np.array(correct.shape[:-1]))
-        for i, k in enumerate(self.topk):
-            num_corrects = correct[..., :k].sum()
-            self.total[i] += num_corrects
-            self.count[i] += num_samples
+        num_corrects = correct[..., :self.topk].sum()
+        self.total = num_corrects
+        self.count = num_samples
 
     def result(self):
-        res = []
-        for total, count in zip(self.total, self.count):
-            r = float(total) / count if count > 0 else 0.
-            res.append(r)
-        return res
+        return float(self.total) / self.count if self.count > 0 else 0.
 
     def reset(self):
-        self.total = [0.] * self.topk
-        self.count = [0] * self.topk
+        self.total = 0.0
+        self.count = 0.0
 
 
 class Auc(object):
@@ -74,7 +69,7 @@ class Auc(object):
     def __init__(
         self,
         curve='ROC',
-        num_thresholds=200,
+        num_thresholds=4095,
     ):
         self.curve = curve
         self.num_thresholds = num_thresholds

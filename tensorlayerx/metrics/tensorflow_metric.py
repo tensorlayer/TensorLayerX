@@ -3,6 +3,7 @@
 
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
+import numpy as np
 
 __all__ = [
     'Accuracy',
@@ -31,7 +32,7 @@ class Accuracy(object):
 
     def result(self):
 
-        return self.accuary.result()
+        return self.accuary.result().numpy()
 
     def reset(self):
 
@@ -43,22 +44,58 @@ class Auc(object):
     def __init__(
         self,
         curve='ROC',
-        num_thresholds=200,
+        num_thresholds=4095,
     ):
-        self.auc = tf.keras.metrics.AUC(num_thresholds=num_thresholds, curve=curve)
+        self.curve = curve
+        self.num_thresholds = num_thresholds
+        self.reset()
 
     def update(self, y_pred, y_true):
+        if isinstance(y_true, tf.Tensor):
+            y_true = y_true.numpy()
+        elif not isinstance(y_pred, np.ndarray):
+            raise TypeError("The y_true must be a numpy array or Tensor.")
 
-        self.auc.update_state(y_true, y_pred)
+        if isinstance(y_pred, tf.Tensor):
+            y_pred = y_pred.numpy()
+        elif not isinstance(y_pred, np.ndarray):
+            raise TypeError("The y_pred must be a numpy array or Tensor.")
+
+        for i, label in enumerate(y_true):
+            value = y_pred[i, 1]  # positive probability
+            bin_idx = int(value * self.num_thresholds)
+            assert bin_idx <= self.num_thresholds
+            if label:
+                self._stat_pos[bin_idx] += 1.0
+            else:
+                self._stat_neg[bin_idx] += 1.0
+
+    @staticmethod
+    def trapezoid_area(x1, x2, y1, y2):
+        return abs(x1 - x2) * (y1 + y2) / 2.0
 
     def result(self):
+        tot_pos = 0.0
+        tot_neg = 0.0
+        auc = 0.0
+        idx = self.num_thresholds
+        while idx > 0:
+            tot_pos_prev = tot_pos
+            tot_neg_prev = tot_neg
+            tot_pos += self._stat_pos[idx]
+            tot_neg += self._stat_neg[idx]
+            auc += self.trapezoid_area(tot_neg, tot_neg_prev, tot_pos, tot_pos_prev)
+            idx -= 1
 
-        return self.auc.result()
+        return auc / tot_pos / tot_neg if tot_pos > 0.0 and tot_neg > 0.0 else 0.0
 
     def reset(self):
-
-        self.auc.reset_states()
-
+        """
+        Reset states and result
+        """
+        _num_pred_buckets = self.num_thresholds + 1
+        self._stat_pos = np.zeros(_num_pred_buckets)
+        self._stat_neg = np.zeros(_num_pred_buckets)
 
 class Precision(object):
 
@@ -72,7 +109,7 @@ class Precision(object):
 
     def result(self):
 
-        return self.precision.result()
+        return self.precision.result().numpy()
 
     def reset(self):
 
@@ -91,7 +128,7 @@ class Recall(object):
 
     def result(self):
 
-        return self.recall.result()
+        return self.recall.result().numpy()
 
     def reset(self):
 

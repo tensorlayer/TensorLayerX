@@ -36,7 +36,7 @@ class Auc(object):
     def __init__(
         self,
         curve='ROC',
-        num_thresholds=200,
+        num_thresholds=4095,
     ):
         self.curve = curve
         self.num_thresholds = num_thresholds
@@ -44,12 +44,12 @@ class Auc(object):
 
     def update(self, y_pred, y_true):
         if isinstance(y_true, ms.Tensor):
-            y_true = y_true.numpy()
+            y_true = y_true.asnumpy()
         elif not isinstance(y_pred, np.ndarray):
             raise TypeError("The y_true must be a numpy array or Tensor.")
 
         if isinstance(y_pred, ms.Tensor):
-            y_pred = y_pred.numpy()
+            y_pred = y_pred.asnumpy()
         elif not isinstance(y_pred, np.ndarray):
             raise TypeError("The y_pred must be a numpy array or Tensor.")
 
@@ -91,36 +91,74 @@ class Auc(object):
 class Precision(object):
 
     def __init__(self):
-
-        self.precision = nn.Precision(eval_type="classification")
+        self.reset()
 
     def update(self, y_pred, y_true):
+        if isinstance(y_true, ms.Tensor):
+            y_true = y_true.asnumpy()
+        elif not isinstance(y_pred, np.ndarray):
+            raise TypeError("The y_true must be a numpy array or Tensor.")
 
-        self.precision.update(y_pred, y_true)
+        if isinstance(y_pred, ms.Tensor):
+            y_pred = y_pred.asnumpy()
+        elif not isinstance(y_pred, np.ndarray):
+            raise TypeError("The y_pred must be a numpy array or Tensor.")
+
+        sample_num = y_true.shape[0]
+        y_pred = np.rint(y_pred).astype('int32')
+
+        for i in range(sample_num):
+            pred = y_pred[i]
+            label = y_true[i]
+            if pred == 1:
+                if pred == label:
+                    self.tp += 1
+                else:
+                    self.fp += 1
 
     def result(self):
 
-        return self.precision.eval()
+        ap = self.tp + self.fp
+        return float(self.tp) / ap if ap != 0 else .0
 
     def reset(self):
-
-        self.precision.clear()
+        self.tp = 0
+        self.fp = 0
 
 
 class Recall(object):
 
     def __init__(self):
-
-        self.recall = nn.Recall(eval_type="classification")
+        self.reset()
 
     def update(self, y_pred, y_true):
+        if isinstance(y_true, ms.Tensor):
+            y_true = y_true.asnumpy()
+        elif not isinstance(y_pred, np.ndarray):
+            raise TypeError("The y_true must be a numpy array or Tensor.")
 
-        self.recall.update(y_pred, y_true)
+        if isinstance(y_pred, ms.Tensor):
+            y_pred = y_pred.asnumpy()
+        elif not isinstance(y_pred, np.ndarray):
+            raise TypeError("The y_pred must be a numpy array or Tensor.")
+
+        sample_num = y_true.shape[0]
+        y_pred = np.rint(y_pred).astype('int32')
+
+        for i in range(sample_num):
+            pred = y_pred[i]
+            label = y_true[i]
+            if label == 1:
+                if pred == label:
+                    self.tp += 1
+                else:
+                    self.fn += 1
 
     def result(self):
 
-        return self.recall.eval()
+        recall = self.tp + self.fn
+        return float(self.tp) / recall if recall != 0 else .0
 
     def reset(self):
-
-        self.recall.clear()
+        self.tp = 0
+        self.fn = 0
