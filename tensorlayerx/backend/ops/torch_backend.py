@@ -985,8 +985,19 @@ def floor(x):
     return torch.floor(x)
 
 
-def gather(params, indices):
-    return gather_nd(params, indices)
+def gather(params, indices, axis = 0):
+    params = torch.tensor(params)
+    indices = torch.tensor(indices)
+    if axis < 0:
+        axis = len(params.shape) + axis
+    if axis == 0:
+        return params[indices]
+    elif axis == 1:
+        return params[:, indices]
+    elif axis == 2:
+        return params[:, :, indices]
+    elif axis == 3:
+        return params[:,:,:, indices]
 
 
 def linspace(start, stop, num):

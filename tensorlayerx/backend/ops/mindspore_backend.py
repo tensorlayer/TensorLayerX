@@ -1065,7 +1065,8 @@ def gather_nd(params, indices, batch_dims=0):
         A Tensor. Has the same type as params.
     """
 
-    pass
+    op = ms.ops.GatherNd()
+    return op(params, indices)
 
 
 class ClipGradByValue(object):
