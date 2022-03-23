@@ -143,7 +143,7 @@ class DepthwiseConv2d(Module):
             self.point_W = None
         # TODO The number of parameters on multiple backends is not equal.
         # TODO It might be better to use deepwise convolution and pointwise convolution for other backends as well.
-        if BACKEND == 'paddle':
+        if BACKEND in ['paddle', 'torch']:
             self.filter_depthwise = (self.in_channels, 1, self.filter_size[0], self.filter_size[1])
             self.filter_pointwise = (self.in_channels * self.depth_multiplier, self.in_channels, 1, 1)
             self.W = self._get_weights("filters", shape=self.filter_depthwise, init=self.W_init, order=True)

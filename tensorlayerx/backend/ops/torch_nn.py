@@ -514,8 +514,8 @@ def same_padding(input, weight, strides, dilations):
 
     if len(input.shape) == 3:
         input_rows = input.size(2)
-        out_rows = (input_rows + strides[0] - 1) // strides[0]
-        padding_rows = max(0, (out_rows - 1) * strides[0] + (filter_rows - 1) * dilations + 1 - input_rows)
+        out_rows = (input_rows + strides - 1) // strides
+        padding_rows = max(0, (out_rows - 1) * strides + (filter_rows - 1) * dilations + 1 - input_rows)
         rows_odd = (padding_rows % 2 != 0)
         return rows_odd, padding_rows
 
@@ -1071,18 +1071,39 @@ def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_
     -------
         Tensor of rank N+2, of shape [batch_size] + output_spatial_shape + [num_channels]
     """
-    raise NotImplementedError
+
+    if pooling_type in ["MAX", "max"]:
+        pool_obj = MaxPool(window_shape, strides, padding, data_format)
+    elif pooling_type in ["AVG", "avg"]:
+        pool_obj = AvgPool(window_shape, strides, padding, data_format)
+    else:
+        raise ValueError('Unsupported pool_mode: ' + str(pooling_type))
+
+    return pool_obj(input)
 
 
 class DepthwiseConv2d(object):
 
     def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        self.strides = strides
+        if self.data_format == 'NHWC':
+            self._stride = (strides[1], strides[2])
+        if self.data_format == 'NCHW':
+            self._stride = (strides[2], strides[3])
         self.dilations = dilations
 
     def __call__(self, input, filter, point_filter=None):
-        raise NotImplementedError
+        if self.data_format == 'NHWC':
+            input = nhwc_to_nchw(input)
+        channel = input.shape[1]
+
+        depthwise_conv = F.conv2d(input, filter, bias=None, stride=self._stride, padding=self.padding,
+                                  dilation=self.dilations, groups=channel)
+        pointwise_conv = F.conv2d(depthwise_conv, point_filter, padding=self.padding)
+
+        if self.data_format == 'NHWC':
+            pointwise_conv = nchw_to_nhwc(pointwise_conv)
+        return pointwise_conv
 
 
 def depthwise_conv2d(input, filter, strides, padding, data_format=None, dilations=None, name=None):
@@ -1113,7 +1134,8 @@ def depthwise_conv2d(input, filter, strides, padding, data_format=None, dilation
         E.g., for "NHWC" format, shape is [batch, out_height, out_width, in_channels * channel_multiplier].
     """
 
-    raise NotImplementedError
+    depthwise_conv2d_obj = DepthwiseConv2d(strides, padding, data_format, dilations)
+    return depthwise_conv2d_obj(input, filter)
 
 
 class Conv1d_transpose(object):
@@ -1126,7 +1148,28 @@ class Conv1d_transpose(object):
         self.data_format, self.padding = preprocess_1d_format(data_format, padding)
 
     def __call__(self, input, filters):
-        raise NotImplementedError
+        if self.data_format == 'NLC':
+            input = nhwc_to_nchw(input)
+        if self.padding == 'same':
+            out = self.conv1d_transpose_same_padding(input, filters)
+        else:
+            out = F.conv_transpose1d(
+                input,
+                weight=filters,
+                padding=0,
+                stride=self.stride,
+                dilation=self.dilations
+            )
+        if self.data_format == 'NLC':
+            out = nchw_to_nhwc(out)
+        return out
+    # TODO Size mismatch
+    def conv1d_transpose_same_padding(self, input, filters):
+        rows_odd, padding_rows = same_padding(input, filters, self.stride, 1)
+        if rows_odd:
+            input = F.pad(input, [0, int(rows_odd)])
+        return F.conv_transpose1d(input, weight=filters, padding=1, stride=self.stride, dilation=self.dilations)
+
 
 
 def conv1d_transpose(

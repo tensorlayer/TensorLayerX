@@ -35,11 +35,11 @@ if 'TENSORLAYER_PACKAGE_BUILDING' not in os.environ:
     from tensorlayerx.utils.lazy_imports import LazyImport
 
     # Lazy Imports
-    db = LazyImport("tensorlayerx.utils.db")
-    distributed = LazyImport("tensorlayerx.utils.distributed")
-    nlp = LazyImport("tensorlayerx.text.nlp")
-    prepro = LazyImport("tensorlayerx.utils.prepro")
-    utils = LazyImport("tensorlayerx.utils")
+    # db = LazyImport("tensorlayerx.utils.db")
+    # distributed = LazyImport("tensorlayerx.utils.distributed")
+    # nlp = LazyImport("tensorlayerx.text.nlp")
+    # prepro = LazyImport("tensorlayerx.utils.prepro")
+    # utils = LazyImport("tensorlayerx.utils")
     visualize = LazyImport("tensorlayerx.utils.visualize")
 
     # alias
