@@ -396,33 +396,11 @@ class Dropout(Cell):
     def __init__(self, keep, seed=0):
         super(Dropout, self).__init__()
         self.dropout = P.Dropout(keep_prob=keep)
-        self.is_gpu = context.get_context('device_target') in ["GPU"]
-        self.get_shape = P.Shape()
-        self.dropout_gen_mask = P.DropoutGenMask(Seed0=seed, Seed1=0)
-        self.dropout_do_mask = P.DropoutDoMask()
-        self.cast = P.Cast()
-        self.keep_prob = keep  # ms.Tensor(keep, dtype=ms.float32)
-        # print(self.keep_prob, type(self.keep_prob))
+        self.keep_prob = keep
 
     def construct(self, inputs):
-        if self.is_gpu:
-            outputs, _ = self.dropout(inputs)
-            return outputs
-        if self.keep_prob == 1:
-            return inputs
-        shape = self.get_shape(inputs)
-        dtype = P.DType()(inputs)
-        if self._is_float_dtype(dtype):
-            keep_prob = self.cast(self.keep_prob, dtype=dtype)
-        else:
-            keep_prob = self.cast(self.keep_prob, ms.float16)
-        output = self.dropout_gen_mask(shape, keep_prob)
-        return self.dropout_do_mask(inputs, output, keep_prob)
-
-    def _is_float_dtype(self, f_dtype):
-        if f_dtype in [ms.float32, ms.float16]:
-            return True
-        return False
+        outputs, _ = self.dropout(inputs)
+        return outputs
 
 
 class BiasAdd(Cell):

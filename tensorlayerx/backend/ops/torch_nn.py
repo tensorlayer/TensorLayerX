@@ -1138,6 +1138,70 @@ def depthwise_conv2d(input, filter, strides, padding, data_format=None, dilation
     return depthwise_conv2d_obj(input, filter)
 
 
+def same_padding_deconvolution(input, weight, strides, dilations):
+    #H(out) = floor((H(in) - 1)*stride[0] - 2* padding[0] + dilation[0] * (ksize[0]-1) + 1)
+
+    if isinstance(weight, torch.Tensor):
+        if len(input.shape) == 3:
+            filter_rows = weight.size(2)
+        if len(input.shape) == 4:
+            filter_rows = weight.size(2)
+            filter_cols = weight.size(3)
+        elif len(input.shape) == 5:
+            filter_rows = weight.size(2)
+            filter_cols = weight.size(3)
+            filter_depth = weight.size(4)
+    else:
+        if len(input.shape) == 3:
+            filter_rows = weight[0]
+        elif len(input.shape) == 4:
+            filter_rows = weight[0]
+            filter_cols = weight[1]
+        elif len(input.shape) == 5:
+            filter_rows = weight[0]
+            filter_cols = weight[1]
+            filter_depth = weight[2]
+
+    if len(input.shape) == 3:
+        input_rows = input.size(2)
+        out_rows = input_rows * strides - strides + 1
+        padding_rows = max(0, (input_rows-1) * strides + (filter_rows - 1) * dilations + 1 - out_rows)
+        rows_odd = (padding_rows % 2 != 0)
+        return rows_odd, padding_rows
+
+    if len(input.shape) == 4:
+        input_rows = input.size(2)
+        input_cols = input.size(3)
+
+        out_rows = input_rows * strides[0] - strides[0] + 1
+        out_cols = input_rows * strides[1] - strides[1] + 1
+
+        padding_rows = max(0, (input_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - out_rows)
+        padding_cols = max(0, (input_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - out_cols)
+
+        rows_odd = (padding_rows % 2 != 0)
+        cols_odd = (padding_cols % 2 != 0)
+        return rows_odd, cols_odd, padding_rows, padding_cols
+
+    if len(input.shape) == 5:
+        input_rows = input.size(2)
+        input_cols = input.size(3)
+        input_depth = input.size(4)
+
+        out_rows = input_rows * strides[0] - strides[0] + 1
+        out_cols = input_rows * strides[1] - strides[1] + 1
+        out_depth = input_rows * strides[2] - strides[2] + 1
+
+        padding_rows = max(0, (input_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - out_rows)
+        padding_cols = max(0, (input_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - out_cols)
+        padding_depth = max(0, (input_depth - 1) * strides[2] + (filter_depth - 1) * dilations[2] + 1 - out_depth)
+
+        rows_odd = (padding_rows % 2 != 0)
+        cols_odd = (padding_cols % 2 != 0)
+        depth_odd = (padding_depth % 2 != 0)
+        return rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth
+
+
 class Conv1d_transpose(object):
 
     def __init__(
@@ -1163,12 +1227,16 @@ class Conv1d_transpose(object):
         if self.data_format == 'NLC':
             out = nchw_to_nhwc(out)
         return out
-    # TODO Size mismatch
+
     def conv1d_transpose_same_padding(self, input, filters):
-        rows_odd, padding_rows = same_padding(input, filters, self.stride, 1)
+        rows_odd, padding_rows = same_padding_deconvolution(input, filters, self.stride, 1)
         if rows_odd:
             input = F.pad(input, [0, int(rows_odd)])
-        return F.conv_transpose1d(input, weight=filters, padding=1, stride=self.stride, dilation=self.dilations)
+            out_padding = 0
+        else:
+            out_padding = 1
+        return F.conv_transpose1d(input, weight=filters, padding=(padding_rows // 2), stride=self.stride,
+                                  dilation=self.dilations, output_padding=out_padding)
 
 
 
@@ -1207,7 +1275,8 @@ def conv1d_transpose(
         A Tensor with the same type as value.
     """
 
-    raise NotImplementedError
+    conv1d_transpose_obj = Conv1d_transpose(strides, padding, data_format, dilations)
+    return conv1d_transpose_obj(input, filters)
 
 
 class Conv2d_transpose(object):
@@ -1222,7 +1291,32 @@ class Conv2d_transpose(object):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
 
     def __call__(self, input, filters):
-        raise NotImplementedError
+        if self.data_format == 'NHWC':
+            input = nhwc_to_nchw(input)
+        if self.padding == 'same':
+            out = self.conv2d_transpore_same(input, filters)
+        else:
+            out = F.conv_transpose2d(
+                input,
+                weight=filters,
+                padding=0,
+                stride=self.strides,
+                dilation=self.dilations
+            )
+        if self.data_format == 'NHWC':
+            out = nchw_to_nhwc(out)
+        return out
+
+    def conv2d_transpore_same(self,input, filters):
+        rows_odd, cols_odd, padding_rows, padding_cols = same_padding_deconvolution(input, filters, self.strides, (1, 1))
+        if rows_odd or cols_odd:
+            input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)])
+            out_padding = 0
+        else:
+            out_padding = 1
+        out = F.conv_transpose2d(input, weight=filters, padding=(padding_rows // 2, padding_cols // 2), stride=self.strides,
+                                 dilation=self.dilations, output_padding=out_padding)
+        return out
 
 
 def conv2d_transpose(
@@ -1260,7 +1354,8 @@ def conv2d_transpose(
         A Tensor with the same type as input.
     """
 
-    raise NotImplementedError
+    conv2d_transpose_obj = Conv2d_transpose(strides, padding, data_format, dilations)
+    return conv2d_transpose_obj(input, filters)
 
 
 class Conv3d_transpose(object):
@@ -1276,7 +1371,33 @@ class Conv3d_transpose(object):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
 
     def __call__(self, input, filters):
-        raise NotImplementedError
+        if self.data_format == 'NDHWC':
+            input = nhwc_to_nchw(input)
+        if self.padding == 'same':
+            out = self.conv3d_transpore_same(input, filters)
+        else:
+            out = F.conv_transpose3d(
+                input,
+                weight=filters,
+                padding=0,
+                stride=self.strides,
+                dilation=self.dilations
+            )
+        if self.data_format == 'NDHWC':
+            out = nchw_to_nhwc(out)
+        return out
+
+    def conv3d_transpore_same(self,input, filters):
+        rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding_deconvolution(
+            input, filters, self.strides, (1, 1, 1))
+        if rows_odd or cols_odd or depth_odd:
+            input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd), 0, int(depth_odd)])
+            out_padding = 0
+        else:
+            out_padding = 1
+        out = F.conv_transpose3d(input, weight=filters, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2),
+                                 stride=self.strides, dilation=self.dilations, output_padding=out_padding)
+        return out
 
 
 def conv3d_transpose(
@@ -1311,37 +1432,9 @@ def conv3d_transpose(
         A Tensor with the same type as value.
     """
 
-    raise NotImplementedError
-
-
-def depthwise_conv2d(input, filters, strides, padding='SAME', data_format='NHWC', dilations=None, name=None):
-    """
-    Depthwise 2-D convolution.
-
-    Parameters
-    ----------
-    input : tensor
-        4-D with shape according to data_format.
-    filters : tensor
-        4-D with shape [filter_height, filter_width, in_channels, channel_multiplier].
-    strides : tuple
-        1-D of size 4. The stride of the sliding window for each dimension of input.
-    padding : string
-        'VALID' or 'SAME'
-    data_format : string
-        "NHWC" (default) or "NCHW".
-    dilations : tuple
-        The dilation rate in which we sample input values across the height and width dimensions in atrous convolution.
-        If it is greater than 1, then all values of strides must be 1.
-    name : string
-        A name for this operation (optional).
-
-    Returns
-    -------
-        A 4-D Tensor with shape according to data_format.
-    """
-
-    raise NotImplementedError
+    data_format, padding = preprocess_3d_format(data_format, padding)
+    conv3d_transpose_obj = Conv3d_transpose(strides, padding, data_format, dilations)
+    return conv3d_transpose_obj(input, filters)
 
 
 def _to_channel_first_bias(b):

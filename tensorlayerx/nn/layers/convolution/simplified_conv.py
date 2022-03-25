@@ -698,7 +698,7 @@ class DeConv2d(Module):
 
         #TODO channels first filter shape [out_channel, in_channel, filter_h, filter_w]
         self.filter_shape = (self.filter_size[0], self.filter_size[1], self.n_filter, self.in_channels)
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init, transposed=True)
+        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)#, transposed=True)
 
         self.b_init_flag = False
         if self.b_init:
@@ -841,10 +841,7 @@ class DeConv3d(Module):
             self.filter_size[0], self.filter_size[1], self.filter_size[2], self.n_filter, self.in_channels
         )
 
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init, transposed=True)
-
-        if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
+        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)#, transposed=True)
 
         self.b_init_flag = False
         if self.b_init:

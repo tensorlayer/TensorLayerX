@@ -1103,11 +1103,11 @@ class Conv3d_transpose(object):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
 
     def __call__(self, input, filters):
-
         output = F.conv3d_transpose(
             x=input, weight=filters, stride=self.strides, padding=self.padding, dilation=self.dilations,
             data_format=self.data_format
         )
+        return output
 
 
 def conv3d_transpose(

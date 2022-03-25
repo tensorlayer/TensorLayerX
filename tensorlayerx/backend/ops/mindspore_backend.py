@@ -435,8 +435,8 @@ def Variable(initial_value, name, trainable=True):
 class MatMul(Cell):
 
     def __init__(self, transpose_a=False, transpose_b=False):
-        self.matmul = ms.ops.MatMul(transpose_a=transpose_a, transpose_b=transpose_b)
         super(MatMul, self).__init__()
+        self.matmul = ms.ops.MatMul(transpose_a=transpose_a, transpose_b=transpose_b)
 
     def construct(self, a, b):
         return self.matmul(a, b)
