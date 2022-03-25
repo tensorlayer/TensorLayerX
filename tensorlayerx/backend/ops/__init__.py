@@ -191,6 +191,7 @@ from .load_backend import unsorted_segment_min
 from .load_backend import unsorted_segment_mean
 from .load_backend import unsorted_segment_max
 from .load_backend import set_seed
+from .load_backend import is_tensor
 # dtype
 from .load_backend import (
     DType, float16, float32, float64, int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, complex64,

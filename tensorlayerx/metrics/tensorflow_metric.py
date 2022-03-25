@@ -10,6 +10,7 @@ __all__ = [
     'Auc',
     'Precision',
     'Recall',
+    'acc',
 ]
 
 
@@ -97,6 +98,7 @@ class Auc(object):
         self._stat_pos = np.zeros(_num_pred_buckets)
         self._stat_neg = np.zeros(_num_pred_buckets)
 
+
 class Precision(object):
 
     def __init__(self):
@@ -133,3 +135,21 @@ class Recall(object):
     def reset(self):
 
         self.recall.reset_states()
+
+
+def acc(predicts, labels, topk=1):
+    y_pred = tf.argsort(predicts, axis=-1, direction='DESCENDING')
+    y_pred = y_pred[:, :topk]
+    if (len(labels.shape) == 1) or (len(labels.shape) == 2 and labels.shape[-1] == 1):
+        y_true = tf.reshape(labels, (-1, 1))
+    elif labels.shape[-1] != 1:
+        y_true = tf.argmax(labels, axis=-1)
+        y_true = tf.reshape(y_true, shape=(len(y_true), 1))
+    correct = y_pred == y_true
+    correct = tf.cast(correct, dtype=tf.float32)
+    correct = correct.numpy()
+    num_samples = np.prod(np.array(correct.shape[:-1]))
+    num_corrects = correct[..., :topk].sum()
+    total = num_corrects
+    count = num_samples
+    return float(total) / count if count > 0 else 0.

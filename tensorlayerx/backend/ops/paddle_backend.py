@@ -1457,3 +1457,7 @@ def set_seed(seed):
     pd.seed(seed)
     np.random.seed(seed)
     random.seed(seed)
+
+def is_tensor(x):
+
+    return pd.is_tensor(x)

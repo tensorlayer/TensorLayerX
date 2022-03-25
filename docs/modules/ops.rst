@@ -109,6 +109,8 @@ API - Operations
    unsorted_segment_mean
    unsorted_segment_min
    unsorted_segment_max
+   set_seed
+   is_tensor
 
 TensorLayerX Tensor Operations
 --------------------------------
@@ -524,3 +526,11 @@ unsorted_segment_min
 unsorted_segment_max
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: unsorted_segment_max
+
+set_seed
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: set_seed
+
+is_tensor
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: is_tensor

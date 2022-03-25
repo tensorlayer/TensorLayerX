@@ -11,6 +11,7 @@ __all__ = [
     'Auc',
     'Precision',
     'Recall',
+    'acc',
 ]
 
 
@@ -197,3 +198,20 @@ class Recall(object):
     def reset(self):
         self.tp = 0
         self.fn = 0
+
+
+def acc(predicts, labels, topk=1):
+    y_pred = torch.argsort(predicts, dim=-1, descending=True)
+    y_pred = y_pred[:, :topk]
+    if (len(labels.shape) == 1) or (len(labels.shape) == 2 and labels.shape[-1] == 1):
+        y_true = torch.reshape(labels, (-1, 1))
+    elif labels.shape[-1] != 1:
+        y_true = torch.argmax(labels, dim=-1, keepdim=True)
+    correct = y_pred == y_true
+    correct = correct.to(torch.float32)
+    correct = correct.numpy()
+    num_samples = np.prod(np.array(correct.shape[:-1]))
+    num_corrects = correct[..., :topk].sum()
+    total = num_corrects
+    count = num_samples
+    return float(total) / count if count > 0 else 0.

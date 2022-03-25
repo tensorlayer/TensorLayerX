@@ -468,29 +468,31 @@ def sqrt(x):
 
 class ReduceSum(object):
 
-    def __init__(self, axis=None):
+    def __init__(self, axis=None, keepdims=False):
         self.axis = axis
+        self.keepdims = keepdims
 
     def __call__(self, input):
         if self.axis is not None:
-            return torch.sum(input=input, dim=self.axis).values
+            return torch.sum(input=input, dim=self.axis)
         else:
             return torch.sum(input=input)
 
 
 class ReduceMean(object):
 
-    def __init__(self, axis=None):
+    def __init__(self, axis=None, keepdims=False):
         self.axis = axis
+        self.keepdims = keepdims
 
     def __call__(self, inputs):
         if self.axis is not None:
-            return torch.mean(input=inputs, dim=self.axis).values
+            return torch.mean(input=inputs, dim=self.axis, keepdim=self.keepdims)
         else:
             return torch.mean(inputs)
 
 
-def reduce_mean(input_tensor, axis=None):
+def reduce_mean(input_tensor, axis=None, keepdims=False):
     """
     Computes the mean of elements across dimensions of a tensor.
 
@@ -510,24 +512,26 @@ def reduce_mean(input_tensor, axis=None):
     """
 
     if axis is not None:
-        return torch.mean(input=input_tensor, dim=axis).values
+        return torch.mean(input_tensor, dim=axis, keepdim=keepdims)
     else:
         return torch.mean(input_tensor)
 
 
 class ReduceMax(object):
 
-    def __init__(self, axis=None):
+    def __init__(self, axis=None, keepdims=False):
         self.axis = axis
+        self.keepdims = keepdims
+
 
     def __call__(self, inputs):
         if self.axis is not None:
-            return torch.max(input=inputs, dim=self.axis).values
+            return torch.max(input=inputs, dim=self.axis, keepdim=self.keepdims).values
         else:
             return torch.max(inputs)
 
 
-def reduce_max(input_tensor, axis=None):
+def reduce_max(input_tensor, axis=None, keepdims=False):
     """
     Computes the maximum of elements across dimensions of a tensor.
 
@@ -547,12 +551,12 @@ def reduce_max(input_tensor, axis=None):
     """
 
     if axis is not None:
-        return torch.max(input_tensor, dim=axis).values
+        return torch.max(input_tensor, dim=axis, keepdim=keepdims).values
     else:
         return torch.max(input_tensor)
 
 
-def reduce_min(input_tensor, axis=None):
+def reduce_min(input_tensor, axis=None, keepdims=False):
     """
     Computes the minimum of elements across dimensions of a tensor.
 
@@ -572,7 +576,7 @@ def reduce_min(input_tensor, axis=None):
     """
 
     if axis is not None:
-        return torch.min(input=input_tensor, dim=axis).values
+        return torch.min(input_tensor, dim=axis, keepdim=keepdims).values
     else:
         return torch.min(input_tensor)
 
@@ -1368,19 +1372,29 @@ def reciprocal(x):
 
 
 def reduce_prod(x, axis=None, keepdims=False):
-    return torch.prod(x, dim=axis, keepdim=keepdims)
-
+    if axis is not None:
+        return torch.prod(x, dim=axis, keepdim=keepdims)
+    else:
+        return torch.prod(x)
 
 def reduce_std(x, axis=None, keepdims=False):
-    return torch.std(x, dim=axis, keepdim=keepdims)
-
+    if axis is not None:
+        return torch.std(x, dim=axis, keepdim=keepdims)
+    else:
+        return torch.std(x)
 
 def reduce_sum(x, axis=None, keepdims=False):
-    return torch.sum(x, dim=axis, keepdim=keepdims)
+    if axis is not None:
+        return torch.sum(x, dim=axis, keepdim=keepdims)
+    else:
+        return torch.sum(x)
 
 
 def reduce_variance(x, axis=None, keepdims=False):
-    return torch.var(x, dim=axis, keepdim=keepdims)
+    if axis is not None:
+        return torch.var(x, dim=axis, keepdim=keepdims)
+    else:
+        return torch.var(x)
 
 
 def round(x):
@@ -1595,3 +1609,7 @@ def set_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
+
+def is_tensor(x):
+
+    return isinstance(x, torch.Tensor)

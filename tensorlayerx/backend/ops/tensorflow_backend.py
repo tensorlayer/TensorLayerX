@@ -3564,3 +3564,23 @@ def set_seed(seed):
     tf.random.set_seed(seed)
     random.seed(seed)
     np.random.seed(seed)
+
+def is_tensor(x):
+    """
+
+    Parameters
+    ----------
+    x : input
+        A python object to check.
+
+    Returns
+    -------
+        a bool Value. if x is tensor return True, else return False.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> tlx.ops.is_tensor(a)
+    """
+
+    return tf.is_tensor(x)

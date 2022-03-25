@@ -4,7 +4,7 @@
 import tensorflow as tf
 import colorsys, random, cv2
 import numpy as np
-from tensorlayerx.utils.visualize import save_image
+from tensorlayerx.vision.utils import save_image
 
 
 def decode_tf(conv_output, output_size, NUM_CLASS, STRIDES, ANCHORS, i=0, XYSCALE=[1, 1, 1]):

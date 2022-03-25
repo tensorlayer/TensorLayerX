@@ -9,6 +9,7 @@ __all__ = [
     'Auc',
     'Precision',
     'Recall',
+    'acc',
 ]
 
 
@@ -87,3 +88,9 @@ class Recall(object):
 
     def reset(self):
         self.recall.reset()
+
+
+def acc(predicts, labels, topk=1):
+
+    res = paddle.metric.accuracy(predicts, labels, k=topk)
+    return res.numpy()

@@ -21,10 +21,10 @@ if 'TENSORLAYER_PACKAGE_BUILDING' not in os.environ:
     from tensorlayerx import losses
     from tensorlayerx import decorators
     from tensorlayerx import files
-    from .utils import iterate
+    # from .utils import iterate
     from .utils import lazy_imports
     from . import utils
-    from .text import nlp
+    # from .text import nlp
     from tensorlayerx import logging
     from tensorlayerx import model
     from tensorlayerx import optimizers
@@ -40,10 +40,10 @@ if 'TENSORLAYER_PACKAGE_BUILDING' not in os.environ:
     # nlp = LazyImport("tensorlayerx.text.nlp")
     # prepro = LazyImport("tensorlayerx.utils.prepro")
     # utils = LazyImport("tensorlayerx.utils")
-    visualize = LazyImport("tensorlayerx.utils.visualize")
+    # visualize = LazyImport("tensorlayerx.utils.visualize")
 
     # alias
-    vis = visualize
+    # vis = visualize
 
     # alphas = array_ops.alphas
     # alphas_like = array_ops.alphas_like

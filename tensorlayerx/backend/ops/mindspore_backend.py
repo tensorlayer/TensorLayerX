@@ -1783,3 +1783,7 @@ def set_seed(seed):
 
     ms.set_seed(seed)
     random.seed(seed)
+
+def is_tensor(x):
+
+    return isinstance(x, ms.Tensor)

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-os.environ['TL_BACKEND'] = 'paddle'
-# os.environ['TL_BACKEND'] = 'tensorflow'
+# os.environ['TL_BACKEND'] = 'paddle'
+os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 
 import time
@@ -72,7 +72,6 @@ shuffle_buffer_size = 128
 
 train_weights = net.trainable_weights
 optimizer = tlx.optimizers.Adam(learning_rate)
-# looking for decay learning rate? see https://github.com/tensorlayer/srgan/blob/master/train.py
 metrics = tlx.metrics.Accuracy()
 
 
@@ -135,9 +134,6 @@ for epoch in range(n_epoch):
     net.set_train()
     train_loss, train_acc, n_iter = 0, 0, 0
     for X_batch, y_batch in train_dataset:
-
-        X_batch = tlx.convert_to_tensor(X_batch.numpy(), dtype=tlx.float32)
-        y_batch = tlx.convert_to_tensor(y_batch.numpy(), dtype=tlx.int64)
 
         _loss_ce = net_with_train(X_batch, y_batch)
         train_loss += _loss_ce

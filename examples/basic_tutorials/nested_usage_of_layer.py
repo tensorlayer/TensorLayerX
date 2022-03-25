@@ -5,12 +5,16 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 
 import time
 import numpy as np
-import multiprocessing
 import tensorflow as tf
 
 from tensorlayerx.nn import Module, SequentialLayer
 import tensorlayerx as tlx
 from tensorlayerx.nn import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d, Elementwise)
+from tensorlayerx.dataflow import Dataset, DataLoader
+from tensorlayerx.vision.transforms import (
+    Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop
+)
+
 
 X_train, y_train, X_test, y_test = tlx.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
 
@@ -91,7 +95,7 @@ print(net)
 # training settings
 batch_size = 128
 n_epoch = 500
-learning_rate = 0.0001
+learning_rate = 0.001
 print_freq = 5
 n_step_epoch = int(len(y_train) / batch_size)
 n_step = n_epoch * n_step_epoch
@@ -100,78 +104,48 @@ shuffle_buffer_size = 128
 train_weights = net.trainable_weights
 optimizer = tlx.optimizers.Adam(learning_rate)
 
+class make_dataset(Dataset):
 
-def generator_train():
-    inputs = X_train
-    targets = y_train
-    if len(inputs) != len(targets):
-        raise AssertionError("The length of inputs and targets should be equal")
-    for _input, _target in zip(inputs, targets):
-        # yield _input.encode('utf-8'), _target.encode('utf-8')
-        yield _input, _target
+    def __init__(self, data, label, transforms):
+        self.data = data
+        self.label = label
+        self.transforms = transforms
 
+    def __getitem__(self, idx):
+        x = self.data[idx].astype('uint8')
+        y = self.label[idx].astype('int64')
+        x = self.transforms(x)
 
-def generator_test():
-    inputs = X_test
-    targets = y_test
-    if len(inputs) != len(targets):
-        raise AssertionError("The length of inputs and targets should be equal")
-    for _input, _target in zip(inputs, targets):
-        # yield _input.encode('utf-8'), _target.encode('utf-8')
-        yield _input, _target
+        return x, y
+
+    def __len__(self):
+
+        return len(self.label)
 
 
-def _map_fn_train(img, target):
-    # 1. Randomly crop a [height, width] section of the image.
-    img = tf.image.random_crop(img, [24, 24, 3])
-    # 2. Randomly flip the image horizontally.
-    img = tf.image.random_flip_left_right(img)
-    # 3. Randomly change brightness.
-    img = tf.image.random_brightness(img, max_delta=63)
-    # 4. Randomly change contrast.
-    img = tf.image.random_contrast(img, lower=0.2, upper=1.8)
-    # 5. Subtract off the mean and divide by the variance of the pixels.
-    img = tf.image.per_image_standardization(img)
-    target = tf.reshape(target, ())
-    return img, target
+train_transforms = Compose(
+    [
+        RandomCrop(size=[24, 24]),
+        RandomFlipHorizontal(),
+        RandomBrightness(brightness_factor=(0.5, 1.5)),
+        RandomContrast(contrast_factor=(0.5, 1.5)),
+        StandardizePerImage()
+    ]
+)
 
+test_transforms = Compose([Resize(size=(24, 24)), StandardizePerImage()])
 
-def _map_fn_test(img, target):
-    # 1. Crop the central [height, width] of the image.
-    img = tf.image.resize_with_pad(img, 24, 24)
-    # 2. Subtract off the mean and divide by the variance of the pixels.
-    img = tf.image.per_image_standardization(img)
-    img = tf.reshape(img, (24, 24, 3))
-    target = tf.reshape(target, ())
-    return img, target
+train_dataset = make_dataset(data=X_train, label=y_train, transforms=train_transforms)
+test_dataset = make_dataset(data=X_test, label=y_test, transforms=test_transforms)
 
-
-# dataset API and augmentation
-train_ds = tf.data.Dataset.from_generator(
-    generator_train, output_types=(tf.float32, tf.int32)
-)  # , output_shapes=((24, 24, 3), (1)))
-train_ds = train_ds.map(_map_fn_train, num_parallel_calls=multiprocessing.cpu_count())
-# train_ds = train_ds.repeat(n_epoch)
-train_ds = train_ds.shuffle(shuffle_buffer_size)
-train_ds = train_ds.prefetch(buffer_size=4096)
-train_ds = train_ds.batch(batch_size)
-# value = train_ds.make_one_shot_iterator().get_next()
-
-test_ds = tf.data.Dataset.from_generator(
-    generator_test, output_types=(tf.float32, tf.int32)
-)  # , output_shapes=((24, 24, 3), (1)))
-# test_ds = test_ds.shuffle(shuffle_buffer_size)
-test_ds = test_ds.map(_map_fn_test, num_parallel_calls=multiprocessing.cpu_count())
-# test_ds = test_ds.repeat(n_epoch)
-test_ds = test_ds.prefetch(buffer_size=4096)
-test_ds = test_ds.batch(batch_size)
-# value_test = test_ds.make_one_shot_iterator().get_next()
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
 for epoch in range(n_epoch):
     start_time = time.time()
 
     train_loss, train_acc, n_iter = 0, 0, 0
-    for X_batch, y_batch in train_ds:
+    for X_batch, y_batch in train_loader:
         net.set_train()
 
         with tf.GradientTape() as tape:
@@ -196,7 +170,7 @@ for epoch in range(n_epoch):
 
         net.set_eval()
         val_loss, val_acc, n_iter = 0, 0, 0
-        for X_batch, y_batch in test_ds:
+        for X_batch, y_batch in test_loader:
             _logits = net(X_batch)  # is_train=False, disable dropout
             val_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch)
             val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
@@ -207,7 +181,7 @@ for epoch in range(n_epoch):
 # use testing data to evaluate the model
 net.set_eval()
 test_loss, test_acc, n_iter = 0, 0, 0
-for X_batch, y_batch in test_ds:
+for X_batch, y_batch in test_loader:
     _logits = net(X_batch)
     test_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch)
     test_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
