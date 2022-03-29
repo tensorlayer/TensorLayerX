@@ -32,7 +32,7 @@ class ExpandDims(Module):
 
     def __init__(
         self,
-        axis,
+        axis=-1,
         name=None  # 'expand_dims',
     ):
         super(ExpandDims, self).__init__(name)

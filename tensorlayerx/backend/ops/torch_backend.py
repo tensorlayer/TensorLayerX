@@ -447,7 +447,10 @@ def convert_to_tensor(value, dtype=None):
 
 
 def convert_to_numpy(value):
-    return value.numpy()
+    try:
+        return value.numpy()
+    except:
+        return value.detach().numpy()
 
 
 def sqrt(x):
@@ -526,7 +529,11 @@ class ReduceMax(object):
 
     def __call__(self, inputs):
         if self.axis is not None:
-            return torch.max(input=inputs, dim=self.axis, keepdim=self.keepdims).values
+            out = inputs
+            for dim in self.axis[-1]:
+                print(dim)
+                out = torch.max(out, dim=dim, keepdim=self.keepdims).values
+            return out
         else:
             return torch.max(inputs)
 

@@ -71,6 +71,12 @@ class PRelu(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
+        if self.in_channels is None:
+            if self.data_format == 'channels_last':
+                self.in_channels = inputs_shape[-1]
+            else:
+                self.in_channels = inputs_shape[1]
+
         if self.channel_shared:
             w_shape = (1, )
         elif self.data_format == 'channels_last':
@@ -84,6 +90,7 @@ class PRelu(Module):
                 w_shape = (1, self.in_channels, 1, 1, 1)
             else:
                 raise Exception("Dim should be equal to 1, 2 or 3")
+        print(inputs_shape)
         self.alpha_var = self._get_weights("alpha", shape=w_shape, init=self.a_init)
         self.relu = tlx.ops.ReLU()
         self.sigmoid = tlx.ops.Sigmoid()
@@ -178,6 +185,11 @@ class PRelu6(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
+        if self.in_channels is None:
+            if self.data_format == 'channels_last':
+                self.in_channels = inputs_shape[-1]
+            else:
+                self.in_channels = inputs_shape[1]
         if self.channel_shared:
             w_shape = (1, )
         elif self.data_format == 'channels_last':
@@ -287,6 +299,12 @@ class PTRelu6(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
+        if self.in_channels is None:
+            if self.data_format == 'channels_last':
+                self.in_channels = inputs_shape[-1]
+            else:
+                self.in_channels = inputs_shape[1]
+
         if self.channel_shared:
             w_shape = (1, )
         elif self.data_format == 'channels_last':

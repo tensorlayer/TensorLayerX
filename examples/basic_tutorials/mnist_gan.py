@@ -3,8 +3,9 @@
 
 import os
 # os.environ['TL_BACKEND'] = 'paddle'
-os.environ['TL_BACKEND'] = 'tensorflow'
+# os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
+os.environ['TL_BACKEND'] = 'torch'
 
 import time
 import numpy as np

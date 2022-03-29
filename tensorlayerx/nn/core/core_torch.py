@@ -96,7 +96,7 @@ class Module(T_Module):
         var_name = self.name + "/" + var_name
 
         if order:
-            w_tmp = Parameter(init(shape))
+            w_tmp = Parameter(init(shape), requires_grad=trainable)
             return w_tmp
 
         if len(shape) == 3:
@@ -110,7 +110,7 @@ class Module(T_Module):
             shape = (shape[4], shape[3], shape[0], shape[1], shape[2])
         # TODO paramters name should be add
         _param = init(shape)
-        param = Parameter(_param)
+        param = Parameter(_param, requires_grad=trainable)
         return param
 
     @property

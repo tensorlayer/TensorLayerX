@@ -307,7 +307,7 @@ class Sigmoid(object):
         pass
 
     def __call__(self, x):
-        return F.sigmoid(x)
+        return torch.sigmoid(x)
 
 
 def sigmoid(x):
@@ -1531,15 +1531,20 @@ class BatchNorm(object):
         if self.decay < 0.0 or 1.0 < self.decay:
             raise ValueError("decay should be between 0 to 1")
 
-    def _get_param_shape(self, inputs_shape):
-        raise NotImplementedError
-
-    def _check_input_shape(self, inputs):
-        if len(inputs.shape) <= 1:
-            raise ValueError('expected input at least 2D, but got {}D input'.format(len(inputs.shape)))
-
     def __call__(self, inputs):
-        raise NotImplementedError
+        if self.data_format == 'channels_last':
+            inputs = nhwc_to_nchw(inputs)
+
+        out = torch.nn.functional.batch_norm(inputs,
+                                             running_mean=self.moving_mean,
+                                             running_var=self.moving_var,
+                                             weight=self.gamma,
+                                             bias=self.beta,
+                                             training=self.is_train,
+                                             momentum=self.decay)
+        if self.data_format == 'channels_last':
+            out = nchw_to_nhwc(out)
+        return out
 
 
 class GroupConv2D(object):
