@@ -439,20 +439,31 @@ def bias_add(x, bias, data_format=None):
 
 class Conv1D(object):
 
-    def __init__(self, stride, padding, data_format='NWC', dilations=None, out_channel=None, k_size=None):
+    def __init__(self, stride, padding, data_format='NWC', dilations=None, out_channel=None, k_size=None, groups=1):
         self.stride = stride
         self.dilations = dilations
+        self.groups = groups
         self.data_format, self.padding = preprocess_1d_format(data_format, padding)
 
     def __call__(self, input, filters):
         if self.data_format == 'NLC':
             input = nhwc_to_nchw(input)
-        out = F.conv1d(input, filters, stride=self.stride, padding=self.padding, dilation=self.dilations)
-
+        if self.padding == 'same':
+            out = self.conv1d_same_padding(input, filters)
+        else:
+            out = F.conv1d(input, filters, stride=self.stride, padding=self.padding,
+                           dilation=self.dilations, groups=self.groups)
         if self.data_format == 'NLC':
             out = nchw_to_nhwc(out)
 
         return out
+
+    def conv1d_same_padding(self, input, filters):
+        rows_odd, padding_rows = same_padding(input, filters, self.stride, 1)
+        if rows_odd:
+            input = F.pad(input, [0, int(rows_odd)], 'replicate')
+        return F.conv1d(input, filters, stride=self.stride, padding=(padding_rows // 2), groups=self.groups)
+
 
 
 def conv1d(input, filters, stride, padding, data_format='NWC', dilations=None):
@@ -561,10 +572,11 @@ def same_padding(input, weight, strides, dilations):
 
 class Conv2D(object):
 
-    def __init__(self, strides, padding, data_format='NHWC', dilations=None, out_channel=None, k_size=None):
+    def __init__(self, strides, padding, data_format='NHWC', dilations=None, out_channel=None, k_size=None, groups=1):
         self.strides = (strides[1], strides[2])
         self.dilations = (dilations[1], dilations[2])
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        self.groups = groups
 
     def __call__(self, input, filters):
         if self.data_format == 'NHWC':
@@ -573,20 +585,21 @@ class Conv2D(object):
         if self.padding == 'same':
             output = self.conv2d_same_padding(input, filters)
         else:
-            output = F.conv2d(input, filters, stride=self.strides, padding=self.padding, dilation=self.dilations)
+            output = F.conv2d(input, filters, stride=self.strides, padding=self.padding,
+                              dilation=self.dilations, groups=self.groups)
 
         if self.data_format == 'NHWC':
             output = nchw_to_nhwc(output)
         return output
 
-    def conv2d_same_padding(self, input, weight, bias=None, groups=1):
+    def conv2d_same_padding(self, input, weight, bias=None):
         rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, weight, self.strides, self.dilations)
         if rows_odd or cols_odd:
             input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd)])
 
         return F.conv2d(
             input, weight, bias, self.strides, padding=(padding_rows // 2, padding_cols // 2), dilation=self.dilations,
-            groups=groups
+            groups=self.groups
         )
 
 
@@ -1549,49 +1562,42 @@ class BatchNorm(object):
 
 class GroupConv2D(object):
 
-    def __init__(self, strides, padding, data_format, dilations, out_channel, k_size, groups):
-        self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        self.strides = strides
-        self.dilations = dilations
+    def __init__(self, strides, padding, data_format, dilations, out_channel, k_size, groups=1):
         self.groups = groups
-        if self.data_format == 'NHWC':
-            self.channels_axis = 3
-        else:
-            self.channels_axis = 1
+        self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        self.conv2d = Conv2D(strides, self.padding, self.data_format, dilations, groups=self.groups)
 
     def __call__(self, input, filters):
+        return self.conv2d(input, filters)
 
-        raise NotImplementedError
 
 
 class SeparableConv1D(object):
 
     def __init__(self, stride, padding, data_format, dilations, out_channel, k_size, in_channel, depth_multiplier):
         self.data_format, self.padding = preprocess_1d_format(data_format, padding)
+        self.depthwise_conv = Conv1D(stride, self.padding, self.data_format, dilations, groups=in_channel)
+        self.pointwise_conv = Conv1D(1, self.padding, self.data_format, 1)
 
-        if self.data_format == 'NWC':
-            self.spatial_start_dim = 1
-            self.strides = (1, stride, stride, 1)
-            self.data_format = 'NHWC'
-        else:
-            self.spatial_start_dim = 2
-            self.strides = (1, 1, stride, stride)
-            self.data_format = 'NCHW'
-        self.dilation_rate = (1, dilations)
 
     def __call__(self, inputs, depthwise_filters, pointwise_filters):
-        raise NotImplementedError
+        depthwise_conv = self.depthwise_conv(inputs, depthwise_filters)
+        pointwise_conv = self.pointwise_conv(depthwise_conv, pointwise_filters)
+        return pointwise_conv
 
 
 class SeparableConv2D(object):
 
     def __init__(self, strides, padding, data_format, dilations, out_channel, k_size, in_channel, depth_multiplier):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        self.strides = strides
-        self.dilations = (dilations[2], dilations[2])
+        self.depthwise_conv = Conv2D(strides, self.padding, self.data_format, dilations, groups=in_channel)
+        self.pointwise_conv = Conv2D((1, 1), self.padding, self.data_format, (1, 1))
 
-    def __call__(self, inputs, depthwise_filters, pointwise_filters):
-        raise NotImplementedError
+
+    def __call__(self, input, filter, point_filter=None):
+        depthwise_conv = self.depthwise_conv(input, filter)
+        pointwise_conv = self.pointwise_conv(depthwise_conv, point_filter)
+        return pointwise_conv
 
 
 class AdaptiveMeanPool1D(object):

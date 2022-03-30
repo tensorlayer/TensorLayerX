@@ -115,9 +115,7 @@ class SeparableConv1d(Module):
 
         if BACKEND == 'tensorflow':
             self.depthwise_filter_shape = (self.filter_size, self.in_channels, self.depth_multiplier)
-        elif BACKEND == 'mindspore':
-            self.depthwise_filter_shape = (self.filter_size, 1, self.depth_multiplier * self.in_channels)
-        elif BACKEND == 'paddle':
+        elif BACKEND in ['mindspore', 'paddle', 'torch']:
             self.depthwise_filter_shape = (self.filter_size, 1, self.depth_multiplier * self.in_channels)
 
         self.pointwise_filter_shape = (1, self.depth_multiplier * self.in_channels, self.n_filter)
@@ -272,7 +270,7 @@ class SeparableConv2d(Module):
             )
             self.pointwise_filter_shape = (1, 1, self.depth_multiplier * self.in_channels, self.n_filter)
 
-        elif BACKEND == 'mindspore' or BACKEND == 'paddle':
+        elif BACKEND in ['mindspore' , 'paddle', 'torch']:
             self.depthwise_filter_shape = (
                 self.filter_size[0], self.filter_size[1], 1, self.depth_multiplier * self.in_channels
             )
