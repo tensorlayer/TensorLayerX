@@ -14,14 +14,10 @@
 [![Downloads](https://pepy.tech/badge/tensorlayerx/week)](https://pepy.tech/project/tensorlayerx/week)
 [![Docker Pulls](https://img.shields.io/docker/pulls/tensorlayer/tensorlayer.svg)](https://hub.docker.com/r/tensorlayer/tensorlayer/)
 
-🇬🇧 TensorLayerX is a multi-backend AI framework, which can run on almost all operation systems and AI hardwares, and support hybrid-framework programming. The currently version supports TensorFlow, MindSpore, PaddlePaddle and PyTorch(partial) as the backends.[layer list](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z). 
+🇬🇧 TensorLayerX is a multi-backend AI framework, which supports TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow and Jittor as the backends, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend. [supported layers](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z). 
 
-🇨🇳 TensorLayerX 是一个跨平台开发框架，可以运行在各类操作系统和AI硬件上，并支持混合框架的开发。目前支持TensorFlow、MindSpore、PaddlePaddle框架常用神经网络层以及算子，PyTorch支持特性正在开发中，[支持列表](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)。
+🇨🇳 TensorLayerX 是一个跨平台开发框架，支持TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow和Jittor，用户不需要修改任何代码即可以运行在各类操作系统和AI硬件上（如Nvidia-GPU 和 Huawei-Ascend），并支持混合框架的开发。[支持列表](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)。
 
-# News
-🔥 **TensorLayerX has been released, it supports TensorFlow、MindSpore and PaddlePaddle backends, and supports some PyTorch operator backends, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend. Feel free to use it and make suggestions.**
-
-🔥 **We need more people to join the dev team, if you are interested, please email hao.dong@pku.edu.cn**
 
 
 # Design Features
