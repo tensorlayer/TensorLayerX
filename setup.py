@@ -12,10 +12,32 @@ try:
 except ImportError:
     from distutils.core import (setup, find_packages)
 
-from tensorlayerx import (
-    __contact_emails__, __contact_names__, __description__, __download_url__, __homepage__, __keywords__, __license__,
-    __package_name__, __repository_url__, __version__
-)
+# from tensorlayerx import (
+#     __contact_emails__, __contact_names__, __description__, __download_url__, __homepage__, __keywords__, __license__,
+#     __package_name__, __repository_url__, __version__
+# )
+
+
+MAJOR = 0
+MINOR = 5
+PATCH = 0
+PRE_RELEASE = ''
+# Use the following formatting: (major, minor, patch, prerelease)
+VERSION = (MAJOR, MINOR, PATCH, PRE_RELEASE)
+
+__shortversion__ = '.'.join(map(str, VERSION[:3]))
+__version__ = '.'.join(map(str, VERSION[:3])) + ''.join(VERSION[3:])
+
+__package_name__ = 'tensorlayerx'
+__contact_names__ = 'TensorLayer Contributors'
+__contact_emails__ = 'tensorlayerx@gmail.com'
+__homepage__ = 'https://tensorlayerx.readthedocs.io/en/latest/'
+__repository_url__ = 'https://github.com/tensorlayer/TensorLayerX'
+__download_url__ = 'https://github.com/tensorlayer/TensorLayerX'
+__description__ = 'High Level Tensorflow Deep Learning Library for Researcher and Engineer.'
+__license__ = 'apache'
+__keywords__ = 'deep learning, machine learning, computer vision, nlp, '
+__keywords__ += 'supervised learning, unsupervised learning, reinforcement learning, tensorflow'
 
 # =================== Reading Readme file as TXT files ===================
 
