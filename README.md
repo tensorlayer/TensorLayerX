@@ -36,6 +36,16 @@ Comparison of TensorLayer version
 
 - ***Parallel***: In order to improve the efficiency of neural network model training, parallel computing is indispensable. 
 
+# Resources
+
+- [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials
+- OpenIVA an easy-to-use product-level deployment framework
+- [TLXZoo](https://github.com/tensorlayer/TLXZoo) pretrained models/backbones
+- TLXCV a bunch of Computer Vision applications
+- TLXNLP a bunch of Natural Language Processing applications
+
+
+
 # Quick Start
 
 - Installation
@@ -79,14 +89,9 @@ MLP.set_eval()
 ```
 
 # Document
-TensorLayer has extensive documentation for both beginners and professionals. 
+TensorLayerX has extensive documentation for both beginners and professionals. 
 
 [![English Documentation](https://img.shields.io/badge/documentation-english-blue.svg)](https://tensorlayerx.readthedocs.io/en/latest/)
-
-# Examples
-
-- [Basic Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples)
-- [TLCV]**Coming soon!**
 
 
 # Contact
