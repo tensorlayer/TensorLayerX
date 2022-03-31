@@ -22,9 +22,9 @@
 
 # Design Features
 
-Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), TensorLayerX （TLX) is a brand new seperated project for platform-agnostic purpose. 
+Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), [TensorLayerX](http://tensorlayerx.readthedocs.io)（TLX) is a brand new seperated project for platform-agnostic purpose. 
 
-Comparison of TensorLayer version
+Compare to TensorLayer version:
 
 <p align="center"><img src="https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/version.png" width="840"\></p>
 
