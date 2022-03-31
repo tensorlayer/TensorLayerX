@@ -43,7 +43,9 @@ Compare to TensorLayer version:
 - [TLXZoo](https://github.com/tensorlayer/TLXZoo) pretrained models/backbones
 - TLXCV a bunch of Computer Vision applications
 - TLXNLP a bunch of Natural Language Processing applications
+- TLXRL a bunch of Reinforcement Learning applications, check [RLZoo](https://github.com/tensorlayer/RLzoo) for the old version
 
+More resources can be found [here](https://github.com/tensorlayer)
 
 
 # Quick Start
