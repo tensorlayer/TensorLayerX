@@ -49,7 +49,7 @@ from .ops import reduce_max
 from .ops import pad
 from .ops import stack
 from .ops import meshgrid
-from .ops import range
+from .ops import arange
 from .ops import expand_dims
 from .ops import tile
 from .ops import cast

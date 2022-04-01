@@ -929,7 +929,7 @@ def meshgrid(*args, **kwargs):
     return tf.meshgrid(*args, **kwargs)
 
 
-def range(start, limit=None, delta=1, dtype=None):
+def arange(start, limit=None, delta=1, dtype=None):
     """
     Creates a sequence of numbers.
 

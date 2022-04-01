@@ -98,7 +98,7 @@ from .load_backend import reduce_max
 from .load_backend import pad
 from .load_backend import stack
 from .load_backend import meshgrid
-from .load_backend import range
+from .load_backend import arange
 from .load_backend import expand_dims
 from .load_backend import tile
 from .load_backend import cast

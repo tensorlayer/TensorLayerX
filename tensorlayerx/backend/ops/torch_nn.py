@@ -1604,60 +1604,90 @@ class AdaptiveMeanPool1D(object):
 
     def __init__(self, output_size, data_format):
         self.data_format, _ = preprocess_1d_format(data_format, None)
-        self.output_size = output_size
+        self.op = torch.nn.AdaptiveAvgPool1d(output_size=output_size)
 
     def __call__(self, input):
-        raise NotImplementedError
+        if self.data_format == 'NLC':
+            input = nhwc_to_nchw(input)
+        output = self.op(input)
+        if self.data_format == 'NLC':
+            output = nchw_to_nhwc(output)
+        return output
 
 
 class AdaptiveMeanPool2D(object):
 
     def __init__(self, output_size, data_format):
         self.data_format, _ = preprocess_2d_format(data_format, None)
-        self.output_size = output_size
+        self.op = torch.nn.AdaptiveAvgPool2d(output_size=output_size)
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        if self.data_format == 'NHWC':
+            inputs = nhwc_to_nchw(inputs)
+        output = self.op(inputs)
+        if self.data_format == 'NHWC':
+            output = nchw_to_nhwc(output)
+        return output
 
 
 class AdaptiveMeanPool3D(object):
 
     def __init__(self, output_size, data_format):
         self.data_format, _ = preprocess_3d_format(data_format, None)
-        self.output_size = output_size
+        self.op = torch.nn.AdaptiveAvgPool3d(output_size=output_size)
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        if self.data_format == 'NDHWC':
+            inputs = nhwc_to_nchw(inputs)
+        output = self.op(inputs)
+        if self.data_format == 'NDHWC':
+            output = nchw_to_nhwc(output)
+        return output
 
 
 class AdaptiveMaxPool1D(object):
 
     def __init__(self, output_size, data_format):
         self.data_format, _ = preprocess_1d_format(data_format, None)
-        self.output_size = output_size
+        self.op = torch.nn.AdaptiveMaxPool1d(output_size=output_size)
 
     def __call__(self, input):
-        raise NotImplementedError
+        if self.data_format == 'NLC':
+            input = nhwc_to_nchw(input)
+        output = self.op(input)
+        if self.data_format == 'NLC':
+            output = nchw_to_nhwc(output)
+        return output
 
 
 class AdaptiveMaxPool2D(object):
 
     def __init__(self, output_size, data_format):
         self.data_format, _ = preprocess_2d_format(data_format, None)
-        self.output_size = output_size
+        self.op = torch.nn.AdaptiveMaxPool2d(output_size=output_size)
 
     def __call__(self, inputs):
-        raise NotImplementedError
+        if self.data_format == 'NHWC':
+            inputs = nhwc_to_nchw(inputs)
+        output = self.op(inputs)
+        if self.data_format == 'NHWC':
+            output = nchw_to_nhwc(output)
+        return output
 
 
 class AdaptiveMaxPool3D(object):
 
     def __init__(self, output_size, data_format):
         self.data_format, _ = preprocess_3d_format(data_format, None)
-        self.output_size = output_size
-
+        self.op = torch.nn.AdaptiveMaxPool3d(output_size=output_size)
     def __call__(self, inputs):
-        raise NotImplementedError
+        if self.data_format == 'NDHWC':
+            inputs = nhwc_to_nchw(inputs)
+        output = self.op(inputs)
+        if self.data_format == 'NDHWC':
+            output = nchw_to_nhwc(output)
+        return output
+
 
 
 class BinaryConv2D(object):
@@ -1999,7 +2029,7 @@ class multiheadattention(Module):
         self.register_parameter('in_proj_weight', None)
 
         if q_bias is not None:
-            self.in_proj_bias = torch.concat((self.q_bias, self.k_bias, self.v_bias))
+            self.in_proj_bias = torch.cat((self.q_bias, self.k_bias, self.v_bias))
         else:
             self.register_parameter('in_proj_bias', None)
 
@@ -2016,7 +2046,7 @@ class multiheadattention(Module):
             self.bias_v, self.add_zero_attn, self.dropout, self.out_weight, self.out_bias, training=self.training,
             key_padding_mask=key_padding_mask, need_weights=self.need_weights, attn_mask=attn_mask,
             use_separate_proj_weight=True, q_proj_weight=self.q_weight, k_proj_weight=self.k_weight,
-            v_proj_weight=self.v_weight, average_attn_weights=True
+            v_proj_weight=self.v_weight
         )
         if self.batch_first:
             return attn_output.transpose(1, 0), attn_output_weights

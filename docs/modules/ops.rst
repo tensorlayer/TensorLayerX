@@ -29,6 +29,7 @@ API - Operations
    asinh
    atan
    atanh
+   arange
    ceil
    cos
    cosh
@@ -202,6 +203,10 @@ atan
 atanh
 ^^^^^^^^^^
 .. autofunction:: atanh
+
+arange
+^^^^^^^^^^
+.. autofunction:: arange
 
 ceil
 ^^^^^^^^^^

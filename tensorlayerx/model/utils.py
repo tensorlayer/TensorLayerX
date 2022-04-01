@@ -140,7 +140,7 @@ class TrainOneStepWithTF(object):
             loss = self.net_with_loss(data, label)
         grad = tape.gradient(loss, self.train_weights)
         self.optimizer.apply_gradients(zip(grad, self.train_weights))
-        return loss
+        return loss.numpy()
 
 
 class TrainOneStepWithMS(object):
@@ -185,7 +185,7 @@ class TrainOneStepWithTH(object):
         loss = self.net_with_loss(data, label)
         grads = self.optimizer.gradient(loss, self.train_weights)
         self.optimizer.apply_gradients(zip(grads, self.train_weights))
-        return loss
+        return loss.numpy()
 
 class TrainOneStepWithGradientClippingTF(object):
     def __init__(self, net_with_loss, optimizer, train_weights, gradient_clipping):

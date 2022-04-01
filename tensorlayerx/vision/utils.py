@@ -64,6 +64,7 @@ def save_image(image, file_name, path):
     >>> tlx.vision.save_image(image, file_name='1.png',path=save_path)
 
     '''
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     cv2.imwrite(os.path.join(path, file_name), image)
 
 def load_images(path):
@@ -87,7 +88,7 @@ def load_images(path):
     >>> image = tlx.vision.load_images(path)
     '''
     images = []
-    files = os.listdir(path)
+    files = sorted(os.listdir(path))
     for file in files:
         image = cv2.imread(os.path.join(path, file))
         if image is not None:
@@ -123,4 +124,5 @@ def save_images(images, file_names, path):
     if len(images) != len(file_names):
         raise ValueError(" The number of images should be equal to the number of file names.")
     for i in range(len(file_names)):
+        images[i] = cv2.cvtColor(images[i], cv2.COLOR_RGB2BGR)
         cv2.imwrite(os.path.join(path, str(file_names[i])), images[i])

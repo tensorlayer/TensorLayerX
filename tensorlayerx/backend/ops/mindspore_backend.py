@@ -664,23 +664,27 @@ def sqrt(x):
 
 class ReduceSum(Cell):
 
-    def __init__(self, axis):
+    def __init__(self, axis = None, keepdims=False):
         super(ReduceSum, self).__init__()
         self.axis = axis
-        self.reduce_sum = P.ReduceSum(keep_dims=False)
+        self.reducesum = P.ReduceSum(keep_dims=keepdims)
 
-    def construct(self, input):
-        return self.reduce_sum(input, self.axis)
+    def construct(self, inputs):
+        if self.axis is None:
+            return self.reducesum(inputs)
+        return self.reducesum(input, self.axis)
 
 
 class ReduceMean(Cell):
 
-    def __init__(self, axis, keepdims=False):
+    def __init__(self, axis = None, keepdims=False):
         super(ReduceMean, self).__init__()
         self.axis = axis
         self.reducemean = P.ReduceMean(keep_dims=keepdims)
 
     def construct(self, inputs):
+        if self.axis is None:
+            return self.reducemean(inputs)
         output = self.reducemean(inputs, self.axis)
         return output
 
@@ -705,6 +709,8 @@ def reduce_mean(input_tensor, axis=None, keepdims=False):
     """
 
     Rmean_obj = P.ReduceMean(keep_dims=keepdims)
+    if axis is None:
+        return Rmean_obj(input_tensor)
     outputs = Rmean_obj(input_tensor, axis)
     return outputs
 
@@ -717,6 +723,8 @@ class ReduceMax(Cell):
         self.reducemax = P.ReduceMax(keep_dims=keepdims)
 
     def construct(self, inputs):
+        if self.axis is None:
+            return self.reducemax(inputs)
         output = self.reducemax(inputs, self.axis)
         return output
 
@@ -741,6 +749,8 @@ def reduce_max(input_tensor, axis=None, keepdims=False):
     """
 
     Rmax_obj = P.ReduceMax(keep_dims=keepdims)
+    if axis is None:
+        return Rmax_obj(input_tensor)
     outputs = Rmax_obj(input_tensor, axis)
     return outputs
 
@@ -765,6 +775,8 @@ def reduce_min(input_tensor, axis=None, keepdims=False):
     """
 
     Rmin_obj = P.ReduceMin(keep_dims=keepdims)
+    if axis is None:
+        return Rmin_obj(input_tensor)
     outputs = Rmin_obj(input_tensor, axis)
     return outputs
 
@@ -888,7 +900,7 @@ def meshgrid(*args, **kwargs):
     return _meshgrid(*args)
 
 
-def range(start, limit=None, delta=1, dtype=None):
+def arange(start, limit=None, delta=1, dtype=None):
     """
     Creates a sequence of numbers.
 
@@ -910,7 +922,7 @@ def range(start, limit=None, delta=1, dtype=None):
         An 1-D Tensor of type dtype.
     """
 
-    pass
+    return msnp.arange(start = start, stop= limit, step=delta, dtype= dtype)
 
 
 class ExpandDims(Cell):
@@ -1565,6 +1577,8 @@ def reciprocal(x):
 
 def reduce_prod(x, axis=None, keepdims=False):
     op = P.ReduceProd(keep_dims=keepdims)
+    if axis is None:
+        return op(x)
     return op(x, axis=axis)
 
 
@@ -1574,6 +1588,8 @@ def reduce_std(x, axis=None, keepdims=False):
 
 def reduce_sum(x, axis=None, keepdims=False):
     op = P.ReduceSum(keep_dims=keepdims)
+    if axis is None:
+        return op(x)
     return op(x, axis=axis)
 
 
@@ -1602,7 +1618,10 @@ def segment_max(x, segment_ids):
 
 
 def segment_mean(x, segment_ids):
-    raise NotImplementedError
+    segment_ids = convert_to_tensor(segment_ids, ms.int32)
+    unique = P.Unique()
+    num_segments = len(unique(segment_ids))
+    return unsorted_segment_mean(x, segment_ids, num_segments)
 
 
 def segment_min(x, segment_ids):
@@ -1762,20 +1781,27 @@ def squeeze(x, axis=None):
 
 
 def unsorted_segment_sum(x, segment_ids, num_segments):
+    segment_ids = ms.Tensor(segment_ids)
     op = P.UnsortedSegmentSum()
     return op(x, segment_ids, num_segments)
 
 
 def unsorted_segment_mean(x, segment_ids, num_segments):
-    raise NotImplementedError
-
+    segment_ids = ms.Tensor(segment_ids)
+    op = P.UnsortedSegmentSum()
+    x_one =  msnp.ones_like(x, dtype=x.dtype)
+    sum = op(x, segment_ids, num_segments)
+    one = op(x_one, segment_ids, num_segments)
+    return sum/one
 
 def unsorted_segment_min(x, segment_ids, num_segments):
+    segment_ids = ms.Tensor(segment_ids)
     op = P.UnsortedSegmentMin()
     return op(x, segment_ids, num_segments)
 
 
 def unsorted_segment_max(x, segment_ids, num_segments):
+    segment_ids = ms.Tensor(segment_ids)
     op = P.UnsortedSegmentMax()
     return op(x, segment_ids, num_segments)
 

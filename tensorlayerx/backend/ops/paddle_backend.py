@@ -425,7 +425,7 @@ def concat(values, axis=0):
     return pd.concat(values, axis)
 
 
-def convert_to_tensor(value, dtype=float32):
+def convert_to_tensor(value, dtype=None):
     """
     Converts the given value to a Tensor.
 
@@ -686,7 +686,7 @@ def meshgrid(*args, **kwargs):
     return pd.meshgrid(*args, **kwargs)
 
 
-def range(start, limit=None, delta=1, dtype=None):
+def arange(start, limit=None, delta=1, dtype=None):
     """
     Creates a sequence of numbers.
 
@@ -707,7 +707,7 @@ def range(start, limit=None, delta=1, dtype=None):
     -------
         An 1-D Tensor of type dtype.
     """
-    return pd.arange(start, step=delta)
+    return pd.arange(start, end = limit, step=delta, dtype=dtype)
 
 
 class ExpandDims(object):
@@ -1291,15 +1291,17 @@ def rsqrt(x):
 
 
 def segment_max(x, segment_ids):
-
+    segment_ids = pd.to_tensor(segment_ids, dtype=pd.int32)
     return pd.incubate.segment_max(x, segment_ids)
 
 
 def segment_mean(x, segment_ids):
+    segment_ids = pd.to_tensor(segment_ids, dtype=pd.int32)
     return pd.incubate.segment_mean(x, segment_ids)
 
 
 def segment_min(x, segment_ids):
+    segment_ids = pd.to_tensor(segment_ids, dtype=pd.int32)
     return pd.incubate.segment_min(x, segment_ids)
 
 
@@ -1308,6 +1310,7 @@ def segment_prod(x, segment_ids):
 
 
 def segment_sum(x, segment_ids):
+    segment_ids = pd.to_tensor(segment_ids, dtype=pd.int32)
     return pd.incubate.segment_sum(x, segment_ids)
 
 
@@ -1429,7 +1432,7 @@ def ones_like(x, dtype=None):
 
 def zeros_like(x, dtype=None):
 
-    return pd.zeros(x, dtype)
+    return pd.zeros_like(x, dtype)
 
 
 def squeeze(x, axis=None):
@@ -1438,19 +1441,55 @@ def squeeze(x, axis=None):
 
 
 def unsorted_segment_sum(x, segment_ids, num_segments):
-    raise NotImplementedError
+    segment_ids = pd.to_tensor(segment_ids, dtype=pd.int64)
+    assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
+    res = []
+    for i in range(num_segments):
+        a = pd.sum(x[segment_ids == i], axis=0)
+        res.append(a)
+    if res[0].shape == [1]:
+        return pd.concat(res, axis = 0)
+    else:
+        return pd.stack(res, axis=0)
 
 
 def unsorted_segment_mean(x, segment_ids, num_segments):
-    raise NotImplementedError
+    segment_ids = pd.to_tensor(segment_ids, dtype=pd.int64)
+    assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
+    res = []
+    for i in range(num_segments):
+        a = pd.mean(x[segment_ids == i], axis=0)
+        res.append(a)
+    if res[0].shape == [1]:
+        return pd.concat(res, axis = 0)
+    else:
+        return pd.stack(res, axis=0)
 
 
 def unsorted_segment_min(x, segment_ids, num_segments):
-    raise NotImplementedError
+    segment_ids = pd.to_tensor(segment_ids, dtype=pd.int64)
+    assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
+    res = []
+    for i in range(num_segments):
+        a = pd.min(x[segment_ids == i], axis=0)
+        res.append(a)
+    if res[0].shape == [1]:
+        return pd.concat(res, axis = 0)
+    else:
+        return pd.stack(res, axis=0)
 
 
 def unsorted_segment_max(x, segment_ids, num_segments):
-    raise NotImplementedError
+    segment_ids = pd.to_tensor(segment_ids, dtype=pd.int64)
+    assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
+    res = []
+    for i in range(num_segments):
+        a = pd.max(x[segment_ids == i], axis=0)
+        res.append(a)
+    if res[0].shape == [1]:
+        return pd.concat(res, axis = 0)
+    else:
+        return pd.stack(res, axis=0)
 
 def set_seed(seed):
 

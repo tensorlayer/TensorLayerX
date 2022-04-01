@@ -2141,7 +2141,7 @@ def save_npz_dict(save_list=None, name='model.npz'):
     """
     if save_list is None:
         save_list = []
-    if tlx.BACKEND is not 'torch':
+    if tlx.BACKEND != 'torch':
         save_list_names = [tensor.name for tensor in save_list]
 
     if tlx.BACKEND == 'tensorflow':

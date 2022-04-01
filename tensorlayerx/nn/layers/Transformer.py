@@ -44,7 +44,7 @@ class MultiheadAttention(Module):
 
     Examples
     ---------
-    With TensorLayer
+    With TensorLayerX
 
     >>> q = tlx.nn.Input(shape=(4,2,128))
     >>> attn_mask = tlx.convert_to_tensor(np.zeros((4,4)),dtype='bool')
@@ -209,7 +209,7 @@ class Transformer(Module):
 
     Examples
     ---------
-    With TensorLayer
+    With TensorLayerX
 
     >>> src = tlx.nn.Input(shape=(4,2,128))
     >>> tgt = tlx.nn.Input(shape=(4,2,128))
@@ -320,7 +320,7 @@ class Transformer(Module):
 
         Examples
         ---------
-        With TensorLayer
+        With TensorLayerX
 
         >>> length = 5
         >>> mask = transformer.generate_square_subsequent_mask(length)
@@ -349,7 +349,7 @@ class TransformerEncoder(Module):
 
     Examples
     ---------
-    With TensorLayer
+    With TensorLayerX
 
     >>> q = tlx.nn.Input(shape=(4,2,128))
     >>> attn_mask = tlx.convert_to_tensor(np.zeros((4,4)),dtype='bool')
@@ -406,7 +406,7 @@ class TransformerDecoder(Module):
 
     Examples
     ---------
-    With TensorLayer
+    With TensorLayerX
 
     >>> q = tlx.nn.Input(shape=(4,2,128))
     >>> decoder = TransformerDecoderLayer(128, 2, 256)
@@ -488,7 +488,7 @@ class TransformerEncoderLayer(Module):
 
     Examples
     ---------
-    With TensorLayer
+    With TensorLayerX
 
     >>> q = tlx.nn.Input(shape=(4,2,128))
     >>> attn_mask = tlx.convert_to_tensor(np.zeros((4,4)),dtype='bool')
@@ -583,7 +583,7 @@ class TransformerDecoderLayer(Module):
 
     Examples
     ---------
-    With TensorLayer
+    With TensorLayerX
 
     >>> q = tlx.nn.Input(shape=(4,2,128))
     >>> encoder = TransformerDecoderLayer(128, 2, 256)
