@@ -50,16 +50,22 @@ More resources can be found [here](https://github.com/tensorlayer)
 
 # Quick Start
 
-- Installation
+## Installation
+
+### Via pip
 ```bash
 # install from pypi
 pip3 install tensorlayerx 
+```
+
+### Build from source
+```bash
 # install from Github
 pip3 install git+https://github.com/tensorlayer/tensorlayerx.git 
 ```
 For more installation instructions, please refer to [Installtion](https://tensorlayerx.readthedocs.io/en/latest/user/installation.html)
 
-- Define a model
+## Define a model
 
 You can immediately use tensorlayerx to define a model, using your favourite framework in the background, like so:
 ```python
