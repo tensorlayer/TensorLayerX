@@ -513,15 +513,15 @@ class TransformerEncoderLayer(Module):
         self._config.pop("self")
         self._config.pop("__class__", None)
         self.self_attn = MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=batch_first)
-        self.linear1 = tlx.nn.layers.Dense(in_channels=d_model, n_units=dim_feedforward)
-        self.dropout1 = tlx.nn.layers.Dropout(float(1.0 - dropout))
-        self.linear2 = tlx.nn.layers.Dense(in_channels=dim_feedforward, n_units=d_model)
+        self.linear1 = tlx.nn.layers.Linear(in_features=d_model, out_features=dim_feedforward)
+        self.dropout1 = tlx.nn.layers.Dropout(float(dropout))
+        self.linear2 = tlx.nn.layers.Linear(in_features=dim_feedforward, out_features=d_model)
 
         self.norm1 = tlx.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
         self.norm2 = tlx.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
 
-        self.dropout2 = tlx.nn.layers.Dropout(float(1.0 - dropout))
-        self.dropout3 = tlx.nn.layers.Dropout(float(1.0 - dropout))
+        self.dropout2 = tlx.nn.layers.Dropout(float(dropout))
+        self.dropout3 = tlx.nn.layers.Dropout(float(dropout))
         if act == 'relu':
             self.act = tlx.relu
         elif act == 'gelu':
@@ -608,14 +608,14 @@ class TransformerDecoderLayer(Module):
         self._config.pop("__class__", None)  # py3
         self.self_attn = MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=batch_first)
         self.cross_attn = MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=batch_first)
-        self.dropout1 = tlx.nn.layers.Dropout(float(1 - dropout))
-        self.dropout2 = tlx.nn.layers.Dropout(float(1 - dropout))
-        self.dropout3 = tlx.nn.layers.Dropout(float(1 - dropout))
+        self.dropout1 = tlx.nn.layers.Dropout(float(dropout))
+        self.dropout2 = tlx.nn.layers.Dropout(float(dropout))
+        self.dropout3 = tlx.nn.layers.Dropout(float(dropout))
         self.norm1 = tlx.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
         self.norm2 = tlx.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
         self.norm3 = tlx.nn.layers.LayerNorm(d_model, epsilon=layer_norm_eps)
-        self.linear1 = tlx.nn.layers.Dense(in_channels=d_model, n_units=dim_feedforward)
-        self.linear2 = tlx.nn.layers.Dense(in_channels=dim_feedforward, n_units=d_model)
+        self.linear1 = tlx.nn.layers.Linear(in_features=d_model, out_features=dim_feedforward)
+        self.linear2 = tlx.nn.layers.Linear(in_features=dim_feedforward, out_features=d_model)
 
         if act == 'relu':
             self.act = tlx.relu

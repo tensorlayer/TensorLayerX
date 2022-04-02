@@ -190,8 +190,8 @@ def test_pooling():
 
 def test_dense():
     input_layer = tlx.nn.Input([10, 30])
-    n1 = tlx.nn.Dense(n_units=100, in_channels=30, b_init=tlx.initializers.truncated_normal())(input_layer)
-    n2 = tlx.nn.Dense(n_units=10, name='none inchannels')(input_layer)
+    n1 = tlx.nn.Linear(out_features=100, in_features=30, b_init=tlx.initializers.truncated_normal())(input_layer)
+    n2 = tlx.nn.Linear(out_features=10, name='none inchannels')(input_layer)
     print("Dense :", n1.shape, n2.shape)
 
 def test_normalization():

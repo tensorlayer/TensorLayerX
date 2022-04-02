@@ -29,7 +29,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
         ## Base
         ni_1 = Input(x_1_input_shape, name='test_ni1')
-        nn_1 = Conv1d(out_channels=32, kernel_size=5, stride=2, name='test_conv1d')(ni_1)
+        nn_1 = Conv1d(out_channels=32, in_channels=1, stride=2, name='test_conv1d')(ni_1)
         n1_b = BatchNorm(name='test_conv')(nn_1)
         cls.n1_b = n1_b
 
@@ -47,7 +47,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
             def __init__(self):
                 super(bn_0d_model, self).__init__()
-                self.fc = Dense(32, in_channels=10)
+                self.fc = Linear(32, in_features=10)
                 self.bn = BatchNorm(num_features=32, name='test_bn1d')
 
             def forward(self, x):
@@ -61,7 +61,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
         nin_0 = Input(x_0_input_shape, name='test_in1')
 
-        n0 = Dense(32)(nin_0)
+        n0 = Linear(32)(nin_0)
         n0 = BatchNorm1d(name='test_bn0d')(n0)
 
         cls.n0 = n0
@@ -70,7 +70,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
             def __init__(self):
                 super(bn_0d_model, self).__init__(name='test_bn_0d_model')
-                self.fc = Dense(32, in_channels=10)
+                self.fc = Linear(32, in_features=10)
                 self.bn = BatchNorm1d(num_features=32, name='test_bn1d')
 
             def forward(self, x):
@@ -104,7 +104,6 @@ class Laye_BatchNorm_Test(CustomTestCase):
         ## 2D ========================================================================
 
         nin_2 = Input(x_2_input_shape, name='test_in2')
-
         n2 = Conv2d(out_channels=32, kernel_size=(3, 3), stride=(2, 2), name='test_conv2d')(nin_2)
         n2 = BatchNorm2d(name='test_bn2d')(n2)
 
@@ -126,7 +125,6 @@ class Laye_BatchNorm_Test(CustomTestCase):
         ## 3D ========================================================================
 
         nin_3 = Input(x_3_input_shape, name='test_in3')
-
         n3 = Conv3d(out_channels=32, kernel_size=(3, 3, 3), stride=(2, 2, 2), name='test_conv3d')(nin_3)
         n3 = BatchNorm3d(name='test_bn3d', act=tlx.ReLU)(n3)
 

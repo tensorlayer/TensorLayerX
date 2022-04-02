@@ -46,7 +46,6 @@ class Layer_Pooling_Test(CustomTestCase):
 
         x_2_input_shape = [None, 100, 100, 3]
         nin_2 = Input(x_2_input_shape, name='test_in2')
-
         n6 = tlx.nn.Conv2d(out_channels=32, kernel_size=(3, 3), stride=(2, 2), name='test_conv2d')(nin_2)
         n7 = tlx.nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding='SAME',
                                            name='test_maxpool2d')(n6)

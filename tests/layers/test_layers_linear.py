@@ -21,7 +21,6 @@ class Layer_BinaryLinear_Test(CustomTestCase):
 
         self.ni = tlx.nn.Input(self.inputs_shape, name='input_layer')
         self.layer1 = tlx.nn.BinaryLinear(out_features=5)
-
         self.layer2 = tlx.nn.BinaryLinear(out_features=5, in_features=10)
 
         self.n1 = self.layer1(self.ni)
@@ -76,9 +75,7 @@ class Layer_DropconnectLinear_Test(CustomTestCase):
 
         self.ni = tlx.nn.Input(self.inputs_shape, name='input_layer')
         self.layer1 = tlx.nn.DropconnectLinear(out_features=5, keep=1.0)
-
         self.layer2 = tlx.nn.DropconnectLinear(out_features=5, in_features=10, keep=0.01)
-
         self.n1 = self.layer1(self.ni)
         self.n2 = self.layer2(self.ni)
 
@@ -103,9 +100,7 @@ class Layer_QuanLinear_Test(CustomTestCase):
 
         self.ni = tlx.nn.Input(self.inputs_shape, name='input_layer')
         self.layer1 = tlx.nn.QuanLinear(out_features=5)
-
         self.layer2 = tlx.nn.QuanLinear(out_features=5, in_features=10)
-
         self.n1 = self.layer1(self.ni)
         self.n2 = self.layer2(self.ni)
 

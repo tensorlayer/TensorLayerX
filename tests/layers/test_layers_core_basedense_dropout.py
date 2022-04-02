@@ -23,7 +23,7 @@ class Layer_Core_Test(CustomTestCase):
         self.dense1 = tlx.nn.Linear(out_features=800, act=tlx.ReLU, in_features=784, name='test_dense')
         self.n1 = self.dense1(self.input)
 
-        self.dropout1 = tlx.nn.Dropout(keep=0.8)
+        self.dropout1 = tlx.nn.Dropout(p=0.2)
         self.n2 = self.dropout1(self.n1)
 
         self.dense2 = tlx.nn.Linear(out_features=10, act='relu', b_init=None, in_features=800)
@@ -39,7 +39,7 @@ class Layer_Core_Test(CustomTestCase):
             def __init__(self):
                 super(get_model, self).__init__()
                 self.layer1 = tlx.nn.Linear(out_features=800, act=tlx.ReLU, in_features=784, name='test_dense')
-                self.dp = tlx.nn.Dropout(p=0.8)
+                self.dp = tlx.nn.Dropout(p=0.2)
                 self.layer2 = tlx.nn.Linear(out_features=10, act='relu', b_init=None, in_features=800)
                 self.layer3 = tlx.nn.Linear(out_features=10, act='relu', b_init=None, in_features=10)
 
