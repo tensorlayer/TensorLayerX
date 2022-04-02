@@ -23,7 +23,7 @@ class DepthwiseConv2d(Module):
     ------------
     kernel_size : tuple of 2 int
         The filter size (height, width).
-    strides : tuple of 2 int
+    stride : tuple of 2 int
         The stride step (height, width).
     act : activation function
         The activation function of this layer.
@@ -31,7 +31,7 @@ class DepthwiseConv2d(Module):
         The padding algorithm type: "SAME" or "VALID".
     data_format : str
         "channels_last" (NHWC, default) or "channels_first" (NCHW).
-    dilation_rate: tuple of 2 int
+    dilation: tuple of 2 int
         The dilation rate in which we sample input values across the height and width dimensions in atrous convolution. If it is greater than 1, then all values of strides must be 1.
     depth_multiplier : int
         The number of channels to expand to.
@@ -50,7 +50,7 @@ class DepthwiseConv2d(Module):
 
     >>> net = tlx.nn.Input([8, 200, 200, 32], name='input')
     >>> depthwiseconv2d = tlx.nn.DepthwiseConv2d(
-    ...     kernel_size=(3, 3), strides=(1, 1), dilation_rate=(2, 2), act=tlx.ReLU, depth_multiplier=2, name='depthwise'
+    ...     kernel_size=(3, 3), stride=(1, 1), dilation=(2, 2), act=tlx.ReLU, depth_multiplier=2, name='depthwise'
     ... )(net)
     >>> print(depthwiseconv2d)
     >>> output shape : (8, 200, 200, 64)
@@ -67,11 +67,11 @@ class DepthwiseConv2d(Module):
     def __init__(
         self,
         kernel_size=(3, 3),
-        strides=(1, 1),
+        stride=(1, 1),
         act=None,
         padding='SAME',
         data_format='channels_last',
-        dilation_rate=(1, 1),
+        dilation=(1, 1),
         depth_multiplier=1,
         W_init='truncated_normal',
         b_init='constant',
@@ -80,9 +80,9 @@ class DepthwiseConv2d(Module):
     ):
         super().__init__(name, act=act)
         self.kernel_size = kernel_size
-        self.strides = self._strides = strides
+        self.stride = self._strides = stride
         self.padding = padding
-        self.dilation_rate = self._dilation_rate = dilation_rate
+        self.dilation = self._dilation = dilation
         self.data_format = data_format
         self.depth_multiplier = depth_multiplier
         self.W_init = self.str_to_init(W_init)
@@ -95,7 +95,7 @@ class DepthwiseConv2d(Module):
 
         logging.info(
             "DepthwiseConv2d %s: kernel_size: %s strides: %s pad: %s act: %s" % (
-                self.name, str(kernel_size), str(strides), padding,
+                self.name, str(kernel_size), str(stride), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -106,8 +106,8 @@ class DepthwiseConv2d(Module):
             '{classname}(in_channels={in_channels}, out_channels={n_filter}, kernel_size={kernel_size}'
             ', strides={strides}, padding={padding}'
         )
-        if self.dilation_rate != (1, ) * len(self.dilation_rate):
-            s += ', dilation={dilation_rate}'
+        if self.dilation != (1, ) * len(self.dilation):
+            s += ', dilation={dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (', ' + actstr)
@@ -150,7 +150,7 @@ class DepthwiseConv2d(Module):
             self.point_W = self._get_weights("point_filter", shape=self.filter_pointwise, init=self.W_init, order=True)
 
         self.depthwise_conv2d = tlx.ops.DepthwiseConv2d(
-            strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
+            strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation,
             ksize=self.kernel_size, channel_multiplier=self.depth_multiplier
         )
 

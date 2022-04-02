@@ -9,20 +9,20 @@ layers that allow user to apply ``tf.ops.lrn`` on ``network.outputs``.
 More functions can be found in `TensorFlow API <https://www.tensorflow.org/versions/master/api_docs/index.html>`__.
 """
 
-from .base_dense import *
-from .binary_dense import *
-from .dorefa_dense import *
+from .base_linear import *
+from .binary_linear import *
+from .dorefa_linear import *
 from .dropconnect import *
-from .quan_dense import *
-from .quan_dense_bn import *
-from .ternary_dense import *
+from .quan_linear import *
+from .quan_linear_bn import *
+from .ternary_linear import *
 
 __all__ = [
-    'BinaryDense',
+    'BinaryLinear',
     'Linear',
-    'DorefaDense',
-    'DropconnectDense',
-    'TernaryDense',
-    'QuanDense',
-    'QuanDenseWithBN',
+    'DorefaLinear',
+    'DropconnectLinear',
+    'TernaryLinear',
+    'QuanLinear',
+    'QuanLinearWithBN',
 ]

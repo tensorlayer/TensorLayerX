@@ -18,7 +18,7 @@ def model(x, is_train=True, reuse=False, name_scope="env1"):
         net = tensorlayerx.layers.TimeDistributedLayer(
             net, layer_class=tensorlayerx.layers.DenseLayer, args={
                 'n_units': 50,
-                'name': 'dense'
+                'name': 'linear'
             }, name='time_dense'
         )
     return net

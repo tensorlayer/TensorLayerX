@@ -7,13 +7,13 @@ from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
 __all__ = [
-    'DropconnectDense',
+    'DropconnectLinear',
 ]
 
 
-class DropconnectDense(Module):
+class DropconnectLinear(Module):
     """
-    The :class:`DropconnectDense` class is :class:`Dense` with DropConnect
+    The :class:`DropconnectLinear` class is :class:`Dense` with DropConnect
     behaviour which randomly removes connections between this layer and the previous
     layer according to a keeping probability.
 
@@ -39,11 +39,11 @@ class DropconnectDense(Module):
     Examples
     --------
     >>> net = tlx.nn.Input([10, 784], name='input')
-    >>> net = tlx.nn.DropconnectDense(keep=0.8, out_features=800, act=tlx.ReLU, name='relu1')(net)
+    >>> net = tlx.nn.DropconnectLinear(keep=0.8, out_features=800, act=tlx.ReLU, name='DropconnectLinear1')(net)
     >>> output shape :(10, 800)
-    >>> net = tlx.nn.DropconnectDense(keep=0.5, out_features=800, act=tlx.ReLU, name='relu2')(net)
+    >>> net = tlx.nn.DropconnectLinear(keep=0.5, out_features=800, act=tlx.ReLU, name='DropconnectLinear2')(net)
     >>> output shape :(10, 800)
-    >>> net = tlx.nn.DropconnectDense(keep=0.5, out_features=10, name='output')(net)
+    >>> net = tlx.nn.DropconnectLinear(keep=0.5, out_features=10, name='DropconnectLinear3')(net)
     >>> output shape :(10, 10)
 
     References
@@ -78,7 +78,7 @@ class DropconnectDense(Module):
             self._built = True
 
         logging.info(
-            "DropconnectDense %s: %d %s" %
+            "DropconnectLinear %s: %d %s" %
             (self.name, out_features, self.act.__class__.__name__ if self.act is not None else 'No Activation')
         )
 
@@ -105,7 +105,7 @@ class DropconnectDense(Module):
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.out_features), init=self.b_init)
 
-        self.dropout = tlx.ops.Dropout(keep=self.keep)
+        self.dropout = tlx.ops.Dropout(p=self.keep)
         self.matmul = tlx.ops.MatMul()
         self.bias_add = tlx.ops.BiasAdd()
 

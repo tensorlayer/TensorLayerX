@@ -19,21 +19,21 @@ class CustomModel(Module):
     def __init__(self):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(p=0.2)
-        self.dense1 = Linear(out_features=800)
+        self.linear1 = Linear(out_features=800)
         self.batchnorm = BatchNorm1d(act=tlx.ReLU)
         self.dropout2 = Dropout(p=0.2)
-        self.dense2 = Linear(out_features=800, act=tlx.ReLU)
+        self.linear2 = Linear(out_features=800, act=tlx.ReLU)
         self.dropout3 = Dropout(p=0.2)
-        self.dense3 = Linear(out_features=10, act=tlx.ReLU)
+        self.linear3 = Linear(out_features=10, act=tlx.ReLU)
 
     def forward(self, x, foo=None):
         z = self.dropout1(x)
-        z = self.dense1(z)
+        z = self.linear1(z)
         z = self.batchnorm(z)
         z = self.dropout2(z)
-        z = self.dense2(z)
+        z = self.linear2(z)
         z = self.dropout3(z)
-        out = self.dense3(z)
+        out = self.linear3(z)
         if foo is not None:
             out = tlx.relu(out)
         return out

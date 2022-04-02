@@ -6,21 +6,22 @@ from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
 __all__ = [
-    'BinaryDense',
+    'TernaryLinear',
 ]
 
 
-class BinaryDense(Module):
-    """The :class:`BinaryDense` class is a binary fully connected layer, which weights are either -1 or 1 while inferencing.
+class TernaryLinear(Module):
+    """The :class:`TernaryLinear` class is a ternary fully connected layer, which weights are either -1 or 1 or 0 while inference.
+    # TODO The TernaryDense only supports TensorFlow backend.
 
-    Note that, the bias vector would not be binarized.
+    Note that, the bias vector would not be tenaried.
 
     Parameters
     ----------
     out_features : int
         The number of units of this layer.
     act : activation function
-        The activation function of this layer, usually set to ``tf.act.sign`` or apply :class:`Sign` after :class:`BatchNorm`.
+        The activation function of this layer, usually set to ``tf.act.sign`` or apply :class:`SignLayer` after :class:`BatchNormLayer`.
     use_gemm : boolean
         If True, use gemm instead of ``tf.matmul`` for inference. (TODO).
     W_init : initializer or str
@@ -33,14 +34,6 @@ class BinaryDense(Module):
     name : None or str
         A unique layer name.
 
-    Examples
-    --------
-    >>> net = tlx.nn.Input([10, 784], name='input')
-    >>> net = tlx.nn.BinaryDense(out_features=800, act=tlx.ReLU, name='relu1')(net)
-    >>> output shape :(10, 800)
-    >>> net = tlx.nn.BinaryDense(out_features=10, name='output')(net)
-    >>> output shape : (10, 10)
-
     """
 
     def __init__(
@@ -51,7 +44,7 @@ class BinaryDense(Module):
         W_init='truncated_normal',
         b_init='constant',
         in_features=None,
-        name=None,
+        name=None,  #'ternary_dense',
     ):
         super().__init__(name, act=act)
         self.out_features = out_features
@@ -65,12 +58,12 @@ class BinaryDense(Module):
             self._built = True
 
         logging.info(
-            "BinaryDense  %s: %d %s" %
+            "TernaryDense  %s: %d %s" %
             (self.name, out_features, self.act.__class__.__name__ if self.act is not None else 'No Activation')
         )
 
     def __repr__(self):
-        actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
+        actstr = self.act.__name__ if self.act is not None else 'No Activation'
         s = ('{classname}(out_features={out_features}, ' + actstr)
         if self.in_features is not None:
             s += ', in_features=\'{in_features}\''
@@ -90,13 +83,12 @@ class BinaryDense(Module):
             raise Exception("TODO. The current version use tf.matmul for inferencing.")
 
         n_in = inputs_shape[-1]
-        self.W = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
+
+        self.W = self._get_weights(var_name="weights", shape=(n_in, self.out_features), init=self.W_init)
         self.b = None
         if self.b_init is not None:
-            self.b = self._get_weights("biases", shape=(self.out_features), init=self.b_init)
-            self.bias_add = tlx.ops.BiasAdd()
-
-        self.binary_dense = tlx.ops.BinaryDense(self.W, self.b)
+            self.b = self._get_weights(var_name="biases", shape=(self.out_features), init=self.b_init)
+        self.ternary_dense = tlx.ops.TernaryDense(self.W, self.b)
 
     def forward(self, inputs):
         if self._forward_state == False:
@@ -104,9 +96,7 @@ class BinaryDense(Module):
                 self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
-
-        outputs = self.binary_dense(inputs)
-
+        outputs = self.ternary_dense(inputs)
         if self.act:
             outputs = self.act(outputs)
         return outputs

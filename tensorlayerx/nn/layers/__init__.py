@@ -3,7 +3,7 @@
 
 from .activation import *
 from .convolution import *
-from .dense import *
+from .linear import *
 from .deprecated import *
 from .dropout import *
 from .embedding import *

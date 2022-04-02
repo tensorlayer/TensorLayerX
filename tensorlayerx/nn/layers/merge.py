@@ -26,13 +26,13 @@ class Concat(Module):
     >>> class CustomModel(Module):
     >>>     def __init__(self):
     >>>         super(CustomModel, self).__init__(name="custom")
-    >>>         self.dense1 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu1_1')
-    >>>         self.dense2 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu2_1')
+    >>>         self.linear1 = tlx.nn.Linear(in_features=20, out_features=10, act=tlx.ReLU, name='relu1_1')
+    >>>         self.linear2 = tlx.nn.Linear(in_features=20, out_features=10, act=tlx.ReLU, name='relu2_1')
     >>>         self.concat = tlx.nn.Concat(concat_dim=1, name='concat_layer')
 
     >>>     def forward(self, inputs):
-    >>>         d1 = self.dense1(inputs)
-    >>>         d2 = self.dense2(inputs)
+    >>>         d1 = self.linear1(inputs)
+    >>>         d2 = self.linear2(inputs)
     >>>         outputs = self.concat([d1, d2])
     >>>         return outputs
 
@@ -92,13 +92,13 @@ class Elementwise(Module):
     >>> class CustomModel(tlx.nn.Module):
     >>>     def __init__(self):
     >>>         super(CustomModel, self).__init__(name="custom")
-    >>>         self.dense1 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu1_1')
-    >>>         self.dense2 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu2_1')
-    >>>         self.element = tlx.nn.Elementwise(combine_fn=tlx.minimum, name='minimum', act=tlx.identity)
+    >>>         self.linear1 = tlx.nn.Linear(in_features=20, out_features=10, act=tlx.ReLU, name='relu1_1')
+    >>>         self.linear2 = tlx.nn.Linear(in_features=20, out_features=10, act=tlx.ReLU, name='relu2_1')
+    >>>         self.element = tlx.nn.Elementwise(combine_fn=tlx.minimum, name='minimum')
 
     >>>     def forward(self, inputs):
-    >>>         d1 = self.dense1(inputs)
-    >>>         d2 = self.dense2(inputs)
+    >>>         d1 = self.linear1(inputs)
+    >>>         d2 = self.linear2(inputs)
     >>>         outputs = self.element([d1, d2])
     >>>         return outputs
     """

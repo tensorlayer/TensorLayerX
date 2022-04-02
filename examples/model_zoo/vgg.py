@@ -102,7 +102,7 @@ class VGG(Module):
             Shape [None, 224, 224, 3], value range [0, 1].
         """
 
-        inputs = inputs * 255 - np.array([123.68, 116.779, 103.939], dtype=np.float32).reshape([1, 1, 1, 3])
+        inputs = inputs * 255 - tlx.convert_to_tensor(np.array([123.68, 116.779, 103.939], dtype=np.float32).reshape([1, 1, 1, 3]))
         out = self.make_layer(inputs)
         return out
 
@@ -124,7 +124,7 @@ def make_layers(config, batch_norm=False, end_with='outputs'):
                     in_channels = layer_group[idx - 1]
                 layer_list.append(
                     Conv2d(
-                        out_channels=n_filter, kernel_size=(3, 3), strides=(1, 1), act=tlx.ReLU, padding='SAME',
+                        out_channels=n_filter, kernel_size=(3, 3), stride=(1, 1), act=tlx.ReLU, padding='SAME',
                         in_channels=in_channels, name=layer_name
                     )
                 )
@@ -136,7 +136,7 @@ def make_layers(config, batch_norm=False, end_with='outputs'):
         else:
             layer_name = layer_names[layer_group_idx]
             if layer_group == 'M':
-                layer_list.append(MaxPool2d(kernel_size=(2, 2), strides=(2, 2), padding='SAME', name=layer_name))
+                layer_list.append(MaxPool2d(kernel_size=(2, 2), stride=(2, 2), padding='SAME', name=layer_name))
             elif layer_group == 'O':
                 layer_list.append(Linear(out_features=1000, in_features=4096, name=layer_name))
             elif layer_group == 'F':

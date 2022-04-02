@@ -122,7 +122,7 @@ def dense_module(
         act=None,
         W_init=dense_init,
         b_init=None if use_batchnorm else bias_init,  # Not useful as the convolutions are batch normalized
-        name='dense' if name is None else name
+        name='linear' if name is None else name
     )
 
     if use_batchnorm:

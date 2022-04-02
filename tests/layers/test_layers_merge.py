@@ -28,8 +28,8 @@ class Layer_Merge_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomModel, self).__init__()
-                self.dense1 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu1_1')
-                self.dense2 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu2_1')
+                self.dense1 = tlx.nn.Linear(in_features=20, out_features=10, act=tlx.ReLU, name='relu1_1')
+                self.dense2 = tlx.nn.Linear(in_features=20, out_features=10, act=tlx.ReLU, name='relu2_1')
                 self.concat = tlx.nn.Concat(concat_dim=1, name='concat_layer')
 
             def forward(self, inputs):
@@ -52,8 +52,8 @@ class Layer_Merge_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomModel, self).__init__()
-                self.dense1 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu1_1')
-                self.dense2 = tlx.nn.Dense(in_channels=20, n_units=10, act=tlx.ReLU, name='relu2_1')
+                self.dense1 = tlx.nn.Linear(in_features=20, out_features=10, act=tlx.ReLU, name='relu1_1')
+                self.dense2 = tlx.nn.Linear(in_features=20, out_features=10, act=tlx.ReLU, name='relu2_1')
                 self.element = tlx.nn.Elementwise(combine_fn=tlx.minimum, name='minimum', act=None)
 
             def forward(self, inputs):

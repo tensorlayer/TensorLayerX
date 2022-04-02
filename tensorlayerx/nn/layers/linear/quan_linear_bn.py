@@ -6,14 +6,14 @@ from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
 __all__ = [
-    'QuanDenseWithBN',
+    'QuanLinearWithBN',
 ]
 
 
-class QuanDenseWithBN(Module):
-    """The :class:`QuanDenseWithBN` class is a quantized fully connected layer with BN, which weights are 'bitW' bits and the output of the previous layer
+class QuanLinearWithBN(Module):
+    """The :class:`QuanLinearWithBN` class is a quantized fully connected layer with BN, which weights are 'bitW' bits and the output of the previous layer
     are 'bitA' bits while inferencing.
-    # TODO The QuanDenseWithBN only supports TensorFlow backend.
+    # TODO The QuanLinearWithBN only supports TensorFlow backend.
     Parameters
     ----------
     out_features : int
@@ -52,8 +52,8 @@ class QuanDenseWithBN(Module):
     ---------
     >>> import tensorlayerx as tlx
     >>> net = tlx.nn.Input([50, 256])
-    >>> layer = tlx.nn.QuanDenseWithBN(128, act='relu', name='qdbn1')(net)
-    >>> net = tlx.nn.QuanDenseWithBN(256, act='relu', name='qdbn2')(net)
+    >>> layer = tlx.nn.QuanLinearWithBN(128, act='relu', name='qdbn1')(net)
+    >>> net = tlx.nn.QuanLinearWithBN(256, act='relu', name='qdbn2')(net)
     """
 
     def __init__(
@@ -73,7 +73,7 @@ class QuanDenseWithBN(Module):
         in_features=None,
         name=None,  # 'quan_dense_with_bn',
     ):
-        super(QuanDenseWithBN, self).__init__(act=act, W_init_args=W_init_args, name=name)
+        super(QuanLinearWithBN, self).__init__(act=act, W_init_args=W_init_args, name=name)
         self.out_features = out_features
         self.decay = decay
         self.epsilon = epsilon

@@ -22,7 +22,7 @@ class BinaryConv2d(Module):
         The number of filters.
     kernel_size : tuple of int
         The filter size (height, width).
-    strides : tuple of int
+    stride : tuple of int
         The sliding window strides of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
     act : activation function
@@ -31,7 +31,7 @@ class BinaryConv2d(Module):
         The padding algorithm type: "SAME" or "VALID".
     data_format : str
         "channels_last" (NHWC, default) or "channels_first" (NCHW).
-    dilation_rate : tuple of int
+    dilation : tuple of int
         Specifying the dilation rate to use for dilated convolution.
     W_init : initializer or str
         The initializer for the the weight matrix.
@@ -48,23 +48,23 @@ class BinaryConv2d(Module):
 
     >>> net = tlx.nn.Input([8, 100, 100, 32], name='input')
     >>> binaryconv2d = tlx.nn.BinaryConv2d(
-        ... out_channels=64, kernel_size=(3, 3), strides=(2, 2), act=tlx.ReLU, in_channels=32, name='binaryconv2d')(net)
+        ... out_channels=64, kernel_size=(3, 3), stride=(2, 2), act=tlx.ReLU, in_channels=32, name='binaryconv2d')(net)
     >>> print(binaryconv2d)
     >>> output shape : (8, 50, 50, 64)
 
     """
 
     def __init__(
-        self, out_channels=32, kernel_size=(3, 3), strides=(1, 1), act=None, padding='VALID', data_format="channels_last",
-        dilation_rate=(1, 1), W_init='truncated_normal', b_init='constant', in_channels=None, name=None
+        self, out_channels=32, kernel_size=(3, 3), stride=(1, 1), act=None, padding='VALID', data_format="channels_last",
+        dilation=(1, 1), W_init='truncated_normal', b_init='constant', in_channels=None, name=None
     ):
         super(BinaryConv2d, self).__init__(name, act=act)
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self._strides = self.strides = strides
+        self._strides = self.stride = stride
         self.padding = padding
         self.data_format = data_format
-        self._dilation_rate = self.dilation_rate = dilation_rate
+        self._dilation = self.dilation = dilation
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -75,7 +75,7 @@ class BinaryConv2d(Module):
 
         logging.info(
             "BinaryConv2d %s: out_channels: %d kernel_size: %s strides: %s pad: %s act: %s" % (
-                self.name, out_channels, str(kernel_size), str(strides), padding,
+                self.name, out_channels, str(kernel_size), str(stride), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -86,8 +86,8 @@ class BinaryConv2d(Module):
             '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', strides={strides}, padding={padding}'
         )
-        if self.dilation_rate != (1, ) * len(self.dilation_rate):
-            s += ', dilation={dilation_rate}'
+        if self.dilation != (1, ) * len(self.dilation):
+            s += ', dilation={dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (', ' + actstr)
@@ -102,13 +102,13 @@ class BinaryConv2d(Module):
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
             self._strides = [1, self._strides[0], self._strides[1], 1]
-            self._dilation_rate = [1, self._dilation_rate[0], self._dilation_rate[1], 1]
+            self._dilation = [1, self._dilation[0], self._dilation[1], 1]
         elif self.data_format == 'channels_first':
             self.data_format = 'NCHW'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
             self._strides = [1, 1, self._strides[0], self._strides[1]]
-            self._dilation_rate = [1, 1, self._dilation_rate[0], self._dilation_rate[1]]
+            self._dilation = [1, 1, self._dilation[0], self._dilation[1]]
         else:
             raise Exception("data_format should be either channels_last or channels_first")
 
@@ -130,7 +130,7 @@ class BinaryConv2d(Module):
             strides=self._strides,
             padding=self.padding,
             data_format=self.data_format,
-            dilations=self._dilation_rate,
+            dilations=self._dilation,
             out_channel=self.out_channels,
             k_size=self.kernel_size,
             in_channel=self.in_channels,

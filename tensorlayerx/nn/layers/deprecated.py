@@ -51,7 +51,7 @@ def AtrousDeConv2dLayer(*args, **kwargs):
     raise NonExistingLayerError("use `tl.layers.DeConv2d` with dilation instead" + __log__)
 
 
-# dense/base_dense.py
+# linear/base_linear.py
 __all__ += [
     'DenseLayer',
 ]
@@ -61,7 +61,7 @@ def DenseLayer(*args, **kwargs):
     raise NonExistingLayerError("DenseLayer(net, name='a') --> Dense(name='a')(net)" + __log__)
 
 
-# dense/binary_dense.py
+# linear/binary_linear.py
 __all__ += [
     'BinaryDenseLayer',
 ]
@@ -71,7 +71,7 @@ def BinaryDenseLayer(*args, **kwargs):
     raise NonExistingLayerError("BinaryDenseLayer(net, name='a') --> BinaryDense(name='a')(net)" + __log__)
 
 
-# dense/dorefa_dense.py
+# linear/dorefa_linear.py
 __all__ += [
     'DorefaDenseLayer',
 ]
@@ -81,7 +81,7 @@ def DorefaDenseLayer(*args, **kwargs):
     raise NonExistingLayerError("DorefaDenseLayer(net, name='a') --> DorefaDense(name='a')(net)" + __log__)
 
 
-# dense/dropconnect.py
+# linear/dropconnect.py
 __all__ += [
     'DropconnectDenseLayer',
 ]
@@ -91,7 +91,7 @@ def DropconnectDenseLayer(*args, **kwargs):
     raise NonExistingLayerError("DropconnectDenseLayer(net, name='a') --> DropconnectDense(name='a')(net)" + __log__)
 
 
-# dense/quan_dense_bn.py
+# linear/quan_linear_bn.py
 __all__ += [
     'QuanDenseLayerWithBN',
 ]
@@ -101,7 +101,7 @@ def QuanDenseLayerWithBN(*args, **kwargs):
     raise NonExistingLayerError("QuanDenseLayerWithBN(net, name='a') --> QuanDenseWithBN(name='a')(net)" + __log__)
 
 
-# dense/ternary_dense.py
+# linear/ternary_linear.py
 __all__ += [
     'TernaryDenseLayer',
 ]

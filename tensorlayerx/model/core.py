@@ -138,7 +138,7 @@ class Model:
 
     def save_standard_weights(self, file_path):
         """Save to standard format parameter format as {conv.filters: filters_param, conv.biases: biases_parm,
-        dense.weights: weights_parm ...}
+        linear.weights: weights_parm ...}
 
         Parameters
         ----------

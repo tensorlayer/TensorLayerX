@@ -3,7 +3,7 @@
 
 import os
 import unittest
-
+import tensorlayerx
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import numpy as np
@@ -24,7 +24,7 @@ class Test_Leaky_ReLUs(CustomTestCase):
         pass
 
     def init_dense(self, w_init):
-        return tensorlayerx.layers.Dense(n_units=self.w_shape[1], in_channels=self.w_shape[0], W_init=w_init)
+        return tensorlayerx.layers.Linear(out_features=self.w_shape[1], in_features=self.w_shape[0], W_init=w_init)
 
     def test_zeros(self):
         dense = self.init_dense(tensorlayerx.nn.initializers.zeros())

@@ -159,7 +159,7 @@ class Word2vecEmbedding(Module):
     >>> embed_tensor = emb_net(inputs, use_nce_loss=False) # the nce loss is turned off and no need to provide labels
     >>> embed_tensor = emb_net([inputs, labels], use_nce_loss=False) # the nce loss is turned off and the labels will be ignored
     >>> embed_tensor, embed_nce_loss = emb_net([inputs, labels]) # the nce loss is calculated
-    >>> outputs = tlx.layers.Dense(n_units=10, name="dense")(embed_tensor)
+    >>> outputs = tlx.nn.Linear(out_features=10, name="linear")(embed_tensor)
     >>> model = tlx.model.Model(inputs=[inputs, labels], outputs=[outputs, embed_nce_loss], name="word2vec_model") # a static model
     >>> out = model([data_x, data_y], is_train=True) # where data_x is inputs and data_y is labels
 

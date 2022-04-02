@@ -23,15 +23,15 @@ class SeparableConv1d(Module):
     kernel_size : int
         Specifying the spatial dimensions of the filters. Can be a single integer to specify the same value for all spatial dimensions.
     stride : int
-        Specifying the stride of the convolution. Can be a single integer to specify the same value for all spatial dimensions. Specifying any stride value != 1 is incompatible with specifying any dilation_rate value != 1.
+        Specifying the stride of the convolution. Can be a single integer to specify the same value for all spatial dimensions. Specifying any stride value != 1 is incompatible with specifying any dilation value != 1.
     act : activation function
         The activation function of this layer.
     padding : str
         One of "valid" or "same" (case-insensitive).
     data_format : str
         One of channels_last (default) or channels_first. The ordering of the dimensions in the inputs. channels_last corresponds to inputs with shape (batch, height, width, channels) while channels_first corresponds to inputs with shape (batch, channels, height, width).
-    dilation_rate : int
-        Specifying the dilation rate to use for dilated convolution. Can be a single integer to specify the same value for all spatial dimensions. Currently, specifying any dilation_rate value != 1 is incompatible with specifying any stride value != 1.
+    dilation : int
+        Specifying the dilation rate to use for dilated convolution. Can be a single integer to specify the same value for all spatial dimensions. Currently, specifying any dilation value != 1 is incompatible with specifying any stride value != 1.
     depth_multiplier : int
         The number of depthwise convolution output channels for each input channel. The total number of depthwise convolution output channels will be equal to num_filters_in * depth_multiplier.
     depthwise_init : initializer or str
@@ -47,7 +47,7 @@ class SeparableConv1d(Module):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> net = tlx.nn.Input([8, 50, 64], name='input')
     >>> separableconv1d = tlx.nn.SeparableConv1d(out_channels=32, kernel_size=3, stride=2, padding='SAME', act=tlx.ReLU, name='separable_1d')(net)
@@ -58,7 +58,7 @@ class SeparableConv1d(Module):
 
     def __init__(
         self, out_channels=32, kernel_size=1, stride=1, act=None, padding="SAME", data_format="channels_last",
-        dilation_rate=1, depth_multiplier=1, depthwise_init='truncated_normal', pointwise_init='truncated_normal',
+        dilation=1, depth_multiplier=1, depthwise_init='truncated_normal', pointwise_init='truncated_normal',
         b_init='constant', in_channels=None, name=None
     ):
         super(SeparableConv1d, self).__init__(name, act=act)
@@ -67,7 +67,7 @@ class SeparableConv1d(Module):
         self.stride = stride
         self.padding = padding
         self.data_format = data_format
-        self.dilation_rate = dilation_rate
+        self.dilation = dilation
         self.depth_multiplier = depth_multiplier
         self.depthwise_init = self.str_to_init(depthwise_init)
         self.pointwise_init = self.str_to_init(pointwise_init)
@@ -91,8 +91,8 @@ class SeparableConv1d(Module):
             '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', stride={stride}, padding={padding}'
         )
-        if self.dilation_rate != 1:
-            s += ', dilation={dilation_rate}'
+        if self.dilation != 1:
+            s += ', dilation={dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (', ' + actstr)
@@ -139,7 +139,7 @@ class SeparableConv1d(Module):
             self.act_init_flag = True
 
         self.separable_conv1d = tlx.ops.SeparableConv1D(
-            stride=self.stride, padding=self.padding, data_format=self.data_format, dilations=self.dilation_rate,
+            stride=self.stride, padding=self.padding, data_format=self.data_format, dilations=self.dilation,
             out_channel=self.out_channels, k_size=self.kernel_size, in_channel=self.in_channels,
             depth_multiplier=self.depth_multiplier
         )
@@ -169,16 +169,16 @@ class SeparableConv2d(Module):
             The dimensionality of the output space (i.e. the number of filters in the convolution).
         kernel_size : tuple of int
             Specifying the spatial dimensions of the filters. Can be a single integer to specify the same value for all spatial dimensions.
-        strides : tuple of int
-            Specifying the stride of the convolution. Can be a single integer to specify the same value for all spatial dimensions. Specifying any stride value != 1 is incompatible with specifying any dilation_rate value != 1.
+        stride : tuple of int
+            Specifying the stride of the convolution. Can be a single integer to specify the same value for all spatial dimensions. Specifying any stride value != 1 is incompatible with specifying any dilation value != 1.
         act : activation function
             The activation function of this layer.
         padding : str
             One of "valid" or "same" (case-insensitive).
         data_format : str
             One of channels_last (default) or channels_first. The ordering of the dimensions in the inputs. channels_last corresponds to inputs with shape (batch, height, width, channels) while channels_first corresponds to inputs with shape (batch, channels, height, width).
-        dilation_rate : tuple of int
-            Specifying the dilation rate to use for dilated convolution. Can be a single integer to specify the same value for all spatial dimensions. Currently, specifying any dilation_rate value != 1 is incompatible with specifying any stride value != 1.
+        dilation : tuple of int
+            Specifying the dilation rate to use for dilated convolution. Can be a single integer to specify the same value for all spatial dimensions. Currently, specifying any dilation value != 1 is incompatible with specifying any stride value != 1.
         depth_multiplier : int
             The number of depthwise convolution output channels for each input channel. The total number of depthwise convolution output channels will be equal to num_filters_in * depth_multiplier.
         depthwise_init : initializer or str
@@ -194,27 +194,27 @@ class SeparableConv2d(Module):
 
         Examples
         --------
-        With TensorLayer
+        With TensorLayerX
 
         >>> net = tlx.nn.Input([8, 50, 50, 64], name='input')
-        >>> separableconv2d = tlx.nn.SeparableConv2d(out_channels=32, kernel_size=(3,3), strides=(2,2), depth_multiplier = 3 , padding='SAME', act=tlx.ReLU, name='separable_2d')(net)
+        >>> separableconv2d = tlx.nn.SeparableConv2d(out_channels=32, kernel_size=(3,3), stride=(2,2), depth_multiplier = 3 , padding='SAME', act=tlx.ReLU, name='separable_2d')(net)
         >>> print(separableconv2d)
         >>> output shape : (8, 24, 24, 32)
 
         """
 
     def __init__(
-        self, out_channels=32, kernel_size=(1, 1), strides=(1, 1), act=None, padding="VALID", data_format="channels_last",
-        dilation_rate=(1, 1), depth_multiplier=1, depthwise_init='truncated_normal', pointwise_init='truncated_normal',
+        self, out_channels=32, kernel_size=(1, 1), stride=(1, 1), act=None, padding="VALID", data_format="channels_last",
+        dilation=(1, 1), depth_multiplier=1, depthwise_init='truncated_normal', pointwise_init='truncated_normal',
         b_init='constant', in_channels=None, name=None
     ):
         super(SeparableConv2d, self).__init__(name, act=act)
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self._strides = self.strides = strides
+        self._strides = self.stride = stride
         self.padding = padding
         self.data_format = data_format
-        self._dilation_rate = self.dilation_rate = dilation_rate
+        self._dilation_rate = self.dilation = dilation
         self.depth_multiplier = depth_multiplier
         self.depthwise_init = self.str_to_init(depthwise_init)
         self.pointwise_init = self.str_to_init(pointwise_init)
@@ -227,7 +227,7 @@ class SeparableConv2d(Module):
 
         logging.info(
             "SeparableConv2d  %s: out_channels: %d kernel_size: %s strides: %s depth_multiplier: %d act: %s" % (
-                self.name, out_channels, str(kernel_size), str(strides), depth_multiplier,
+                self.name, out_channels, str(kernel_size), str(stride), depth_multiplier,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -238,8 +238,8 @@ class SeparableConv2d(Module):
             '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', stride={strides }, padding={padding}'
         )
-        if self.dilation_rate != (1, ) * len(self.dilation_rate):
-            s += ', dilation={dilation_rate}'
+        if self.dilation != (1, ) * len(self.dilation):
+            s += ', dilation={dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (', ' + actstr)

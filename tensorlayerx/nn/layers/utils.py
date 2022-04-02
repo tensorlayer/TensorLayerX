@@ -171,7 +171,7 @@ def get_variables_with_name(name=None, train_only=True, verbose=False):
     Examples
     --------
     >>> import tensorlayerx as tlx
-    >>> dense_vars = tlx.utils.get_variables_with_name('dense', True, True)
+    >>> dense_vars = tlx.utils.get_variables_with_name('linear', True, True)
 
     """
     if name is None:

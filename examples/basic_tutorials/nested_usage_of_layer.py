@@ -23,16 +23,16 @@ class Block(Module):
 
     def __init__(self, in_features):
         super(Block, self).__init__()
-        self.dense1 = Linear(in_features=in_features, out_features=256)
-        self.dense2 = Linear(in_features=256, out_features=384)
-        self.dense3 = Linear(in_features=in_features, out_features=384)
+        self.linear1 = Linear(in_features=in_features, out_features=256)
+        self.linear2 = Linear(in_features=256, out_features=384)
+        self.linear3 = Linear(in_features=in_features, out_features=384)
         self.concat = Elementwise(combine_fn=tlx.ops.add)
 
     def forward(self, inputs):
-        z = self.dense1(inputs)
-        z1 = self.dense2(z)
+        z = self.linear1(inputs)
+        z1 = self.linear2(z)
 
-        z2 = self.dense3(inputs)
+        z2 = self.linear3(inputs)
         out = self.concat([z1, z2])
         return out
 
@@ -56,11 +56,11 @@ class CNN(Module):
         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 
         self.flatten = Flatten(name='flatten')
-        self.dense1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_features=2304)
-        self.dense_add = self.make_layer(in_channel=384)
+        self.linear1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_features=2304)
+        self.linear_add = self.make_layer(in_channel=384)
 
-        self.dense2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_features=384)
-        self.dense3 = Linear(10, act=None, W_init=W_init2, name='output', in_features=192)
+        self.linear2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_features=384)
+        self.linear3 = Linear(10, act=None, W_init=W_init2, name='output', in_features=192)
 
     def forward(self, x):
         z = self.conv1(x)
@@ -69,11 +69,11 @@ class CNN(Module):
         z = self.conv2(z)
         z = self.maxpool2(z)
         z = self.flatten(z)
-        z = self.dense1(z)
-        z = self.dense_add(z)
+        z = self.linear1(z)
+        z = self.linear_add(z)
 
-        z = self.dense2(z)
-        z = self.dense3(z)
+        z = self.linear2(z)
+        z = self.linear3(z)
         return z
 
     def make_layer(self, in_channel):

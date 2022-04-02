@@ -35,20 +35,20 @@ class CustomModel(Module):
 
     def __init__(self):
         super(CustomModel, self).__init__()
-        self.dropout1 = Dropout(keep=0.8)
-        self.dense1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
-        self.dropout2 = Dropout(keep=0.8)
-        self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
-        self.dropout3 = Dropout(keep=0.8)
-        self.dense3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
+        self.dropout1 = Dropout(p=0.8)
+        self.linear1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
+        self.dropout2 = Dropout(p=0.8)
+        self.linear2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+        self.dropout3 = Dropout(p=0.8)
+        self.linear3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
 
     def forward(self, x, foo=None):
         z = self.dropout1(x)
-        z = self.dense1(z)
+        z = self.linear1(z)
         z = self.dropout2(z)
-        z = self.dense2(z)
+        z = self.linear2(z)
         z = self.dropout3(z)
-        out = self.dense3(z)
+        out = self.linear3(z)
         if foo is not None:
             out = tlx.relu(out)
         return out
@@ -91,21 +91,21 @@ model.load_weights('./model.npz', format='npz_dict')
 #     def __init__(self):
 #         super(CustomModel, self).__init__()
 #         self.dropout1 = Dropout(keep=0.8)
-#         self.dense1 = Linear(out_features=800, in_features=784)
+#         self.linear1 = Linear(out_features=800, in_features=784)
 #         self.batchnorm = BatchNorm1d(act=tlx.ReLU, num_features=800)
 #         self.dropout2 = Dropout(keep=0.8)
-#         self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+#         self.linear2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
 #         self.dropout3 = Dropout(keep=0.8)
-#         self.dense3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
+#         self.linear3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
 #
 #     def forward(self, x, foo=None):
 #         z = self.dropout1(x)
-#         z = self.dense1(z)
+#         z = self.linear1(z)
 #         z = self.batchnorm(z)
 #         z = self.dropout2(z)
-#         z = self.dense2(z)
+#         z = self.linear2(z)
 #         z = self.dropout3(z)
-#         out = self.dense3(z)
+#         out = self.linear3(z)
 #         if foo is not None:
 #             out = tlx.relu(out)
 #         return out
@@ -187,14 +187,14 @@ model.load_weights('./model.npz', format='npz_dict')
 #
 #     def __init__(self):
 #         super(MLP, self).__init__()
-#         self.dense1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
-#         self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
-#         self.dense3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
+#         self.linear1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
+#         self.linear2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+#         self.linear3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
 #
 #     def forward(self, x):
-#         z = self.dense1(x)
-#         z = self.dense2(z)
-#         out = self.dense3(z)
+#         z = self.linear1(x)
+#         z = self.linear2(z)
+#         out = self.linear3(z)
 #         return out
 #
 #
@@ -375,15 +375,15 @@ model.load_weights('./model.npz', format='npz_dict')
 #     def __init__(self):
 #         super(NeuralNetwork, self).__init__()
 #         self.flatten = nn.Flatten()
-#         self.dense1 = Linear(in_features=28 * 28, out_features=512)
-#         self.dense2 = Linear(in_features=512, out_features=512)
-#         self.dense3 = Linear(in_features=512, out_features=10)
+#         self.linear1 = Linear(in_features=28 * 28, out_features=512)
+#         self.linear2 = Linear(in_features=512, out_features=512)
+#         self.linear3 = Linear(in_features=512, out_features=10)
 #
 #     def forward(self, x):
 #         x = self.flatten(x)
-#         x = self.dense1(x)
-#         x = self.dense2(x)
-#         x = self.dense3(x)
+#         x = self.linear1(x)
+#         x = self.linear2(x)
+#         x = self.linear3(x)
 #         return x
 #
 #

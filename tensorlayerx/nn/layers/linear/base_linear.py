@@ -31,13 +31,11 @@ class Linear(Module):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerx
 
     >>> net = tlx.nn.Input([100, 50], name='input')
-    >>> dense = tlx.nn.Linear(out_features=800, act=tlx.ReLU, in_features=50, name='dense_1')
-    Linear(out_features=800, relu, in_features='50', name='dense_1')
-    >>> tensor = tlx.nn.Linear(out_features=800, act=tlx.ReLU, name='dense_2')(net)
-    tf.Tensor([...], shape=(100, 800), dtype=float32)
+    >>> linear = tlx.nn.Linear(out_features=800, act=tlx.ReLU, in_features=50, name='linear_1')
+    >>> tensor = tlx.nn.Linear(out_features=800, act=tlx.ReLU, name='linear_2')(net)
 
     Notes
     -----
@@ -52,7 +50,7 @@ class Linear(Module):
         W_init='truncated_normal',
         b_init='constant',
         in_features=None,
-        name=None,  # 'dense',
+        name=None,  # 'linear',
     ):
 
         super(Linear, self).__init__(name, act=act)
@@ -117,3 +115,4 @@ class Linear(Module):
         if self.act_init_flag:
             z = self.act(z)
         return z
+

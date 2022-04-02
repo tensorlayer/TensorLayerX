@@ -29,7 +29,7 @@ class GroupConv2d(Module):
           The padding algorithm type: "SAME" or "VALID".
       data_format : str
           "channels_last" (NHWC, default) or "channels_first" (NCHW).
-      dilation_rate : tuple of int
+      dilation : tuple of int
           Specifying the dilation rate to use for dilated convolution.
       W_init : initializer or str
           The initializer for the weight matrix.
@@ -46,7 +46,7 @@ class GroupConv2d(Module):
 
       >>> net = tlx.nn.Input([8, 24, 24, 32], name='input')
       >>> groupconv2d = tlx.nn.GroupConv2d(
-      ...     out_channels=64, kernel_size=(3, 3), strides=(2, 2), n_group=2, name='group'
+      ...     out_channels=64, kernel_size=(3, 3), stride=(2, 2), n_group=2, name='group'
       ... )(net)
       >>> print(groupconv2d)
       >>> output shape : (8, 12, 12, 64)
@@ -57,12 +57,12 @@ class GroupConv2d(Module):
         self,
         out_channels=32,
         kernel_size=(1, 1),
-        strides=(1, 1),
+        stride=(1, 1),
         n_group=1,
         act=None,
         padding='SAME',
         data_format="channels_last",
-        dilation_rate=(1, 1),
+        dilation=(1, 1),
         W_init='truncated_normal',
         b_init='constant',
         in_channels=None,
@@ -71,11 +71,11 @@ class GroupConv2d(Module):
         super().__init__(name, act=act)
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self._strides = self.strides = strides
+        self._stride = self.stride = stride
         self.n_group = n_group
         self.padding = padding
         self.data_format = data_format
-        self._dilation_rate = self.dilation_rate = dilation_rate
+        self._dilation_rate = self.dilation = dilation
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -85,8 +85,8 @@ class GroupConv2d(Module):
             self._built = True
 
         logging.info(
-            "Conv2d %s: out_channels: %d kernel_size: %s strides: %s n_group: %d pad: %s  act: %s" % (
-                self.name, out_channels, str(kernel_size), str(strides), n_group, padding,
+            "Conv2d %s: out_channels: %d kernel_size: %s stride: %s n_group: %d pad: %s  act: %s" % (
+                self.name, out_channels, str(kernel_size), str(stride), n_group, padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -95,10 +95,10 @@ class GroupConv2d(Module):
         actstr = self.act.__class__.__name__ if self.act is not None else "No Activation"
         s = (
             '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
-            ', strides={strides}, n_group = {n_group}, padding={padding}'
+            ', stride={stride}, n_group = {n_group}, padding={padding}'
         )
-        if self.dilation_rate != (1, ) * len(self.dilation_rate):
-            s += ', dilation = {dilation_rate}'
+        if self.dilation != (1, ) * len(self.dilation):
+            s += ', dilation = {dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (',', +actstr)
@@ -112,13 +112,13 @@ class GroupConv2d(Module):
             self.data_format = 'NHWC'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
-            self._strides = [1, self._strides[0], self._strides[1], 1]
+            self._stride = [1, self._stride[0], self._stride[1], 1]
             self._dilation_rate = [1, self._dilation_rate[0], self._dilation_rate[1], 1]
         elif self.data_format == 'channels_first':
             self.data_format = 'NCHW'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
-            self._strides = [1, 1, self._strides[0], self._strides[1]]
+            self._stride = [1, 1, self._stride[0], self._stride[1]]
             self._dilation_rate = [1, 1, self._dilation_rate[0], self._dilation_rate[1]]
         else:
             raise Exception("data_format should be either channels_last or channels_first")
@@ -154,7 +154,7 @@ class GroupConv2d(Module):
             self.b_init_flag = True
 
         self.group_conv2d = tlx.ops.GroupConv2D(
-            strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
+            strides=self._stride, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
             out_channel=self.out_channels, k_size=(self.kernel_size[0], self.kernel_size[1]), groups=self.n_group
         )
 

@@ -92,7 +92,7 @@ class conv_block(Module):
         conv_name_base = 'res' + str(stage) + block + '_branch'
         bn_name_base = 'bn' + str(stage) + block + '_branch'
         self.conv1 = Conv2d(
-            filters1, (1, 1), strides=strides, W_init=henorm, name=conv_name_base + '2a', in_channels=_in_channels
+            filters1, (1, 1), stride=strides, W_init=henorm, name=conv_name_base + '2a', in_channels=_in_channels
         )
         self.bn1 = BatchNorm(name=bn_name_base + '2a', act='relu', num_features=filters1)
 
@@ -106,7 +106,7 @@ class conv_block(Module):
         self.bn3 = BatchNorm(name=bn_name_base + '2c', num_features=filters3)
 
         self.shortcut_conv = Conv2d(
-            filters3, (1, 1), strides=strides, W_init=henorm, name=conv_name_base + '1', in_channels=_in_channels
+            filters3, (1, 1), stride=strides, W_init=henorm, name=conv_name_base + '1', in_channels=_in_channels
         )
         self.shortcut_bn = BatchNorm(name=bn_name_base + '1', num_features=filters3)
 
@@ -133,9 +133,9 @@ class ResNet50_model(Module):
         super(ResNet50_model, self).__init__()
         self.end_with = end_with
         self.n_classes = n_classes
-        self.conv1 = Conv2d(64, (7, 7), in_channels=3, strides=(2, 2), padding='SAME', W_init=henorm, name='conv1')
+        self.conv1 = Conv2d(64, (7, 7), in_channels=3, stride=(2, 2), padding='SAME', W_init=henorm, name='conv1')
         self.bn_conv1 = BatchNorm(name='bn_conv1', act="relu", num_features=64)
-        self.max_pool1 = MaxPool2d((3, 3), strides=(2, 2), name='max_pool1')
+        self.max_pool1 = MaxPool2d((3, 3), stride=(2, 2), name='max_pool1')
         self.res_layer = self.make_layer()
 
     def forward(self, inputs):

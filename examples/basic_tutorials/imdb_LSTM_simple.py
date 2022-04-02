@@ -43,15 +43,15 @@ class ImdbNet(Module):
         super(ImdbNet, self).__init__()
         self.embedding = Embedding(vocabulary_size=vocab_size, embedding_size=64)
         self.lstm = LSTM(input_size=64, hidden_size=64)
-        self.dense1 = Linear(in_features=64, out_features=64, act=tlx.ReLU)
-        self.dense2 = Linear(in_features=64, out_features=2)
+        self.linear1 = Linear(in_features=64, out_features=64, act=tlx.ReLU)
+        self.linear2 = Linear(in_features=64, out_features=2)
 
     def forward(self, x):
         x = self.embedding(x)
         x, _ = self.lstm(x)
         x = tlx.reduce_mean(x, axis=1)
-        x = self.dense1(x)
-        x = self.dense2(x)
+        x = self.linear1(x)
+        x = self.linear2(x)
         return x
 
 

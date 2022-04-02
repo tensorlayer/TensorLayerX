@@ -21,7 +21,7 @@ class Layer_Convolution_1D_Test(CustomTestCase):
         cls.inputs_shape = [cls.batch_size, 200]
         cls.input_layer = tlx.layers.Input(cls.inputs_shape, name='input_layer')
 
-        cls.dense = tlx.nn.Dense(n_units=100, act=tlx.ReLU, in_channels=200)(cls.input_layer)
+        cls.dense = tlx.nn.Linear(out_features=100, act=tlx.ReLU, in_features=200)(cls.input_layer)
 
         cls.noiselayer = tlx.nn.GaussianNoise(name='gaussian')(cls.dense)
 

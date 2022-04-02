@@ -38,7 +38,7 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.dense = tlx.nn.Linear(in_features=1, out_features=5)
                 self.lambdalayer = tlx.nn.Lambda(perceptron, perceptron.trainable_variables)
 
             def forward(self, x):
@@ -77,7 +77,7 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.dense = tlx.nn.Linear(in_features=1, out_features=5)
                 self.lambdalayer = tlx.nn.Lambda(customize_func, fn_weights=[], fn_args={'foo': 0})
 
             def forward(self, x, bar):
@@ -112,7 +112,7 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.dense = tlx.nn.Linear(in_features=1, out_features=5)
                 self.lambdalayer = tlx.nn.Lambda(customize_fn, fn_weights=[a])
 
             def forward(self, x):
@@ -133,7 +133,7 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.dense = tlx.nn.Linear(in_features=1, out_features=5)
                 self.lambdalayer = tlx.nn.Lambda(lambda x: 2 * x)
 
             def forward(self, x):
@@ -157,9 +157,9 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense1 = tlx.nn.Dense(in_channels=1, n_units=5)
-                self.dense2 = tlx.nn.Dense(in_channels=1, n_units=5)
-                self.dense3 = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.dense1 = tlx.nn.Linear(in_features=1, out_features=5)
+                self.dense2 = tlx.nn.Linear(in_features=1, out_features=5)
+                self.dense3 = tlx.nn.Linear(in_features=1, out_features=5)
                 self.lambdalayer = tlx.nn.ElementwiseLambda(customize_func, fn_args={'foo': 1024})
 
             def forward(self, x, bar=None):
@@ -190,9 +190,9 @@ class Layer_Lambda_Test(CustomTestCase):
 
             def __init__(self):
                 super(CustomizeModel, self).__init__()
-                self.dense1 = tlx.nn.Dense(in_channels=1, n_units=5)
-                self.dense2 = tlx.nn.Dense(in_channels=1, n_units=5)
-                self.dense3 = tlx.nn.Dense(in_channels=1, n_units=5)
+                self.dense1 = tlx.nn.Linear(in_features=1, out_features=5)
+                self.dense2 = tlx.nn.Linear(in_features=1, out_features=5)
+                self.dense3 = tlx.nn.Linear(in_features=1, out_features=5)
                 self.lambdalayer = tlx.nn.ElementwiseLambda(customize_func, fn_weights=[])
 
             def forward(self, x):

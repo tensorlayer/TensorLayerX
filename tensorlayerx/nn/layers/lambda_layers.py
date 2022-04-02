@@ -65,9 +65,9 @@ class Lambda(Module):
     This case is supported in the Model.save() / Model.load() to save / load the whole model architecture and weights(optional).
 
     >>> layers = [
-    >>>     tlx.nn.Dense(10, act=tlx.Relu),
-    >>>     tlx.nn.Dense(5, act=tlx.Relu),
-    >>>     tlx.nn.Dense(1, activation=tf.identity)
+    >>>     tlx.nn.Linear(10, act=tlx.ReLU),
+    >>>     tlx.nn.Linear(5, act=tlx.ReLU),
+    >>>     tlx.nn.Linear(1)
     >>> ]
     >>> perceptron = tlx.nn.SequentialLayer(layers)
     >>> # in order to compile keras model and get trainable_variables of the keras model
@@ -76,11 +76,11 @@ class Lambda(Module):
     >>> class CustomizeModel(tlx.nn.Module):
     >>>     def __init__(self):
     >>>         super(CustomizeModel, self).__init__()
-    >>>         self.dense = tlx.nn.Dense(in_channels=1, n_units=5)
+    >>>         self.linear = tlx.nn.Linear(in_features=1, out_features=5)
     >>>         self.lambdalayer = tlx.nn.Lambda(perceptron, perceptron.trainable_variables)
     >>>
     >>>     def forward(self, x):
-    >>>         z = self.dense(x)
+    >>>         z = self.linear(x)
     >>>         z = self.lambdalayer(z)
     >>>         return z
     >>>

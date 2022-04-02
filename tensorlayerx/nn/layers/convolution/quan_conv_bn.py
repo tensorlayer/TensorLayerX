@@ -21,8 +21,8 @@ class QuanConv2dWithBN(Module):
         The number of filters.
     kernel_size : tuple of int
         The filter size (height, width).
-    strides : tuple of int
-        The sliding window strides of corresponding input dimensions.
+    stride : tuple of int
+        The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
     padding : str
         The padding algorithm type: "SAME" or "VALID".
@@ -52,7 +52,7 @@ class QuanConv2dWithBN(Module):
         The arguments for the weight matrix initializer.
     data_format : str
         "NHWC" or "NCHW", default is "NHWC".
-    dilation_rate : tuple of int
+    dilation : tuple of int
         Specifying the dilation rate to use for dilated convolution.
     in_channels : int
         The number of in channels.
@@ -63,9 +63,9 @@ class QuanConv2dWithBN(Module):
     ---------
     >>> import tensorlayerx as tlx
     >>> net = tlx.nn.Input([50, 256, 256, 3])
-    >>> layer = tlx.nn.QuanConv2dWithBN(out_channels=64, kernel_size=(5,5),strides=(1,1),padding='SAME',name='qcnnbn1')
+    >>> layer = tlx.nn.QuanConv2dWithBN(out_channels=64, kernel_size=(5,5),stride=(1,1),padding='SAME',name='qcnnbn1')
     >>> print(layer)
-    >>> net = tlx.nn.QuanConv2dWithBN(out_channels=64, kernel_size=(5,5),strides=(1,1),padding='SAME',name='qcnnbn1')(net)
+    >>> net = tlx.nn.QuanConv2dWithBN(out_channels=64, kernel_size=(5,5),stride=(1,1),padding='SAME',name='qcnnbn1')(net)
     >>> print(net)
     """
 
@@ -73,7 +73,7 @@ class QuanConv2dWithBN(Module):
         self,
         out_channels=32,
         kernel_size=(3, 3),
-        strides=(1, 1),
+        stride=(1, 1),
         padding='SAME',
         act=None,
         decay=0.9,
@@ -87,14 +87,14 @@ class QuanConv2dWithBN(Module):
         W_init='truncated_normal',
         W_init_args=None,
         data_format="channels_last",
-        dilation_rate=(1, 1),
+        dilation=(1, 1),
         in_channels=None,
         name='quan_cnn2d_bn',
     ):
         super(QuanConv2dWithBN, self).__init__(act=act, name=name)
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self.strides = strides
+        self.stride = stride
         self.padding = padding
         self.decay = decay
         self.epsilon = epsilon
@@ -107,11 +107,11 @@ class QuanConv2dWithBN(Module):
         self.W_init = self.str_to_init(W_init)
         self.W_init_args = W_init_args
         self.data_format = data_format
-        self.dilation_rate = dilation_rate
+        self.dilation = dilation
         self.in_channels = in_channels
         logging.info(
-            "QuanConv2dWithBN %s: out_channels: %d kernel_size: %s strides: %s pad: %s act: %s " % (
-                self.name, out_channels, kernel_size, str(strides), padding,
+            "QuanConv2dWithBN %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s " % (
+                self.name, out_channels, kernel_size, str(stride), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -126,17 +126,17 @@ class QuanConv2dWithBN(Module):
         if use_gemm:
             raise Exception("TODO. The current version use tf.matmul for inferencing.")
 
-        if len(strides) != 2:
-            raise ValueError("len(strides) should be 2.")
+        if len(stride) != 2:
+            raise ValueError("len(stride) should be 2.")
 
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
             '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
-            ', strides={strides}, padding={padding}' + actstr
+            ', stride={stride}, padding={padding}' + actstr
         )
-        if self.dilation_rate != (1, ) * len(self.dilation_rate):
-            s += ', dilation={dilation_rate}'
+        if self.dilation != (1, ) * len(self.dilation):
+            s += ', dilation={dilation}'
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
@@ -147,14 +147,14 @@ class QuanConv2dWithBN(Module):
             self.data_format = 'NHWC'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
-            self._strides = [1, self.strides[0], self.strides[1], 1]
-            self._dilation_rate = [1, self.dilation_rate[0], self.dilation_rate[1], 1]
+            self._strides = [1, self.stride[0], self.stride[1], 1]
+            self._dilation_rate = [1, self.dilation[0], self.dilation[1], 1]
         elif self.data_format == 'channels_first':
             self.data_format = 'NCHW'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
-            self._strides = [1, 1, self.strides[0], self.strides[1]]
-            self._dilation_rate = [1, 1, self.dilation_rate[0], self.dilation_rate[1]]
+            self._strides = [1, 1, self.stride[0], self.stride[1]]
+            self._dilation_rate = [1, 1, self.dilation[0], self.dilation[1]]
         else:
             raise Exception("data_format should be either channels_last or channels_first")
 

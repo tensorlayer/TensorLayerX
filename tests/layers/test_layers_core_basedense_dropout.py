@@ -20,16 +20,16 @@ class Layer_Core_Test(CustomTestCase):
 
         self.inputs_shape = [self.batch_size, 784]
         self.input = tlx.nn.Input(self.inputs_shape)
-        self.dense1 = tlx.nn.Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='test_dense')
+        self.dense1 = tlx.nn.Linear(out_features=800, act=tlx.ReLU, in_features=784, name='test_dense')
         self.n1 = self.dense1(self.input)
 
         self.dropout1 = tlx.nn.Dropout(keep=0.8)
         self.n2 = self.dropout1(self.n1)
 
-        self.dense2 = tlx.nn.Dense(n_units=10, act='relu', b_init=None, in_channels=800)
+        self.dense2 = tlx.nn.Linear(out_features=10, act='relu', b_init=None, in_features=800)
         self.n3 = self.dense2(self.n2)
 
-        self.dense3 = tlx.nn.Dense(n_units=10, act='relu', b_init=None, in_channels=10)
+        self.dense3 = tlx.nn.Linear(out_features=10, act='relu', b_init=None, in_features=10)
         self.n4 = self.dense3(self.n3)
 
         self.concat = tlx.nn.Concat(concat_dim=-1)([self.n2, self.n3])
@@ -38,10 +38,10 @@ class Layer_Core_Test(CustomTestCase):
 
             def __init__(self):
                 super(get_model, self).__init__()
-                self.layer1 = tlx.nn.Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='test_dense')
-                self.dp = tlx.nn.Dropout(keep=0.8)
-                self.layer2 = tlx.nn.Dense(n_units=10, act='relu', b_init=None, in_channels=800)
-                self.layer3 = tlx.nn.Dense(n_units=10, act='relu', b_init=None, in_channels=10)
+                self.layer1 = tlx.nn.Linear(out_features=800, act=tlx.ReLU, in_features=784, name='test_dense')
+                self.dp = tlx.nn.Dropout(p=0.8)
+                self.layer2 = tlx.nn.Linear(out_features=10, act='relu', b_init=None, in_features=800)
+                self.layer3 = tlx.nn.Linear(out_features=10, act='relu', b_init=None, in_features=10)
 
             def forward(self, inputs):
                 z = self.layer1(inputs)

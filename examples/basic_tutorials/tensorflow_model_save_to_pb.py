@@ -20,32 +20,32 @@ class CustomModel(Module):
     def __init__(self):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(p=0.2)
-        self.dense1 = Linear(out_features=800, in_features=784)
+        self.linear1 = Linear(out_features=800, in_features=784)
         self.batchnorm = BatchNorm1d(act=tlx.ReLU, num_features=800)
         self.dropout2 = Dropout(p=0.2)
-        self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+        self.linear2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
         self.dropout3 = Dropout(p=0.2)
-        self.dense3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
+        self.linear3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
 
     def forward(self, x):
         z = self.dropout1(x)
-        z = self.dense1(z)
+        z = self.linear1(z)
         z = self.batchnorm(z)
         z = self.dropout2(z)
-        z = self.dense2(z)
+        z = self.linear2(z)
         z = self.dropout3(z)
-        out = self.dense3(z)
+        out = self.linear3(z)
         return out
 
     # # forward can also be defined this way
     # def forward(self, x):
     #     z = self.dropout1.forward(x)
-    #     z = self.dense1.forward(z)
+    #     z = self.linear1.forward(z)
     #     z = self.batchnorm.forward(z)
     #     z = self.dropout2.forward(z)
-    #     z = self.dense2.forward(z)
+    #     z = self.linear2.forward(z)
     #     z = self.dropout3.forward(z)
-    #     out = self.dense3.forward(z)
+    #     out = self.linear3.forward(z)
     #     return out
 
     @tf.function(experimental_relax_shapes=True)

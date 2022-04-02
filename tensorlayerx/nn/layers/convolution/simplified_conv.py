@@ -21,12 +21,12 @@ class Conv1d(Module):
     Parameters
     ----------
     out_channels  : int
-        The number of filters
+        Number of channels produced by the convolution
     kernel_size : int
-        The filter size
+        The kernel size
     stride : int
         The stride step
-    dilation_rate : int
+    dilation : int
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The function that is applied to the layer activations
@@ -35,7 +35,7 @@ class Conv1d(Module):
     data_format : str
         "channel_last" (NWC, default) or "channels_first" (NCW).
     W_init : initializer or str
-        The initializer for the weight matrix.
+        The initializer for the kernel weight matrix.
     b_init : initializer or None or str
         The initializer for the bias vector. If None, skip biases.
     in_channels : int
@@ -45,7 +45,7 @@ class Conv1d(Module):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerx
 
     >>> net = tlx.nn.Input([8, 100, 1], name='input')
     >>> conv1d = tlx.nn.Conv1d(out_channels =32, kernel_size=5, stride=2, b_init=None, in_channels=1, name='conv1d_1')
@@ -63,7 +63,7 @@ class Conv1d(Module):
         act=None,
         padding='SAME',
         data_format="channels_last",
-        dilation_rate=1,
+        dilation=1,
         W_init='truncated_normal',
         b_init='constant',
         in_channels=None,
@@ -75,7 +75,7 @@ class Conv1d(Module):
         self.stride = stride
         self.padding = padding
         self.data_format = data_format
-        self.dilation_rate = dilation_rate
+        self.dilation = dilation
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -94,11 +94,11 @@ class Conv1d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={out_channels }, kernel_size={kernel_size}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', stride={stride}, padding={padding}'
         )
-        if self.dilation_rate != 1:
-            s += ', dilation={dilation_rate}'
+        if self.dilation != 1:
+            s += ', dilation={dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (', ' + actstr)
@@ -131,7 +131,7 @@ class Conv1d(Module):
             self.b_init_flag = True
 
         self.conv1d = tlx.ops.Conv1D(
-            stride=self.stride, padding=self.padding, data_format=self.data_format, dilations=self.dilation_rate,
+            stride=self.stride, padding=self.padding, data_format=self.data_format, dilations=self.dilation,
             out_channel=self.out_channels , k_size=self.kernel_size
         )
 
@@ -161,13 +161,13 @@ class Conv2d(Module):
     Parameters
     ----------
     out_channels  : int
-        The number of filters.
+        Number of channels produced by the convolution
     kernel_size : tuple of int
-        The filter size (height, width).
-    strides : tuple of int
-        The sliding window strides of corresponding input dimensions.
+        The kernel size (height, width).
+    stride : tuple of int
+        The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
-    dilation_rate : tuple of int
+    dilation : tuple of int
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The activation function of this layer.
@@ -176,7 +176,7 @@ class Conv2d(Module):
     data_format : str
         "channels_last" (NHWC, default) or "channels_first" (NCHW).
     W_init : initializer or str
-        The initializer for the the weight matrix.
+        The initializer for the the kernel weight matrix.
     b_init : initializer or None or str
         The initializer for the the bias vector. If None, skip biases.
     in_channels : int
@@ -186,12 +186,12 @@ class Conv2d(Module):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerx
 
     >>> net = tlx.nn.Input([8, 400, 400, 3], name='input')
-    >>> conv2d = tlx.nn.Conv2d(out_channels =32, kernel_size=(3, 3), strides=(2, 2), b_init=None, in_channels=3, name='conv2d_1')
+    >>> conv2d = tlx.nn.Conv2d(out_channels =32, kernel_size=(3, 3), stride=(2, 2), b_init=None, in_channels=3, name='conv2d_1')
     >>> print(conv2d)
-    >>> tensor = tlx.nn.Conv2d(out_channels =32, kernel_size=(3, 3), strides=(2, 2), act=tlx.ReLU, name='conv2d_2')(net)
+    >>> tensor = tlx.nn.Conv2d(out_channels =32, kernel_size=(3, 3), stride=(2, 2), act=tlx.ReLU, name='conv2d_2')(net)
     >>> print(tensor)
 
     """
@@ -200,11 +200,11 @@ class Conv2d(Module):
         self,
         out_channels =32,
         kernel_size=(3, 3),
-        strides=(1, 1),
+        stride=(1, 1),
         act=None,
         padding='SAME',
         data_format='channels_last',
-        dilation_rate=(1, 1),
+        dilation=(1, 1),
         W_init='truncated_normal',
         b_init='constant',
         in_channels=None,
@@ -213,10 +213,10 @@ class Conv2d(Module):
         super(Conv2d, self).__init__(name, act=act)
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self._strides = self.strides = strides
+        self._strides = self.stride = stride
         self.padding = padding
         self.data_format = data_format
-        self._dilation_rate = self.dilation_rate = dilation_rate
+        self._dilation_rate = self.dilation = dilation
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -226,8 +226,8 @@ class Conv2d(Module):
             self._built = True
 
         logging.info(
-            "Conv2d %s: out_channels : %d kernel_size: %s strides: %s pad: %s act: %s" % (
-                self.name, out_channels , str(kernel_size), str(strides), padding,
+            "Conv2d %s: out_channels : %d kernel_size: %s stride: %s pad: %s act: %s" % (
+                self.name, out_channels , str(kernel_size), str(stride), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -236,10 +236,10 @@ class Conv2d(Module):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
             '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
-            ', strides={strides}, padding={padding}'
+            ', stride={stride}, padding={padding}'
         )
-        if self.dilation_rate != (1, ) * len(self.dilation_rate):
-            s += ', dilation={dilation_rate}'
+        if self.dilation != (1, ) * len(self.dilation):
+            s += ', dilation={dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (', ' + actstr)
@@ -304,13 +304,13 @@ class Conv3d(Module):
     Parameters
     ----------
     out_channels  : int
-        The number of filters.
+        Number of channels produced by the convolution
     kernel_size : tuple of int
-        The filter size (height, width).
-    strides : tuple of int
-        The sliding window strides of corresponding input dimensions.
+        The kernel size (depth, height, width).
+    stride : tuple of int
+        The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
-    dilation_rate : tuple of int
+    dilation : tuple of int
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The activation function of this layer.
@@ -319,7 +319,7 @@ class Conv3d(Module):
     data_format : str
         "channels_last" (NDHWC, default) or "channels_first" (NCDHW).
     W_init : initializer or str
-        The initializer for the the weight matrix.
+        The initializer for the the kernel weight matrix.
     b_init : initializer or None or str
         The initializer for the the bias vector. If None, skip biases.
     in_channels : int
@@ -329,12 +329,12 @@ class Conv3d(Module):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerx
 
     >>> net = tlx.nn.Input([8, 20, 20, 20, 3], name='input')
-    >>> conv3d = tlx.nn.Conv3d(out_channels =32, kernel_size=(3, 3, 3), strides=(2, 2, 2), b_init=None, in_channels=3, name='conv3d_1')
+    >>> conv3d = tlx.nn.Conv3d(out_channels =32, kernel_size=(3, 3, 3), stride=(2, 2, 2), b_init=None, in_channels=3, name='conv3d_1')
     >>> print(conv3d)
-    >>> tensor = tlx.nn.Conv3d(out_channels =32, kernel_size=(3, 3, 3), strides=(2, 2, 2), act=tlx.ReLU, name='conv3d_2')(net)
+    >>> tensor = tlx.nn.Conv3d(out_channels =32, kernel_size=(3, 3, 3), stride=(2, 2, 2), act=tlx.ReLU, name='conv3d_2')(net)
     >>> print(tensor)
 
     """
@@ -343,11 +343,11 @@ class Conv3d(Module):
         self,
         out_channels =32,
         kernel_size=(3, 3, 3),
-        strides=(1, 1, 1),
+        stride=(1, 1, 1),
         act=None,
         padding='SAME',
         data_format='channels_last',
-        dilation_rate=(1, 1, 1),
+        dilation=(1, 1, 1),
         W_init='truncated_normal',
         b_init='constant',
         in_channels=None,
@@ -356,10 +356,10 @@ class Conv3d(Module):
         super().__init__(name, act=act)
         self.out_channels  = out_channels
         self.kernel_size = kernel_size
-        self._strides = self.strides = strides
+        self._strides = self.stride = stride
         self.padding = padding
         self.data_format = data_format
-        self._dilation_rate = self.dilation_rate = dilation_rate
+        self._dilation_rate = self.dilation = dilation
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -369,8 +369,8 @@ class Conv3d(Module):
             self._built = True
 
         logging.info(
-            "Conv3d %s: out_channels : %d kernel_size: %s strides: %s pad: %s act: %s" % (
-                self.name, out_channels , str(kernel_size), str(strides), padding,
+            "Conv3d %s: out_channels : %d kernel_size: %s stride: %s pad: %s act: %s" % (
+                self.name, out_channels , str(kernel_size), str(stride), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -378,11 +378,11 @@ class Conv3d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={out_channels }, kernel_size={kernel_size}'
-            ', strides={strides}, padding={padding}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
+            ', stride={stride}, padding={padding}'
         )
-        if self.dilation_rate != (1, ) * len(self.dilation_rate):
-            s += ', dilation={dilation_rate}'
+        if self.dilation != (1, ) * len(self.dilation):
+            s += ', dilation={dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (', ' + actstr)
@@ -397,7 +397,7 @@ class Conv3d(Module):
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
             self._strides = [1, self._strides[0], self._strides[1], self._strides[2], 1]
-            self._dilation_rate = [1, self.dilation_rate[0], self.dilation_rate[1], self.dilation_rate[2], 1]
+            self._dilation_rate = [1, self.dilation[0], self.dilation[1], self.dilation[2], 1]
         elif self.data_format == 'channels_first':
             self.data_format = 'NCDHW'
             if self.in_channels is None:
@@ -449,14 +449,12 @@ class DeConv1d(Module):
     Parameters
     ----------
     out_channels  : int
-        The number of filters
+        Number of channels produced by the convolution
     kernel_size : int
-        The filter size
-    strides : int or list
+        The kernel size
+    stride : int or list
         An int or list of `ints` that has length `1` or `3`.  The number of entries by which the filter is moved right at each step.
-    output_shape : a 1-D Tensor
-        containing three elements, representing the output shape of the deconvolution op.
-    dilation_rate : int or list
+    dilation : int or list
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The function that is applied to the layer activations
@@ -465,7 +463,7 @@ class DeConv1d(Module):
     data_format : str
         "channel_last" (NWC, default) or "channels_first" (NCW).
     W_init : initializer or str
-        The initializer for the weight matrix.
+        The initializer for the kernel weight matrix.
     b_init : initializer or None or str
         The initializer for the bias vector. If None, skip biases.
     in_channels : int
@@ -475,37 +473,37 @@ class DeConv1d(Module):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerx
 
     >>> net = tlx.nn.Input([8, 100, 1], name='input')
-    >>> conv1d = tlx.nn.DeConv1d(out_channels =32, kernel_size=5, stride=2, b_init=None, in_channels=1, name='Deonv1d_1')
+    >>> conv1d = tlx.nn.DeConv1d(out_channels=32, kernel_size=5, stride=2, b_init=None, in_channels=1, name='Deonv1d_1')
     >>> print(conv1d)
-    >>> tensor = tlx.nn.DeConv1d(out_channels =32, kernel_size=5, stride=2, act=tlx.ReLU, name='Deconv1d_2')(net)
+    >>> tensor = tlx.nn.DeConv1d(out_channels=32, kernel_size=5, stride=2, act=tlx.ReLU, name='Deconv1d_2')(net)
     >>> print(tensor)
 
     """
 
     def __init__(
         self,
-        out_channels =32,
+        out_channels=32,
         kernel_size=15,
         stride=1,
         act=None,
         padding='SAME',
         data_format="channels_last",
-        dilation_rate=1,
+        dilation=1,
         W_init='truncated_normal',
         b_init='constant',
         in_channels=None,
         name=None  # 'conv1d_transpose'
     ):
         super(DeConv1d, self).__init__(name, act=act)
-        self.out_channels  = out_channels
+        self.out_channels = out_channels
         self.kernel_size = kernel_size
         self.stride = stride
         self.padding = padding
         self.data_format = data_format
-        self.dilation_rate = dilation_rate
+        self.dilation = dilation
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -515,8 +513,8 @@ class DeConv1d(Module):
             self._built = True
 
         logging.info(
-            "DeConv1d %s: out_channels : %d kernel_size: %s stride: %d pad: %s act: %s" % (
-                self.name, out_channels , kernel_size, stride, padding,
+            "DeConv1d %s: out_channels: %d kernel_size: %s stride: %d pad: %s act: %s" % (
+                self.name, out_channels, kernel_size, stride, padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -524,11 +522,11 @@ class DeConv1d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={out_channels }, kernel_size={kernel_size}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', stride={stride}, padding={padding}'
         )
-        if self.dilation_rate != 1:
-            s += ', dilation={dilation_rate}'
+        if self.dilation != 1:
+            s += ', dilation={dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (', ' + actstr)
@@ -549,14 +547,14 @@ class DeConv1d(Module):
         else:
             raise Exception("data_format should be either channels_last or channels_first")
 
-        self.filter_shape = (self.kernel_size, self.out_channels , self.in_channels)
+        self.filter_shape = (self.kernel_size, self.out_channels, self.in_channels)
 
         # TODO : check
         self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels , ), init=self.b_init)
+            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -564,8 +562,8 @@ class DeConv1d(Module):
             stride=self.stride,
             padding=self.padding,
             data_format=self.data_format,
-            dilations=self.dilation_rate,
-            out_channel=self.out_channels ,
+            dilations=self.dilation,
+            out_channel=self.out_channels,
             k_size=self.kernel_size,
             in_channels=self.in_channels,
         )
@@ -594,16 +592,14 @@ class DeConv2d(Module):
 
     Parameters
     ----------
-    out_channels  : int
-        The number of filters.
+    out_channels : int
+        Number of channels produced by the convolution
     kernel_size : tuple of int
-        The filter size.
-    strides : tuple of int
-        The sliding window strides of corresponding input dimensions.
+        The kernel size (height, width).
+    stride : tuple of int
+        The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
-    output_shape : A 1-D Tensor
-        representing the output shape of the deconvolution op.
-    dilation_rate : tuple of int
+    dilation : tuple of int
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The activation function of this layer.
@@ -612,7 +608,7 @@ class DeConv2d(Module):
     data_format : str
         "channels_last" (NHWC, default) or "channels_first" (NCHW).
     W_init : initializer or str
-        The initializer for the the weight matrix.
+        The initializer for the the kernel weight matrix.
     b_init : initializer or None or str
         The initializer for the the bias vector. If None, skip biases.
     in_channels : int
@@ -622,37 +618,37 @@ class DeConv2d(Module):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerx
 
     >>> net = tlx.nn.Input([8, 400, 400, 3], name='input')
-    >>> conv2d_transpose = tlx.nn.DeConv2d(out_channels =32, kernel_size=(3, 3), strides=(2, 2), b_init=None, in_channels=3, name='conv2d_transpose_1')
+    >>> conv2d_transpose = tlx.nn.DeConv2d(out_channels=32, kernel_size=(3, 3), stride=(2, 2), b_init=None, in_channels=3, name='conv2d_transpose_1')
     >>> print(conv2d_transpose)
-    >>> tensor = tlx.nn.DeConv2d(out_channels =32, kernel_size=(3, 3), strides=(2, 2), act=tlx.ReLU, name='conv2d_transpose_2')(net)
+    >>> tensor = tlx.nn.DeConv2d(out_channels=32, kernel_size=(3, 3), stride=(2, 2), act=tlx.ReLU, name='conv2d_transpose_2')(net)
     >>> print(tensor)
 
     """
 
     def __init__(
         self,
-        out_channels =32,
+        out_channels=32,
         kernel_size=(3, 3),
-        strides=(1, 1),
+        stride=(1, 1),
         act=None,
         padding='SAME',
         data_format='channels_last',
-        dilation_rate=(1, 1),
+        dilation=(1, 1),
         W_init='truncated_normal',
         b_init='constant',
         in_channels=None,
         name=None,  # 'conv2d_transpose',
     ):
         super(DeConv2d, self).__init__(name, act=act)
-        self.out_channels  = out_channels
+        self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self.strides = strides
+        self.stride = stride
         self.padding = padding
         self.data_format = data_format
-        self.dilation_rate = dilation_rate
+        self.dilation = dilation
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -662,8 +658,8 @@ class DeConv2d(Module):
             self._built = True
 
         logging.info(
-            "DeConv2d %s: out_channels : %d kernel_size: %s strides: %s pad: %s act: %s" % (
-                self.name, out_channels , str(kernel_size), str(strides), padding,
+            "DeConv2d %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s" % (
+                self.name, out_channels, str(kernel_size), str(stride), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -671,11 +667,11 @@ class DeConv2d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={out_channels }, kernel_size={kernel_size}'
-            ', strides={strides}, padding={padding}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
+            ', stride={stride}, padding={padding}'
         )
-        if self.dilation_rate != (1, ) * len(self.dilation_rate):
-            s += ', dilation={dilation_rate}'
+        if self.dilation != (1, ) * len(self.dilation):
+            s += ', dilation={dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (', ' + actstr)
@@ -697,18 +693,18 @@ class DeConv2d(Module):
             raise Exception("data_format should be either channels_last or channels_first")
 
         #TODO channels first filter shape [out_channel, in_channel, filter_h, filter_w]
-        self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.out_channels , self.in_channels)
+        self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.out_channels, self.in_channels)
         self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)#, transposed=True)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels , ), init=self.b_init)
+            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
         self.conv2d_transpose = tlx.ops.Conv2d_transpose(
-            strides=self.strides, padding=self.padding, data_format=self.data_format, dilations=self.dilation_rate,
-            out_channel=self.out_channels , k_size=(self.kernel_size[0], self.kernel_size[1]), in_channels=self.in_channels
+            strides=self.stride, padding=self.padding, data_format=self.data_format, dilations=self.dilation,
+            out_channel=self.out_channels, k_size=(self.kernel_size[0], self.kernel_size[1]), in_channels=self.in_channels
         )
 
         self.act_init_flag = False
@@ -735,16 +731,14 @@ class DeConv3d(Module):
 
     Parameters
     ----------
-    out_channels  : int
-        The number of filters.
+    out_channels : int
+        Number of channels produced by the convolution
     kernel_size : tuple of int
-        The filter size (depth, height, width).
-    output_shape:
-        A 1-D Tensor representing the output shape of the deconvolution op.
-    strides : tuple of int
-        The sliding window strides of corresponding input dimensions.
+        The kernel size (depth, height, width).
+    stride : tuple of int
+        The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
-    dilation_rate : tuple of int
+    dilation : tuple of int
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The activation function of this layer.
@@ -753,7 +747,7 @@ class DeConv3d(Module):
     data_format : str
         "channels_last" (NDHWC, default) or "channels_first" (NCDHW).
     W_init : initializer or str
-        The initializer for the the weight matrix.
+        The initializer for the the kernel weight matrix.
     b_init : initializer or None or str
         The initializer for the the bias vector. If None, skip biases.
     in_channels : int
@@ -763,37 +757,37 @@ class DeConv3d(Module):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerx
 
     >>> net = tlx.nn.Input([8, 20, 20, 20, 3], name='input')
-    >>> deconv3d = tlx.nn.DeConv3d(out_channels =32, kernel_size=(3, 3, 3), strides=(2, 2, 2), b_init=None, in_channels=3, name='deconv3d_1')
+    >>> deconv3d = tlx.nn.DeConv3d(out_channels=32, kernel_size=(3, 3, 3), stride=(2, 2, 2), b_init=None, in_channels=3, name='deconv3d_1')
     >>> print(deconv3d)
-    >>> tensor = tlx.nn.DeConv3d(out_channels =32, kernel_size=(3, 3, 3), strides=(2, 2, 2), act=tlx.ReLU, name='deconv3d_2')(net)
+    >>> tensor = tlx.nn.DeConv3d(out_channels=32, kernel_size=(3, 3, 3), stride=(2, 2, 2), act=tlx.ReLU, name='deconv3d_2')(net)
     >>> print(tensor)
 
     """
 
     def __init__(
         self,
-        out_channels =32,
+        out_channels=32,
         kernel_size=(3, 3, 3),
-        strides=(1, 1, 1),
+        stride=(1, 1, 1),
         act=None,
         padding='SAME',
         data_format='channels_last',
-        dilation_rate=(1, 1, 1),
+        dilation=(1, 1, 1),
         W_init='truncated_normal',
         b_init='constant',
         in_channels=None,
         name=None  # 'deconv3d',
     ):
         super(DeConv3d, self).__init__(name, act=act)
-        self.out_channels  = out_channels
+        self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self.strides = strides
+        self.stride = stride
         self.padding = padding
         self.data_format = data_format
-        self.dilation_rate = dilation_rate
+        self.dilation = dilation
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -803,8 +797,8 @@ class DeConv3d(Module):
             self._built = True
 
         logging.info(
-            "DeConv3d %s: out_channels : %d kernel_size: %s strides: %s pad: %s act: %s" % (
-                self.name, out_channels , str(kernel_size), str(strides), padding,
+            "DeConv3d %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s" % (
+                self.name, out_channels, str(kernel_size), str(stride), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -812,11 +806,11 @@ class DeConv3d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={out_channels }, kernel_size={kernel_size}'
-            ', strides={strides}, padding={padding}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
+            ', stride={stride}, padding={padding}'
         )
-        if self.dilation_rate != (1, ) * len(self.dilation_rate):
-            s += ', dilation={dilation_rate}'
+        if self.dilation != (1, ) * len(self.dilation):
+            s += ', dilation={dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (', ' + actstr)
@@ -838,20 +832,20 @@ class DeConv3d(Module):
             raise Exception("data_format should be either channels_last or channels_first")
 
         self.filter_shape = (
-            self.kernel_size[0], self.kernel_size[1], self.kernel_size[2], self.out_channels , self.in_channels
+            self.kernel_size[0], self.kernel_size[1], self.kernel_size[2], self.out_channels, self.in_channels
         )
 
         self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)#, transposed=True)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels , ), init=self.b_init)
+            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
         self.conv3d_transpose = tlx.ops.Conv3d_transpose(
-            strides=self.strides, padding=self.padding, data_format=self.data_format, dilations=self.dilation_rate,
-            out_channel=self.out_channels , k_size=(self.kernel_size[0], self.kernel_size[1], self.kernel_size[2]),
+            strides=self.stride, padding=self.padding, data_format=self.data_format, dilations=self.dilation,
+            out_channel=self.out_channels, k_size=(self.kernel_size[0], self.kernel_size[1], self.kernel_size[2]),
             in_channels=self.in_channels
         )
 

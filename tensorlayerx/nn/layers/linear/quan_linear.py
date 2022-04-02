@@ -6,64 +6,62 @@ from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
 __all__ = [
-    'DorefaDense',
+    'QuanLinear',
 ]
 
 
-class DorefaDense(Module):
-    """The :class:`DorefaDense` class is a binary fully connected layer, which weights are 'bitW' bits and the output of the previous layer
+class QuanLinear(Module):
+    """The :class:`QuanLinear` class is a quantized fully connected layer with BN, which weights are 'bitW' bits and the output of the previous layer
     are 'bitA' bits while inferencing.
-
-    Note that, the bias vector would not be binarized.
 
     Parameters
     ----------
+    out_features : int
+        The number of units of this layer.
+    act : activation function
+        The activation function of this layer.
     bitW : int
         The bits of this layer's parameter
     bitA : int
         The bits of the output of previous layer
-    out_features : int
-        The number of units of this layer.
-    act : activation function
-        The activation function of this layer, usually set to ``tf.act.sign`` or apply :class:`Sign` after :class:`BatchNorm`.
     use_gemm : boolean
-        If True, use gemm instead of ``tf.matmul`` for inferencing. (TODO).
-    W_init : initializer or str
+        If True, use gemm instead of ``tf.matmul`` for inference. (TODO).
+    W_init : initializer or int
         The initializer for the weight matrix.
-    b_init : initializer or None or str
+    b_init : initializer or None or int
         The initializer for the bias vector. If None, skip biases.
     in_features: int
         The number of channels of the previous layer.
         If None, it will be automatically detected when the layer is forwarded for the first time.
-    name : a str
+    name : None or str
         A unique layer name.
 
     Examples
     --------
     >>> net = tlx.nn.Input([10, 784], name='input')
-    >>> net = tlx.nn.DorefaDense(out_features=800, act=tlx.ReLU, name='relu1')(net)
+    >>> net = tlx.nn.QuanLinear(out_features=800, act=tlx.ReLU, name='QuanLinear1')(net)
     >>> output shape :(10, 800)
-    >>> net = tlx.nn.DorefaDense(out_features=10, name='output')(net)
+    >>> net = tlx.nn.QuanLinear(out_features=10, name='QuanLinear2')(net)
     >>> output shape :(10, 10)
 
     """
 
     def __init__(
         self,
-        bitW=1,
-        bitA=3,
         out_features=100,
         act=None,
+        bitW=8,
+        bitA=8,
         use_gemm=False,
         W_init='truncated_normal',
         b_init='constant',
         in_features=None,
-        name=None,  #'dorefa_dense',
+        name=None,  #'quan_dense',
     ):
         super().__init__(name, act=act)
+        self.out_features = out_features
         self.bitW = bitW
         self.bitA = bitA
-        self.out_features = out_features
         self.use_gemm = use_gemm
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
@@ -74,7 +72,7 @@ class DorefaDense(Module):
             self._built = True
 
         logging.info(
-            "DorefaDense  %s: %d %s" %
+            "QuanLinear  %s: %d %s" %
             (self.name, out_features, self.act.__class__.__name__ if self.act is not None else 'No Activation')
         )
 
@@ -100,13 +98,13 @@ class DorefaDense(Module):
             raise Exception("TODO. The current version use tf.matmul for inferencing.")
 
         n_in = inputs_shape[-1]
-        self.b = None
         self.W = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
+        self.b = None
         if self.b_init is not None:
-            self.b = self._get_weights("biases", shape=(self.out_features), init=self.b_init)
+            self.b = self._get_weights("biases", shape=int(self.out_features), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd()
 
-        self.dorefa_dense = tlx.ops.DorefaDense(self.W, self.b, self.bitW, self.bitA)
+        self.quan_dense = tlx.ops.QuanDense(self.W, self.b, self.bitW, self.bitA)
 
     def forward(self, inputs):
         if self._forward_state == False:
@@ -114,9 +112,7 @@ class DorefaDense(Module):
                 self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
-
-        outputs = self.dorefa_dense(inputs)
-
+        outputs = self.quan_dense(inputs)
         if self.act:
             outputs = self.act(outputs)
         return outputs

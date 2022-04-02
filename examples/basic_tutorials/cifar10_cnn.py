@@ -42,9 +42,9 @@ class CNN(Module):
         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 
         self.flatten = Flatten(name='flatten')
-        self.dense1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_features=2304)
-        self.dense2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_features=384)
-        self.dense3 = Linear(10, act=None, W_init=W_init2, name='output', in_features=192)
+        self.linear1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_features=2304)
+        self.linear2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_features=384)
+        self.linear3 = Linear(10, act=None, W_init=W_init2, name='output', in_features=192)
 
     def forward(self, x):
         z = self.conv1(x)
@@ -53,9 +53,9 @@ class CNN(Module):
         z = self.conv2(z)
         z = self.maxpool2(z)
         z = self.flatten(z)
-        z = self.dense1(z)
-        z = self.dense2(z)
-        z = self.dense3(z)
+        z = self.linear1(z)
+        z = self.linear2(z)
+        z = self.linear3(z)
         return z
 
 
@@ -188,9 +188,9 @@ for epoch in range(n_epoch):
 #         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 #
 #         self.flatten = Flatten(name='flatten')
-#         self.dense1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_channels=2304)
-#         self.dense2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_channels=384)
-#         self.dense3 = Linear(10, act=None, W_init=W_init2, name='output', in_channels=192)
+#         self.linear1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_channels=2304)
+#         self.linear2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_channels=384)
+#         self.linear3 = Linear(10, act=None, W_init=W_init2, name='output', in_channels=192)
 #
 #     def forward(self, x):
 #         z = self.conv1(x)
@@ -199,9 +199,9 @@ for epoch in range(n_epoch):
 #         z = self.conv2(z)
 #         z = self.maxpool2(z)
 #         z = self.flatten(z)
-#         z = self.dense1(z)
-#         z = self.dense2(z)
-#         z = self.dense3(z)
+#         z = self.linear1(z)
+#         z = self.linear2(z)
+#         z = self.linear3(z)
 #         return z
 #
 #
@@ -374,9 +374,9 @@ for epoch in range(n_epoch):
 #         self.maxpool2 = MaxPool2d((3, 3), (2, 2), name='pool2', data_format='channels_first')
 #
 #         self.flatten = Flatten(name='flatten')
-#         self.dense1 = Linear(120, act=tlx.ReLU, name='dense1relu', in_channels=512)
-#         self.dense2 = Linear(84, act=tlx.ReLU, name='dense2relu', in_channels=120)
-#         self.dense3 = Linear(10, act=None, name='output', in_channels=84)
+#         self.linear1 = Linear(120, act=tlx.ReLU, name='linear1relu', in_channels=512)
+#         self.linear2 = Linear(84, act=tlx.ReLU, name='linear2relu', in_channels=120)
+#         self.linear3 = Linear(10, act=None, name='output', in_channels=84)
 #
 #     def forward(self, x):
 #         z = self.conv1(x)
@@ -385,9 +385,9 @@ for epoch in range(n_epoch):
 #         z = self.conv2(z)
 #         z = self.maxpool2(z)
 #         z = self.flatten(z)
-#         z = self.dense1(z)
-#         z = self.dense2(z)
-#         z = self.dense3(z)
+#         z = self.linear1(z)
+#         z = self.linear2(z)
+#         z = self.linear3(z)
 #         return z
 #
 #
@@ -519,9 +519,9 @@ for epoch in range(n_epoch):
 #         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 #
 #         self.flatten = Flatten(name='flatten')
-#         self.dense1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_channels=2304)
-#         self.dense2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_channels=384)
-#         self.dense3 = Linear(10, act=None, W_init=W_init2, name='output', in_channels=192)
+#         self.linear1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_channels=2304)
+#         self.linear2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_channels=384)
+#         self.linear3 = Linear(10, act=None, W_init=W_init2, name='output', in_channels=192)
 #
 #     def forward(self, x):
 #         z = self.conv1(x)
@@ -531,9 +531,9 @@ for epoch in range(n_epoch):
 #         z = self.bn2(z)
 #         z = self.maxpool2(z)
 #         z = self.flatten(z)
-#         z = self.dense1(z)
-#         z = self.dense2(z)
-#         z = self.dense3(z)
+#         z = self.linear1(z)
+#         z = self.linear2(z)
+#         z = self.linear3(z)
 #         return z
 #
 #

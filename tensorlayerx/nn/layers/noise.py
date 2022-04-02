@@ -33,7 +33,7 @@ class GaussianNoise(Module):
     With TensorLayer
 
     >>> net = tlx.nn.Input([64, 200], name='input')
-    >>> net = tlx.nn.Dense(in_channels=200, n_units=100, act=tlx.ReLU, name='dense')(net)
+    >>> net = tlx.nn.Linear(in_features=200, out_features=100, act=tlx.ReLU, name='linear')(net)
     >>> gaussianlayer = tlx.nn.GaussianNoise(name='gaussian')(net)
     >>> print(gaussianlayer)
     >>> output shape : (64, 100)

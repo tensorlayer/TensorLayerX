@@ -9,9 +9,9 @@ os.environ['TL_BACKEND'] = 'paddle'
 from tensorlayerx.nn import Module, LayerList, Linear
 import tensorlayerx as tlx
 
-d1 = Linear(out_features=800, act=tlx.ReLU, in_features=784, name='Dense1')
-d2 = Linear(out_features=800, act=tlx.ReLU, in_features=800, name='Dense2')
-d3 = Linear(out_features=10, act=tlx.ReLU, in_features=800, name='Dense3')
+d1 = Linear(out_features=800, act=tlx.ReLU, in_features=784, name='linear1')
+d2 = Linear(out_features=800, act=tlx.ReLU, in_features=800, name='linear2')
+d3 = Linear(out_features=10, act=tlx.ReLU, in_features=800, name='linear3')
 
 layer_list = LayerList([d1, d2])
 # Inserts a given d2 before a given index in the list

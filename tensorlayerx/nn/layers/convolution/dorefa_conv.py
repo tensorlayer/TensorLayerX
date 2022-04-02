@@ -26,7 +26,7 @@ class DorefaConv2d(Module):
         The number of filters.
     kernel_size : tuple of int
         The filter size (height, width).
-    strides : tuple of int
+    stride : tuple of int
         The sliding window strides of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
     act : activation function
@@ -35,7 +35,7 @@ class DorefaConv2d(Module):
         The padding algorithm type: "SAME" or "VALID".
     data_format : str
         "channels_last" (NHWC, default) or "channels_first" (NCHW).
-    dilation_rate : tuple of int
+    dilation : tuple of int
         Specifying the dilation rate to use for dilated convolution.
     W_init : initializer or str
         The initializer for the the weight matrix.
@@ -52,7 +52,7 @@ class DorefaConv2d(Module):
 
     >>> net = tlx.nn.Input([8, 12, 12, 32], name='input')
     >>> dorefaconv2d = tlx.nn.DorefaConv2d(
-    ...     out_channels=32, kernel_size=(5, 5), strides=(1, 1), act=tlx.ReLU, padding='SAME', name='dorefaconv2d'
+    ...     out_channels=32, kernel_size=(5, 5), stride=(1, 1), act=tlx.ReLU, padding='SAME', name='dorefaconv2d'
     ... )(net)
     >>> print(dorefaconv2d)
     >>> output shape : (8, 12, 12, 32)
@@ -65,11 +65,11 @@ class DorefaConv2d(Module):
         bitA=3,
         out_channels=32,
         kernel_size=(3, 3),
-        strides=(1, 1),
+        stride=(1, 1),
         act=None,
         padding='SAME',
         data_format="channels_last",
-        dilation_rate=(1, 1),
+        dilation=(1, 1),
         W_init='truncated_normal',
         b_init='constant',
         in_channels=None,
@@ -80,10 +80,10 @@ class DorefaConv2d(Module):
         self.bitA = bitA
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self.strides = self._strides = strides
+        self.stride = self._stride = stride
         self.padding = padding
         self.data_format = data_format
-        self.dilation_rate = self._dilation_rate = dilation_rate
+        self.dilation = self._dilation_rate = dilation
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -94,7 +94,7 @@ class DorefaConv2d(Module):
 
         logging.info(
             "DorefaConv2d %s: out_channels: %d kernel_size: %s strides: %s pad: %s act: %s" % (
-                self.name, out_channels, str(kernel_size), str(strides), padding,
+                self.name, out_channels, str(kernel_size), str(stride), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -105,8 +105,8 @@ class DorefaConv2d(Module):
             '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', strides={strides}, padding={padding}'
         )
-        if self.dilation_rate != (1, ) * len(self.dilation_rate):
-            s += ', dilation={dilation_rate}'
+        if self.dilation != (1, ) * len(self.dilation):
+            s += ', dilation={dilation}'
         if self.b_init is None:
             s += ', bias=False'
         s += (', ' + actstr)
@@ -120,13 +120,13 @@ class DorefaConv2d(Module):
             self.data_format = 'NHWC'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
-            self._strides = [1, self._strides[0], self._strides[1], 1]
+            self._stride = [1, self._stride[0], self._stride[1], 1]
             self._dilation_rate = [1, self._dilation_rate[0], self._dilation_rate[1], 1]
         elif self.data_format == 'channels_first':
             self.data_format = 'NCHW'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
-            self._strides = [1, 1, self._strides[0], self._strides[1]]
+            self._stride = [1, 1, self._stride[0], self._stride[1]]
             self._dilation_rate = [1, 1, self._dilation_rate[0], self._dilation_rate[1]]
         else:
             raise Exception("data_format should be either channels_last or channels_first")
@@ -146,7 +146,7 @@ class DorefaConv2d(Module):
             self.act_init_flag = True
 
         self.dorefaconv2d = tlx.ops.DorefaConv2D(
-            bitW=self.bitW, bitA=self.bitA, strides=self._strides, padding=self.padding, data_format=self.data_format,
+            bitW=self.bitW, bitA=self.bitA, strides=self._stride, padding=self.padding, data_format=self.data_format,
             dilations=self._dilation_rate, out_channel=self.out_channels, k_size=self.kernel_size,
             in_channel=self.in_channels
         )

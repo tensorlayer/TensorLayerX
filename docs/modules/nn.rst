@@ -23,10 +23,10 @@ Layer list
    Embedding
    AverageEmbedding
 
-   Dense
+   Linear
    Dropout
    GaussianNoise
-   DropconnectDense
+   DropconnectLinear
 
    UpSampling2d
    DownSampling2d
@@ -105,11 +105,11 @@ Layer list
    UnStack
 
    Scale
-   BinaryDense
+   BinaryLinear
    BinaryConv2d
-   TernaryDense
+   TernaryLinear
    TernaryConv2d
-   DorefaDense
+   DorefaLinear
    DorefaConv2d
 
    MaskedConv3d
@@ -249,19 +249,19 @@ MaskedConv3d
 
 
 .. -----------------------------------------------------------
-..                        Dense Layers
+..                        Linear Layers
 .. -----------------------------------------------------------
 
-Dense Layers
+Linear Layers
 -------------
 
-Dense Layer
+Linear Layer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: Dense
+.. autoclass:: Linear
 
-Drop Connect Dense Layer
+Drop Connect Linear Layer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: DropconnectDense
+.. autoclass:: DropconnectLinear
 
 
 .. -----------------------------------------------------------
@@ -479,9 +479,9 @@ Scale
 ^^^^^^^^^^^^^^
 .. autoclass:: Scale
 
-Binary Dense Layer
+Binary Linear Layer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: BinaryDense
+.. autoclass:: BinaryLinear
 
 Binary (De)Convolutions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -490,12 +490,12 @@ BinaryConv2d
 """""""""""""""""""""
 .. autoclass:: BinaryConv2d
 
-Ternary Dense Layer
+Ternary Linear Layer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TernaryDense
+TernaryLinear
 """""""""""""""""""""
-.. autoclass:: TernaryDense
+.. autoclass:: TernaryLinear
 
 Ternary Convolutions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -504,9 +504,9 @@ TernaryConv2d
 """""""""""""""""""""
 .. autoclass:: TernaryConv2d
 
-DorefaDense
+DorefaLinear
 """""""""""""""""""""
-.. autoclass:: DorefaDense
+.. autoclass:: DorefaLinear
 
 DoReFa Convolutions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

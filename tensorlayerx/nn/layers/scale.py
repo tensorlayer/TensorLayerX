@@ -23,8 +23,8 @@ class Scale(Module):
     Examples
     ----------
     >>> inputs = tlx.nn.Input([8, 3])
-    >>> dense = tlx.nn.Dense(n_units=10, in_channels=3)(inputs)
-    >>> outputs = tlx.nn.Scale(init_scale=0.5)(dense)
+    >>> linear = tlx.nn.Linear(out_features=10, in_channels=3)(inputs)
+    >>> outputs = tlx.nn.Scale(init_scale=0.5)(linear)
 
     """
 

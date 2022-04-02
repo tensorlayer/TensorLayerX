@@ -20,8 +20,8 @@ class TernaryConv2d(Module):
         The number of filters.
     kernel_size : tuple of int
         The filter size (height, width).
-    strides : tuple of int
-        The sliding window strides of corresponding input dimensions.
+    stride : tuple of int
+        The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
     act : activation function
         The activation function of this layer.
@@ -49,7 +49,7 @@ class TernaryConv2d(Module):
 
     >>> net = tlx.nn.Input([8, 12, 12, 32], name='input')
     >>> ternaryconv2d = tlx.nn.TernaryConv2d(
-    ...     out_channels=64, kernel_size=(5, 5), strides=(1, 1), act=tlx.ReLU, padding='SAME', name='ternaryconv2d'
+    ...     out_channels=64, kernel_size=(5, 5), stride=(1, 1), act=tlx.ReLU, padding='SAME', name='ternaryconv2d'
     ... )(net)
     >>> print(ternaryconv2d)
     >>> output shape : (8, 12, 12, 64)
@@ -60,7 +60,7 @@ class TernaryConv2d(Module):
         self,
         out_channels=32,
         kernel_size=(3, 3),
-        strides=(1, 1),
+        stride=(1, 1),
         act=None,
         padding='SAME',
         use_gemm=False,
@@ -74,7 +74,7 @@ class TernaryConv2d(Module):
         super().__init__(name, act=act)
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self.strides = self._strides = strides
+        self.stride = self._strides = stride
         self.padding = padding
         self.use_gemm = use_gemm
         self.data_format = data_format
@@ -88,8 +88,8 @@ class TernaryConv2d(Module):
             self._built = True
 
         logging.info(
-            "TernaryConv2d %s: out_channels: %d kernel_size: %s strides: %s pad: %s act: %s" % (
-                self.name, out_channels, str(kernel_size), str(strides), padding,
+            "TernaryConv2d %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s" % (
+                self.name, out_channels, str(kernel_size), str(stride), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -97,14 +97,14 @@ class TernaryConv2d(Module):
         if use_gemm:
             raise Exception("TODO. The current version use tf.matmul for inferencing.")
 
-        if len(self.strides) != 2:
-            raise ValueError("len(strides) should be 2.")
+        if len(self.stride) != 2:
+            raise ValueError("len(stride) should be 2.")
 
     def __repr__(self):
         actstr = self.act.__name__ if self.act is not None else 'No Activation'
         s = (
             '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
-            ', strides={strides}, padding={padding}'
+            ', stride={stride}, padding={padding}'
         )
         if self.dilation_rate != (1, ) * len(self.dilation_rate):
             s += ', dilation={dilation_rate}'

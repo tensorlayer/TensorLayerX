@@ -21,14 +21,14 @@ class CustomModel(Module):
 
     def __init__(self):
         super(CustomModel, self).__init__()
-        self.dense1 = Linear(out_features=800, in_features=784)
-        self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
-        self.dense3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
+        self.linear1 = Linear(out_features=800, in_features=784)
+        self.linear2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+        self.linear3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
 
     def forward(self, x, foo=None):
-        z = self.dense1(x)
-        z = self.dense2(z)
-        out = self.dense3(z)
+        z = self.linear1(x)
+        z = self.linear2(z)
+        out = self.linear3(z)
         if foo is not None:
             out = tlx.relu(out)
         return out

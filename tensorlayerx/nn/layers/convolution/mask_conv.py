@@ -24,10 +24,10 @@ class MaskedConv3d(Module):
             The number of filters.
         filter_size : tuple of int
             The filter size (height, width).
-        strides : tuple of int
-            The sliding window strides of corresponding input dimensions.
+        stride : tuple of int
+            The sliding window stride of corresponding input dimensions.
             It must be in the same order as the ``shape`` parameter.
-        dilation_rate : tuple of int
+        dilation : tuple of int
             Specifying the dilation rate to use for dilated convolution.
         act : activation function
             The activation function of this layer.
@@ -49,9 +49,9 @@ class MaskedConv3d(Module):
         With TensorLayer
 
         >>> net = tlx.nn.Input([8, 20, 20, 20, 3], name='input')
-        >>> conv3d = tlx.nn.MaskedConv3d(mask_type='A', out_channels=32, filter_size=(3, 3, 3), strides=(2, 2, 2), bias_initializer=None, in_channels=3, name='conv3d_1')
+        >>> conv3d = tlx.nn.MaskedConv3d(mask_type='A', out_channels=32, filter_size=(3, 3, 3), stride=(2, 2, 2), bias_initializer=None, in_channels=3, name='conv3d_1')
         >>> print(conv3d)
-        >>> tensor = tlx.nn.MaskedConv3d(mask_type='B', out_channels=32, filter_size=(3, 3, 3), strides=(2, 2, 2), act=tlx.ReLU, name='conv3d_2')(net)
+        >>> tensor = tlx.nn.MaskedConv3d(mask_type='B', out_channels=32, filter_size=(3, 3, 3), stride=(2, 2, 2), act=tlx.ReLU, name='conv3d_2')(net)
         >>> print(tensor)
 
         """
@@ -61,8 +61,8 @@ class MaskedConv3d(Module):
         mask_type,
         out_channels,
         filter_size=(3, 3, 3),
-        strides=(1, 1, 1),
-        dilation_rate=(1, 1, 1),
+        stride=(1, 1, 1),
+        dilation=(1, 1, 1),
         padding='SAME',
         act=None,
         in_channels=None,
@@ -78,8 +78,8 @@ class MaskedConv3d(Module):
 
         self.out_channels = out_channels
         self.filter_size = filter_size
-        self.strides = strides
-        self.dilation_rate = dilation_rate
+        self.stride = stride
+        self.dilation = dilation
         self.padding = padding
         self.kernel_initializer = self.str_to_init(kernel_initializer)
         self.bias_initializer = self.str_to_init(bias_initializer)
@@ -91,8 +91,8 @@ class MaskedConv3d(Module):
             self._built = True
 
         logging.info(
-            "MaskedConv3D  %s: out_channels: %d filter_size: %s strides: %s mask_type: %s act: %s" % (
-                self.name, out_channels, str(filter_size), str(strides), mask_type,
+            "MaskedConv3D  %s: out_channels: %d filter_size: %s stride: %s mask_type: %s act: %s" % (
+                self.name, out_channels, str(filter_size), str(stride), mask_type,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -101,7 +101,7 @@ class MaskedConv3d(Module):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
             '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={filter_size}'
-            ', strides={strides}, padding={padding}'
+            ', stride={stride}, padding={padding}'
         )
         if self.bias_initializer is None:
             s += ', bias=False'
@@ -116,14 +116,14 @@ class MaskedConv3d(Module):
             self._data_format = 'NDHWC'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
-            self._strides = [1, self.strides[0], self.strides[1], self.strides[2], 1]
-            self._dilation_rate = [1, self.dilation_rate[0], self.dilation_rate[1], self.dilation_rate[2], 1]
+            self._strides = [1, self.stride[0], self.stride[1], self.stride[2], 1]
+            self._dilation_rate = [1, self.dilation[0], self.dilation[1], self.dilation[2], 1]
         elif self.data_format == 'channels_first':
             self._data_format = 'NCDHW'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
-            self._strides = [1, 1, self.strides[0], self.strides[1], self.strides[2]]
-            self._dilation_rate = [1, 1, self.dilation_rate[0], self.dilation_rate[1], self.dilation_rate[2]]
+            self._strides = [1, 1, self.stride[0], self.stride[1], self.stride[2]]
+            self._dilation_rate = [1, 1, self.dilation[0], self.dilation[1], self.dilation[2]]
         else:
             raise Exception("data_format should be either channels_last or channels_first")
 

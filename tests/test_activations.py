@@ -37,7 +37,7 @@ class Test_Leaky_ReLUs(CustomTestCase):
             self.assertAlmostEqual(computed_output.numpy(), good_output, places=5)
 
         net = tensorlayerx.layers.Input([10, 2])
-        net = tensorlayerx.layers.Dense(n_units=100, act=lambda x: tl.ops.lrelu(x, 0.2), name='dense')(net)
+        net = tensorlayerx.layers.Linear(out_features=100, act=lambda x: tl.ops.lrelu(x, 0.2), name='linear')(net)
         print(net)
 
     def test_lrelu6(self):
@@ -53,7 +53,7 @@ class Test_Leaky_ReLUs(CustomTestCase):
             self.assertAlmostEqual(computed_output.numpy(), good_output, places=5)
 
         net = tensorlayerx.layers.Input([10, 2])
-        net = tensorlayerx.layers.Dense(n_units=100, act=lambda x: tl.ops.leaky_relu6(x, 0.2), name='dense')(net)
+        net = tensorlayerx.layers.Linear(out_features=100, act=lambda x: tl.ops.leaky_relu6(x, 0.2), name='linear')(net)
         print(net)
 
     def test_ltrelu6(self):
@@ -70,8 +70,8 @@ class Test_Leaky_ReLUs(CustomTestCase):
             self.assertAlmostEqual(computed_output.numpy(), good_output, places=5)
 
         net = tensorlayerx.layers.Input([10, 200])
-        net = tensorlayerx.layers.Dense(n_units=100, act=lambda x: tl.act.leaky_twice_relu6(x, 0.2, 0.2),
-                                        name='dense')(net)
+        net = tensorlayerx.layers.Linear(out_features=100, act=lambda x: tl.act.leaky_twice_relu6(x, 0.2, 0.2),
+                                        name='linear')(net)
         print(net)
 
     def test_ramp(self):
