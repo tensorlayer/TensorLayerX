@@ -371,12 +371,12 @@ def gelu(x, approximate=False):
 
 class Dropout(object):
 
-    def __init__(self, keep, seed=0):
-        self.keep = keep
+    def __init__(self, p, seed=0):
+        self.p = p
         self.seed = seed
 
     def __call__(self, inputs):
-        return F.dropout(inputs, p=(1 - self.keep))
+        return F.dropout(inputs, p=self.p)
 
 
 class BiasAdd(object):

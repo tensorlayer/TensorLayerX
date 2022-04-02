@@ -368,12 +368,12 @@ def gelu(x, approximate=False):
 
 class Dropout(object):
 
-    def __init__(self, keep, seed=1):
-        self.keep = 1 - keep
+    def __init__(self, p, seed=1):
+        self.p = p
         self.seed = seed
 
     def __call__(self, inputs):
-        output = F.dropout(inputs, p=self.keep, mode='upscale_in_train')
+        output = F.dropout(inputs, p=self.p, mode='upscale_in_train')
         return output
 
 

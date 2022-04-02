@@ -22,9 +22,9 @@ class DorefaConv2d(Module):
         The bits of this layer's parameter
     bitA : int
         The bits of the output of previous layer
-    n_filter : int
+    out_channels : int
         The number of filters.
-    filter_size : tuple of int
+    kernel_size : tuple of int
         The filter size (height, width).
     strides : tuple of int
         The sliding window strides of corresponding input dimensions.
@@ -52,7 +52,7 @@ class DorefaConv2d(Module):
 
     >>> net = tlx.nn.Input([8, 12, 12, 32], name='input')
     >>> dorefaconv2d = tlx.nn.DorefaConv2d(
-    ...     n_filter=32, filter_size=(5, 5), strides=(1, 1), act=tlx.ReLU, padding='SAME', name='dorefaconv2d'
+    ...     out_channels=32, kernel_size=(5, 5), strides=(1, 1), act=tlx.ReLU, padding='SAME', name='dorefaconv2d'
     ... )(net)
     >>> print(dorefaconv2d)
     >>> output shape : (8, 12, 12, 32)
@@ -63,8 +63,8 @@ class DorefaConv2d(Module):
         self,
         bitW=1,
         bitA=3,
-        n_filter=32,
-        filter_size=(3, 3),
+        out_channels=32,
+        kernel_size=(3, 3),
         strides=(1, 1),
         act=None,
         padding='SAME',
@@ -78,8 +78,8 @@ class DorefaConv2d(Module):
         super().__init__(name, act=act)
         self.bitW = bitW
         self.bitA = bitA
-        self.n_filter = n_filter
-        self.filter_size = filter_size
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
         self.strides = self._strides = strides
         self.padding = padding
         self.data_format = data_format
@@ -93,8 +93,8 @@ class DorefaConv2d(Module):
             self._built = True
 
         logging.info(
-            "DorefaConv2d %s: n_filter: %d filter_size: %s strides: %s pad: %s act: %s" % (
-                self.name, n_filter, str(filter_size), str(strides), padding,
+            "DorefaConv2d %s: out_channels: %d kernel_size: %s strides: %s pad: %s act: %s" % (
+                self.name, out_channels, str(kernel_size), str(strides), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -102,7 +102,7 @@ class DorefaConv2d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={n_filter}, kernel_size={filter_size}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', strides={strides}, padding={padding}'
         )
         if self.dilation_rate != (1, ) * len(self.dilation_rate):
@@ -131,13 +131,13 @@ class DorefaConv2d(Module):
         else:
             raise Exception("data_format should be either channels_last or channels_first")
 
-        self.filter_shape = (self.filter_size[0], self.filter_size[1], self.in_channels, self.n_filter)
+        self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.out_channels)
 
         self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
+            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -147,7 +147,7 @@ class DorefaConv2d(Module):
 
         self.dorefaconv2d = tlx.ops.DorefaConv2D(
             bitW=self.bitW, bitA=self.bitA, strides=self._strides, padding=self.padding, data_format=self.data_format,
-            dilations=self._dilation_rate, out_channel=self.n_filter, k_size=self.filter_size,
+            dilations=self._dilation_rate, out_channel=self.out_channels, k_size=self.kernel_size,
             in_channel=self.in_channels
         )
 

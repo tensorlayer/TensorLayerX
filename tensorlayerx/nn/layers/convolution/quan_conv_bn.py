@@ -17,9 +17,9 @@ class QuanConv2dWithBN(Module):
 
     Parameters
     ----------
-    n_filter : int
+    out_channels : int
         The number of filters.
-    filter_size : tuple of int
+    kernel_size : tuple of int
         The filter size (height, width).
     strides : tuple of int
         The sliding window strides of corresponding input dimensions.
@@ -63,16 +63,16 @@ class QuanConv2dWithBN(Module):
     ---------
     >>> import tensorlayerx as tlx
     >>> net = tlx.nn.Input([50, 256, 256, 3])
-    >>> layer = tlx.nn.QuanConv2dWithBN(n_filter=64, filter_size=(5,5),strides=(1,1),padding='SAME',name='qcnnbn1')
+    >>> layer = tlx.nn.QuanConv2dWithBN(out_channels=64, kernel_size=(5,5),strides=(1,1),padding='SAME',name='qcnnbn1')
     >>> print(layer)
-    >>> net = tlx.nn.QuanConv2dWithBN(n_filter=64, filter_size=(5,5),strides=(1,1),padding='SAME',name='qcnnbn1')(net)
+    >>> net = tlx.nn.QuanConv2dWithBN(out_channels=64, kernel_size=(5,5),strides=(1,1),padding='SAME',name='qcnnbn1')(net)
     >>> print(net)
     """
 
     def __init__(
         self,
-        n_filter=32,
-        filter_size=(3, 3),
+        out_channels=32,
+        kernel_size=(3, 3),
         strides=(1, 1),
         padding='SAME',
         act=None,
@@ -92,8 +92,8 @@ class QuanConv2dWithBN(Module):
         name='quan_cnn2d_bn',
     ):
         super(QuanConv2dWithBN, self).__init__(act=act, name=name)
-        self.n_filter = n_filter
-        self.filter_size = filter_size
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
         self.strides = strides
         self.padding = padding
         self.decay = decay
@@ -110,8 +110,8 @@ class QuanConv2dWithBN(Module):
         self.dilation_rate = dilation_rate
         self.in_channels = in_channels
         logging.info(
-            "QuanConv2dWithBN %s: n_filter: %d filter_size: %s strides: %s pad: %s act: %s " % (
-                self.name, n_filter, filter_size, str(strides), padding,
+            "QuanConv2dWithBN %s: out_channels: %d kernel_size: %s strides: %s pad: %s act: %s " % (
+                self.name, out_channels, kernel_size, str(strides), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -132,7 +132,7 @@ class QuanConv2dWithBN(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={n_filter}, kernel_size={filter_size}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', strides={strides}, padding={padding}' + actstr
         )
         if self.dilation_rate != (1, ) * len(self.dilation_rate):
@@ -158,10 +158,10 @@ class QuanConv2dWithBN(Module):
         else:
             raise Exception("data_format should be either channels_last or channels_first")
 
-        self.filter_shape = (self.filter_size[0], self.filter_size[1], self.in_channels, self.n_filter)
+        self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.out_channels)
         self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
-        para_bn_shape = (self.n_filter, )
+        para_bn_shape = (self.out_channels, )
         if self.gamma_init:
             self.scale_para = self._get_weights(
                 "scale_para", shape=para_bn_shape, init=self.gamma_init, trainable=self.is_train

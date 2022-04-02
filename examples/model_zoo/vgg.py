@@ -34,7 +34,7 @@ import numpy as np
 import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.files import assign_weights, maybe_download_and_extract
-from tensorlayerx.nn import (BatchNorm, Conv2d, Dense, Flatten, SequentialLayer, MaxPool2d)
+from tensorlayerx.nn import (BatchNorm, Conv2d, Linear, Flatten, SequentialLayer, MaxPool2d)
 from tensorlayerx.nn import Module
 
 __all__ = [
@@ -124,7 +124,7 @@ def make_layers(config, batch_norm=False, end_with='outputs'):
                     in_channels = layer_group[idx - 1]
                 layer_list.append(
                     Conv2d(
-                        n_filter=n_filter, filter_size=(3, 3), strides=(1, 1), act=tlx.ReLU, padding='SAME',
+                        out_channels=n_filter, kernel_size=(3, 3), strides=(1, 1), act=tlx.ReLU, padding='SAME',
                         in_channels=in_channels, name=layer_name
                     )
                 )
@@ -136,15 +136,15 @@ def make_layers(config, batch_norm=False, end_with='outputs'):
         else:
             layer_name = layer_names[layer_group_idx]
             if layer_group == 'M':
-                layer_list.append(MaxPool2d(filter_size=(2, 2), strides=(2, 2), padding='SAME', name=layer_name))
+                layer_list.append(MaxPool2d(kernel_size=(2, 2), strides=(2, 2), padding='SAME', name=layer_name))
             elif layer_group == 'O':
-                layer_list.append(Dense(n_units=1000, in_channels=4096, name=layer_name))
+                layer_list.append(Linear(out_features=1000, in_features=4096, name=layer_name))
             elif layer_group == 'F':
                 layer_list.append(Flatten(name='flatten'))
             elif layer_group == 'fc1':
-                layer_list.append(Dense(n_units=4096, act=tlx.ReLU, in_channels=512 * 7 * 7, name=layer_name))
+                layer_list.append(Linear(out_features=4096, act=tlx.ReLU, in_features=512 * 7 * 7, name=layer_name))
             elif layer_group == 'fc2':
-                layer_list.append(Dense(n_units=4096, act=tlx.ReLU, in_channels=4096, name=layer_name))
+                layer_list.append(Linear(out_features=4096, act=tlx.ReLU, in_features=4096, name=layer_name))
             if layer_name == end_with:
                 is_end = True
         if is_end:

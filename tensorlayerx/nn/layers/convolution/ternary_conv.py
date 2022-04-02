@@ -16,9 +16,9 @@ class TernaryConv2d(Module):
 
     Parameters
     ----------
-    n_filter : int
+    out_channels : int
         The number of filters.
-    filter_size : tuple of int
+    kernel_size : tuple of int
         The filter size (height, width).
     strides : tuple of int
         The sliding window strides of corresponding input dimensions.
@@ -49,7 +49,7 @@ class TernaryConv2d(Module):
 
     >>> net = tlx.nn.Input([8, 12, 12, 32], name='input')
     >>> ternaryconv2d = tlx.nn.TernaryConv2d(
-    ...     n_filter=64, filter_size=(5, 5), strides=(1, 1), act=tlx.ReLU, padding='SAME', name='ternaryconv2d'
+    ...     out_channels=64, kernel_size=(5, 5), strides=(1, 1), act=tlx.ReLU, padding='SAME', name='ternaryconv2d'
     ... )(net)
     >>> print(ternaryconv2d)
     >>> output shape : (8, 12, 12, 64)
@@ -58,8 +58,8 @@ class TernaryConv2d(Module):
 
     def __init__(
         self,
-        n_filter=32,
-        filter_size=(3, 3),
+        out_channels=32,
+        kernel_size=(3, 3),
         strides=(1, 1),
         act=None,
         padding='SAME',
@@ -72,8 +72,8 @@ class TernaryConv2d(Module):
         name=None  # 'ternary_cnn2d',
     ):
         super().__init__(name, act=act)
-        self.n_filter = n_filter
-        self.filter_size = filter_size
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
         self.strides = self._strides = strides
         self.padding = padding
         self.use_gemm = use_gemm
@@ -88,8 +88,8 @@ class TernaryConv2d(Module):
             self._built = True
 
         logging.info(
-            "TernaryConv2d %s: n_filter: %d filter_size: %s strides: %s pad: %s act: %s" % (
-                self.name, n_filter, str(filter_size), str(strides), padding,
+            "TernaryConv2d %s: out_channels: %d kernel_size: %s strides: %s pad: %s act: %s" % (
+                self.name, out_channels, str(kernel_size), str(strides), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -103,7 +103,7 @@ class TernaryConv2d(Module):
     def __repr__(self):
         actstr = self.act.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={n_filter}, kernel_size={filter_size}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', strides={strides}, padding={padding}'
         )
         if self.dilation_rate != (1, ) * len(self.dilation_rate):
@@ -132,11 +132,11 @@ class TernaryConv2d(Module):
         else:
             raise Exception("data_format should be either channels_last or channels_first")
 
-        self.filter_shape = (self.filter_size[0], self.filter_size[1], self.in_channels, self.n_filter)
+        self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.out_channels)
 
         self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
+            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(data_format=self.data_format)
 
         self.ternary_conv = tlx.ops.TernaryConv(

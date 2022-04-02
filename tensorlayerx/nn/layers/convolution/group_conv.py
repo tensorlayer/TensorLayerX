@@ -15,9 +15,9 @@ class GroupConv2d(Module):
 
       Parameters
       --------------
-      n_filter : int
+      out_channels : int
           The number of filters.
-      filter_size : tuple of int
+      kernel_size : tuple of int
           The filter size.
       stride : tuple of int
           The stride step.
@@ -46,7 +46,7 @@ class GroupConv2d(Module):
 
       >>> net = tlx.nn.Input([8, 24, 24, 32], name='input')
       >>> groupconv2d = tlx.nn.GroupConv2d(
-      ...     n_filter=64, filter_size=(3, 3), strides=(2, 2), n_group=2, name='group'
+      ...     out_channels=64, kernel_size=(3, 3), strides=(2, 2), n_group=2, name='group'
       ... )(net)
       >>> print(groupconv2d)
       >>> output shape : (8, 12, 12, 64)
@@ -54,13 +54,23 @@ class GroupConv2d(Module):
       """
 
     def __init__(
-        self, n_filter=32, filter_size=(1, 1), strides=(1, 1), n_group=1, act=None, padding='SAME',
-        data_format="channels_last", dilation_rate=(1, 1), W_init='truncated_normal', b_init='constant',
-        in_channels=None, name=None
+        self,
+        out_channels=32,
+        kernel_size=(1, 1),
+        strides=(1, 1),
+        n_group=1,
+        act=None,
+        padding='SAME',
+        data_format="channels_last",
+        dilation_rate=(1, 1),
+        W_init='truncated_normal',
+        b_init='constant',
+        in_channels=None,
+        name=None
     ):
         super().__init__(name, act=act)
-        self.n_filter = n_filter
-        self.filter_size = filter_size
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
         self._strides = self.strides = strides
         self.n_group = n_group
         self.padding = padding
@@ -75,8 +85,8 @@ class GroupConv2d(Module):
             self._built = True
 
         logging.info(
-            "Conv2d %s: n_filter: %d filter_size: %s strides: %s n_group: %d pad: %s  act: %s" % (
-                self.name, n_filter, str(filter_size), str(strides), n_group, padding,
+            "Conv2d %s: out_channels: %d kernel_size: %s strides: %s n_group: %d pad: %s  act: %s" % (
+                self.name, out_channels, str(kernel_size), str(strides), n_group, padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -84,7 +94,7 @@ class GroupConv2d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else "No Activation"
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={n_filter}, kernel_size={filter_size}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', strides={strides}, n_group = {n_group}, padding={padding}'
         )
         if self.dilation_rate != (1, ) * len(self.dilation_rate):
@@ -124,28 +134,28 @@ class GroupConv2d(Module):
                 "is {}, the n_group is {}.".format(self.in_channels, self.n_group)
             )
 
-        if self.n_filter % self.n_group != 0:
+        if self.out_channels % self.n_group != 0:
             raise ValueError(
                 "The number of filters must be divisible by n_group, but we got: the number of filters "
-                "is {}, the n_group is {}. ".format(self.n_filter, self.n_group)
+                "is {}, the n_group is {}. ".format(self.out_channels, self.n_group)
             )
 
         # TODO channels first filter shape [out_channel, in_channel/n_group, filter_h, filter_w]
         self.filter_shape = (
-            self.filter_size[0], self.filter_size[1], int(self.in_channels / self.n_group), self.n_filter
+            self.kernel_size[0], self.kernel_size[1], int(self.in_channels / self.n_group), self.out_channels
         )
 
         self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
+            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
         self.group_conv2d = tlx.ops.GroupConv2D(
             strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
-            out_channel=self.n_filter, k_size=(self.filter_size[0], self.filter_size[1]), groups=self.n_group
+            out_channel=self.out_channels, k_size=(self.kernel_size[0], self.kernel_size[1]), groups=self.n_group
         )
 
         self.act_init_flag = False

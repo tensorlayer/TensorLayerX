@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 # The tensorlayerx and tensorflow operators can be mixed
 import os
-# os.environ['TL_BACKEND'] = 'tensorflow'
+os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'paddle'
-os.environ['TL_BACKEND'] = 'torch'
+# os.environ['TL_BACKEND'] = 'torch'
 
 
 import time
 
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
-from tensorlayerx.nn import Dense
+from tensorlayerx.nn import Linear
 from tensorlayerx.dataflow import Dataset, DataLoader
 
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
@@ -21,9 +21,9 @@ class CustomModel(Module):
 
     def __init__(self):
         super(CustomModel, self).__init__()
-        self.dense1 = Dense(n_units=800, in_channels=784)
-        self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800)
-        self.dense3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800)
+        self.dense1 = Linear(out_features=800, in_features=784)
+        self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+        self.dense3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
 
     def forward(self, x, foo=None):
         z = self.dense1(x)

@@ -6,16 +6,16 @@ from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
 __all__ = [
-    'Dense',
+    'Linear',
 ]
 
 
-class Dense(Module):
-    """The :class:`Dense` class is a fully connected layer.
+class Linear(Module):
+    """The :class:`Linear` class is a fully connected layer.
 
     Parameters
     ----------
-    n_units : int
+    out_features : int
         The number of units of this layer.
     act : activation function
         The activation function of this layer.
@@ -23,7 +23,7 @@ class Dense(Module):
         The initializer for the weight matrix.
     b_init : initializer or None or str
         The initializer for the bias vector. If None, skip biases.
-    in_channels: int
+    in_features: int
         The number of channels of the previous layer.
         If None, it will be automatically detected when the layer is forwarded for the first time.
     name : None or str
@@ -34,11 +34,9 @@ class Dense(Module):
     With TensorLayer
 
     >>> net = tlx.nn.Input([100, 50], name='input')
-    >>> dense = tlx.nn.Dense(n_units=800, act=tlx.ReLU, in_channels=50, name='dense_1')
-    >>> print(dense)
-    Dense(n_units=800, relu, in_channels='50', name='dense_1')
-    >>> tensor = tlx.nn.Dense(n_units=800, act=tlx.ReLU, name='dense_2')(net)
-    >>> print(tensor)
+    >>> dense = tlx.nn.Linear(out_features=800, act=tlx.ReLU, in_features=50, name='dense_1')
+    Linear(out_features=800, relu, in_features='50', name='dense_1')
+    >>> tensor = tlx.nn.Linear(out_features=800, act=tlx.ReLU, name='dense_2')(net)
     tf.Tensor([...], shape=(100, 800), dtype=float32)
 
     Notes
@@ -49,54 +47,54 @@ class Dense(Module):
 
     def __init__(
         self,
-        n_units,
+        out_features,
         act=None,
         W_init='truncated_normal',
         b_init='constant',
-        in_channels=None,
+        in_features=None,
         name=None,  # 'dense',
     ):
 
-        super(Dense, self).__init__(name, act=act)
+        super(Linear, self).__init__(name, act=act)
 
-        self.n_units = n_units
+        self.out_features = out_features
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
-        self.in_channels = in_channels
+        self.in_features = in_features
 
-        if self.in_channels is not None:
-            self.build(self.in_channels)
+        if self.in_features is not None:
+            self.build(self.in_features)
             self._built = True
 
         logging.info(
-            "Dense  %s: %d %s" %
-            (self.name, self.n_units, self.act.__class__.__name__ if self.act is not None else 'No Activation')
+            "Linear  %s: %d %s" %
+            (self.name, self.out_features, self.act.__class__.__name__ if self.act is not None else 'No Activation')
         )
 
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
-        s = ('{classname}(n_units={n_units}, ' + actstr)
-        if self.in_channels is not None:
-            s += ', in_channels=\'{in_channels}\''
+        s = ('{classname}(out_features={out_features}, ' + actstr)
+        if self.in_features is not None:
+            s += ', in_features=\'{in_features}\''
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        if self.in_channels is None and len(inputs_shape) < 2:
+        if self.in_features is None and len(inputs_shape) < 2:
             raise AssertionError("The dimension of input should not be less than 2")
-        if self.in_channels:
-            shape = [self.in_channels, self.n_units]
+        if self.in_features:
+            shape = [self.in_features, self.out_features]
         else:
-            self.in_channels = inputs_shape[-1]
-            shape = [self.in_channels, self.n_units]
+            self.in_features = inputs_shape[-1]
+            shape = [self.in_features, self.out_features]
 
         self.W = self._get_weights("weights", shape=tuple(shape), init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.n_units, ), init=self.b_init)
+            self.b = self._get_weights("biases", shape=(self.out_features, ), init=self.b_init)
             self.b_init_flag = True
             self.bias_add = tlx.ops.BiasAdd(data_format='NHWC')
 

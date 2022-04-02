@@ -19,7 +19,7 @@ from .ternary_dense import *
 
 __all__ = [
     'BinaryDense',
-    'Dense',
+    'Linear',
     'DorefaDense',
     'DropconnectDense',
     'TernaryDense',

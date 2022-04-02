@@ -21,7 +21,7 @@ class DepthwiseConv2d(Module):
 
     Parameters
     ------------
-    filter_size : tuple of 2 int
+    kernel_size : tuple of 2 int
         The filter size (height, width).
     strides : tuple of 2 int
         The stride step (height, width).
@@ -50,7 +50,7 @@ class DepthwiseConv2d(Module):
 
     >>> net = tlx.nn.Input([8, 200, 200, 32], name='input')
     >>> depthwiseconv2d = tlx.nn.DepthwiseConv2d(
-    ...     filter_size=(3, 3), strides=(1, 1), dilation_rate=(2, 2), act=tlx.ReLU, depth_multiplier=2, name='depthwise'
+    ...     kernel_size=(3, 3), strides=(1, 1), dilation_rate=(2, 2), act=tlx.ReLU, depth_multiplier=2, name='depthwise'
     ... )(net)
     >>> print(depthwiseconv2d)
     >>> output shape : (8, 200, 200, 64)
@@ -66,7 +66,7 @@ class DepthwiseConv2d(Module):
     # https://zhuanlan.zhihu.com/p/31551004  https://github.com/xiaohu2015/DeepLearning_tutorials/blob/master/CNNs/MobileNet.py
     def __init__(
         self,
-        filter_size=(3, 3),
+        kernel_size=(3, 3),
         strides=(1, 1),
         act=None,
         padding='SAME',
@@ -79,7 +79,7 @@ class DepthwiseConv2d(Module):
         name=None  # 'depthwise_conv2d'
     ):
         super().__init__(name, act=act)
-        self.filter_size = filter_size
+        self.kernel_size = kernel_size
         self.strides = self._strides = strides
         self.padding = padding
         self.dilation_rate = self._dilation_rate = dilation_rate
@@ -94,8 +94,8 @@ class DepthwiseConv2d(Module):
             self._built = True
 
         logging.info(
-            "DepthwiseConv2d %s: filter_size: %s strides: %s pad: %s act: %s" % (
-                self.name, str(filter_size), str(strides), padding,
+            "DepthwiseConv2d %s: kernel_size: %s strides: %s pad: %s act: %s" % (
+                self.name, str(kernel_size), str(strides), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -103,7 +103,7 @@ class DepthwiseConv2d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={n_filter}, kernel_size={filter_size}'
+            '{classname}(in_channels={in_channels}, out_channels={n_filter}, kernel_size={kernel_size}'
             ', strides={strides}, padding={padding}'
         )
         if self.dilation_rate != (1, ) * len(self.dilation_rate):
@@ -132,11 +132,11 @@ class DepthwiseConv2d(Module):
         else:
             raise Exception("data_format should be either channels_last or channels_first")
 
-        self.filter_shape = (self.filter_size[0], self.filter_size[1], self.in_channels, self.depth_multiplier)
+        self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.depth_multiplier)
 
         # Set the size of kernel as (K1,K2), then the shape is (K,Cin,K1,K2), K must be 1.
         if BACKEND == 'mindspore':
-            self.filter_shape = (self.filter_size[0], self.filter_size[1], self.in_channels, 1)
+            self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, 1)
 
         if BACKEND in ['tensorflow', 'mindspore']:
             self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init, transposed=True)
@@ -144,14 +144,14 @@ class DepthwiseConv2d(Module):
         # TODO The number of parameters on multiple backends is not equal.
         # TODO It might be better to use deepwise convolution and pointwise convolution for other backends as well.
         if BACKEND in ['paddle', 'torch']:
-            self.filter_depthwise = (self.in_channels, 1, self.filter_size[0], self.filter_size[1])
+            self.filter_depthwise = (self.in_channels, 1, self.kernel_size[0], self.kernel_size[1])
             self.filter_pointwise = (self.in_channels * self.depth_multiplier, self.in_channels, 1, 1)
             self.W = self._get_weights("filters", shape=self.filter_depthwise, init=self.W_init, order=True)
             self.point_W = self._get_weights("point_filter", shape=self.filter_pointwise, init=self.W_init, order=True)
 
         self.depthwise_conv2d = tlx.ops.DepthwiseConv2d(
             strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
-            ksize=self.filter_size, channel_multiplier=self.depth_multiplier
+            ksize=self.kernel_size, channel_multiplier=self.depth_multiplier
         )
 
         self.b_init_flag = False

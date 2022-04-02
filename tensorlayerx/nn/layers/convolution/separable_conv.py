@@ -18,9 +18,9 @@ class SeparableConv1d(Module):
 
     Parameters
     ------------
-    n_filter : int
+    out_channels : int
         The dimensionality of the output space (i.e. the number of filters in the convolution).
-    filter_size : int
+    kernel_size : int
         Specifying the spatial dimensions of the filters. Can be a single integer to specify the same value for all spatial dimensions.
     stride : int
         Specifying the stride of the convolution. Can be a single integer to specify the same value for all spatial dimensions. Specifying any stride value != 1 is incompatible with specifying any dilation_rate value != 1.
@@ -50,20 +50,20 @@ class SeparableConv1d(Module):
     With TensorLayer
 
     >>> net = tlx.nn.Input([8, 50, 64], name='input')
-    >>> separableconv1d = tlx.nn.SeparableConv1d(n_filter=32, filter_size=3, stride=2, padding='SAME', act=tlx.ReLU, name='separable_1d')(net)
+    >>> separableconv1d = tlx.nn.SeparableConv1d(out_channels=32, kernel_size=3, stride=2, padding='SAME', act=tlx.ReLU, name='separable_1d')(net)
     >>> print(separableconv1d)
     >>> output shape : (8, 25, 32)
 
     """
 
     def __init__(
-        self, n_filter=32, filter_size=1, stride=1, act=None, padding="SAME", data_format="channels_last",
+        self, out_channels=32, kernel_size=1, stride=1, act=None, padding="SAME", data_format="channels_last",
         dilation_rate=1, depth_multiplier=1, depthwise_init='truncated_normal', pointwise_init='truncated_normal',
         b_init='constant', in_channels=None, name=None
     ):
         super(SeparableConv1d, self).__init__(name, act=act)
-        self.n_filter = n_filter
-        self.filter_size = filter_size
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
         self.stride = stride
         self.padding = padding
         self.data_format = data_format
@@ -79,8 +79,8 @@ class SeparableConv1d(Module):
             self._built = True
 
         logging.info(
-            "SeparableConv1d  %s: n_filter: %d filter_size: %s strides: %s depth_multiplier: %d act: %s" % (
-                self.name, n_filter, str(filter_size), str(stride), depth_multiplier,
+            "SeparableConv1d  %s: out_channels: %d kernel_size: %s strides: %s depth_multiplier: %d act: %s" % (
+                self.name, out_channels, str(kernel_size), str(stride), depth_multiplier,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -88,7 +88,7 @@ class SeparableConv1d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={n_filter}, kernel_size={filter_size}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', stride={stride}, padding={padding}'
         )
         if self.dilation_rate != 1:
@@ -114,11 +114,11 @@ class SeparableConv1d(Module):
             raise Exception("data_format should be either channels_last or channels_first")
 
         if BACKEND == 'tensorflow':
-            self.depthwise_filter_shape = (self.filter_size, self.in_channels, self.depth_multiplier)
+            self.depthwise_filter_shape = (self.kernel_size, self.in_channels, self.depth_multiplier)
         elif BACKEND in ['mindspore', 'paddle', 'torch']:
-            self.depthwise_filter_shape = (self.filter_size, 1, self.depth_multiplier * self.in_channels)
+            self.depthwise_filter_shape = (self.kernel_size, 1, self.depth_multiplier * self.in_channels)
 
-        self.pointwise_filter_shape = (1, self.depth_multiplier * self.in_channels, self.n_filter)
+        self.pointwise_filter_shape = (1, self.depth_multiplier * self.in_channels, self.out_channels)
 
         self.depthwise_W = self._get_weights(
             'depthwise_filters', shape=self.depthwise_filter_shape, init=self.depthwise_init
@@ -129,7 +129,7 @@ class SeparableConv1d(Module):
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
+            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -140,7 +140,7 @@ class SeparableConv1d(Module):
 
         self.separable_conv1d = tlx.ops.SeparableConv1D(
             stride=self.stride, padding=self.padding, data_format=self.data_format, dilations=self.dilation_rate,
-            out_channel=self.n_filter, k_size=self.filter_size, in_channel=self.in_channels,
+            out_channel=self.out_channels, k_size=self.kernel_size, in_channel=self.in_channels,
             depth_multiplier=self.depth_multiplier
         )
 
@@ -165,9 +165,9 @@ class SeparableConv2d(Module):
 
         Parameters
         ------------
-        n_filter : int
+        out_channels : int
             The dimensionality of the output space (i.e. the number of filters in the convolution).
-        filter_size : tuple of int
+        kernel_size : tuple of int
             Specifying the spatial dimensions of the filters. Can be a single integer to specify the same value for all spatial dimensions.
         strides : tuple of int
             Specifying the stride of the convolution. Can be a single integer to specify the same value for all spatial dimensions. Specifying any stride value != 1 is incompatible with specifying any dilation_rate value != 1.
@@ -197,20 +197,20 @@ class SeparableConv2d(Module):
         With TensorLayer
 
         >>> net = tlx.nn.Input([8, 50, 50, 64], name='input')
-        >>> separableconv2d = tlx.nn.SeparableConv2d(n_filter=32, filter_size=(3,3), strides=(2,2), depth_multiplier = 3 , padding='SAME', act=tlx.ReLU, name='separable_2d')(net)
+        >>> separableconv2d = tlx.nn.SeparableConv2d(out_channels=32, kernel_size=(3,3), strides=(2,2), depth_multiplier = 3 , padding='SAME', act=tlx.ReLU, name='separable_2d')(net)
         >>> print(separableconv2d)
         >>> output shape : (8, 24, 24, 32)
 
         """
 
     def __init__(
-        self, n_filter=32, filter_size=(1, 1), strides=(1, 1), act=None, padding="VALID", data_format="channels_last",
+        self, out_channels=32, kernel_size=(1, 1), strides=(1, 1), act=None, padding="VALID", data_format="channels_last",
         dilation_rate=(1, 1), depth_multiplier=1, depthwise_init='truncated_normal', pointwise_init='truncated_normal',
         b_init='constant', in_channels=None, name=None
     ):
         super(SeparableConv2d, self).__init__(name, act=act)
-        self.n_filter = n_filter
-        self.filter_size = filter_size
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
         self._strides = self.strides = strides
         self.padding = padding
         self.data_format = data_format
@@ -226,8 +226,8 @@ class SeparableConv2d(Module):
             self._built = True
 
         logging.info(
-            "SeparableConv2d  %s: n_filter: %d filter_size: %s strides: %s depth_multiplier: %d act: %s" % (
-                self.name, n_filter, str(filter_size), str(strides), depth_multiplier,
+            "SeparableConv2d  %s: out_channels: %d kernel_size: %s strides: %s depth_multiplier: %d act: %s" % (
+                self.name, out_channels, str(kernel_size), str(strides), depth_multiplier,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -235,7 +235,7 @@ class SeparableConv2d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={n_filter}, kernel_size={filter_size}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', stride={strides }, padding={padding}'
         )
         if self.dilation_rate != (1, ) * len(self.dilation_rate):
@@ -266,15 +266,15 @@ class SeparableConv2d(Module):
 
         if BACKEND == 'tensorflow':
             self.depthwise_filter_shape = (
-                self.filter_size[0], self.filter_size[1], self.in_channels, self.depth_multiplier
+                self.kernel_size[0], self.kernel_size[1], self.in_channels, self.depth_multiplier
             )
-            self.pointwise_filter_shape = (1, 1, self.depth_multiplier * self.in_channels, self.n_filter)
+            self.pointwise_filter_shape = (1, 1, self.depth_multiplier * self.in_channels, self.out_channels)
 
         elif BACKEND in ['mindspore' , 'paddle', 'torch']:
             self.depthwise_filter_shape = (
-                self.filter_size[0], self.filter_size[1], 1, self.depth_multiplier * self.in_channels
+                self.kernel_size[0], self.kernel_size[1], 1, self.depth_multiplier * self.in_channels
             )
-            self.pointwise_filter_shape = (1, 1, self.depth_multiplier * self.in_channels, self.n_filter)
+            self.pointwise_filter_shape = (1, 1, self.depth_multiplier * self.in_channels, self.out_channels)
 
         self.depthwise_W = self._get_weights(
             'depthwise_filters', shape=self.depthwise_filter_shape, init=self.depthwise_init
@@ -286,7 +286,7 @@ class SeparableConv2d(Module):
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.n_filter, ), init=self.b_init)
+            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -296,7 +296,7 @@ class SeparableConv2d(Module):
 
         self.separable_conv2d = tlx.ops.SeparableConv2D(
             strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
-            out_channel=self.n_filter, k_size=self.filter_size, in_channel=self.in_channels,
+            out_channel=self.out_channels, k_size=self.kernel_size, in_channel=self.in_channels,
             depth_multiplier=self.depth_multiplier
         )
 

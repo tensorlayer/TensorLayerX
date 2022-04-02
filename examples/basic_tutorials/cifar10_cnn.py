@@ -15,7 +15,7 @@ from tensorlayerx.vision.transforms import (
 from tensorlayerx.model import TrainOneStep
 from tensorlayerx.nn import Module
 import tensorlayerx as tlx
-from tensorlayerx.nn import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
+from tensorlayerx.nn import (Conv2d, Linear, Flatten, MaxPool2d, BatchNorm2d)
 # enable debug logging
 tlx.logging.set_verbosity(tlx.logging.DEBUG)
 
@@ -42,9 +42,9 @@ class CNN(Module):
         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 
         self.flatten = Flatten(name='flatten')
-        self.dense1 = Dense(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_channels=2304)
-        self.dense2 = Dense(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_channels=384)
-        self.dense3 = Dense(10, act=None, W_init=W_init2, name='output', in_channels=192)
+        self.dense1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_features=2304)
+        self.dense2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_features=384)
+        self.dense3 = Linear(10, act=None, W_init=W_init2, name='output', in_features=192)
 
     def forward(self, x):
         z = self.conv1(x)
@@ -160,7 +160,7 @@ for epoch in range(n_epoch):
 #
 # from tensorlayerx.nn import Module
 # import tensorlayerx as tlx
-# from tensorlayerx.nn import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
+# from tensorlayerx.nn import (Conv2d, Linear, Flatten, MaxPool2d, BatchNorm2d)
 #
 # # enable debug logging
 # tlx.logging.set_verbosity(tlx.logging.DEBUG)
@@ -188,9 +188,9 @@ for epoch in range(n_epoch):
 #         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 #
 #         self.flatten = Flatten(name='flatten')
-#         self.dense1 = Dense(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_channels=2304)
-#         self.dense2 = Dense(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_channels=384)
-#         self.dense3 = Dense(10, act=None, W_init=W_init2, name='output', in_channels=192)
+#         self.dense1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_channels=2304)
+#         self.dense2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_channels=384)
+#         self.dense3 = Linear(10, act=None, W_init=W_init2, name='output', in_channels=192)
 #
 #     def forward(self, x):
 #         z = self.conv1(x)
@@ -344,7 +344,7 @@ for epoch in range(n_epoch):
 # import numpy as np
 # from tensorlayerx.nn import Module
 # import tensorlayerx as tlx
-# from tensorlayerx.nn import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
+# from tensorlayerx.nn import (Conv2d, Linear, Flatten, MaxPool2d, BatchNorm2d)
 # from tensorlayerx.vision.transforms import (
 #     Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop, HWC2CHW
 # )
@@ -374,9 +374,9 @@ for epoch in range(n_epoch):
 #         self.maxpool2 = MaxPool2d((3, 3), (2, 2), name='pool2', data_format='channels_first')
 #
 #         self.flatten = Flatten(name='flatten')
-#         self.dense1 = Dense(120, act=tlx.ReLU, name='dense1relu', in_channels=512)
-#         self.dense2 = Dense(84, act=tlx.ReLU, name='dense2relu', in_channels=120)
-#         self.dense3 = Dense(10, act=None, name='output', in_channels=84)
+#         self.dense1 = Linear(120, act=tlx.ReLU, name='dense1relu', in_channels=512)
+#         self.dense2 = Linear(84, act=tlx.ReLU, name='dense2relu', in_channels=120)
+#         self.dense3 = Linear(10, act=None, name='output', in_channels=84)
 #
 #     def forward(self, x):
 #         z = self.conv1(x)
@@ -488,7 +488,7 @@ for epoch in range(n_epoch):
 # from tensorlayerx.nn import Module
 # import tensorlayerx as tlx
 # from tensorlayerx.dataflow import Dataset, DataLoader
-# from tensorlayerx.nn import (Conv2d, Dense, Flatten, MaxPool2d, BatchNorm2d)
+# from tensorlayerx.nn import (Conv2d, Linear, Flatten, MaxPool2d, BatchNorm2d)
 # from tensorlayerx.vision.transforms import (
 #     Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop
 # )
@@ -519,9 +519,9 @@ for epoch in range(n_epoch):
 #         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 #
 #         self.flatten = Flatten(name='flatten')
-#         self.dense1 = Dense(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_channels=2304)
-#         self.dense2 = Dense(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_channels=384)
-#         self.dense3 = Dense(10, act=None, W_init=W_init2, name='output', in_channels=192)
+#         self.dense1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1relu', in_channels=2304)
+#         self.dense2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2relu', in_channels=384)
+#         self.dense3 = Linear(10, act=None, W_init=W_init2, name='output', in_channels=192)
 #
 #     def forward(self, x):
 #         z = self.conv1(x)

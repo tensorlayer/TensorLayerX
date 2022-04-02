@@ -10,8 +10,8 @@ os.environ['TL_BACKEND'] = 'torch'
 import time
 import numpy as np
 import tensorlayerx as tlx
-from tensorlayerx.nn import Module, Dense
-from tensorlayerx.dataflow import Dataset, DataLoader
+from tensorlayerx.nn import Module, Linear
+from tensorlayerx.dataflow import Dataset
 from tensorlayerx.model import TrainOneStep
 
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
@@ -41,9 +41,9 @@ class generator(Module):
 
     def __init__(self):
         super(generator, self).__init__()
-        self.g_fc1 = Dense(n_units=256, in_channels=100, act=tlx.ReLU)
-        self.g_fc2 = Dense(n_units=256, in_channels=256, act=tlx.ReLU)
-        self.g_fc3 = Dense(n_units=784, in_channels=256, act=tlx.Tanh)
+        self.g_fc1 = Linear(out_features=256, in_features=100, act=tlx.ReLU)
+        self.g_fc2 = Linear(out_features=256, in_features=256, act=tlx.ReLU)
+        self.g_fc3 = Linear(out_features=784, in_features=256, act=tlx.Tanh)
 
     def forward(self, x):
         out = self.g_fc1(x)
@@ -56,9 +56,9 @@ class discriminator(Module):
 
     def __init__(self):
         super(discriminator, self).__init__()
-        self.d_fc1 = Dense(n_units=256, in_channels=784, act=tlx.LeakyReLU)
-        self.d_fc2 = Dense(n_units=256, in_channels=256, act=tlx.LeakyReLU)
-        self.d_fc3 = Dense(n_units=1, in_channels=256, act=tlx.Sigmoid)
+        self.d_fc1 = Linear(out_features=256, in_features=784, act=tlx.LeakyReLU)
+        self.d_fc2 = Linear(out_features=256, in_features=256, act=tlx.LeakyReLU)
+        self.d_fc3 = Linear(out_features=1, in_features=256, act=tlx.Sigmoid)
 
     def forward(self, x):
         out = self.d_fc1(x)
@@ -69,7 +69,6 @@ class discriminator(Module):
 
 G = generator()
 D = discriminator()
-
 
 class WithLossG(Module):
 

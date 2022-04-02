@@ -747,7 +747,7 @@ def arange(start, limit=None, delta=1, dtype=None):
         An 1-D Tensor of type dtype.
     """
 
-    return torch.range(start=start, end=limit, step=delta, dtype=dtype)
+    return torch.arange(start=start, end=limit, step=delta, dtype=dtype)
 
 
 class ExpandDims(object):

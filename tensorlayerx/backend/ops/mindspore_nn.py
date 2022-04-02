@@ -393,10 +393,9 @@ def gelu(x):
 
 class Dropout(Cell):
 
-    def __init__(self, keep, seed=0):
+    def __init__(self, p, seed=0):
         super(Dropout, self).__init__()
-        self.dropout = P.Dropout(keep_prob=keep)
-        self.keep_prob = keep
+        self.dropout = P.Dropout(keep_prob=(1-p))
 
     def construct(self, inputs):
         outputs, _ = self.dropout(inputs)

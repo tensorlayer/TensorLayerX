@@ -48,7 +48,7 @@ class Convolutional(Module):
 
         self.zeropad = ZeroPad2d(((1, 0), (1, 0)))
         self.conv = Conv2d(
-            n_filter=filters_shape[-1], in_channels=filters_shape[2], filter_size=(filters_shape[0], filters_shape[1]),
+            out_channels=filters_shape[-1], in_channels=filters_shape[2], kernel_size=(filters_shape[0], filters_shape[1]),
             strides=(strides, strides), padding=padding, b_init=b_init, name=name
         )
 
@@ -140,9 +140,9 @@ class cspdarknet53(Module):
         self.conv6_4 = Convolutional((3, 3, 512, 1024))
         self.conv6_5 = Convolutional((1, 1, 1024, 512))
 
-        self.maxpool1 = MaxPool2d(filter_size=(13, 13), strides=(1, 1))
-        self.maxpool2 = MaxPool2d(filter_size=(9, 9), strides=(1, 1))
-        self.maxpool3 = MaxPool2d(filter_size=(5, 5), strides=(1, 1))
+        self.maxpool1 = MaxPool2d(kernel_size=(13, 13), strides=(1, 1))
+        self.maxpool2 = MaxPool2d(kernel_size=(9, 9), strides=(1, 1))
+        self.maxpool3 = MaxPool2d(kernel_size=(5, 5), strides=(1, 1))
 
         self.conv7_1 = Convolutional((1, 1, 2048, 512))
         self.conv7_2 = Convolutional((3, 3, 512, 1024))

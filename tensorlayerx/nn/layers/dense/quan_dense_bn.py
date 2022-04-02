@@ -16,7 +16,7 @@ class QuanDenseWithBN(Module):
     # TODO The QuanDenseWithBN only supports TensorFlow backend.
     Parameters
     ----------
-    n_units : int
+    out_features : int
         The number of units of this layer.
     act : activation function
         The activation function of this layer.
@@ -42,7 +42,7 @@ class QuanDenseWithBN(Module):
         The initializer for the the weight matrix.
     W_init_args : dictionary
         The arguments for the weight matrix initializer.
-    in_channels: int
+    in_features: int
         The number of channels of the previous layer.
         If None, it will be automatically detected when the layer is forwarded for the first time.
     name : a str
@@ -58,7 +58,7 @@ class QuanDenseWithBN(Module):
 
     def __init__(
         self,
-        n_units=100,
+        out_features=100,
         act=None,
         decay=0.9,
         epsilon=1e-5,
@@ -70,11 +70,11 @@ class QuanDenseWithBN(Module):
         use_gemm=False,
         W_init='truncated_normal',
         W_init_args=None,
-        in_channels=None,
+        in_features=None,
         name=None,  # 'quan_dense_with_bn',
     ):
         super(QuanDenseWithBN, self).__init__(act=act, W_init_args=W_init_args, name=name)
-        self.n_units = n_units
+        self.out_features = out_features
         self.decay = decay
         self.epsilon = epsilon
         self.is_train = is_train
@@ -84,42 +84,42 @@ class QuanDenseWithBN(Module):
         self.beta_init = self.str_to_init(beta_init)
         self.use_gemm = use_gemm
         self.W_init = self.str_to_init(W_init)
-        self.in_channels = in_channels
+        self.in_features = in_features
 
-        if self.in_channels is not None:
-            self.build((None, self.in_channels))
+        if self.in_features is not None:
+            self.build((None, self.in_features))
             self._built = True
 
         logging.info(
             "QuanDenseLayerWithBN  %s: %d %s" %
-            (self.name, n_units, self.act.__class__.__name__ if self.act is not None else 'No Activation')
+            (self.name, out_features, self.act.__class__.__name__ if self.act is not None else 'No Activation')
         )
 
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
-        s = ('{classname}(n_units={n_units}, ' + actstr)
+        s = ('{classname}(out_features={out_features}, ' + actstr)
         s += ', bitW={bitW}, bitA={bitA}'
-        if self.in_channels is not None:
-            s += ', in_channels=\'{in_channels}\''
+        if self.in_features is not None:
+            s += ', in_features=\'{in_features}\''
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        if self.in_channels is None and len(inputs_shape) != 2:
+        if self.in_features is None and len(inputs_shape) != 2:
             raise Exception("The input dimension must be rank 2, please reshape or flatten it")
 
-        if self.in_channels is None:
-            self.in_channels = inputs_shape[1]
+        if self.in_features is None:
+            self.in_features = inputs_shape[1]
 
         if self.use_gemm:
             raise Exception("TODO. The current version use tf.matmul for inferencing.")
 
         n_in = inputs_shape[-1]
-        self.W = self._get_weights("weights", shape=(n_in, self.n_units), init=self.W_init)
+        self.W = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
 
-        para_bn_shape = (self.n_units, )
+        para_bn_shape = (self.out_features, )
         if self.gamma_init:
             self.scale_para = self._get_weights("gamm_weights", shape=para_bn_shape, init=self.gamma_init)
         else:

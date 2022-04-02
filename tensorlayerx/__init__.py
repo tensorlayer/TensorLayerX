@@ -38,12 +38,12 @@ if 'TENSORLAYER_PACKAGE_BUILDING' not in os.environ:
     # db = LazyImport("tensorlayerx.utils.db")
     # distributed = LazyImport("tensorlayerx.utils.distributed")
     # nlp = LazyImport("tensorlayerx.text.nlp")
-    # prepro = LazyImport("tensorlayerx.utils.prepro")
+    prepro = LazyImport("tensorlayerx.utils.prepro")
     # utils = LazyImport("tensorlayerx.utils")
-    # visualize = LazyImport("tensorlayerx.utils.visualize")
+    visualize = LazyImport("tensorlayerx.utils.visualize")
 
     # alias
-    # vis = visualize
+    vis = visualize
 
     # alphas = array_ops.alphas
     # alphas_like = array_ops.alphas_like

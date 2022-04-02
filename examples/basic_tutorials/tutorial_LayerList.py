@@ -6,12 +6,12 @@ import os
 # os.environ['TL_BACKEND'] = 'mindspore'
 os.environ['TL_BACKEND'] = 'paddle'
 
-from tensorlayerx.nn import Module, LayerList, Dense
+from tensorlayerx.nn import Module, LayerList, Linear
 import tensorlayerx as tlx
 
-d1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='Dense1')
-d2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800, name='Dense2')
-d3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800, name='Dense3')
+d1 = Linear(out_features=800, act=tlx.ReLU, in_features=784, name='Dense1')
+d2 = Linear(out_features=800, act=tlx.ReLU, in_features=800, name='Dense2')
+d3 = Linear(out_features=10, act=tlx.ReLU, in_features=800, name='Dense3')
 
 layer_list = LayerList([d1, d2])
 # Inserts a given d2 before a given index in the list

@@ -10,7 +10,7 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
-from tensorlayerx.nn import Dense, Dropout
+from tensorlayerx.nn import Linear, Dropout
 from tensorlayerx.dataflow import Dataset, DataLoader
 
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
@@ -36,11 +36,11 @@ class CustomModel(Module):
     def __init__(self):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(keep=0.8)
-        self.dense1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784)
+        self.dense1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
         self.dropout2 = Dropout(keep=0.8)
-        self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800)
+        self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
         self.dropout3 = Dropout(keep=0.8)
-        self.dense3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800)
+        self.dense3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
 
     def forward(self, x, foo=None):
         z = self.dropout1(x)
@@ -81,7 +81,7 @@ model.load_weights('./model.npz', format='npz_dict')
 # import tensorflow as tf
 # import tensorlayerx as tlx
 # from tensorlayerx.nn import Module
-# from tensorlayerx.nn import Dense, Dropout, BatchNorm1d
+# from tensorlayerx.nn import Linear, Dropout, BatchNorm1d
 #
 # X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
 #
@@ -91,12 +91,12 @@ model.load_weights('./model.npz', format='npz_dict')
 #     def __init__(self):
 #         super(CustomModel, self).__init__()
 #         self.dropout1 = Dropout(keep=0.8)
-#         self.dense1 = Dense(n_units=800, in_channels=784)
+#         self.dense1 = Linear(out_features=800, in_features=784)
 #         self.batchnorm = BatchNorm1d(act=tlx.ReLU, num_features=800)
 #         self.dropout2 = Dropout(keep=0.8)
-#         self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800)
+#         self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
 #         self.dropout3 = Dropout(keep=0.8)
-#         self.dense3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800)
+#         self.dense3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
 #
 #     def forward(self, x, foo=None):
 #         z = self.dropout1(x)
@@ -179,7 +179,7 @@ model.load_weights('./model.npz', format='npz_dict')
 # import tensorflow as tf
 # import time
 # from tensorlayerx.nn import Module
-# from tensorlayerx.nn import Dense
+# from tensorlayerx.nn import Linear
 # import mindspore.nn as nn
 #
 #
@@ -187,9 +187,9 @@ model.load_weights('./model.npz', format='npz_dict')
 #
 #     def __init__(self):
 #         super(MLP, self).__init__()
-#         self.dense1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784)
-#         self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800)
-#         self.dense3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800)
+#         self.dense1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
+#         self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+#         self.dense3 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
 #
 #     def forward(self, x):
 #         z = self.dense1(x)
@@ -263,7 +263,7 @@ model.load_weights('./model.npz', format='npz_dict')
 #
 # import tensorlayerx as tlx
 # from tensorlayerx.nn import Module
-# from tensorlayerx.nn import Dense, Flatten
+# from tensorlayerx.nn import Linear, Flatten
 # import paddle
 # from paddle.io import TensorDataset
 #
@@ -280,9 +280,9 @@ model.load_weights('./model.npz', format='npz_dict')
 #
 #     def __init__(self):
 #         super(MLP, self).__init__()
-#         self.linear1 = Dense(n_units=120, in_channels=784, act=tlx.ReLU)
-#         self.linear2 = Dense(n_units=84, in_channels=120, act=tlx.ReLU)
-#         self.linear3 = Dense(n_units=10, in_channels=84)
+#         self.linear1 = Linear(out_features=120, in_features=784, act=tlx.ReLU)
+#         self.linear2 = Linear(out_features=84, in_features=120, act=tlx.ReLU)
+#         self.linear3 = Linear(out_features=10, in_features=84)
 #         self.flatten = Flatten()
 #
 #     def forward(self, x):
@@ -317,7 +317,7 @@ model.load_weights('./model.npz', format='npz_dict')
 # from torchvision import datasets
 # from torchvision.transforms import ToTensor
 #
-# from tensorlayerx.nn import Module, Dense
+# from tensorlayerx.nn import Module, Linear
 # import tensorlayerx as tlx
 #
 # # Download training data from open datasets.
@@ -375,9 +375,9 @@ model.load_weights('./model.npz', format='npz_dict')
 #     def __init__(self):
 #         super(NeuralNetwork, self).__init__()
 #         self.flatten = nn.Flatten()
-#         self.dense1 = Dense(in_channels=28 * 28, n_units=512)
-#         self.dense2 = Dense(in_channels=512, n_units=512)
-#         self.dense3 = Dense(in_channels=512, n_units=10)
+#         self.dense1 = Linear(in_features=28 * 28, out_features=512)
+#         self.dense2 = Linear(in_features=512, out_features=512)
+#         self.dense3 = Linear(in_features=512, out_features=10)
 #
 #     def forward(self, x):
 #         x = self.flatten(x)

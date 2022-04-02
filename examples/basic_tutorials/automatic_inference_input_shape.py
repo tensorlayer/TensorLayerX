@@ -8,7 +8,7 @@ import time
 import tensorflow as tf
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
-from tensorlayerx.nn import Dense, Dropout, BatchNorm1d
+from tensorlayerx.nn import Linear, Dropout, BatchNorm1d
 from tensorlayerx.dataflow import Dataset, DataLoader
 
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
@@ -18,13 +18,13 @@ class CustomModel(Module):
 
     def __init__(self):
         super(CustomModel, self).__init__()
-        self.dropout1 = Dropout(keep=0.8)
-        self.dense1 = Dense(n_units=800)
+        self.dropout1 = Dropout(p=0.2)
+        self.dense1 = Linear(out_features=800)
         self.batchnorm = BatchNorm1d(act=tlx.ReLU)
-        self.dropout2 = Dropout(keep=0.8)
-        self.dense2 = Dense(n_units=800, act=tlx.ReLU)
-        self.dropout3 = Dropout(keep=0.8)
-        self.dense3 = Dense(n_units=10, act=tlx.ReLU)
+        self.dropout2 = Dropout(p=0.2)
+        self.dense2 = Linear(out_features=800, act=tlx.ReLU)
+        self.dropout3 = Dropout(p=0.2)
+        self.dense3 = Linear(out_features=10, act=tlx.ReLU)
 
     def forward(self, x, foo=None):
         z = self.dropout1(x)

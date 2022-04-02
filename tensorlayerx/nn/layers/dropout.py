@@ -17,9 +17,8 @@ class Dropout(Module):
 
     Parameters
     ----------
-    keep : float
-        The keeping probability.
-        The lower the probability it is, the more activations are set to zero.
+    p : float
+        probability of an element to be zeroed. Default: 0.5
     seed : int or None
         The seed for random dropout.
     name : None or str
@@ -28,29 +27,29 @@ class Dropout(Module):
     Examples
     --------
     >>> net = tlx.nn.Input([10, 200])
-    >>> net = tlx.nn.Dropout(keep=0.2)(net)
+    >>> net = tlx.nn.Dropout(p=0.2)(net)
 
     """
 
-    def __init__(self, keep, seed=0, name=None):  #"dropout"):
+    def __init__(self, p=0.5, seed=0, name=None):  #"dropout"):
         super(Dropout, self).__init__(name)
-        self.keep = keep
+        self.p = p
         self.seed = seed
 
         self.build()
         self._built = True
 
-        logging.info("Dropout %s: keep: %f " % (self.name, self.keep))
+        logging.info("Dropout %s: p: %f " % (self.name, self.p))
 
     def __repr__(self):
-        s = ('{classname}(keep={keep}')
+        s = ('{classname}(p={p}')
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.dropout = tlx.ops.Dropout(keep=self.keep, seed=self.seed)
+        self.dropout = tlx.ops.Dropout(p=self.p, seed=self.seed)
 
     # @tf.function
     def forward(self, inputs):

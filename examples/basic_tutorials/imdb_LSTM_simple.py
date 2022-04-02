@@ -9,7 +9,7 @@ import os
 os.environ['TL_BACKEND'] = 'torch'
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
-from tensorlayerx.nn import Dense, LSTM, Embedding
+from tensorlayerx.nn import Linear, LSTM, Embedding
 from tensorlayerx.dataflow import Dataset
 import numpy as np
 
@@ -43,8 +43,8 @@ class ImdbNet(Module):
         super(ImdbNet, self).__init__()
         self.embedding = Embedding(vocabulary_size=vocab_size, embedding_size=64)
         self.lstm = LSTM(input_size=64, hidden_size=64)
-        self.dense1 = Dense(in_channels=64, n_units=64, act=tlx.ReLU)
-        self.dense2 = Dense(in_channels=64, n_units=2)
+        self.dense1 = Linear(in_features=64, out_features=64, act=tlx.ReLU)
+        self.dense2 = Linear(in_features=64, out_features=2)
 
     def forward(self, x):
         x = self.embedding(x)

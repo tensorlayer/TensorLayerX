@@ -37,9 +37,9 @@ class PoolLayer(Module):
 
     Parameters
     ----------
-    filter_size : tuple of int
+    kernel_size : tuple of int
         The size of the window for each dimension of the input tensor.
-        Note that: len(filter_size) >= 4.
+        Note that: len(kernel_size) >= 4.
     strides : tuple of int
         The stride of the sliding window for each dimension of the input tensor.
         Note that: len(strides) >= 4.
@@ -63,14 +63,14 @@ class PoolLayer(Module):
 
     def __init__(
         self,
-        filter_size=(1, 2, 2, 1),
+        kernel_size=(1, 2, 2, 1),
         strides=(1, 2, 2, 1),
         padding='SAME',
         pool=tlx.ops.MaxPool,
         name=None  # 'pool_pro',
     ):
         super().__init__(name)
-        self.filter_size = filter_size
+        self.kernel_size = kernel_size
         self.strides = strides
         self.padding = padding
         self.pool = pool
@@ -79,19 +79,19 @@ class PoolLayer(Module):
         self._built = True
 
         logging.info(
-            "PoolLayer %s: filter_size: %s strides: %s padding: %s pool: %s" %
-            (self.name, str(self.filter_size), str(self.strides), self.padding, pool.__name__)
+            "PoolLayer %s: kernel_size: %s strides: %s padding: %s pool: %s" %
+            (self.name, str(self.kernel_size), str(self.strides), self.padding, pool.__name__)
         )
 
     def __repr__(self):
-        s = '{classname}(pool={poolname}, filter_size={strides}, padding={padding}'
+        s = '{classname}(pool={poolname}, kernel_size={strides}, padding={padding}'
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
         return s.format(classname=self.__class__.__name__, poolname=self.pool.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self._pool = self.pool(ksize=self.filter_size, strides=self.strides, padding=self.padding)
+        self._pool = self.pool(ksize=self.kernel_size, strides=self.strides, padding=self.padding)
 
     def forward(self, inputs):
         outputs = self._pool(inputs)
@@ -103,7 +103,7 @@ class MaxPool1d(Module):
 
     Parameters
     ----------
-    filter_size : int
+    kernel_size : int
         Pooling window size.
     strides : int
         Stride of the pooling operation.
@@ -119,21 +119,21 @@ class MaxPool1d(Module):
     With TensorLayer
 
     >>> net = tlx.nn.Input([10, 50, 32], name='input')
-    >>> net = tlx.nn.MaxPool1d(filter_size=3, strides=2, padding='SAME', name='maxpool1d')(net)
+    >>> net = tlx.nn.MaxPool1d(kernel_size=3, strides=2, padding='SAME', name='maxpool1d')(net)
     >>> output shape : [10, 25, 32]
 
     """
 
     def __init__(
         self,
-        filter_size=3,
+        kernel_size=3,
         strides=2,
         padding='SAME',
         data_format='channels_last',
         name=None  # 'maxpool1d'
     ):
         super().__init__(name)
-        self.filter_size = self._filter_size = filter_size
+        self.kernel_size = self._filter_size = kernel_size
         self.strides = self._strides = strides
         self.padding = padding
         self.data_format = data_format
@@ -142,12 +142,12 @@ class MaxPool1d(Module):
         self._built = True
 
         logging.info(
-            "MaxPool1d %s: filter_size: %s strides: %s padding: %s" %
-            (self.name, str(filter_size), str(strides), str(padding))
+            "MaxPool1d %s: kernel_size: %s strides: %s padding: %s" %
+            (self.name, str(kernel_size), str(strides), str(padding))
         )
 
     def __repr__(self):
-        s = ('{classname}(filter_size={filter_size}' ', strides={strides}, padding={padding}')
+        s = ('{classname}(kernel_size={kernel_size}' ', strides={strides}, padding={padding}')
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
@@ -161,7 +161,7 @@ class MaxPool1d(Module):
             self.data_format = 'NCW'
         else:
             raise Exception("unsupported data format")
-        self._filter_size = [self.filter_size]
+        self._filter_size = [self.kernel_size]
         self._strides = [self.strides]
         self.max_pool = tlx.ops.MaxPool1d(
             ksize=self._filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
@@ -177,7 +177,7 @@ class MeanPool1d(Module):
 
     Parameters
     ------------
-    filter_size : int
+    kernel_size : int
         Pooling window size.
     strides : int
         Strides of the pooling operation.
@@ -193,14 +193,14 @@ class MeanPool1d(Module):
     With TensorLayer
 
     >>> net = tlx.nn.Input([10, 50, 32], name='input')
-    >>> net = tlx.nn.MeanPool1d(filter_size=3, strides=2, padding='SAME')(net)
+    >>> net = tlx.nn.MeanPool1d(kernel_size=3, strides=2, padding='SAME')(net)
     >>> output shape : [10, 25, 32]
 
     """
 
     def __init__(
         self,
-        filter_size=3,
+        kernel_size=3,
         strides=2,
         padding='SAME',
         data_format='channels_last',
@@ -208,7 +208,7 @@ class MeanPool1d(Module):
         name=None  # 'meanpool1d'
     ):
         super().__init__(name)
-        self.filter_size = self._filter_size = filter_size
+        self.kernel_size = self._filter_size = kernel_size
         self.strides = self._strides = strides
         self.padding = padding
         self.data_format = data_format
@@ -217,12 +217,12 @@ class MeanPool1d(Module):
         self._built = True
 
         logging.info(
-            "MeanPool1d %s: filter_size: %s strides: %s padding: %s" %
-            (self.name, str(filter_size), str(strides), str(padding))
+            "MeanPool1d %s: kernel_size: %s strides: %s padding: %s" %
+            (self.name, str(kernel_size), str(strides), str(padding))
         )
 
     def __repr__(self):
-        s = ('{classname}(filter_size={filter_size}' ', strides={strides}, padding={padding}')
+        s = ('{classname}(kernel_size={kernel_size}' ', strides={strides}, padding={padding}')
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
@@ -236,7 +236,7 @@ class MeanPool1d(Module):
             self.data_format = 'NCW'
         else:
             raise Exception("unsupported data format")
-        self._filter_size = [self.filter_size]
+        self._filter_size = [self.kernel_size]
         self._strides = [self.strides]
         self.avg_pool = tlx.ops.AvgPool1d(
             ksize=self._filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
@@ -252,7 +252,7 @@ class MaxPool2d(Module):
 
     Parameters
     -----------
-    filter_size : tuple of int
+    kernel_size : tuple of int
         (height, width) for filter size.
     strides : tuple of int
         (height, width) for strides.
@@ -268,23 +268,23 @@ class MaxPool2d(Module):
     With TensorLayer
 
     >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
-    >>> net = tlx.nn.MaxPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME')(net)
+    >>> net = tlx.nn.MaxPool2d(kernel_size=(3, 3), strides=(2, 2), padding='SAME')(net)
     >>> output shape : [10, 25, 25, 32]
 
     """
 
     def __init__(
         self,
-        filter_size=(3, 3),
+        kernel_size=(3, 3),
         strides=(2, 2),
         padding='SAME',
         data_format='channels_last',
         name=None  # 'maxpool2d'
     ):
         super().__init__(name)
-        self.filter_size = filter_size
+        self.kernel_size = kernel_size
         if strides is None:
-            strides = filter_size
+            strides = kernel_size
         self.strides = self._strides = strides
         self.padding = padding
         self.data_format = data_format
@@ -293,12 +293,12 @@ class MaxPool2d(Module):
         self._built = True
 
         logging.info(
-            "MaxPool2d %s: filter_size: %s strides: %s padding: %s" %
-            (self.name, str(filter_size), str(strides), str(padding))
+            "MaxPool2d %s: kernel_size: %s strides: %s padding: %s" %
+            (self.name, str(kernel_size), str(strides), str(padding))
         )
 
     def __repr__(self):
-        s = ('{classname}(filter_size={filter_size}' ', strides={strides}, padding={padding}')
+        s = ('{classname}(kernel_size={kernel_size}' ', strides={strides}, padding={padding}')
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
@@ -315,7 +315,7 @@ class MaxPool2d(Module):
             raise Exception("unsupported data format")
 
         self.max_pool = tlx.ops.MaxPool(
-            ksize=self.filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
+            ksize=self.kernel_size, strides=self._strides, padding=self.padding, data_format=self.data_format
         )
 
     def forward(self, inputs):
@@ -328,7 +328,7 @@ class MeanPool2d(Module):
 
     Parameters
     -----------
-    filter_size : tuple of int
+    kernel_size : tuple of int
         (height, width) for filter size.
     strides : tuple of int
         (height, width) for strides.
@@ -344,23 +344,23 @@ class MeanPool2d(Module):
     With TensorLayer
 
     >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
-    >>> net = tlx.nn.MeanPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME')(net)
+    >>> net = tlx.nn.MeanPool2d(kernel_size=(3, 3), strides=(2, 2), padding='SAME')(net)
     >>> output shape : [10, 25, 25, 32]
 
     """
 
     def __init__(
         self,
-        filter_size=(3, 3),
+        kernel_size=(3, 3),
         strides=(2, 2),
         padding='SAME',
         data_format='channels_last',
         name=None  # 'meanpool2d'
     ):
         super().__init__(name)
-        self.filter_size = filter_size
+        self.kernel_size = kernel_size
         if strides is None:
-            strides = filter_size
+            strides = kernel_size
         self.strides = self._strides = strides
         self.padding = padding
         self.data_format = data_format
@@ -369,12 +369,12 @@ class MeanPool2d(Module):
         self._built = True
 
         logging.info(
-            "MeanPool2d %s: filter_size: %s strides: %s padding: %s" %
-            (self.name, str(filter_size), str(strides), str(padding))
+            "MeanPool2d %s: kernel_size: %s strides: %s padding: %s" %
+            (self.name, str(kernel_size), str(strides), str(padding))
         )
 
     def __repr__(self):
-        s = ('{classname}(filter_size={filter_size}' ', strides={strides}, padding={padding}')
+        s = ('{classname}(kernel_size={kernel_size}' ', strides={strides}, padding={padding}')
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
@@ -390,7 +390,7 @@ class MeanPool2d(Module):
         else:
             raise Exception("unsupported data format")
         self.avg_pool = tlx.ops.AvgPool(
-            ksize=self.filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
+            ksize=self.kernel_size, strides=self._strides, padding=self.padding, data_format=self.data_format
         )
 
     def forward(self, inputs):
@@ -403,7 +403,7 @@ class MaxPool3d(Module):
 
     Parameters
     ------------
-    filter_size : tuple of int
+    kernel_size : tuple of int
         Pooling window size.
     strides : tuple of int
         Strides of the pooling operation.
@@ -424,21 +424,21 @@ class MaxPool3d(Module):
     With TensorLayer
 
     >>> net = tlx.nn.Input([10, 50, 50, 50, 32], name='input')
-    >>> net = tlx.nn.MaxPool3d(filter_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME')(net)
+    >>> net = tlx.nn.MaxPool3d(kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME')(net)
     >>> output shape : [10, 25, 25, 25, 32]
 
     """
 
     def __init__(
         self,
-        filter_size=(3, 3, 3),
+        kernel_size=(3, 3, 3),
         strides=(2, 2, 2),
         padding='VALID',
         data_format='channels_last',
         name=None  # 'maxpool3d'
     ):
         super().__init__(name)
-        self.filter_size = filter_size
+        self.kernel_size = kernel_size
         self.strides = self._strides = strides
         self.padding = padding
         self.data_format = data_format
@@ -447,12 +447,12 @@ class MaxPool3d(Module):
         self._built = True
 
         logging.info(
-            "MaxPool3d %s: filter_size: %s strides: %s padding: %s" %
-            (self.name, str(filter_size), str(strides), str(padding))
+            "MaxPool3d %s: kernel_size: %s strides: %s padding: %s" %
+            (self.name, str(kernel_size), str(strides), str(padding))
         )
 
     def __repr__(self):
-        s = ('{classname}(filter_size={filter_size}' ', strides={strides}, padding={padding}')
+        s = ('{classname}(kernel_size={kernel_size}' ', strides={strides}, padding={padding}')
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
@@ -468,7 +468,7 @@ class MaxPool3d(Module):
         else:
             raise Exception("unsupported data format")
         self.max_pool3d = tlx.ops.MaxPool3d(
-            ksize=self.filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
+            ksize=self.kernel_size, strides=self._strides, padding=self.padding, data_format=self.data_format
         )
 
     def forward(self, inputs):
@@ -481,7 +481,7 @@ class MeanPool3d(Module):
 
     Parameters
     ------------
-    filter_size : tuple of int
+    kernel_size : tuple of int
         Pooling window size.
     strides : tuple of int
         Strides of the pooling operation.
@@ -502,21 +502,21 @@ class MeanPool3d(Module):
     With TensorLayer
 
     >>> net = tlx.nn.Input([10, 50, 50, 50, 32], name='input')
-    >>> net = tlx.nn.MeanPool3d(filter_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME')(net)
+    >>> net = tlx.nn.MeanPool3d(kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME')(net)
     >>> output shape : [10, 25, 25, 25, 32]
 
     """
 
     def __init__(
         self,
-        filter_size=(3, 3, 3),
+        kernel_size=(3, 3, 3),
         strides=(2, 2, 2),
         padding='VALID',
         data_format='channels_last',
         name=None  # 'meanpool3d'
     ):
         super().__init__(name)
-        self.filter_size = filter_size
+        self.kernel_size = kernel_size
         self.strides = self._strides = strides
         self.padding = padding
         self.data_format = data_format
@@ -525,12 +525,12 @@ class MeanPool3d(Module):
         self._built = True
 
         logging.info(
-            "MeanPool3d %s: filter_size: %s strides: %s padding: %s" %
-            (self.name, str(filter_size), str(strides), str(padding))
+            "MeanPool3d %s: kernel_size: %s strides: %s padding: %s" %
+            (self.name, str(kernel_size), str(strides), str(padding))
         )
 
     def __repr__(self):
-        s = ('{classname}(filter_size={filter_size}' ', strides={strides}, padding={padding}')
+        s = ('{classname}(kernel_size={kernel_size}' ', strides={strides}, padding={padding}')
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
@@ -545,7 +545,7 @@ class MeanPool3d(Module):
         else:
             raise Exception("unsupported data format")
         self.avg_pool3d = tlx.ops.AvgPool3d(
-            ksize=self.filter_size, strides=self._strides, padding=self.padding, data_format=self.data_format
+            ksize=self.kernel_size, strides=self._strides, padding=self.padding, data_format=self.data_format
         )
 
     def forward(self, inputs):

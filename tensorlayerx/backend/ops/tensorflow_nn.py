@@ -374,12 +374,12 @@ def gelu(x, approximate=False):
 
 class Dropout(object):
 
-    def __init__(self, keep, seed=0):
-        self.keep = keep
+    def __init__(self, p, seed=0):
+        self.p = p
         self.seed = seed
 
     def __call__(self, inputs, *args, **kwargs):
-        outputs = tf.nn.dropout(inputs, rate=1 - (self.keep), seed=self.seed)
+        outputs = tf.nn.dropout(inputs, rate=self.p, seed=self.seed)
         return outputs
 
 

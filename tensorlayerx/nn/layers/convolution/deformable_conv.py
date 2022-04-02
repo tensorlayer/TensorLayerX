@@ -20,9 +20,9 @@ class DeformableConv2d(Module):
         To predict the offset of convolution operations.
         The shape is (batchsize, input height, input width, 2*(number of element in the convolution kernel))
         e.g. if apply a 3*3 kernel, the number of the last dimension should be 18 (2*3*3)
-    n_filter : int
+    out_channels : int
         The number of filters.
-    filter_size : tuple of int
+    kernel_size : tuple of int
         The filter size (height, width).
     act : activation function
         The activation function of this layer.
@@ -43,16 +43,16 @@ class DeformableConv2d(Module):
 
     >>> net = tlx.nn.Input([5, 10, 10, 16], name='input')
     >>> offset1 = tlx.nn.Conv2d(
-    ...     n_filter=18, filter_size=(3, 3), strides=(1, 1), padding='SAME', name='offset1'
+    ...     out_channels=18, kernel_size=(3, 3), strides=(1, 1), padding='SAME', name='offset1'
     ... )(net)
     >>> deformconv1 = tlx.nn.DeformableConv2d(
-    ...     offset_layer=offset1, n_filter=32, filter_size=(3, 3), name='deformable1'
+    ...     offset_layer=offset1, out_channels=32, kernel_size=(3, 3), name='deformable1'
     ... )(net)
     >>> offset2 = tlx.nn.Conv2d(
-    ...     n_filter=18, filter_size=(3, 3), strides=(1, 1), padding='SAME', name='offset2'
+    ...     out_channels=18, kernel_size=(3, 3), strides=(1, 1), padding='SAME', name='offset2'
     ... )(deformconv1)
     >>> deformconv2 = tlx.nn.DeformableConv2d(
-    ...     offset_layer=offset2, n_filter=64, filter_size=(3, 3), name='deformable2'
+    ...     offset_layer=offset2, out_channels=64, kernel_size=(3, 3), name='deformable2'
     ... )(deformconv1)
 
     References
@@ -69,9 +69,8 @@ class DeformableConv2d(Module):
     def __init__(
         self,
         offset_layer=None,
-        # shape=(3, 3, 1, 100),
-        n_filter=32,
-        filter_size=(3, 3),
+        out_channels=32,
+        kernel_size=(3, 3),
         act=None,
         padding='SAME',
         W_init='truncated_normal',
@@ -82,20 +81,20 @@ class DeformableConv2d(Module):
         super().__init__(name, act=act)
 
         self.offset_layer = offset_layer
-        self.n_filter = n_filter
-        self.filter_size = filter_size
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
         self.padding = padding
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
 
-        self.kernel_n = filter_size[0] * filter_size[1]
+        self.kernel_n = kernel_size[0] * kernel_size[1]
         if self.offset_layer.get_shape()[-1] != 2 * self.kernel_n:
             raise AssertionError("offset.get_shape()[-1] is not equal to: %d" % 2 * self.kernel_n)
 
         logging.info(
-            "DeformableConv2d %s: n_filter: %d, filter_size: %s act: %s" % (
-                self.name, self.n_filter, str(self.filter_size
+            "DeformableConv2d %s: out_channels: %d, kernel_size: %s act: %s" % (
+                self.name, self.out_channels, str(self.kernel_size
                                              ), self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -103,7 +102,7 @@ class DeformableConv2d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={n_filter}, kernel_size={filter_size}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', padding={padding}'
         )
         if self.b_init is None:
@@ -121,7 +120,7 @@ class DeformableConv2d(Module):
         self.input_h = int(inputs_shape[1])
         self.input_w = int(inputs_shape[2])
         initial_offsets = tlx.ops.stack(
-            tlx.ops.meshgrid(tlx.ops.range(self.filter_size[0]), tlx.ops.range(self.filter_size[1]), indexing='ij')
+            tlx.ops.meshgrid(tlx.ops.arange(self.kernel_size[0]), tlx.ops.arange(self.kernel_size[1]), indexing='ij')
         )  # initial_offsets --> (kh, kw, 2)
         initial_offsets = tlx.ops.reshape(initial_offsets, (-1, 2))  # initial_offsets --> (n, 2)
         initial_offsets = tlx.ops.expand_dims(initial_offsets, 0)  # initial_offsets --> (1, n, 2)
@@ -131,11 +130,11 @@ class DeformableConv2d(Module):
         )  # initial_offsets --> (h, w, n, 2)
         initial_offsets = tlx.ops.cast(initial_offsets, 'float32')
         grid = tlx.ops.meshgrid(
-            tlx.ops.range(
-                -int((self.filter_size[0] - 1) / 2.0), int(self.input_h - int((self.filter_size[0] - 1) / 2.0)), 1
+            tlx.ops.arange(
+                -int((self.kernel_size[0] - 1) / 2.0), int(self.input_h - int((self.kernel_size[0] - 1) / 2.0)), 1
             ),
-            tlx.ops.range(
-                -int((self.filter_size[1] - 1) / 2.0), int(self.input_w - int((self.filter_size[1] - 1) / 2.0)), 1
+            tlx.ops.arange(
+                -int((self.kernel_size[1] - 1) / 2.0), int(self.input_w - int((self.kernel_size[1] - 1) / 2.0)), 1
             ), indexing='ij'
         )
 
@@ -145,12 +144,12 @@ class DeformableConv2d(Module):
         grid = tlx.ops.tile(grid, [1, 1, self.kernel_n, 1])  # grid --> (h, w, n, 2)
         self.grid_offset = grid + initial_offsets  # grid_offset --> (h, w, n, 2)
 
-        self.filter_shape = (1, 1, self.kernel_n, self.in_channels, self.n_filter)
+        self.filter_shape = (1, 1, self.kernel_n, self.in_channels, self.out_channels)
 
         self.W = self._get_weights("W_deformableconv2d", shape=self.filter_shape, init=self.W_init)
 
         if self.b_init:
-            self.b = self._get_weights("b_deformableconv2d", shape=(self.n_filter, ), init=self.b_init)
+            self.b = self._get_weights("b_deformableconv2d", shape=(self.out_channels, ), init=self.b_init)
 
         self.conv3d = tlx.ops.Conv3D(strides=[1, 1, 1, 1, 1], padding='VALID')
         self.bias_add = tlx.ops.BiasAdd()
@@ -162,14 +161,14 @@ class DeformableConv2d(Module):
                 self._built = True
             self._forward_state = True
 
-        # shape = (filter_size[0], filter_size[1], pre_channel, n_filter)
+        # shape = (kernel_size[0], kernel_size[1], pre_channel, out_channels)
         offset = self.offset_layer
         grid_offset = self.grid_offset
 
         input_deform = self._tf_batch_map_offsets(inputs, offset, grid_offset)
         outputs = self.conv3d(input=input_deform, filters=self.W)
         outputs = tlx.ops.reshape(
-            tensor=outputs, shape=[outputs.get_shape()[0], self.input_h, self.input_w, self.n_filter]
+            tensor=outputs, shape=[outputs.get_shape()[0], self.input_h, self.input_w, self.out_channels]
         )
         if self.b_init:
             outputs = self.bias_add(outputs, self.b)
@@ -241,7 +240,7 @@ class DeformableConv2d(Module):
         coords_lb = tlx.ops.stack([coords_lt[:, :, :, :, 0], coords_rb[:, :, :, :, 1]], axis=-1)
         coords_rt = tlx.ops.stack([coords_rb[:, :, :, :, 0], coords_lt[:, :, :, :, 1]], axis=-1)
 
-        idx = self._tf_repeat(tlx.ops.range(batch_channel), n_coords)
+        idx = self._tf_repeat(tlx.ops.arange(batch_channel), n_coords)
 
         vals_lt = self._get_vals_by_coords(inputs, coords_lt, idx, (batch_channel, input_h, input_w, kernel_n))
         vals_rb = self._get_vals_by_coords(inputs, coords_rb, idx, (batch_channel, input_h, input_w, kernel_n))

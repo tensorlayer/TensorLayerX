@@ -8,7 +8,7 @@ os.environ['TL_BACKEND'] = 'tensorflow'
 
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
-from tensorlayerx.nn import Dense, Dropout, Conv2d, MaxPool2d, Flatten
+from tensorlayerx.nn import Linear, Dropout, Conv2d, MaxPool2d, Flatten
 from tensorlayerx.dataflow import Dataset
 
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
@@ -33,12 +33,12 @@ class CustomModel(Module):
 
     def __init__(self):
         super(CustomModel, self).__init__()
-        self.dropout1 = Dropout(keep=0.8)
-        self.dense1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='dense1')
-        self.dropout2 = Dropout(keep=0.8)
-        self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800, name='dense2')
-        self.dropout3 = Dropout(keep=0.8)
-        self.dense3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800, name='dense3')
+        self.dropout1 = Dropout(p=0.2)
+        self.dense1 = Linear(out_features=800, act=tlx.ReLU, in_features=784, name='dense1')
+        self.dropout2 = Dropout(p=0.8)
+        self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800, name='dense2')
+        self.dropout3 = Dropout(p=0.8)
+        self.dense3 = Linear(out_features=10, act=tlx.ReLU, in_features=800, name='dense3')
 
     def forward(self, x, foo=None):
         z = self.dropout1(x)
@@ -71,9 +71,9 @@ class CNN(Module):
         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 
         self.flatten = Flatten(name='flatten')
-        self.dense1 = Dense(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1', in_channels=256)
-        self.dense2 = Dense(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2', in_channels=384)
-        self.dense3 = Dense(10, act=None, W_init=W_init2, name='dense3', in_channels=192)
+        self.dense1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense1', in_features=256)
+        self.dense2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='dense2', in_features=384)
+        self.dense3 = Linear(10, act=None, W_init=W_init2, name='dense3', in_features=192)
 
     def forward(self, x):
         z = self.conv1(x)
