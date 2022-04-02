@@ -26,7 +26,7 @@ class Layer_Pooling_Test(CustomTestCase):
         x_2_input_shape = [None, 100, 100, 3]
         nin_2 = Input(x_2_input_shape)
 
-        n6 = tlx.nn.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), name='test_conv2d')(nin_2)
+        n6 = tlx.nn.Conv2d(out_channels=32, kernel_size=(3, 3), strides=(2, 2), name='test_conv2d')(nin_2)
 
         n7 = tlx.nn.UpSampling2d(scale=(2, 2), name='test_UpSampling2d_1')(n6)
 

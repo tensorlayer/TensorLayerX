@@ -8,37 +8,37 @@ import tensorlayerx as tlx
 
 def test_conv1d():
     input_layer = tlx.nn.Input([8, 100, 1])
-    conv1dlayer1 = tlx.nn.Conv1d(in_channels=1, n_filter=32, filter_size=5, stride=2, data_format='channels_last')
+    conv1dlayer1 = tlx.nn.Conv1d(in_channels=1, out_channels=32, kernel_size=5, stride=2, data_format='channels_last')
     n1 = conv1dlayer1(input_layer)
     print("Conv1D channels last: ", n1.shape)
 
     input_layer = tlx.nn.Input([8, 1, 100])
-    conv1dlayer2 = tlx.nn.Conv1d(in_channels=1, n_filter=32, filter_size=5, stride=2, data_format='channels_first')
+    conv1dlayer2 = tlx.nn.Conv1d(in_channels=1, out_channels=32, kernel_size=5, stride=2, data_format='channels_first')
     n2 = conv1dlayer2(input_layer)
     print("Conv1D channels first: ", n2.shape)
 
     input_layer = tlx.nn.Input([1, 3, 50])
-    dconv1dlayer1 = tlx.nn.DeConv1d(n_filter=64, in_channels=3, filter_size=4, data_format='channels_first')
+    dconv1dlayer1 = tlx.nn.DeConv1d(out_channels=64, in_channels=3, kernel_size=4, data_format='channels_first')
     n3 = dconv1dlayer1(input_layer)
     print("DConv1D channels first: ", n3.shape)
 
     # input_layer = tlx.nn.Input([8, 50, 3])
-    # dconv1dlayer2 = tlx.nn.DeConv1d(n_filter=64, in_channels=3, filter_size=4, data_format='channels_last')
+    # dconv1dlayer2 = tlx.nn.DeConv1d(out_features=64, in_channels=3, filter_size=4, data_format='channels_last')
     # n4 = dconv1dlayer2(input_layer)
     # print("Deconv1D channels last", n4.shape)
 
     input_layer = tlx.nn.Input([8, 50, 1])
-    separableconv1d1 = tlx.nn.SeparableConv1d(in_channels=1, n_filter=16, filter_size=3, stride=2, data_format='channels_last')
+    separableconv1d1 = tlx.nn.SeparableConv1d(in_channels=1, out_channels=16, kernel_size=3, stride=2, data_format='channels_last')
     n5 = separableconv1d1(input_layer)
     print("SeparableConv1d: ", n5.shape)
 
     input_layer = tlx.nn.Input([8, 50, 1])
-    separableconv1d2 = tlx.nn.SeparableConv1d(in_channels=1, n_filter=16, filter_size=3, stride=2, depth_multiplier=4)
+    separableconv1d2 = tlx.nn.SeparableConv1d(in_channels=1, out_channels=16, kernel_size=3, stride=2, depth_multiplier=4)
     n6 = separableconv1d2(input_layer)
     print("SeparableConv1d: ", n6.shape)
 
     input_layer = tlx.nn.Input([8, 1, 50])
-    separableconv1d3 = tlx.nn.SeparableConv1d(in_channels=1, n_filter=16, filter_size=3, stride=2, data_format='channels_first')
+    separableconv1d3 = tlx.nn.SeparableConv1d(in_channels=1, out_channels=16, kernel_size=3, stride=2, data_format='channels_first')
     n7 = separableconv1d3(input_layer)
     print("SeparableConv1d: ", n7.shape)
 
@@ -46,7 +46,7 @@ def test_conv1d():
 def test_conv2d():
     input_layer = tlx.nn.Input([5, 400, 400, 3])
     conv2dlayer1 = tlx.nn.Conv2d(
-        n_filter=32, in_channels=3, strides=(2, 2), filter_size=(5, 5), padding='SAME',
+        out_channels=32, in_channels=3, strides=(2, 2), kernel_size=(5, 5), padding='SAME',
         b_init=tlx.nn.initializers.truncated_normal(0.01), name='conv2dlayer'
     )
     n1 = conv2dlayer1(input_layer)
@@ -54,14 +54,14 @@ def test_conv2d():
 
     input_layer = tlx.nn.Input([5, 400, 400, 3])
     conv2dlayer2 = tlx.nn.Conv2d(
-        n_filter=32, in_channels=3, filter_size=(3, 3), strides=(2, 2), act=None, name='conv2d'
+        out_channels=32, in_channels=3, kernel_size=(3, 3), strides=(2, 2), act=None, name='conv2d'
     )
     n2 = conv2dlayer2(input_layer)
     print("Conv2d", n2.shape)
 
     input_layer = tlx.nn.Input([5, 400, 400, 32])
     conv2dlayer3 = tlx.nn.Conv2d(
-        in_channels=32, n_filter=32, filter_size=(3, 3), strides=(2, 2), act=tlx.ReLU, b_init=None,
+        in_channels=32, out_channels=32, kernel_size=(3, 3), strides=(2, 2), act=tlx.ReLU, b_init=None,
         name='conv2d_no_bias'
     )
     n3 = conv2dlayer3(input_layer)
@@ -69,7 +69,7 @@ def test_conv2d():
 
     input_layer = tlx.nn.Input([5, 32, 400, 400])
     dconv2dlayer = tlx.nn.DeConv2d(
-        n_filter=32, in_channels=32, filter_size=(5, 5), strides=(2, 2), name='deconv2dlayer', data_format='channels_first'
+        out_channels=32, in_channels=32, kernel_size=(5, 5), strides=(2, 2), name='deconv2dlayer', data_format='channels_first'
     )
     n4 = dconv2dlayer(input_layer)
     print("Deconv2d", n4.shape)
@@ -84,7 +84,7 @@ def test_conv2d():
 
     input_layer = tlx.nn.Input([5, 400, 400, 3])
     separableconv2d = tlx.nn.SeparableConv2d(
-        in_channels=3, filter_size=(3, 3), strides=(2, 2), dilation_rate=(2, 2), act=tlx.ReLU, depth_multiplier=3,
+        in_channels=3, kernel_size=(3, 3), strides=(2, 2), dilation_rate=(2, 2), act=tlx.ReLU, depth_multiplier=3,
         name='separableconv2d'
     )
     n6 = separableconv2d(input_layer)
@@ -96,21 +96,21 @@ def test_conv3d():
     input_layer = tlx.nn.Input(inputs_shape, name='input_layer')
 
     conv3dlayer1 = tlx.nn.Conv3d(
-        n_filter=32, in_channels=3, filter_size=(2, 2, 2), strides=(2, 2, 2), data_format='channels_first'
+        out_channels=32, in_channels=3, kernel_size=(2, 2, 2), strides=(2, 2, 2), data_format='channels_first'
     )
     n1 = conv3dlayer1(input_layer)
     print("Conv3d", n1.shape)
 
     input_layer = tlx.nn.Input([8, 3, 20, 20, 20])
     deconv3dlayer = tlx.nn.DeConv3d(
-        n_filter=128, in_channels=3, filter_size=(2, 2, 2), strides=(2, 2, 2), data_format='channels_first'
+        out_channels=128, in_channels=3, kernel_size=(2, 2, 2), strides=(2, 2, 2), data_format='channels_first'
     )
     n2 = deconv3dlayer(input_layer)
     print("Deconv3d", n2.shape)
 
     input_layer = tlx.nn.Input([8, 3, 20, 20, 20])
     conv3dlayer2 = tlx.nn.Conv3d(
-        n_filter=64, in_channels=3, filter_size=(3, 3, 3), strides=(3, 3, 3), act=tlx.ReLU, b_init=None, data_format='channels_first',
+        out_channels=64, in_channels=3, kernel_size=(3, 3, 3), strides=(3, 3, 3), act=tlx.ReLU, b_init=None, data_format='channels_first',
         name='conv3d_no_bias'
     )
     n3 = conv3dlayer2(input_layer)
@@ -121,13 +121,13 @@ def test_pooling():
     x_1_input_shape = [3, 100, 1]
     nin_1 = tlx.layers.Input(x_1_input_shape, name='test_in1')
 
-    n1 = tlx.nn.Conv1d(n_filter=32, filter_size=5, stride=2, name='test_conv1d')(nin_1)
-    n2 = tlx.nn.MaxPool1d(filter_size=3, strides=2, padding='SAME', name='test_maxpool1d')(n1)
-    n3 = tlx.nn.MeanPool1d(filter_size=3, strides=2, padding='SAME', name='test_meanpool1d')(n1)
+    n1 = tlx.nn.Conv1d(out_channels=32, kernel_size=5, stride=2, name='test_conv1d')(nin_1)
+    n2 = tlx.nn.MaxPool1d(kernel_size=3, strides=2, padding='SAME', name='test_maxpool1d')(n1)
+    n3 = tlx.nn.MeanPool1d(kernel_size=3, strides=2, padding='SAME', name='test_meanpool1d')(n1)
     n4 = tlx.nn.GlobalMaxPool1d(name='test_maxpool1d')(n1)
     n5 = tlx.nn.GlobalMeanPool1d(name='test_meanpool1d')(n1)
-    n16 = tlx.nn.MaxPool1d(filter_size=3, strides=1, padding='VALID', name='test_maxpool1d')(n1)
-    n17 = tlx.nn.MeanPool1d(filter_size=3, strides=1, padding='VALID', name='test_meanpool1d')(n1)
+    n16 = tlx.nn.MaxPool1d(kernel_size=3, strides=1, padding='VALID', name='test_maxpool1d')(n1)
+    n17 = tlx.nn.MeanPool1d(kernel_size=3, strides=1, padding='VALID', name='test_meanpool1d')(n1)
     n19 = tlx.nn.AdaptiveMeanPool1d(output_size=44, name='test_adaptivemeanpool1d')(n1)
     n20 = tlx.nn.AdaptiveMaxPool1d(output_size=44, name='test_adaptivemaxpool1d')(n1)
 
@@ -146,10 +146,10 @@ def test_pooling():
     x_2_input_shape = [3, 100, 100, 3]
     nin_2 = tlx.nn.Input(x_2_input_shape, name='test_in2')
 
-    n6 = tlx.nn.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), name='test_conv2d')(nin_2)
-    n7 = tlx.nn.MaxPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME',
+    n6 = tlx.nn.Conv2d(out_channels=32, kernel_size=(3, 3), strides=(2, 2), name='test_conv2d')(nin_2)
+    n7 = tlx.nn.MaxPool2d(kernel_size=(3, 3), strides=(2, 2), padding='SAME',
                           name='test_maxpool2d')(n6)
-    n8 = tlx.nn.MeanPool2d(filter_size=(3, 3), strides=(2, 2), padding='SAME',
+    n8 = tlx.nn.MeanPool2d(kernel_size=(3, 3), strides=(2, 2), padding='SAME',
                            name='test_meanpool2d')(n6)
     n9 = tlx.nn.GlobalMaxPool2d(name='test_maxpool2d')(n6)
     n10 = tlx.nn.GlobalMeanPool2d(name='test_meanpool2d')(n6)
@@ -181,7 +181,7 @@ def test_pooling():
     n13 = tlx.nn.GlobalMeanPool3d(name='test_meanpool3d', data_format='channels_first')(input_layer)
 
     n14 = tlx.nn.MaxPool3d(
-        filter_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME', name='test_maxpool3d', data_format='channels_first'
+        kernel_size=(3, 3, 3), strides=(2, 2, 2), padding='SAME', name='test_maxpool3d', data_format='channels_first'
     )(input_layer)
 
     # n23 = tlx.nn.AdaptiveMeanPool3d(output_size=(45, 32, 55), name='test_adaptivemeanpool3d', data_format='channels_first')(input_layer)
@@ -190,19 +190,19 @@ def test_pooling():
 
 def test_dense():
     input_layer = tlx.nn.Input([10, 30])
-    n1 = tlx.nn.Dense(n_units=100, in_channels=30, b_init=tlx.initializers.truncated_normal())(input_layer)
-    n2 = tlx.nn.Dense(n_units=10, name='none inchannels')(input_layer)
+    n1 = tlx.nn.Linear(out_features=100, in_features=30, b_init=tlx.initializers.truncated_normal())(input_layer)
+    n2 = tlx.nn.Linear(out_features=10, name='none inchannels')(input_layer)
     print("Dense :", n1.shape, n2.shape)
 
 def test_normalization():
     ## Base
     ni_2 = tlx.nn.Input([10, 3, 25, 25])
-    nn_2 = tlx.nn.Conv2d(n_filter=32, in_channels=3, data_format='channels_first', filter_size=(3, 3), strides=(2, 2), name='test_conv2d')(ni_2)
+    nn_2 = tlx.nn.Conv2d(out_channels=32, in_channels=3, data_format='channels_first', kernel_size=(3, 3), strides=(2, 2), name='test_conv2d')(ni_2)
     n2_b = tlx.nn.BatchNorm(name='test_bn2d')(nn_2)
     print(n2_b.shape)
 
     ni_3 = tlx.nn.Input([10, 3, 25, 25, 25])
-    nn_3 = tlx.nn.Conv3d(n_filter=32, in_channels=3, filter_size=(3, 3, 3), strides=(2, 2, 2), name='test_conv3d', data_format='channels_first')(ni_3)
+    nn_3 = tlx.nn.Conv3d(out_channels=32, in_channels=3, kernel_size=(3, 3, 3), strides=(2, 2, 2), name='test_conv3d', data_format='channels_first')(ni_3)
     n3_b = tlx.nn.BatchNorm(name='test_bn3d')(nn_3)
     print(n3_b.shape)
 

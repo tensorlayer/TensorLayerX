@@ -27,7 +27,7 @@ class Layer_nested(CustomTestCase):
 
             def __init__(self, name=None):
                 super(MyLayer, self).__init__(name=name)
-                self.input_layer = tlx.nn.Dense(in_channels=50, n_units=20)
+                self.input_layer = tlx.nn.Linear(in_features=50, out_features=20)
                 self.build(None)
                 self._built = True
 

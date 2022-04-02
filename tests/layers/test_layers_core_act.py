@@ -19,53 +19,53 @@ class Layer_Convolution_2D_Test(CustomTestCase):
         self.input_layer = tlx.nn.Input(self.inputs_shape, name='input_layer')
 
         self.conv2dlayer1 = tlx.nn.Conv2d(
-            n_filter=32, in_channels=3, act=tlx.ReLU, filter_size=(5, 5), strides=(2, 2), padding='SAME',
+            out_channels=32, in_channels=3, act=tlx.ReLU, kernel_size=(5, 5), strides=(2, 2), padding='SAME',
             b_init=tensorlayerx.nn.initializers.constant(value=0.0), name='conv2dlayer'
         )
         self.n1 = self.conv2dlayer1(self.input_layer)
 
         self.conv2dlayer2 = tlx.nn.Conv2d(
-            n_filter=32, in_channels=32, filter_size=(3, 3), strides=(2, 2), act="relu", name='conv2d'
+            out_channels=32, in_channels=32, kernel_size=(3, 3), strides=(2, 2), act="relu", name='conv2d'
         )
         self.n2 = self.conv2dlayer2(self.n1)
 
         self.conv2dlayer3 = tlx.nn.Conv2d(
-            n_filter=32, in_channels=32, filter_size=(3, 3), strides=(2, 2), act="leaky_relu", b_init=None
+            out_channels=32, in_channels=32, kernel_size=(3, 3), strides=(2, 2), act="leaky_relu", b_init=None
         )
         self.n3 = self.conv2dlayer3(self.n2)
 
         self.conv2dlayer4 = tlx.nn.Conv2d(
-            n_filter=32, in_channels=32, filter_size=(3, 3), strides=(2, 2), act="lrelu", b_init=None
+            out_channels=32, in_channels=32, kernel_size=(3, 3), strides=(2, 2), act="lrelu", b_init=None
         )
         self.n4 = self.conv2dlayer4(self.n3)
 
         self.conv2dlayer5 = tlx.nn.Conv2d(
-            n_filter=32, in_channels=32, filter_size=(3, 3), strides=(2, 2), act="sigmoid"
+            out_channels=32, in_channels=32, kernel_size=(3, 3), strides=(2, 2), act="sigmoid"
         )
         self.n5 = self.conv2dlayer5(self.n4)
 
         self.conv2dlayer6 = tlx.nn.Conv2d(
-            n_filter=32, in_channels=32, filter_size=(3, 3), strides=(2, 2), act="tanh"
+            out_channels=32, in_channels=32, kernel_size=(3, 3), strides=(2, 2), act="tanh"
         )
         self.n6 = self.conv2dlayer6(self.n5)
 
         self.conv2dlayer7 = tlx.nn.Conv2d(
-            n_filter=32, filter_size=(3, 3), strides=(2, 2), act="leaky_relu0.22", in_channels=32
+            out_channels=32, kernel_size=(3, 3), strides=(2, 2), act="leaky_relu0.22", in_channels=32
         )
         self.n7 = self.conv2dlayer7(self.n6)
 
         self.conv2dlayer8 = tlx.nn.Conv2d(
-            n_filter=32, filter_size=(3, 3), strides=(2, 2), act="lrelu0.22", in_channels=32
+            out_channels=32, kernel_size=(3, 3), strides=(2, 2), act="lrelu0.22", in_channels=32
         )
         self.n8 = self.conv2dlayer8(self.n7)
 
         self.conv2dlayer9 = tlx.nn.Conv2d(
-            n_filter=32, filter_size=(3, 3), strides=(2, 2), act="softplus", in_channels=32
+            out_channels=32, kernel_size=(3, 3), strides=(2, 2), act="softplus", in_channels=32
         )
         self.n9 = self.conv2dlayer9(self.n8)
 
         self.conv2dlayer10 = tlx.nn.Conv2d(
-            n_filter=32, filter_size=(3, 3), strides=(2, 2), act="relu6", in_channels=32
+            out_channels=32, kernel_size=(3, 3), strides=(2, 2), act="relu6", in_channels=32
         )
         self.n10 = self.conv2dlayer10(self.n9)
 

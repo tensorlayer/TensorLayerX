@@ -25,7 +25,7 @@ class Layer_Scale_Test(CustomTestCase):
 
             def __init__(self):
                 super(model, self).__init__()
-                self.dense = tensorlayerx.layers.Dense(n_units=10)
+                self.dense = tensorlayerx.layers.Linear(out_features=10)
                 self.scalelayer = tensorlayerx.layers.Scale(init_scale=0.5)
 
             def forward(self, inputs):

@@ -21,27 +21,27 @@ class Layer_Convolution_1D_Test(CustomTestCase):
         self.inputs_shape = [self.batch_size, 100, 1]
         self.input_layer = tlx.nn.Input(self.inputs_shape, name='input_layer')
 
-        self.conv1dlayer1 = tlx.nn.Conv1d(in_channels=1, n_filter=32, filter_size=5, stride=2)
+        self.conv1dlayer1 = tlx.nn.Conv1d(in_channels=1, out_channels=32, kernel_size=5, stride=2)
         self.n1 = self.conv1dlayer1(self.input_layer)
 
-        self.conv1dlayer2 = tlx.nn.Conv1d(in_channels=32, n_filter=32, filter_size=5, stride=2)
+        self.conv1dlayer2 = tlx.nn.Conv1d(in_channels=32, out_channels=32, kernel_size=5, stride=2)
         self.n2 = self.conv1dlayer2(self.n1)
 
         self.dconv1dlayer1 = tlx.nn.DeConv1d(
-            n_filter=64, in_channels=32, filter_size=5, name='deconv1dlayer'
+            out_channels=64, in_channels=32, kernel_size=5, name='deconv1dlayer'
         )
         self.n3 = self.dconv1dlayer1(self.n2)
 
-        self.separableconv1d1 = tlx.nn.SeparableConv1d(in_channels=1, n_filter=16, filter_size=3, stride=2)
+        self.separableconv1d1 = tlx.nn.SeparableConv1d(in_channels=1, out_channels=16, kernel_size=3, stride=2)
         self.n4 = self.separableconv1d1(self.input_layer)
 
         self.separableconv1d2 = tlx.nn.SeparableConv1d(
-            in_channels=1, n_filter=16, filter_size=3, stride=2, depth_multiplier=4
+            in_channels=1, out_channels=16, kernel_size=3, stride=2, depth_multiplier=4
         )
         self.n5 = self.separableconv1d2(self.input_layer)
 
         self.separableconv1d3 = tlx.nn.SeparableConv1d(
-            in_channels=1, n_filter=16, filter_size=3, stride=2, depth_multiplier=4, b_init=None
+            in_channels=1, out_channels=16, kernel_size=3, stride=2, depth_multiplier=4, b_init=None
         )
         self.n6 = self.separableconv1d3(self.input_layer)
 
@@ -84,53 +84,53 @@ class Layer_Convolution_2D_Test(CustomTestCase):
         self.input_layer = tlx.nn.Input(self.inputs_shape, name='input_layer')
 
         self.conv2dlayer1 = tlx.nn.Conv2d(
-            n_filter=32, in_channels=3, strides=(2, 2), filter_size=(5, 5), padding='SAME',
+            out_channels=32, in_channels=3, strides=(2, 2), kernel_size=(5, 5), padding='SAME',
             b_init=tensorlayerx.nn.initializers.truncated_normal(0.01), name='conv2dlayer'
         )
         self.n1 = self.conv2dlayer1(self.input_layer)
 
         self.conv2dlayer2 = tlx.nn.Conv2d(
-            n_filter=32, in_channels=32, filter_size=(3, 3), strides=(2, 2), act=None, name='conv2d'
+            out_channels=32, in_channels=32, kernel_size=(3, 3), strides=(2, 2), act=None, name='conv2d'
         )
         self.n2 = self.conv2dlayer2(self.n1)
 
         self.conv2dlayer3 = tlx.nn.Conv2d(
-            in_channels=32, n_filter=32, filter_size=(3, 3), strides=(2, 2), act=tlx.ReLU, b_init=None,
+            in_channels=32, out_channels=32, kernel_size=(3, 3), strides=(2, 2), act=tlx.ReLU, b_init=None,
             name='conv2d_no_bias'
         )
         self.n3 = self.conv2dlayer3(self.n2)
 
         self.dconv2dlayer = tlx.nn.DeConv2d(
-            n_filter=32, in_channels=32, filter_size=(5, 5), strides=(2, 2), name='deconv2dlayer'
+            out_channels=32, in_channels=32, kernel_size=(5, 5), strides=(2, 2), name='deconv2dlayer'
         )
         self.n4 = self.dconv2dlayer(self.n3)
 
         self.dwconv2dlayer = tlx.nn.DepthwiseConv2d(
-            in_channels=32, filter_size=(3, 3), strides=(1, 1), dilation_rate=(2, 2), act=tlx.ReLU, depth_multiplier=2,
+            in_channels=32, kernel_size=(3, 3), strides=(1, 1), dilation_rate=(2, 2), act=tlx.ReLU, depth_multiplier=2,
             name='depthwise'
         )
         self.n5 = self.dwconv2dlayer(self.n4)
 
         self.separableconv2d = tlx.nn.SeparableConv2d(
-            in_channels=3, filter_size=(3, 3), strides=(2, 2), dilation_rate=(2, 2), act=tlx.ReLU, depth_multiplier=3,
+            in_channels=3, kernel_size=(3, 3), strides=(2, 2), dilation_rate=(2, 2), act=tlx.ReLU, depth_multiplier=3,
             name='separableconv2d'
         )
         self.n6 = self.separableconv2d(self.input_layer)
 
         self.groupconv2d = tlx.nn.GroupConv2d(
-            in_channels=3, n_filter=18, filter_size=(3, 3), strides=(2, 2), dilation_rate=(3, 3), n_group=3,
+            in_channels=3, out_channels=18, kernel_size=(3, 3), strides=(2, 2), dilation_rate=(3, 3), n_group=3,
             act=tlx.ReLU, name='groupconv2d'
         )
         self.n7 = self.groupconv2d(self.input_layer)
 
         self.binaryconv2d = tlx.nn.BinaryConv2d(
-            in_channels=3, n_filter=32, filter_size=(3, 3), strides=(2, 2), dilation_rate=(2, 2), act=tlx.ReLU,
+            in_channels=3, out_channels=32, kernel_size=(3, 3), strides=(2, 2), dilation_rate=(2, 2), act=tlx.ReLU,
             name='binaryconv2d'
         )
         self.n8 = self.binaryconv2d(self.input_layer)
 
         self.dorefaconv2d = tlx.nn.DorefaConv2d(
-            bitA=2, bitW=8, in_channels=3, n_filter=16, filter_size=(3, 3), strides=(2, 2), dilation_rate=(2, 2),
+            bitA=2, bitW=8, in_channels=3, out_channels=16, kernel_size=(3, 3), strides=(2, 2), dilation_rate=(2, 2),
             act=tlx.ReLU, name='dorefaconv2d'
         )
         self.n9 = self.dorefaconv2d(self.input_layer)
@@ -188,17 +188,17 @@ class Layer_Convolution_3D_Test(CustomTestCase):
         self.input_layer = tlx.nn.Input(self.inputs_shape, name='input_layer')
 
         self.conv3dlayer1 = tlx.nn.Conv3d(
-            n_filter=32, in_channels=3, filter_size=(2, 2, 2), strides=(2, 2, 2)
+            out_channels=32, in_channels=3, kernel_size=(2, 2, 2), strides=(2, 2, 2)
         )
         self.n1 = self.conv3dlayer1(self.input_layer)
 
         self.deconv3dlayer = tlx.nn.DeConv3d(
-            n_filter=128, in_channels=32, filter_size=(2, 2, 2), strides=(2, 2, 2)
+            out_channels=128, in_channels=32, kernel_size=(2, 2, 2), strides=(2, 2, 2)
         )
         self.n2 = self.deconv3dlayer(self.n1)
 
         self.conv3dlayer2 = tlx.nn.Conv3d(
-            n_filter=64, in_channels=128, filter_size=(3, 3, 3), strides=(3, 3, 3), act=tlx.ReLU, b_init=None,
+            out_channels=64, in_channels=128, kernel_size=(3, 3, 3), strides=(3, 3, 3), act=tlx.ReLU, b_init=None,
             name='conv3d_no_bias'
         )
         self.n3 = self.conv3dlayer2(self.n2)
