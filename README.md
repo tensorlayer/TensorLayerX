@@ -38,12 +38,12 @@ Compare to TensorLayer version:
 
 # Resources
 
-- [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials
-- OpenIVA an easy-to-use product-level deployment framework
-- [TLXZoo](https://github.com/tensorlayer/TLXZoo) pretrained models/backbones
-- TLXCV a bunch of Computer Vision applications
-- TLXNLP a bunch of Natural Language Processing applications
-- TLXRL a bunch of Reinforcement Learning applications, check [RLZoo](https://github.com/tensorlayer/RLzoo) for the old version
+- [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials✅
+- OpenIVA an easy-to-use product-level deployment framework✅
+- [TLXZoo](https://github.com/tensorlayer/TLXZoo) pretrained models/backbones🚧
+- TLXCV a bunch of Computer Vision applications🚧
+- TLXNLP a bunch of Natural Language Processing applications🚧
+- TLXRL a bunch of Reinforcement Learning applications, check [RLZoo](https://github.com/tensorlayer/RLzoo) for the old version✅
 
 More resources can be found [here](https://github.com/tensorlayer)
 
@@ -70,8 +70,10 @@ For more installation instructions, please refer to [Installtion](https://tensor
 You can immediately use tensorlayerx to define a model, using your favourite framework in the background, like so:
 ```python
 import os
-os.environ['TL_BACKEND'] = 'tensorflow' # change to any framework!
-
+os.environ['TL_BACKEND'] = 'tensorflow' # Just modify this line, easily change to any framework!
+#os.environ['TL_BACKEND'] = 'mindspore'
+#os.environ['TL_BACKEND'] = 'paddle'
+#os.environ['TL_BACKEND'] = 'torch'
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Linear
@@ -80,14 +82,14 @@ class CustomModel(Module):
   def __init__(self):
       super(CustomModel, self).__init__()
 
-      self.dense1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
-      self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
-      self.dense3 = Linear(out_features=10, act=None, in_features=800)
+      self.linear1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
+      self.linear2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+      self.linear3 = Linear(out_features=10, act=None, in_features=800)
 
   def forward(self, x, foo=False):
-      z = self.dense1(x)
-      z = self.dense2(z)
-      out = self.dense3(z)
+      z = self.linear1(x)
+      z = self.linear2(z)
+      out = self.linear3(z)
       if foo:
           out = tlx.softmax(out)
       return out
@@ -101,6 +103,9 @@ TensorLayerX has extensive documentation for both beginners and professionals.
 
 [![English Documentation](https://img.shields.io/badge/documentation-english-blue.svg)](https://tensorlayerx.readthedocs.io/en/latest/)
 
+
+# Contributing
+Join our community as a code contributor, find out more in our [Contributing](https://tensorlayerx.readthedocs.io/en/latest/user/contributing.html) guide!
 
 # Contact
  - hao.dong@pku.edu.cn
