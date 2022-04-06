@@ -849,6 +849,10 @@ def gather_nd(params, indices, batch_dims=0):
     return pd.gather_nd(params, indices)
 
 
+def scatter_nd(indices, updates, shape):
+    raise NotImplementedError
+
+
 class ClipGradByValue(pd.nn.ClipGradByValue):
     def __init__(self, clip_min=-1, clip_max=1):
         super().__init__(max=clip_max, min=clip_min)

@@ -104,6 +104,7 @@ from .load_backend import tile
 from .load_backend import cast
 from .load_backend import transpose
 from .load_backend import gather_nd
+from .load_backend import scatter_nd
 from .load_backend import clip_by_value
 from .load_backend import split
 from .load_backend import get_tensor_shape

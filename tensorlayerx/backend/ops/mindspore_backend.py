@@ -1081,6 +1081,10 @@ def gather_nd(params, indices, batch_dims=0):
     return op(params, indices)
 
 
+def scatter_nd(indices, updates, shape):
+    raise NotImplementedError
+
+
 class ClipGradByValue(object):
     def __init__(self, clip_min=-1, clip_max=1):
         self.min = ms.Tensor(clip_min)

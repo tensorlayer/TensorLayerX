@@ -910,6 +910,9 @@ def gather_nd(params, indices, batch_dims=0):
     out = torch.take(params, idx)
     return out.view(out_shape)
 
+def scatter_nd(indices, updates, shape):
+    raise NotImplementedError
+
 
 class ClipGradByValue(object):
     def __init__(self, clip_min=-1, clip_max=1):

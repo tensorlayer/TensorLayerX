@@ -1118,6 +1118,10 @@ def gather_nd(params, indices, batch_dims=0):
     return tf.gather_nd(params, indices, batch_dims)
 
 
+def scatter_nd(indices, updates, shape):
+    return tf.scatter_nd(indices, updates, shape)
+
+
 class ClipGradByValue(object):
     def __init__(self, clip_min=-1, clip_max=1):
         self.min = clip_min
