@@ -13,7 +13,7 @@ __all__ = [
 class Dropout(Module):
     """
     The :class:`Dropout` class is a noise layer which randomly set some
-    activations to zero according to a keeping probability.
+    activations to zero according to a probability.
 
     Parameters
     ----------

@@ -18,9 +18,9 @@ Sequential model
 
   def get_model():
       layer_list = []
-      layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=784, name='Dense1'))
-      layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=800, name='Dense2'))
-      layer_list.append(Linear(out_features=10, act=tlx.ReLU, in_features=800, name='Dense3'))
+      layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=784, name='Linear1'))
+      layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=800, name='Linear2'))
+      layer_list.append(Linear(out_features=10, act=tlx.ReLU, in_features=800, name='Linear3'))
       MLP = SequentialLayer(layer_list)
       return MLP
 
@@ -43,19 +43,19 @@ In this case, you need to manually input the output shape of the previous layer 
           super(CustomModel, self).__init__()
 
           self.dropout1 = Dropout(p=0.2)
-          self.dense1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
+          self.linear1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
           self.dropout2 = Dropout(p=0.2)
-          self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+          self.linear2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
           self.dropout3 = Dropout(p=0.2)
-          self.dense3 = Linear(out_features=10, act=None, in_features=800)
+          self.linear3 = Linear(out_features=10, act=None, in_features=800)
 
       def forward(self, x, foo=False):
           z = self.dropout1(x)
-          z = self.dense1(z)
+          z = self.linear1(z)
           z = self.dropout2(z)
-          z = self.dense2(z)
+          z = self.linear2(z)
           z = self.dropout3(z)
-          out = self.dense3(z)
+          out = self.linear3(z)
           if foo:
               out = tlx.softmax(out)
           return out
@@ -83,19 +83,19 @@ In this case, you do not manually input the output shape of the previous layer t
           super(CustomModel, self).__init__()
 
           self.dropout1 = Dropout(p=0.2)
-          self.dense1 = Linear(out_features=800, act=tlx.ReLU)
+          self.linear1 = Linear(out_features=800, act=tlx.ReLU)
           self.dropout2 = Dropout(p=0.2)
-          self.dense2 = Linear(out_features=800, act=tlx.ReLU)
+          self.linear2 = Linear(out_features=800, act=tlx.ReLU)
           self.dropout3 = Dropout(p=0.2)
-          self.dense3 = Linear(out_features=10, act=None)
+          self.linear3 = Linear(out_features=10, act=None)
 
       def forward(self, x, foo=False):
           z = self.dropout1(x)
-          z = self.dense1(z)
+          z = self.linear1(z)
           z = self.dropout2(z)
-          z = self.dense2(z)
+          z = self.linear2(z)
           z = self.dropout3(z)
-          out = self.dense3(z)
+          out = self.linear3(z)
           if foo:
               out = tlx.softmax(out)
           return out
@@ -135,16 +135,16 @@ For dynamic model, call the layer multiple time in forward function
   class MyModel(Module):
       def __init__(self):
           super(MyModel, self).__init__()
-          self.dense_shared = Linear(out_features=800, act=tlx.ReLU, in_features=784)
-          self.dense1 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
-          self.dense2 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
+          self.linear_shared = Linear(out_features=800, act=tlx.ReLU, in_features=784)
+          self.linear1 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
+          self.linear2 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
           self.cat = Concat()
 
       def forward(self, x):
-          x1 = self.dense_shared(x) # call dense_shared twice
-          x2 = self.dense_shared(x)
-          x1 = self.dense1(x1)
-          x2 = self.dense2(x2)
+          x1 = self.linear_shared(x) # call dense_shared twice
+          x2 = self.linear_shared(x)
+          x1 = self.linear1(x1)
+          x2 = self.linear2(x2)
           out = self.cat([x1, x2])
           return out
 
@@ -160,11 +160,11 @@ Print model information
   # Model(
   #   (_inputlayer): Input(shape=[None, 784], name='_inputlayer')
   #   (dropout): Dropout(p=0.8, name='dropout')
-  #   (dense): Linear(out_features=800, relu, in_features='784', name='dense')
+  #   (linear): Linear(out_features=800, relu, in_features='784', name='linear')
   #   (dropout_1): Dropout(p=0.8, name='dropout_1')
-  #   (dense_1): Linear(out_features=800, relu, in_features='800', name='dense_1')
+  #   (linear_1): Linear(out_features=800, relu, in_features='800', name='linear_1')
   #   (dropout_2): Dropout(p=0.8, name='dropout_2')
-  #   (dense_2): Linear(out_features=10, None, in_features='800', name='dense_2')
+  #   (linear_2): Linear(out_features=10, None, in_features='800', name='linear_2')
   # )
 
 Get specific weights
