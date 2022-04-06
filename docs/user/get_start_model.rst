@@ -13,14 +13,14 @@ Sequential model
 .. code-block:: python
 
   from tensorlayerx.nn import SequentialLayer
-  from tensorlayerx.nn import Dense
+  from tensorlayerx.nn import Linear
   import tensorlayerx as tlx
 
   def get_model():
       layer_list = []
-      layer_list.append(Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='Dense1'))
-      layer_list.append(Dense(n_units=800, act=tlx.ReLU, in_channels=800, name='Dense2'))
-      layer_list.append(Dense(n_units=10, act=tlx.ReLU, in_channels=800, name='Dense3'))
+      layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=784, name='Dense1'))
+      layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=800, name='Dense2'))
+      layer_list.append(Linear(out_features=10, act=tlx.ReLU, in_features=800, name='Dense3'))
       MLP = SequentialLayer(layer_list)
       return MLP
 
@@ -36,18 +36,18 @@ In this case, you need to manually input the output shape of the previous layer 
 
   import tensorlayerx as tlx
   from tensorlayerx.nn import Module
-  from tensorlayerx.nn import Dropout, Dense
+  from tensorlayerx.nn import Dropout, Linear
   class CustomModel(Module):
 
       def __init__(self):
           super(CustomModel, self).__init__()
 
-          self.dropout1 = Dropout(keep=0.8)
-          self.dense1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784)
-          self.dropout2 = Dropout(keep=0.8)
-          self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800)
-          self.dropout3 = Dropout(keep=0.8)
-          self.dense3 = Dense(n_units=10, act=None, in_channels=800)
+          self.dropout1 = Dropout(p=0.2)
+          self.dense1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
+          self.dropout2 = Dropout(p=0.2)
+          self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+          self.dropout3 = Dropout(p=0.2)
+          self.dense3 = Linear(out_features=10, act=None, in_features=800)
 
       def forward(self, x, foo=False):
           z = self.dropout1(x)
@@ -76,18 +76,18 @@ In this case, you do not manually input the output shape of the previous layer t
 
   import tensorlayerx as tlx
   from tensorlayerx.nn import Module
-  from tensorlayerx.nn import Dropout, Dense
+  from tensorlayerx.nn import Dropout, Linear
   class CustomModel(Module):
 
       def __init__(self):
           super(CustomModel, self).__init__()
 
-          self.dropout1 = Dropout(keep=0.8)
-          self.dense1 = Dense(n_units=800, act=tlx.ReLU)
-          self.dropout2 = Dropout(keep=0.8)
-          self.dense2 = Dense(n_units=800, act=tlx.ReLU)
-          self.dropout3 = Dropout(keep=0.8)
-          self.dense3 = Dense(n_units=10, act=None)
+          self.dropout1 = Dropout(p=0.2)
+          self.dense1 = Linear(out_features=800, act=tlx.ReLU)
+          self.dropout2 = Dropout(p=0.2)
+          self.dense2 = Linear(out_features=800, act=tlx.ReLU)
+          self.dropout3 = Dropout(p=0.2)
+          self.dense3 = Linear(out_features=10, act=None)
 
       def forward(self, x, foo=False):
           z = self.dropout1(x)
@@ -131,13 +131,13 @@ For dynamic model, call the layer multiple time in forward function
 .. code-block:: python
 
   import tensorlayerx as tlx
-  from tensorlayerx.nn import Module, Dense, Concat
+  from tensorlayerx.nn import Module, Linear, Concat
   class MyModel(Module):
       def __init__(self):
           super(MyModel, self).__init__()
-          self.dense_shared = Dense(n_units=800, act=tlx.ReLU, in_channels=784)
-          self.dense1 = Dense(n_units=10, act=tlx.ReLU, in_channels=800)
-          self.dense2 = Dense(n_units=10, act=tlx.ReLU, in_channels=800)
+          self.dense_shared = Linear(out_features=800, act=tlx.ReLU, in_features=784)
+          self.dense1 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
+          self.dense2 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
           self.cat = Concat()
 
       def forward(self, x):
@@ -159,12 +159,12 @@ Print model information
 
   # Model(
   #   (_inputlayer): Input(shape=[None, 784], name='_inputlayer')
-  #   (dropout): Dropout(keep=0.8, name='dropout')
-  #   (dense): Dense(n_units=800, relu, in_channels='784', name='dense')
-  #   (dropout_1): Dropout(keep=0.8, name='dropout_1')
-  #   (dense_1): Dense(n_units=800, relu, in_channels='800', name='dense_1')
-  #   (dropout_2): Dropout(keep=0.8, name='dropout_2')
-  #   (dense_2): Dense(n_units=10, None, in_channels='800', name='dense_2')
+  #   (dropout): Dropout(p=0.8, name='dropout')
+  #   (dense): Linear(out_features=800, relu, in_features='784', name='dense')
+  #   (dropout_1): Dropout(p=0.8, name='dropout_1')
+  #   (dense_1): Linear(out_features=800, relu, in_features='800', name='dense_1')
+  #   (dropout_2): Dropout(p=0.8, name='dropout_2')
+  #   (dense_2): Linear(out_features=10, None, in_features='800', name='dense_2')
   # )
 
 Get specific weights

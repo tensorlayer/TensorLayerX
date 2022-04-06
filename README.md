@@ -74,15 +74,15 @@ os.environ['TL_BACKEND'] = 'tensorflow' # change to any framework!
 
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
-from tensorlayerx.nn import Dense
+from tensorlayerx.nn import Linear
 class CustomModel(Module):
 
   def __init__(self):
       super(CustomModel, self).__init__()
 
-      self.dense1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784)
-      self.dense2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800)
-      self.dense3 = Dense(n_units=10, act=None, in_channels=800)
+      self.dense1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
+      self.dense2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+      self.dense3 = Linear(out_features=10, act=None, in_features=800)
 
   def forward(self, x, foo=False):
       z = self.dense1(x)
