@@ -147,7 +147,7 @@ class Model:
 
         """
 
-        _save_standard_weights_dict(self, file_path)
+        _save_standard_weights_dict(self.network, file_path)
 
     def load_standard_weights(self, file_path, skip=False, reshape=False, format='npz_dict'):
         """
@@ -166,7 +166,7 @@ class Model:
 
         """
 
-        _load_standard_weights_dict(self, file_path, skip, reshape, format)
+        _load_standard_weights_dict(self.network, file_path, skip, reshape, format)
 
     def save_weights(self, file_path, format=None):
         """Input file_path, save model weights into a file of given format.
@@ -206,7 +206,7 @@ class Model:
 
         """
 
-        _save_weights(net=self, file_path=file_path, format=format)
+        _save_weights(net=self.network, file_path=file_path, format=format)
 
     def load_weights(self, file_path, format=None, in_order=True, skip=False):
         """Load model weights from a given file, which should be previously saved by self.save_weights().
@@ -259,7 +259,7 @@ class Model:
 
         """
 
-        _load_weights(net=self, file_path=file_path, format=format, in_order=in_order, skip=skip)
+        _load_weights(net=self.network, file_path=file_path, format=format, in_order=in_order, skip=skip)
 
     def tf_train(
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,

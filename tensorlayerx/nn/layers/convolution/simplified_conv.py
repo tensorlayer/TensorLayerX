@@ -265,7 +265,7 @@ class Conv2d(Module):
             raise Exception("data_format should be either channels_last or channels_first")
 
         #TODO channels first filter shape [out_channel, in_channel, filter_h, filter_w]
-        self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.out_channels )
+        self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.out_channels)
         self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         self.b_init_flag = False

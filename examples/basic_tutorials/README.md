@@ -26,3 +26,4 @@ TensorLayerX provides Sequential and Subclass define a model. Sequential model a
 - [Interoperability of Different Back-end Models](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tutorial_tensorlayer_model_load.py)
 - [TensorFlow Model Save to pb](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tensorflow_model_save_to_pb.py)
 - [Gradient Clip](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/gradient_clip_mixed_tensorflow.py)
+- [Using tensorboard](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tutorial_using_tensorboradX.py)
