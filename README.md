@@ -70,7 +70,7 @@ For more installation instructions, please refer to [Installtion](https://tensor
 You can immediately use tensorlayerx to define a model, using your favourite framework in the background, like so:
 ```python
 import os
-os.environ['TL_BACKEND'] = 'tensorflow' # Just modify this line, easily change to any framework!
+os.environ['TL_BACKEND'] = 'tensorflow' # modify this line, switch to any framework easily!
 #os.environ['TL_BACKEND'] = 'mindspore'
 #os.environ['TL_BACKEND'] = 'paddle'
 #os.environ['TL_BACKEND'] = 'torch'
