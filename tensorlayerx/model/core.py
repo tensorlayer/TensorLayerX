@@ -59,10 +59,10 @@ class Model:
     >>> class Net(Module):
     >>>     def __init__(self):
     >>>         super(Net, self).__init__()
-    >>>         self.conv = tlx.nn.Conv2d(n_filter=32, filter_size=(3, 3), strides=(2, 2), in_channels=5, name='conv2d')
+    >>>         self.conv = tlx.nn.Conv2d(out_channels=32, kernel_size=(3, 3), stride=(2, 2), in_channels=5, name='conv2d')
     >>>         self.bn = tlx.nn.BatchNorm2d(num_features=32, act=tlx.ReLU)
     >>>         self.flatten = tlx.nn.Flatten()
-    >>>         self.fc = tlx.nn.Dense(n_units=12, in_channels=32*224*224) # padding=0
+    >>>         self.fc = tlx.nn.Linear(out_features=12, in_features=32*224*224) # padding=0
     >>>
     >>>     def construct(self, x):
     >>>         x = self.conv(x)
@@ -434,8 +434,11 @@ class Model:
 
             train_loss, train_acc, n_iter = 0, 0, 0
             for X_batch, y_batch in train_dataset:
+                device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
                 network.set_train()
-
+                X_batch = X_batch.to(device)
+                y_batch = y_batch.to(device)
+                network.to(device)
                 output = network(X_batch)
                 loss = loss_fn(output, y_batch)
 

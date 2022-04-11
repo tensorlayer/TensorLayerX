@@ -72,7 +72,7 @@ def get_tensor_shape(x):
 
 
 # initializers
-def zeros(shape, dtype=mstype.float32):
+def zeros(shape, dtype=mstype.float32, device = None):
     """
     Creates a tensor with all elements set to zero.
 
@@ -95,7 +95,7 @@ def zeros(shape, dtype=mstype.float32):
     return Tensor(arr, dtype=dtype)
 
 
-def ones(shape, dtype=mstype.float32):
+def ones(shape, dtype=mstype.float32, device = None):
     """
     Creates a tensor with all elements set to ones.
 
@@ -118,7 +118,7 @@ def ones(shape, dtype=mstype.float32):
     return Tensor(arr, dtype=dtype)
 
 
-def constant(value, dtype=mstype.float32, shape=None):
+def constant(value, dtype=mstype.float32, shape=None, device = None):
     """
     Creates a constant tensor from a tensor-like object.
 
@@ -413,7 +413,7 @@ def xavier_normal(shape, dtype, seed=None):
     return Tensor(arr, dtype=dtype)
 
 
-def Variable(initial_value, name, trainable=True):
+def Variable(initial_value, name, trainable=True, device = None):
     """
     Creates a new variable with value initial_value.
 
@@ -622,7 +622,7 @@ def concat(values, axis):
     return outputs
 
 
-def convert_to_tensor(value, dtype=None):
+def convert_to_tensor(value, dtype=None, device = None):
     """
     Converts the given value to a Tensor.
 

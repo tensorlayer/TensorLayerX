@@ -61,14 +61,11 @@ class DataLoader(object):
         batch_sampler=None,
         num_workers=0,
         collate_fn=None,
-        # pin_memory = False,
         time_out=0,
         worker_init_fn=None,
-        #multiprocessing_context=None,
         prefetch_factor=2,
         persistent_workers=False,
     ):
-        # assert isinstance(dataset, Dataset), "dataset should be subclass of tensorlayerx.dataflow.Dataset"
         self.dataset = dataset
         assert num_workers >= 0, "num_workers should be a non_negative integer"
         if num_workers == 0 and prefetch_factor != 2:
@@ -77,10 +74,8 @@ class DataLoader(object):
             raise ValueError('persistent_workers option needs num_workers > 0')
         self.num_workers = num_workers
         self.prefetch_factor = prefetch_factor
-        # self.pin_memory = pin_memory
         self.time_out = time_out
         self.worker_init_fn = worker_init_fn
-        #self.multiprocessing_context = multiprocessing_context
         if isinstance(dataset, IterableDataset):
             self._dataset_kind = _DatasetKind.Iter
             if shuffle is not False:

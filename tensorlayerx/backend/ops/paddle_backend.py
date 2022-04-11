@@ -45,7 +45,7 @@ def get_tensor_shape(x):
 
 
 # initializers
-def zeros(shape, dtype="float32"):
+def zeros(shape, dtype="float32", device = None):
     """
     Creates a tensor with all elements set to zero.
 
@@ -64,7 +64,7 @@ def zeros(shape, dtype="float32"):
     return pd.zeros(shape=shape, dtype=dtype)
 
 
-def ones(shape, dtype="float32"):
+def ones(shape, dtype="float32", device = None):
     """
     Creates a tensor with all elements set to ones.
 
@@ -83,7 +83,7 @@ def ones(shape, dtype="float32"):
     return pd.ones(shape=shape, dtype=dtype)
 
 
-def constant(value, dtype="float32", shape=None):
+def constant(value, dtype="float32", shape=None, device = None):
     """
     Creates a constant tensor from a tensor-like object.
 
@@ -241,7 +241,7 @@ def xavier_uniform(shape, dtype, seed=None):
     raise NotImplementedError
 
 
-def Variable(initial_value, name, trainable=None):
+def Variable(initial_value, name, trainable=None, device = None):
     """
     Creates a new variable with value initial_value.
 
@@ -425,7 +425,7 @@ def concat(values, axis=0):
     return pd.concat(values, axis)
 
 
-def convert_to_tensor(value, dtype=None):
+def convert_to_tensor(value, dtype=None, device = None):
     """
     Converts the given value to a Tensor.
 

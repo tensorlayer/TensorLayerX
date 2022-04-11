@@ -182,10 +182,14 @@ class TrainOneStepWithTH(object):
         self.train_weights = train_weights
 
     def __call__(self, data, label):
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        data = data.to(device)
+        label = label.to(device)
+        self.net_with_loss.to(device)
         loss = self.net_with_loss(data, label)
         grads = self.optimizer.gradient(loss, self.train_weights)
         self.optimizer.apply_gradients(zip(grads, self.train_weights))
-        return loss.detach().numpy()
+        return loss.cpu().detach().numpy()
 
 class TrainOneStepWithGradientClippingTF(object):
     def __init__(self, net_with_loss, optimizer, train_weights, gradient_clipping):

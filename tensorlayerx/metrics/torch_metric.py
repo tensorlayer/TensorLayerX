@@ -51,7 +51,7 @@ class Accuracy(Metric):
             y_true = torch.argmax(y_true, dim=-1, keepdim=True)
         correct = y_pred == y_true
         correct = correct.to(torch.float32)
-        correct = correct.numpy()
+        correct = correct.cpu().numpy()
         num_samples = np.prod(np.array(correct.shape[:-1]))
         num_corrects = correct[..., :self.topk].sum()
         self.total = num_corrects
@@ -78,12 +78,12 @@ class Auc(object):
 
     def update(self, y_pred, y_true):
         if isinstance(y_true, torch.Tensor):
-            y_true = y_true.numpy()
+            y_true = y_true.cpu().numpy()
         elif not isinstance(y_pred, np.ndarray):
             raise TypeError("The y_true must be a numpy array or Tensor.")
 
         if isinstance(y_pred, torch.Tensor):
-            y_pred = y_pred.numpy()
+            y_pred = y_pred.cpu().numpy()
         elif not isinstance(y_pred, np.ndarray):
             raise TypeError("The y_pred must be a numpy array or Tensor.")
 
@@ -131,12 +131,12 @@ class Precision(object):
 
     def update(self, y_pred, y_true):
         if isinstance(y_true, torch.Tensor):
-            y_true = y_true.numpy()
+            y_true = y_true.cpu().numpy()
         elif not isinstance(y_pred, np.ndarray):
             raise TypeError("The y_true must be a numpy array or Tensor.")
 
         if isinstance(y_pred, torch.Tensor):
-            y_pred = y_pred.numpy()
+            y_pred = y_pred.cpu().numpy()
         elif not isinstance(y_pred, np.ndarray):
             raise TypeError("The y_pred must be a numpy array or Tensor.")
 
@@ -169,12 +169,12 @@ class Recall(object):
 
     def update(self, y_pred, y_true):
         if isinstance(y_true, torch.Tensor):
-            y_true = y_true.numpy()
+            y_true = y_true.cpu().numpy()
         elif not isinstance(y_pred, np.ndarray):
             raise TypeError("The y_true must be a numpy array or Tensor.")
 
         if isinstance(y_pred, torch.Tensor):
-            y_pred = y_pred.numpy()
+            y_pred = y_pred.cpu().numpy()
         elif not isinstance(y_pred, np.ndarray):
             raise TypeError("The y_pred must be a numpy array or Tensor.")
 
@@ -209,7 +209,7 @@ def acc(predicts, labels, topk=1):
         y_true = torch.argmax(labels, dim=-1, keepdim=True)
     correct = y_pred == y_true
     correct = correct.to(torch.float32)
-    correct = correct.numpy()
+    correct = correct.cpu().numpy()
     num_samples = np.prod(np.array(correct.shape[:-1]))
     num_corrects = correct[..., :topk].sum()
     total = num_corrects

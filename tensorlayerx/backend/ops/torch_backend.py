@@ -52,7 +52,7 @@ def get_tensor_shape(x):
 
 
 # initializers
-def zeros(shape, dtype=None):
+def zeros(shape, dtype=None, device = None):
     """
     Creates a tensor with all elements set to zero.
 
@@ -68,11 +68,14 @@ def zeros(shape, dtype=None):
         A Tensor with all elements set to zero.
 
     """
+    if device == 'cpu':
+        device = torch.device('cpu')
+    elif device == 'gpu':
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    return torch.zeros(size=shape, dtype=dtype, device = device)
 
-    return torch.zeros(size=shape, dtype=dtype)
 
-
-def ones(shape, dtype=None):
+def ones(shape, dtype=None, device = None):
     """
     Creates a tensor with all elements set to ones.
 
@@ -88,11 +91,14 @@ def ones(shape, dtype=None):
         A Tensor with all elements set to zero.
 
     """
+    if device == 'cpu':
+        device = torch.device('cpu')
+    elif device == 'gpu':
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    return torch.ones(size=shape, dtype=dtype, device = device)
 
-    return torch.ones(size=shape, dtype=dtype)
 
-
-def constant(value, dtype=None, shape=None):
+def constant(value, dtype=None, shape=None, device =None):
     """
     Creates a constant tensor from a tensor-like object.
 
@@ -110,8 +116,11 @@ def constant(value, dtype=None, shape=None):
         A Constant Tensor.
 
     """
-
-    w = torch.empty(size=shape, dtype=dtype)
+    if device == 'cpu':
+        device = torch.device('cpu')
+    elif device == 'gpu':
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    w = torch.empty(size=shape, dtype=dtype, device = device)
     return torch.nn.init.constant_(w, value)
 
 
@@ -426,7 +435,7 @@ def concat(values, axis=0):
     return torch.cat(values, axis)
 
 
-def convert_to_tensor(value, dtype=None):
+def convert_to_tensor(value, dtype=None, device = None):
     """
     Converts the given value to a Tensor.
 
@@ -443,14 +452,18 @@ def convert_to_tensor(value, dtype=None):
     """
     if isinstance(dtype, str):
         dtype = _dtypeDict[dtype]
-    return torch.tensor(value, dtype=dtype)
+    if device == 'cpu':
+        device = torch.device('cpu')
+    elif device == 'gpu':
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    return torch.tensor(value, dtype=dtype, device = device)
 
 
 def convert_to_numpy(value):
     try:
         return value.numpy()
     except:
-        return value.detach().numpy()
+        return value.cpu().detach().numpy()
 
 
 def sqrt(x):
@@ -1505,7 +1518,7 @@ def tanh(x):
         A Tensor. Has the same type as x.
     """
 
-    return F.tanh(x)
+    return torch.tanh(x)
 
 
 def any(x, axis=None, keepdims=False):

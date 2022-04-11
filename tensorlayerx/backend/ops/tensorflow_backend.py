@@ -83,7 +83,7 @@ def get_tensor_shape(x):
 
 
 # initializers
-def zeros(shape, dtype='float32'):
+def zeros(shape, dtype='float32', device = None):
     """
     Creates a tensor with all elements set to zero.
 
@@ -93,6 +93,8 @@ def zeros(shape, dtype='float32'):
         a tuple of integers, or a 1-D Tensor of type int32.
     dtype : tensor or str
         The DType of an element in the resulting Tensor
+    device : str or None
+        create a tensor on 'cpu' or 'gpu', defautl is None.
 
     Returns
     -------
@@ -109,7 +111,7 @@ def zeros(shape, dtype='float32'):
     return tf.zeros(shape=shape, dtype=dtype_str(dtype))
 
 
-def ones(shape, dtype='float32'):
+def ones(shape, dtype='float32', device = None):
     """
     Creates a tensor with all elements set to ones.
 
@@ -119,6 +121,8 @@ def ones(shape, dtype='float32'):
         a tuple of integers, or a 1-D Tensor of type int32.
     dtype : tensor or str
         The DType of an element in the resulting Tensor
+    device : str or None
+        create a tensor on 'cpu' or 'gpu', defautl is None.
 
     Returns
     -------
@@ -135,7 +139,7 @@ def ones(shape, dtype='float32'):
     return tf.ones(shape=shape, dtype=dtype_str(dtype))
 
 
-def constant(value, dtype='float32', shape=None):
+def constant(value, dtype='float32', shape=None, device = None):
     """
     Creates a constant tensor from a tensor-like object.
 
@@ -147,6 +151,8 @@ def constant(value, dtype='float32', shape=None):
          The type of the elements of the resulting tensor.
     shape : tuple
         Optional dimensions of resulting tensor.
+    device : str or None
+        create a tensor on 'cpu' or 'gpu', defautl is None.
 
     Returns
     -------
@@ -345,7 +351,7 @@ def xavier_uniform(shape, dtype='float32', seed=None):
     return tf.initializers.glorot_uniform(seed)(shape=shape, dtype=dtype_str(dtype))
 
 
-def Variable(initial_value, name, trainable=True):
+def Variable(initial_value, name, trainable=True, device = None):
     """
     Creates a new variable with value initial_value.
 
@@ -355,6 +361,8 @@ def Variable(initial_value, name, trainable=True):
         A Tensor, or Python object convertible to a Tensor
     name : str
         Optional name for the variable. Defaults to 'Variable' and gets uniquified automatically.
+    device : str or None
+        create a tensor on 'cpu' or 'gpu', defautl is None.
     Returns
     -------
         Variable
@@ -591,7 +599,7 @@ def concat(values, axis):
     return tf.concat(values, axis)
 
 
-def convert_to_tensor(value, dtype=None):
+def convert_to_tensor(value, dtype=None, device = None):
     """
     Converts the given value to a Tensor.
 
@@ -601,6 +609,8 @@ def convert_to_tensor(value, dtype=None):
         An object whose type has a registered Tensor conversion function.
     dtype : optional
         Optional element type for the returned tensor. If missing, the type is inferred from the type of value.
+    device : str or None
+        create a tensor on 'cpu' or 'gpu', defautl is None.
 
     Returns
     -------
