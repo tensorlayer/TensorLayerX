@@ -36,7 +36,7 @@ class LRScheduler(object):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> #Here is an example of a simple ``StepDecay`` implementation.
     >>> import tensorlayerx as tlx
@@ -118,7 +118,7 @@ class StepDecay(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
     >>> scheduler = tlx.optimizers.lr.StepDecay(learning_rate = 0.1, step_size = 10,  gamma = 0.1, last_epoch = -1, verbose = False)
@@ -180,10 +180,10 @@ class CosineAnnealingDecay(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
-    >>> scheduler = tlx.optimizers.lr.CosineAnnealingDecay(learning_rate = 0.1, step = 10,  gamma = 0.1, last_epoch = -1, verbose = False)
+    >>> scheduler = tlx.optimizers.lr.CosineAnnealingDecay(learning_rate = 0.1, T_max = 10, eta_min=0, last_epoch=-1, verbose=False)
     >>> sgd = tlx.optimizers.SGD(learning_rate=scheduler,momentum=0.2)
     >>> for epoch in range(100):
     >>>     for step in range(100):
@@ -248,7 +248,7 @@ class NoamDecay(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
     >>> scheduler = tlx.optimizers.lr.NoamDecay(d_model=0.01, warmup_steps=100, verbose=True)
@@ -308,7 +308,7 @@ class PiecewiseDecay(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
     >>> scheduler = tlx.optimizers.lr.PiecewiseDecay(boundaries=[100, 200], values=[0.1, 0.5, 0.1], verbose=True)
@@ -359,7 +359,7 @@ class NaturalExpDecay(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
     >>> scheduler = tlx.optimizers.lr.NaturalExpDecay(learning_rate=0.1, gamma=0.1, verbose=True)
@@ -406,7 +406,7 @@ class InverseTimeDecay(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
     >>> scheduler = tlx.optimizers.lr.InverseTimeDecay(learning_rate=0.1, gamma=0.1, verbose=True)
@@ -471,7 +471,7 @@ class PolynomialDecay(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
     >>> scheduler = tlx.optimizers.lr.PolynomialDecay(learning_rate=0.1, decay_steps=50, verbose=True)
@@ -549,7 +549,7 @@ class LinearWarmup(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
     >>> scheduler = tlx.optimizers.lr.LinearWarmup(learning_rate=0.1, warmup_steps=20, start_lr=0.0, end_lr=0.5, verbose=True)
@@ -617,7 +617,7 @@ class ExponentialDecay(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
     >>> scheduler = tlx.optimizers.lr.ExponentialDecay(learning_rate=0.1, gamma=0.9, verbose=True)
@@ -675,7 +675,7 @@ class MultiStepDecay(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
     >>> scheduler = tlx.optimizers.lr.MultiStepDecay(learning_rate=0.1, milestones=[50, 100], gamma=0.1, verbose=True)
@@ -743,7 +743,7 @@ class LambdaDecay(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
     >>> scheduler = tlx.optimizers.lr.LambdaDecay(learning_rate=0.1, lr_lambda=lambda x:0.9**x, verbose=True)
@@ -812,7 +812,7 @@ class ReduceOnPlateau(LRScheduler):
 
     Examples
     --------
-    With TensorLayer
+    With TensorLayerX
 
     >>> import tensorlayerx as tlx
     >>> scheduler = tlx.optimizers.lr.ReduceOnPlateau(learning_rate=1.0, factor=0.5, patience=5, verbose=True)
@@ -878,11 +878,11 @@ class ReduceOnPlateau(LRScheduler):
         if isinstance(metrics, (tf.Tensor, np.ndarray)):
             assert len(metrics.shape) == 1 and metrics.shape[0] == 1, "the metrics.shape " \
                                                                       "should be (1L,), but the current metrics.shape is {}. Maybe that " \
-                                                                      "you should call paddle.mean to process it first.".format(
+                                                                      "you should call tlx.reudce_mean to process it first.".format(
                 metrics.shape)
         elif not isinstance(metrics, (int, float, np.float32, np.float64)):
             raise TypeError(
-                "metrics must be 'int', 'float', 'np.float', 'numpy.ndarray' or 'paddle.Tensor', but receive {}".format(
+                "metrics must be 'int', 'float', 'np.float', 'numpy.ndarray', but receive {}".format(
                     type(metrics)
                 )
             )
