@@ -17,8 +17,8 @@ tlx.logging.set_verbosity(tlx.logging.DEBUG)
 vgg = vgg16(pretrained=True)
 vgg.set_eval()
 
-img = tlx.vis.read_image('data/tiger.jpeg')
-img = tlx.prepro.imresize(img, (224, 224)).astype(np.float32) / 255
+img = tlx.vision.load_image('data/tiger.jpeg')
+img = tlx.vision.transforms.Resize((224, 224))(img).astype(np.float32) / 255
 
 start_time = time.time()
 output = vgg(img)

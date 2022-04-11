@@ -17,8 +17,8 @@ tlx.logging.set_verbosity(tlx.logging.DEBUG)
 resnet = ResNet50(pretrained=True)
 resnet.set_eval()
 
-img1 = tlx.vis.read_image('data/tiger.jpeg')
-img1 = tlx.prepro.imresize(img1, (224, 224))[:, :, ::-1]
+img1 = tlx.vision.load_image('data/tiger.jpeg')
+img1 = tlx.vision.transforms.Resize((224, 224))(img1)[:, :, ::-1]
 img1 = img1 - np.array([103.939, 116.779, 123.68]).reshape((1, 1, 3))
 
 img1 = img1.astype(np.float32)[np.newaxis, ...]

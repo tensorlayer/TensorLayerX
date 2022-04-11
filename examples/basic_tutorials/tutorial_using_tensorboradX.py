@@ -40,9 +40,25 @@ import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Linear, Dropout, BatchNorm1d
 from tensorboardX import SummaryWriter
-
+from tensorlayerx.dataflow import Dataset, DataLoader
 
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
+
+
+class mnistdataset(Dataset):
+
+    def __init__(self, data=X_train, label=y_train):
+        super().__init__()
+        self.data = data
+        self.label = label
+
+    def __getitem__(self, index):
+        data = self.data[index].astype('float32')
+        label = self.label[index].astype('int64')
+        return data, label
+
+    def __len__(self):
+        return len(self.data)
 
 
 class CustomModel(Module):
@@ -79,12 +95,17 @@ optimizer = tlx.optimizers.Adam(learning_rate=0.0001)
 train_batch = 0
 test_batch = 0
 
+train_dataset = mnistdataset(data=X_train, label=y_train)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_dataset = mnistdataset(data=X_val, label=y_val)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+
 writer = SummaryWriter('runs/mlp')
 
 for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
     start_time = time.time()
     ## iterate over the entire training set once (shuffle the data via training)
-    for X_batch, y_batch in tlx.utils.iterate.minibatches(X_train, y_train, batch_size, shuffle=True):
+    for X_batch, y_batch in train_loader:
         MLP.set_train()  # enable dropout
         with tf.GradientTape() as tape:
             ## compute outputs
@@ -98,7 +119,7 @@ for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
     if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
         print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
         train_loss, train_acc, n_iter = 0, 0, 0
-        for X_batch, y_batch in tlx.utils.iterate.minibatches(X_train, y_train, batch_size, shuffle=False):
+        for X_batch, y_batch in train_loader:
             train_batch += 1
             _logits = MLP(X_batch)
             train_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch)
@@ -112,7 +133,7 @@ for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
             writer.add_scalar('train acc', train_acc / n_iter, train_batch)
 
         val_loss, val_acc, n_iter = 0, 0, 0
-        for X_batch, y_batch in tlx.utils.iterate.minibatches(X_val, y_val, batch_size, shuffle=False):
+        for X_batch, y_batch in val_loader:
             test_batch += 1
             _logits = MLP(X_batch)  # is_train=False, disable dropout
             val_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch)
