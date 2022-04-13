@@ -9,14 +9,14 @@ __all__ = [
     'Conv1d',
     'Conv2d',
     'Conv3d',
-    'DeConv1d',
-    'DeConv2d',
-    'DeConv3d',
+    'ConvTranspose1d',
+    'ConvTranspose2d',
+    'ConvTranspose3d',
 ]
 
 
 class Conv1d(Module):
-    """Simplified version of :class:`Conv1dLayer`.
+    """Applies a 1D convolution over an input signal composed of several input planes.
 
     Parameters
     ----------
@@ -156,7 +156,7 @@ class Conv1d(Module):
 
 
 class Conv2d(Module):
-    """Simplified version of :class:`Conv2dLayer`.
+    """Applies a 2D convolution over an input signal composed of several input planes.
 
     Parameters
     ----------
@@ -299,7 +299,7 @@ class Conv2d(Module):
 
 
 class Conv3d(Module):
-    """Simplified version of :class:`Conv3dLayer`.
+    """Applies a 3D convolution over an input signal composed of several input planes.
 
     Parameters
     ----------
@@ -443,8 +443,8 @@ class Conv3d(Module):
         return outputs
 
 
-class DeConv1d(Module):
-    """Simplified version of :class:`Deconv1dlayer`.
+class ConvTranspose1d(Module):
+    """Applies a 1D transposed convolution operator over an input image composed of several input planes.
 
     Parameters
     ----------
@@ -476,9 +476,9 @@ class DeConv1d(Module):
     With TensorLayerx
 
     >>> net = tlx.nn.Input([8, 100, 1], name='input')
-    >>> conv1d = tlx.nn.DeConv1d(out_channels=32, kernel_size=5, stride=2, b_init=None, in_channels=1, name='Deonv1d_1')
+    >>> conv1d = tlx.nn.ConvTranspose1d(out_channels=32, kernel_size=5, stride=2, b_init=None, in_channels=1, name='Deonv1d_1')
     >>> print(conv1d)
-    >>> tensor = tlx.nn.DeConv1d(out_channels=32, kernel_size=5, stride=2, act=tlx.ReLU, name='Deconv1d_2')(net)
+    >>> tensor = tlx.nn.ConvTranspose1d(out_channels=32, kernel_size=5, stride=2, act=tlx.ReLU, name='ConvTranspose1d_2')(net)
     >>> print(tensor)
 
     """
@@ -497,7 +497,7 @@ class DeConv1d(Module):
         in_channels=None,
         name=None  # 'conv1d_transpose'
     ):
-        super(DeConv1d, self).__init__(name, act=act)
+        super(ConvTranspose1d, self).__init__(name, act=act)
         self.out_channels = out_channels
         self.kernel_size = kernel_size
         self.stride = stride
@@ -513,7 +513,7 @@ class DeConv1d(Module):
             self._built = True
 
         logging.info(
-            "DeConv1d %s: out_channels: %d kernel_size: %s stride: %d pad: %s act: %s" % (
+            "ConvTranspose1d %s: out_channels: %d kernel_size: %s stride: %d pad: %s act: %s" % (
                 self.name, out_channels, kernel_size, stride, padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
@@ -587,8 +587,8 @@ class DeConv1d(Module):
         return outputs
 
 
-class DeConv2d(Module):
-    """Simplified version of :class:`Deconv2dLayer`.
+class ConvTranspose2d(Module):
+    """Applies a 2D transposed convolution operator over an input image composed of several input planes.
 
     Parameters
     ----------
@@ -621,9 +621,9 @@ class DeConv2d(Module):
     With TensorLayerx
 
     >>> net = tlx.nn.Input([8, 400, 400, 3], name='input')
-    >>> conv2d_transpose = tlx.nn.DeConv2d(out_channels=32, kernel_size=(3, 3), stride=(2, 2), b_init=None, in_channels=3, name='conv2d_transpose_1')
+    >>> conv2d_transpose = tlx.nn.ConvTranspose2d(out_channels=32, kernel_size=(3, 3), stride=(2, 2), b_init=None, in_channels=3, name='conv2d_transpose_1')
     >>> print(conv2d_transpose)
-    >>> tensor = tlx.nn.DeConv2d(out_channels=32, kernel_size=(3, 3), stride=(2, 2), act=tlx.ReLU, name='conv2d_transpose_2')(net)
+    >>> tensor = tlx.nn.ConvTranspose2d(out_channels=32, kernel_size=(3, 3), stride=(2, 2), act=tlx.ReLU, name='conv2d_transpose_2')(net)
     >>> print(tensor)
 
     """
@@ -642,7 +642,7 @@ class DeConv2d(Module):
         in_channels=None,
         name=None,  # 'conv2d_transpose',
     ):
-        super(DeConv2d, self).__init__(name, act=act)
+        super(ConvTranspose2d, self).__init__(name, act=act)
         self.out_channels = out_channels
         self.kernel_size = kernel_size
         self.stride = stride
@@ -658,7 +658,7 @@ class DeConv2d(Module):
             self._built = True
 
         logging.info(
-            "DeConv2d %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s" % (
+            "ConvTranspose2d %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s" % (
                 self.name, out_channels, str(kernel_size), str(stride), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
@@ -726,8 +726,8 @@ class DeConv2d(Module):
         return outputs
 
 
-class DeConv3d(Module):
-    """Simplified version of :class:`Deconv3dLayer`.
+class ConvTranspose3d(Module):
+    """Applies a 3D transposed convolution operator over an input image composed of several input planes.
 
     Parameters
     ----------
@@ -760,9 +760,9 @@ class DeConv3d(Module):
     With TensorLayerx
 
     >>> net = tlx.nn.Input([8, 20, 20, 20, 3], name='input')
-    >>> deconv3d = tlx.nn.DeConv3d(out_channels=32, kernel_size=(3, 3, 3), stride=(2, 2, 2), b_init=None, in_channels=3, name='deconv3d_1')
+    >>> ConvTranspose3d = tlx.nn.ConvTranspose3d(out_channels=32, kernel_size=(3, 3, 3), stride=(2, 2, 2), b_init=None, in_channels=3, name='deconv3d_1')
     >>> print(deconv3d)
-    >>> tensor = tlx.nn.DeConv3d(out_channels=32, kernel_size=(3, 3, 3), stride=(2, 2, 2), act=tlx.ReLU, name='deconv3d_2')(net)
+    >>> tensor = tlx.nn.ConvTranspose3d(out_channels=32, kernel_size=(3, 3, 3), stride=(2, 2, 2), act=tlx.ReLU, name='ConvTranspose3d_2')(net)
     >>> print(tensor)
 
     """
@@ -781,7 +781,7 @@ class DeConv3d(Module):
         in_channels=None,
         name=None  # 'deconv3d',
     ):
-        super(DeConv3d, self).__init__(name, act=act)
+        super(ConvTranspose3d, self).__init__(name, act=act)
         self.out_channels = out_channels
         self.kernel_size = kernel_size
         self.stride = stride
@@ -797,7 +797,7 @@ class DeConv3d(Module):
             self._built = True
 
         logging.info(
-            "DeConv3d %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s" % (
+            "ConvTranspose3d %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s" % (
                 self.name, out_channels, str(kernel_size), str(stride), padding,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )

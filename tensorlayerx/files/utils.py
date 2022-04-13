@@ -2731,7 +2731,7 @@ def _save_weights_to_hdf5_group(f, layers):
             _save_weights_to_hdf5_group(g, layer.all_layers)
         elif isinstance(layer, tlx.nn.ModelLayer):
             _save_weights_to_hdf5_group(g, layer.model.all_layers)
-        elif isinstance(layer, tlx.nn.LayerList):
+        elif isinstance(layer, tlx.nn.ModuleList):
             _save_weights_to_hdf5_group(g, layer.layers)
         elif isinstance(layer, tlx.nn.Layer):
             if layer.all_weights is not None:
@@ -2773,7 +2773,7 @@ def _load_weights_from_hdf5_group_in_order(f, layers):
             _load_weights_from_hdf5_group_in_order(g, layer.all_layers)
         elif isinstance(layer, tlx.nn.ModelLayer):
             _load_weights_from_hdf5_group_in_order(g, layer.model.all_layers)
-        elif isinstance(layer, tlx.nn.layers.LayerList):
+        elif isinstance(layer, tlx.nn.layers.ModuleList):
             _load_weights_from_hdf5_group_in_order(g, layer.layers)
         elif isinstance(layer, tlx.nn.Layer):
             weight_names = [n.decode('utf8') for n in g.attrs['weight_names']]
@@ -2819,7 +2819,7 @@ def _load_weights_from_hdf5_group(f, layers, skip=False):
                 _load_weights_from_hdf5_group(g, layer.all_layers, skip)
             elif isinstance(layer, tlx.nn.ModelLayer):
                 _load_weights_from_hdf5_group(g, layer.model.all_layers, skip)
-            elif isinstance(layer, tlx.nn.LayerList):
+            elif isinstance(layer, tlx.nn.ModuleList):
                 _load_weights_from_hdf5_group(g, layer.layers, skip)
             elif isinstance(layer, tlx.nn.Layer):
                 weight_names = [n.decode('utf8') for n in g.attrs['weight_names']]

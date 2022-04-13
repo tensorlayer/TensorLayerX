@@ -33,24 +33,9 @@ __all__ = [
     'Conv3d',
 
     # simplified deconv
-    'DeConv1d',
-    'DeConv2d',
-    'DeConv3d',
-
-    # expert conv
-    # 'Conv1dLayer',
-    # 'Conv2dLayer',
-    # 'Conv3dLayer',
-
-    # expert conv
-    # 'DeConv1dLayer',
-    # 'DeConv2dLayer',
-    # 'DeConv3dLayer',
-
-    # atrous
-    # 'AtrousConv1dLayer',
-    # 'AtrousConv2dLayer',
-    # 'AtrousDeConv2d',
+    'ConvTranspose1d',
+    'ConvTranspose2d',
+    'ConvTranspose3d',
 
     # binary
     'BinaryConv2d',

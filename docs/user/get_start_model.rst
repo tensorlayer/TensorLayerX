@@ -12,7 +12,7 @@ Sequential model
 
 .. code-block:: python
 
-  from tensorlayerx.nn import SequentialLayer
+  from tensorlayerx.nn import Sequential
   from tensorlayerx.nn import Linear
   import tensorlayerx as tlx
 
@@ -21,7 +21,7 @@ Sequential model
       layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=784, name='Linear1'))
       layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=800, name='Linear2'))
       layer_list.append(Linear(out_features=10, act=tlx.ReLU, in_features=800, name='Linear3'))
-      MLP = SequentialLayer(layer_list)
+      MLP = Sequential(layer_list)
       return MLP
 
 

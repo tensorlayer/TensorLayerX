@@ -13,9 +13,9 @@ import numpy
 from mindspore.common.api import _pynative_executor
 from mindspore.common.parameter import Parameter
 
-__all__ = ['Module', 'SequentialLayer', 'LayerList']
+__all__ = ['Module', 'Sequential', 'ModuleList']
 
-_global_layer_name_dict = {}  # TODO: better implementation?
+_global_layer_name_dict = {}
 
 
 class Module(Cell):
@@ -311,10 +311,10 @@ class Module(Cell):
         self.forward(*inputs, **kwargs)
 
 
-class SequentialLayer(Module):
+class Sequential(Module):
     """
-    The class :class:`SequentialLayer` is a linear stack of layers.
-    The :class:`SequentialLayer` can be created by passing a list of layer instances.
+    The class :class:`Sequential` is a linear stack of layers.
+    The :class:`Sequential` can be created by passing a list of layer instances.
     The given layer instances will be automatically connected one by one.
     Parameters
     ----------
@@ -325,11 +325,11 @@ class SequentialLayer(Module):
     Methods
     ---------
     __init__()
-        Initializing the LayerList.
+        Initializing the ModuleList.
     weights()
         A collection of weights of all the layer instances.
     build()
-        Build the LayerList. The layer instances will be connected automatically one by one.
+        Build the ModuleList. The layer instances will be connected automatically one by one.
     forward()
         Forward the computation. The computation will go through all layer instances.
 
@@ -337,14 +337,14 @@ class SequentialLayer(Module):
     ---------
     >>> conv = tlx.nn.Conv2d(3, 2, 3, pad_mode='valid')
     >>> bn = tlx.nn.BatchNorm2d(2)
-    >>> seq = tlx.nn.SequentialLayer([conv, bn])
+    >>> seq = tlx.nn.Sequential([conv, bn])
     >>> x = tlx.nn.Input((1, 3, 4, 4))
     >>> seq(x)
 
     """
 
     def __init__(self, *args):
-        super(SequentialLayer, self).__init__()
+        super(Sequential, self).__init__()
         # self._built = True
         if len(args) == 1:
             layers = args[0]
@@ -410,11 +410,11 @@ class SequentialLayer(Module):
         return input_data
 
 
-class LayerList(Module):
+class ModuleList(Module):
     """
     Holds Modules in a list.
 
-    LayerList can be used like a regular Python list, support
+    ModuleList can be used like a regular Python list, support
     '__getitem__', '__setitem__', '__delitem__', '__len__', '__iter__' and '__iadd__',
     but module it contains are properly registered, and will be visible by all Modules methods.
 
@@ -435,12 +435,12 @@ class LayerList(Module):
 
     Examples
     ---------
-    >>> from tensorlayerx.nn import Module, LayerList, Dense
+    >>> from tensorlayerx.nn import Module, ModuleList, Linear
     >>> import tensorlayerx as tlx
-    >>> d1 = Dense(n_units=800, act=tlx.ReLU, in_channels=784, name='Dense1')
-    >>> d2 = Dense(n_units=800, act=tlx.ReLU, in_channels=800, name='Dense2')
-    >>> d3 = Dense(n_units=10, act=tlx.ReLU, in_channels=800, name='Dense3')
-    >>> layer_list = LayerList([d1, d2])
+    >>> d1 = Linear(out_features=800, act=tlx.ReLU, in_features=784, name='Linear1')
+    >>> d2 = Linear(out_features=800, act=tlx.ReLU, in_features=800, name='Linear2')
+    >>> d3 = Linear(out_features=10, act=tlx.ReLU, in_features=800, name='Linear3')
+    >>> layer_list = ModuleList([d1, d2])
     >>> # Inserts a given d2 before a given index in the list
     >>> layer_list.insert(1, d2)
     >>> layer_list.insert(2, d2)

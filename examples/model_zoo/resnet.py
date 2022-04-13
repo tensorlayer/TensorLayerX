@@ -15,7 +15,7 @@ import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.files import (maybe_download_and_extract)
 from tensorlayerx.nn import (BatchNorm, Conv2d, Linear, Elementwise, GlobalMeanPool2d, MaxPool2d)
-from tensorlayerx.nn import Module, SequentialLayer
+from tensorlayerx.nn import Module, Sequential
 
 __all__ = [
     'ResNet50',
@@ -165,7 +165,7 @@ class ResNet50_model(Module):
 
             if block_name == self.end_with:
                 break
-        return SequentialLayer(layer_list)
+        return Sequential(layer_list)
 
 
 def ResNet50(pretrained=False, end_with='fc1000', n_classes=1000):

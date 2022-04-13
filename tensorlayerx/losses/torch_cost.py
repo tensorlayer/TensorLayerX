@@ -365,7 +365,7 @@ def cross_entropy_seq_with_mask(logits, target_seqs, input_mask, return_details=
     ...         cell =tf.keras.layers.LSTMCell(units=embedding_size, dropout=0.1),
     ...         return_seq_2d = True,
     ...         name = 'dynamicrnn')(net)
-    >>> net = tl.layers.Dense(n_units=vocab_size, name="output")(net)
+    >>> net = tl.layers.Linear(out_features=vocab_size, name="output")(net)
     >>> model = tl.model.Model(inputs=ni, outputs=net)
     >>> input_seqs = np.random.randint(0, 10, size=(batch_size, 10), dtype=np.int64)
     >>> target_seqs = np.random.randint(0, 10, size=(batch_size, 10), dtype=np.int64)

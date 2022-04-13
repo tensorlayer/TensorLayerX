@@ -14,7 +14,7 @@ Layer list
 
    Module
    
-   SequentialLayer
+   Sequential
 
    Input
 
@@ -34,8 +34,8 @@ Layer list
    Conv1d
    Conv2d
    Conv3d
-   DeConv2d
-   DeConv3d
+   ConvTranspose2d
+   ConvTranspose3d
    DepthwiseConv2d
    SeparableConv1d
    SeparableConv2d
@@ -127,7 +127,7 @@ Module
 
 Sequential Layer
 ^^^^^^^^^^^^^^^^
-.. autoclass:: SequentialLayer
+.. autoclass:: Sequential
 
 .. -----------------------------------------------------------
 ..                        Input Layer
@@ -187,13 +187,13 @@ Conv3d
 Deconvolutions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-DeConv2d
+ConvTranspose2d
 """""""""""""""""""""
-.. autoclass:: DeConv2d
+.. autoclass:: ConvTranspose2d
 
-DeConv3d
+ConvTranspose3d
 """""""""""""""""""""
-.. autoclass:: DeConv3d
+.. autoclass:: ConvTranspose3d
 
 
 Deformable Convolutions

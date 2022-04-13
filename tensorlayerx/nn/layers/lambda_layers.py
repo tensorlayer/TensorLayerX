@@ -69,7 +69,7 @@ class Lambda(Module):
     >>>     tlx.nn.Linear(5, act=tlx.ReLU),
     >>>     tlx.nn.Linear(1)
     >>> ]
-    >>> perceptron = tlx.nn.SequentialLayer(layers)
+    >>> perceptron = tlx.nn.Sequential(layers)
     >>> # in order to compile keras model and get trainable_variables of the keras model
     >>> _ = perceptron(np.random.random([100, 5]).astype(np.float32))
     >>>

@@ -5,7 +5,7 @@ import os
 # os.environ['TL_BACKEND'] = 'mindspore'
 os.environ['TL_BACKEND'] = 'paddle'
 
-from tensorlayerx.nn import SequentialLayer
+from tensorlayerx.nn import Sequential
 from tensorlayerx.nn import Linear
 import tensorlayerx as tlx
 from tensorlayerx.dataflow import Dataset
@@ -14,7 +14,7 @@ layer_list = []
 layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=784, name='linear1'))
 layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=800, name='linear2'))
 layer_list.append(Linear(out_features=10, act=tlx.ReLU, in_features=800, name='linear3'))
-MLP = SequentialLayer(layer_list)
+MLP = Sequential(layer_list)
 
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
 

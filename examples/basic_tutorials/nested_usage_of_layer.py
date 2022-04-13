@@ -7,7 +7,7 @@ import time
 import numpy as np
 import tensorflow as tf
 
-from tensorlayerx.nn import Module, SequentialLayer
+from tensorlayerx.nn import Module, Sequential
 import tensorlayerx as tlx
 from tensorlayerx.nn import (Conv2d, Linear, Flatten, MaxPool2d, BatchNorm2d, Elementwise)
 from tensorlayerx.dataflow import Dataset, DataLoader
@@ -86,7 +86,7 @@ class CNN(Module):
             range_block = Block(in_channel)
             layers.append(range_block)
 
-        return SequentialLayer(layers)
+        return Sequential(layers)
 
 
 # get the network

@@ -14,7 +14,7 @@ from collections import OrderedDict
 
 _global_layer_name_dict = {}
 
-__all__ = ['Module', 'SequentialLayer', 'LayerList']
+__all__ = ['Module', 'Sequential', 'ModuleList']
 
 
 class Module(Layer):
@@ -306,10 +306,10 @@ class Module(Layer):
         self._sub_layers[child_name] = child
 
 
-class SequentialLayer(Module):
+class Sequential(Module):
 
     def __init__(self, *args):
-        super(SequentialLayer, self).__init__()
+        super(Sequential, self).__init__()
         if len(args) == 1:
             layers = args[0]
             if isinstance(layers, list):
@@ -366,10 +366,10 @@ class SequentialLayer(Module):
         return input_data
 
 
-class LayerList(Module):
+class ModuleList(Module):
 
     def __init__(self, args):
-        super(LayerList, self).__init__()
+        super(ModuleList, self).__init__()
         if args is not None:
             self.extend(args)
 

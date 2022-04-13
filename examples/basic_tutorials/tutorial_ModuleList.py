@@ -6,14 +6,14 @@ import os
 # os.environ['TL_BACKEND'] = 'mindspore'
 os.environ['TL_BACKEND'] = 'paddle'
 
-from tensorlayerx.nn import Module, LayerList, Linear
+from tensorlayerx.nn import Module, ModuleList, Linear
 import tensorlayerx as tlx
 
 d1 = Linear(out_features=800, act=tlx.ReLU, in_features=784, name='linear1')
 d2 = Linear(out_features=800, act=tlx.ReLU, in_features=800, name='linear2')
 d3 = Linear(out_features=10, act=tlx.ReLU, in_features=800, name='linear3')
 
-layer_list = LayerList([d1, d2])
+layer_list = ModuleList([d1, d2])
 # Inserts a given d2 before a given index in the list
 layer_list.insert(1, d2)
 layer_list.insert(2, d2)

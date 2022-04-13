@@ -12,7 +12,7 @@ import numpy as np
 import tensorlayerx as tlx
 from tensorlayerx.nn import Mish
 from tensorlayerx.nn import Conv2d, MaxPool2d, BatchNorm2d, ZeroPad2d, UpSampling2d, Concat, Elementwise
-from tensorlayerx.nn import Module, SequentialLayer
+from tensorlayerx.nn import Module, Sequential
 from tensorlayerx import logging
 
 __all__ = ['YOLOv4']
@@ -91,7 +91,7 @@ def residual_block_num(num, input_channel, filter_num1, filter_num2, activate_ty
     residual_list = []
     for i in range(num):
         residual_list.append(residual_block(input_channel, filter_num1, filter_num2, activate_type=activate_type))
-    return SequentialLayer(residual_list)
+    return Sequential(residual_list)
 
 
 class cspdarknet53(Module):

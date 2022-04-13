@@ -4,7 +4,7 @@
 import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
-from tensorlayerx.nn.core import LayerList
+from tensorlayerx.nn.core import ModuleList
 import numpy as np
 
 __all__ = [
@@ -362,8 +362,8 @@ class TransformerEncoder(Module):
 
     def __init__(self, encoder_layer, num_layers, norm=None):
         super(TransformerEncoder, self).__init__()
-        # self.encoder_layers = LayerList([copy.deepcopy(encoder_layer) for i in range(num_layers)])
-        self.encoder_layers = LayerList(
+        # self.encoder_layers = ModuleList([copy.deepcopy(encoder_layer) for i in range(num_layers)])
+        self.encoder_layers = ModuleList(
             [(encoder_layer if i == 0 else type(encoder_layer)(**encoder_layer._config)) for i in range(num_layers)]
         )
         self.num_layers = num_layers
@@ -418,7 +418,7 @@ class TransformerDecoder(Module):
 
     def __init__(self, decoder_layer, num_layers, norm=None):
         super(TransformerDecoder, self).__init__()
-        self.decoder_layers = LayerList(
+        self.decoder_layers = ModuleList(
             [(decoder_layer if i == 0 else type(decoder_layer)(**decoder_layer._config)) for i in range(num_layers)]
         )
         self.num_layers = num_layers

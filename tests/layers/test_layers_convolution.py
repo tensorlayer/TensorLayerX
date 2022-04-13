@@ -27,7 +27,7 @@ class Layer_Convolution_1D_Test(CustomTestCase):
         self.conv1dlayer2 = tlx.nn.Conv1d(in_channels=32, out_channels=32, kernel_size=5, stride=2)
         self.n2 = self.conv1dlayer2(self.n1)
 
-        self.dconv1dlayer1 = tlx.nn.DeConv1d(
+        self.dconv1dlayer1 = tlx.nn.ConvTranspose1d(
             out_channels=64, in_channels=32, kernel_size=5, name='deconv1dlayer'
         )
         self.n3 = self.dconv1dlayer1(self.n2)
@@ -100,7 +100,7 @@ class Layer_Convolution_2D_Test(CustomTestCase):
         )
         self.n3 = self.conv2dlayer3(self.n2)
 
-        self.dconv2dlayer = tlx.nn.DeConv2d(
+        self.dconv2dlayer = tlx.nn.ConvTranspose2d(
             out_channels=32, in_channels=32, kernel_size=(5, 5), stride=(2, 2), name='deconv2dlayer'
         )
         self.n4 = self.dconv2dlayer(self.n3)
@@ -192,7 +192,7 @@ class Layer_Convolution_3D_Test(CustomTestCase):
         )
         self.n1 = self.conv3dlayer1(self.input_layer)
 
-        self.deconv3dlayer = tlx.nn.DeConv3d(
+        self.deconv3dlayer = tlx.nn.ConvTranspose3d(
             out_channels=128, in_channels=32, kernel_size=(2, 2, 2), stride=(2, 2, 2)
         )
         self.n2 = self.deconv3dlayer(self.n1)
