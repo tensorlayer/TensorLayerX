@@ -91,7 +91,7 @@ n_epoch = 50
 batch_size = 500
 print_freq = 1
 train_weights = MLP.trainable_weights
-optimizer = tlx.optimizers.Adam(learning_rate=0.0001)
+optimizer = tlx.optimizers.Adam(lr=0.0001)
 train_batch = 0
 test_batch = 0
 

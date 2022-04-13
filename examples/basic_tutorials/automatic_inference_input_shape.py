@@ -62,7 +62,7 @@ n_epoch = 50
 batch_size = 500
 print_freq = 5
 train_weights = MLP.trainable_weights
-optimizer = tlx.optimizers.Adam(learning_rate=0.0001)
+optimizer = tlx.optimizers.Adam(0.0001)
 train_dataset = mnistdataset(data=X_train, label=y_train)
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_dataset = mnistdataset(data=X_val, label=y_val)

@@ -261,14 +261,14 @@ def relu6(x):
 
 class LeakyReLU(object):
 
-    def __init__(self, alpha=0.2):
-        self.alpha = alpha
+    def __init__(self, negative_slope=0.2):
+        self.negative_slope = negative_slope
 
     def __call__(self, x):
-        return tf.nn.leaky_relu(x, alpha=self.alpha)
+        return tf.nn.leaky_relu(x, alpha=self.negative_slope)
 
 
-def leaky_relu(x, alpha=0.2):
+def leaky_relu(x, negative_slope=0.2):
     """
     Compute the Leaky ReLU activation function.
 
@@ -283,7 +283,7 @@ def leaky_relu(x, alpha=0.2):
         The activation value.
     """
 
-    return tf.nn.leaky_relu(x, alpha=alpha)
+    return tf.nn.leaky_relu(x, alpha=negative_slope)
 
 
 class Softplus(object):
@@ -332,14 +332,14 @@ def sigmoid(x):
 
 class Softmax(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, axis = -1):
+        self.axis = axis
 
     def __call__(self, x):
-        return tf.nn.softmax(x)
+        return tf.nn.softmax(x, axis = self.axis)
 
 
-def softmax(logits, axis=None):
+def softmax(logits, axis=-1):
     """
     Computes softmax activations.
 
@@ -2755,3 +2755,22 @@ class QuanConvBn(object):
             conv_fold = tf.nn.bias_add(conv_fold, _bias_fold, name='bn_bias_add')
 
         return conv_fold
+
+class PReLU(object):
+
+    def __init__(self, data_format):
+
+        self.data_format = data_format
+
+    def __call__(self, input, weight):
+
+        pos = tf.nn.relu(input)
+        neg = -weight * tf.nn.relu(input)
+        return pos + neg
+
+
+def prelu(input, weight, data_format):
+
+    pos = tf.nn.relu(input)
+    neg = -weight * tf.nn.relu(input)
+    return pos + neg

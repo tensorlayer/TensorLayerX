@@ -3,10 +3,10 @@
 
 # The same set of code can switch the backend with one line
 import os
-os.environ['TL_BACKEND'] = 'tensorflow'
+# os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
-# os.environ['TL_BACKEND'] = 'torch'
+os.environ['TL_BACKEND'] = 'torch'
 
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module

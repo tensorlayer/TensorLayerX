@@ -12,27 +12,26 @@ __all__ = [
 
 
 class PRelu(Module):
-    """
-    The :class:`PRelu` class is Parametric Rectified Linear layer.
-    It follows f(x) = alpha * x for x < 0, f(x) = x for x >= 0,
-    where alpha is a learned array with the same shape as x.
+    """Applies the element-wise function:
+
+    .. math::
+        \text{PReLU}(x) = \max(0,x) + a * \min(0,x)
 
     Parameters
     ----------
-    channel_shared : boolean
-        If True, single weight is shared by all channels.
-    in_channels: int
-        The number of channels of the previous layer.
-        If None, it will be automatically detected when the layer is forwarded for the first time.
-    a_init : initializer or str
-        The initializer for initializing the alpha(s).
+    num_parameters : int
+        number of `a` to learn.  1, or the number of channels at input. Default: 1
+    init : float
+        the initial value of `a`. Default: 0.25
+    data_format : str
+        Data format that specifies the layout of input. It may be 'channels_last' or 'channels_first'. Default is 'channels_last'.
     name : None or str
         A unique layer name.
 
     Examples
     -----------
-    >>> inputs = tlx.nn.Input([10, 5])
-    >>> prelulayer = tlx.nn.PRelu(channel_shared=True, in_channels=5)(inputs)
+    >>> inputs = tlx.nn.Input([10, 5, 10])
+    >>> prelulayer = tlx.nn.PRelu(num_parameters=5, init=0.25, data_format='channels_first')(inputs)
 
     References
     -----------
@@ -42,58 +41,40 @@ class PRelu(Module):
     """
 
     def __init__(
-        self, channel_shared=False, in_channels=None, a_init='truncated_normal', name=None, data_format='channels_last',
-        dim=2
+        self, num_parameters = 1, init=0.25,  data_format='channels_last', name=None,
     ):
 
         super(PRelu, self).__init__(name)
-        self.channel_shared = channel_shared
-        self.in_channels = in_channels
-        self.a_init = self.str_to_init(a_init)
+        self.num_parameters = num_parameters
+        self.init = init
         self.data_format = data_format
-        self.dim = dim
 
-        if self.channel_shared:
-            self.build((None, ))
-            self._built = True
-        elif self.in_channels is not None:
-            self.build((None, self.in_channels))
-            self._built = True
-
-        logging.info("PRelu %s: channel_shared: %s" % (self.name, self.channel_shared))
+        logging.info("PRelu %s: num_parameters: %s" % (self.name, self.num_parameters))
 
     def __repr__(self):
         s = ('{classname}(')
-        s += 'channel_shared={channel_shared},'
-        s += 'in_channels={in_channels},'
+        s += 'num_parameters={num_parameters},'
+        s += 'init={init},'
         s += 'name={name}'
         s += ')'
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape):
-        if self.in_channels is None:
-            if self.data_format == 'channels_last':
-                self.in_channels = inputs_shape[-1]
-            else:
-                self.in_channels = inputs_shape[1]
-
-        if self.channel_shared:
-            w_shape = (1, )
-        elif self.data_format == 'channels_last':
-            w_shape = (self.in_channels, )
+        dim = len(inputs_shape)
+        if self.data_format == 'channels_last':
+            w_shape = (self.num_parameters, )
         elif self.data_format == 'channels_first':
-            if self.dim == 2:
-                w_shape = (1, self.in_channels, 1, 1)
-            elif self.dim == 1:
-                w_shape = (1, self.in_channels, 1)
-            elif self.dim == 3:
-                w_shape = (1, self.in_channels, 1, 1, 1)
-            else:
-                raise Exception("Dim should be equal to 1, 2 or 3")
-        print(inputs_shape)
-        self.alpha_var = self._get_weights("alpha", shape=w_shape, init=self.a_init)
-        self.relu = tlx.ops.ReLU()
-        self.sigmoid = tlx.ops.Sigmoid()
+            if dim == 4:
+                w_shape = (1, self.num_parameters, 1, 1)
+            elif dim == 3:
+                w_shape = (1, self.num_parameters, 1)
+            elif dim == 5:
+                w_shape = (1, self.num_parameters, 1, 1, 1)
+            elif dim < 3:
+                w_shape = (self.num_parameters, )
+
+        self.alpha_var = self._get_weights("alpha", shape=w_shape, init=tlx.initializers.constant(value=self.init))
+        self.prelu = tlx.ops.PReLU(data_format = self.data_format)
 
     def forward(self, inputs):
         if self._forward_state == False:
@@ -102,10 +83,8 @@ class PRelu(Module):
                 self._built = True
             self._forward_state = True
 
-        pos = self.relu(inputs)
-        self.alpha_var_constrained = self.sigmoid(self.alpha_var)
-        neg = -self.alpha_var_constrained * self.relu(-inputs)
-        return pos + neg
+        output = self.prelu(inputs, self.alpha_var)
+        return output
 
 
 class PRelu6(Module):
@@ -380,18 +359,18 @@ class Ramp(Module):
 
 
 class ELU(Module):
-    """This function is a modified version of ReLU. It is continuous and differentiable at all points.
+    """Applies the element-wise function:
 
-    The function return the following results:
-      - When x < 0:  ``f(x) = alpha * (exp(x) - 1)``.
-      - When x >= 0:  ``f(x) = x``.
+    .. math::
+        \text{ELU}(x) = \begin{cases}
+        x, & \text{ if } x > 0\\
+        \alpha * (\exp(x) - 1), & \text{ if } x \leq 0
+        \end{cases}
 
     Parameters
     ----------
-    x : Tensor
-        Support input type ``float``, ``double``, ``int32``, ``int64``, ``uint8``, ``int16``, or ``int8``.
     alpha : float
-        Scale for the negative factor.
+        the :math:`\alpha` value for the ELU formulation. Default: 1.0
     name : str
         The function name (optional).
 
@@ -418,13 +397,12 @@ class ELU(Module):
 
 
 class Softmax(Module):
-    """Computes softmax activations.
-    softmax = tf.exp(logits) / tf.reduce_sum(tf.exp(logits), axis)
+    """Applies the Softmax function to an n-dimensional input Tensor rescaling them so that the elements of the n-dimensional output Tensor lie in the range [0,1] and sum to 1.
 
     Parameters
     ----------
-    x : Tensor
-        Support input type ``float``, ``double``, ``int32``, ``int64``, ``uint8``, ``int16``, or ``int8``.
+    axis : int
+         A dimension along which Softmax will be computed
 
     Examples
     --------
@@ -438,10 +416,10 @@ class Softmax(Module):
 
     """
 
-    def __init__(self):
+    def __init__(self, axis = -1):
         super(Softmax, self).__init__()
         self._built = True
-        self._softmax = tlx.ops.Softmax()
+        self._softmax = tlx.ops.Softmax(axis)
 
     def forward(self, x):
         return self._softmax(x)
@@ -478,7 +456,7 @@ class Sigmoid(Module):
 
 
 class Tanh(Module):
-    """This function is Tanh. Computes hyperbolic tangent of x element-wise.
+    """Applies the Hyperbolic Tangent (Tanh) function element-wise.
 
     Parameters
     ----------
@@ -604,21 +582,15 @@ class ReLU(Module):
 
 
 class LeakyReLU(Module):
-    """
+    """Applies the element-wise function:
 
-    This function is a modified version of ReLU, introducing a nonzero gradient for negative input. Introduced by the paper:
-    `Rectifier Nonlinearities Improve Neural Network Acoustic Models [A. L. Maas et al., 2013] <https://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf>`__
-
-    The function return the following results:
-      - When x < 0: ``f(x) = alpha_low * x``.
-      - When x >= 0: ``f(x) = x``.
+    .. math::
+        \text{LeakyReLU}(x) = \max(0, x) + \text{negative\_slope} * \min(0, x)
 
     Parameters
     ----------
-    x : Tensor
-        Support input type ``float``, ``double``, ``int32``, ``int64``, ``uint8``, ``int16``, or ``int8``.
-    alpha : float
-        Slope.
+    negative_slope : float
+        Controls the angle of the negative slope. Default: 1e-2
     name : str
         The function name (optional).
 
@@ -638,11 +610,11 @@ class LeakyReLU(Module):
 
     """
 
-    def __init__(self, alpha=0.2):
+    def __init__(self, negative_slope=0.01):
         super(LeakyReLU, self).__init__()
         self._built = True
-        self.alpha = alpha
-        self._leakyrelu = tlx.ops.LeakyReLU(alpha=alpha)
+        self.negative_slope = negative_slope
+        self._leakyrelu = tlx.ops.LeakyReLU(negative_slope=self.negative_slope)
 
     def forward(self, x):
         return self._leakyrelu(x)
@@ -830,7 +802,10 @@ class HardTanh(Module):
 
 
 class Mish(Module):
-    """Mish activation function.
+    """Applies the Mish function, element-wise. Mish: A Self Regularized Non-Monotonic Neural Activation Function.
+
+        .. math::
+        \text{Mish}(x) = x * \text{Tanh}(\text{Softplus}(x))
 
         Reference: [Mish: A Self Regularized Non-Monotonic Neural Activation Function .Diganta Misra, 2019]<https://arxiv.org/abs/1908.08681>
 

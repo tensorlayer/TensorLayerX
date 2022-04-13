@@ -271,15 +271,15 @@ def relu6(x):
 
 class LeakyReLU(Cell):
 
-    def __init__(self, alpha=0.2):
+    def __init__(self, negative_slope=0.01):
         super(LeakyReLU, self).__init__()
-        self.leakyrelu = ms.nn.LeakyReLU(alpha=alpha)
+        self.leakyrelu = ms.nn.LeakyReLU(alpha=negative_slope)
 
     def construct(self, x):
         return self.leakyrelu(x)
 
 
-def leaky_relu(x, alpha=0.2):
+def leaky_relu(x, negative_slope=0.2):
     """
     Compute the Leaky ReLU activation function.
 
@@ -294,9 +294,9 @@ def leaky_relu(x, alpha=0.2):
         The activation value.
     """
 
-    leaky_relu = LeakyReLU(alpha=alpha)
+    leaky_relu = ms.nn.LeakyReLU(alpha=negative_slope)
     output = leaky_relu(x)
-    return leaky_relu
+    return output
 
 
 class Softplus(Cell):
@@ -348,15 +348,15 @@ def sigmoid(x):
 
 class Softmax(Cell):
 
-    def __init__(self):
+    def __init__(self, axis = -1):
         super(Softmax, self).__init__()
-        self.softmax = P.Softmax()
+        self.softmax = P.Softmax(axis)
 
     def construct(self, x):
         return self.softmax(x)
 
 
-def softmax(logits, axis=None):
+def softmax(logits, axis=-1):
     """
     Computes softmax activations.
 
@@ -2392,3 +2392,22 @@ class QuanConvBn(Cell):
 
     def construct(self, inputs):
         raise NotImplementedError
+
+class PReLU(Cell):
+
+    def __init__(self, data_format):
+        super(PReLU, self).__init__()
+        self.data_format = data_format
+
+    def __call__(self, input, weight):
+
+        prelu = P.PReLU()
+        v = prelu(input, F.cast(weight, input.dtype))
+        return v
+
+
+def prelu(input, weight, data_format):
+
+    prelu = P.PReLU()
+    v = prelu(input, F.cast(weight, input.dtype))
+    return v

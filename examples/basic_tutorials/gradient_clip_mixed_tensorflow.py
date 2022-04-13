@@ -54,7 +54,7 @@ print_freq = 5
 train_weights = MLP.trainable_weights
 train_dataset = mnistdataset(data=X_train, label=y_train)
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-optimizer = tlx.optimizers.Adam(learning_rate=0.0001, weight_decay= 0.001, grad_clip=tlx.ops.ClipGradByValue())
+optimizer = tlx.optimizers.Adam(lr=0.0001, weight_decay= 0.001, grad_clip=tlx.ops.ClipGradByValue())
 
 net_with_loss = tlx.model.WithLoss(backbone=MLP, loss_fn=tlx.losses.softmax_cross_entropy_with_logits)
 net_with_grad_train = tlx.model.TrainOneStep(net_with_loss, optimizer, train_weights)

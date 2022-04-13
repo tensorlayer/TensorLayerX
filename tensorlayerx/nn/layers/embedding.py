@@ -98,10 +98,10 @@ class Word2vecEmbedding(Module):
 
     Parameters
     ----------
-    vocabulary_size : int
-        The size of vocabulary, number of words
-    embedding_size : int
-        The number of embedding dimensions
+    num_embeddings : int
+        size of the dictionary of embeddings.
+    embedding_dim  : int
+         the size of each embedding vector.
     num_sampled : int
         The number of negative examples for NCE loss
     activate_nce_loss : boolean
@@ -140,22 +140,22 @@ class Word2vecEmbedding(Module):
 
     >>> import tensorlayerx as tlx
     >>> batch_size = 8
-    >>> embedding_size = 50
+    >>> embedding_dim = 50
     >>> inputs = tlx.nn.Input([batch_size], dtype=tlx.int32)
     >>> labels = tlx.nn.Input([batch_size, 1], dtype=tlx.int32)
     >>> emb_net = tlx.nn.Word2vecEmbedding(
-    >>>     vocabulary_size=10000,
-    >>>     embedding_size=embedding_size,
+    >>>     num_embeddings=10000,
+    >>>     embedding_dim=embedding_dim,
     >>>     num_sampled=100,
     >>>     activate_nce_loss=True, # the nce loss is activated
     >>>     nce_loss_args={},
     >>>     E_init=tlx.initializers.random_uniform(minval=-1.0, maxval=1.0),
-    >>>     nce_W_init=tlx.initializers.truncated_normal(stddev=float(1.0 / np.sqrt(embedding_size))),
+    >>>     nce_W_init=tlx.initializers.truncated_normal(stddev=float(1.0 / np.sqrt(embedding_dim))),
     >>>     nce_b_init=tlx.initializers.constant(value=0.0),
     >>>     name='word2vec_layer',
     >>> )
     >>> print(emb_net)
-    Word2vecEmbedding(vocabulary_size=10000, embedding_size=50, num_sampled=100, activate_nce_loss=True, nce_loss_args={})
+    Word2vecEmbedding(num_embeddings=10000, embedding_dim=50, num_sampled=100, activate_nce_loss=True, nce_loss_args={})
     >>> embed_tensor = emb_net(inputs, use_nce_loss=False) # the nce loss is turned off and no need to provide labels
     >>> embed_tensor = emb_net([inputs, labels], use_nce_loss=False) # the nce loss is turned off and the labels will be ignored
     >>> embed_tensor, embed_nce_loss = emb_net([inputs, labels]) # the nce loss is calculated
@@ -171,8 +171,8 @@ class Word2vecEmbedding(Module):
 
     def __init__(
         self,
-        vocabulary_size,
-        embedding_size,
+        num_embeddings,
+        embedding_dim,
         num_sampled=64,
         activate_nce_loss=True,
         nce_loss_args=None,
@@ -183,8 +183,8 @@ class Word2vecEmbedding(Module):
     ):
 
         super(Word2vecEmbedding, self).__init__(name)
-        self.vocabulary_size = vocabulary_size
-        self.embedding_size = embedding_size
+        self.num_embeddings = num_embeddings
+        self.embedding_dim = embedding_dim
         self.num_sampled = num_sampled
         self.E_init = self.str_to_init(E_init)
         self.activate_nce_loss = activate_nce_loss
@@ -198,12 +198,12 @@ class Word2vecEmbedding(Module):
             self.build(tuple())
             self._built = True
 
-        logging.info("Word2vecEmbedding %s: (%d, %d)" % (self.name, self.vocabulary_size, self.embedding_size))
+        logging.info("Word2vecEmbedding %s: (%d, %d)" % (self.name, self.num_embeddings, self.embedding_dim))
 
     def __repr__(self):
         s = ('{classname}(')
-        s += 'vocabulary_size={vocabulary_size}'
-        s += ', embedding_size={embedding_size}'
+        s += 'num_embeddings={num_embeddings}'
+        s += ', embedding_dim={embedding_dim}'
         s += ', num_sampled={num_sampled}'
         s += ', activate_nce_loss={activate_nce_loss}'
         if self.activate_nce_loss:
@@ -224,11 +224,11 @@ class Word2vecEmbedding(Module):
         # instead of transferring a word id to one-hot-format vector and then
         # multiply by the embedding matrix.
         # embed is the outputs of the hidden layer (embedding layer), it is a
-        # row vector with 'embedding_size' values.
+        # row vector with 'embedding_dim' values.
 
         self.embeddings = self._get_weights(
             "embeddings",
-            shape=(self.vocabulary_size, self.embedding_size),
+            shape=(self.num_embeddings, self.embedding_dim),
             init=self.E_init,
         )
 
@@ -238,13 +238,13 @@ class Word2vecEmbedding(Module):
             # Construct the variables for the NCE loss (i.e. negative sampling)
             self.nce_weights = self._get_weights(
                 "nce_weights",
-                shape=(self.vocabulary_size, self.embedding_size),
+                shape=(self.num_embeddings, self.embedding_dim),
                 init=self.nce_W_init,
             )
 
             self.nce_biases = self._get_weights(
                 "nce_biases",
-                shape=(self.vocabulary_size, ),
+                shape=(self.num_embeddings, ),
                 init=self.nce_b_init,
             )
 
@@ -290,7 +290,7 @@ class Word2vecEmbedding(Module):
             nce_cost = tlx.ops.reduce_mean(
                 input_tensor=self.nce_loss(
                     weights=self.nce_weights, biases=self.nce_biases, inputs=outputs, labels=inputs[1],
-                    num_sampled=self.num_sampled, num_classes=self.vocabulary_size
+                    num_sampled=self.num_sampled, num_classes=self.num_embeddings
                 )
             )
 
@@ -301,18 +301,17 @@ class Word2vecEmbedding(Module):
 
 class Embedding(Module):
     """
-    The :class:`Embedding` class is a look-up table for word embedding.
+    A simple lookup table that stores embeddings of a fixed dictionary and size.
 
-    Word content are accessed using integer indexes, then the output is the embedded word vector.
-    To train a word embedding matrix, you can used :class:`Word2vecEmbedding`.
-    If you have a pre-trained matrix, you can assign the parameters into it.
+    This module is often used to store word embeddings and retrieve them using indices.
+    The input to the module is a list of indices, and the output is the corresponding word embeddings.
 
     Parameters
     ----------
-    vocabulary_size : int
-        The size of vocabulary, number of words.
-    embedding_size : int
-        The number of embedding dimensions.
+    num_embeddings : int
+        size of the dictionary of embeddings.
+    embedding_dim  : int
+         the size of each embedding vector.
     E_init : initializer or str
         The initializer for the embedding matrix.
     E_init_args : dictionary
@@ -323,15 +322,15 @@ class Embedding(Module):
     Attributes
     ----------
     outputs : tensor
-        The embedding layer output is a 3D tensor in the shape: (batch_size, num_steps(num_words), embedding_size).
+        The embedding layer output is a 3D tensor in the shape: (batch_size, num_steps(num_words), embedding_dim).
 
     Examples
     --------
     >>> import tensorlayerx as tlx
     >>> input = tlx.nn.Input([8, 100], dtype=tlx.int32)
-    >>> embed = tlx.nn.Embedding(vocabulary_size=1000, embedding_size=50, name='embed')
+    >>> embed = tlx.nn.Embedding(num_embeddings=1000, embedding_dim=50, name='embed')
     >>> print(embed)
-    Embedding(vocabulary_size=1000, embedding_size=50)
+    Embedding(num_embeddings=1000, embedding_dim=50)
     >>> tensor = embed(input)
     >>> print(tensor)
     Tensor([...], shape=(8, 100, 50), dtype=float32)
@@ -340,26 +339,26 @@ class Embedding(Module):
 
     def __init__(
         self,
-        vocabulary_size,
-        embedding_size,
+        num_embeddings,
+        embedding_dim,
         E_init='random_uniform',
         name=None,  #'embedding',
     ):
         super(Embedding, self).__init__(name)
-        self.vocabulary_size = vocabulary_size
-        self.embedding_size = embedding_size
+        self.num_embeddings = num_embeddings
+        self.embedding_dim = embedding_dim
         self.E_init = self.str_to_init(E_init)
 
         if not self._built:
             self.build(tuple())
             self._built = True
 
-        logging.info("Embedding %s: (%d, %d)" % (self.name, self.vocabulary_size, self.embedding_size))
+        logging.info("Embedding %s: (%d, %d)" % (self.name, self.num_embeddings, self.embedding_dim))
 
     def __repr__(self):
         s = ('{classname}(')
-        s += 'vocabulary_size={vocabulary_size}'
-        s += ', embedding_size={embedding_size}'
+        s += 'num_embeddings={num_embeddings}'
+        s += ', embedding_dim={embedding_dim}'
         s += ')'
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
@@ -373,7 +372,7 @@ class Embedding(Module):
 
         self.embeddings = self._get_weights(
             "embeddings",
-            shape=(self.vocabulary_size, self.embedding_size),
+            shape=(self.num_embeddings, self.embedding_dim),
             init=self.E_init,
         )
         self.embedding_lookup = tlx.EmbeddingLookup()
@@ -395,10 +394,10 @@ class AverageEmbedding(Module):
 
     Parameters
     ----------
-    vocabulary_size : int
-        The size of vocabulary.
-    embedding_size : int
-        The dimension of the embedding vectors.
+    num_embeddings : int
+        size of the dictionary of embeddings.
+    embedding_dim  : int
+         the size of each embedding vector.
     pad_value : int
         The scalar padding value used in inputs, 0 as default.
     E_init : initializer or str
@@ -409,7 +408,7 @@ class AverageEmbedding(Module):
     Attributes
     ----------
     outputs : tensor
-        The embedding layer output is a 2D tensor in the shape: (batch_size, embedding_size).
+        The embedding layer output is a 2D tensor in the shape: (batch_size, embedding_dim).
 
     References
     ----------
@@ -422,9 +421,9 @@ class AverageEmbedding(Module):
     >>> batch_size = 8
     >>> length = 5
     >>> input = tlx.nn.Input([batch_size, length], dtype=tlx.int32)
-    >>> avgembed = tlx.nn.AverageEmbedding(vocabulary_size=1000, embedding_size=50, name='avg')
+    >>> avgembed = tlx.nn.AverageEmbedding(num_embeddings=1000, embedding_dim=50, name='avg')
     >>> print(avgembed)
-    AverageEmbedding(vocabulary_size=1000, embedding_size=50, pad_value=0)
+    AverageEmbedding(num_embeddings=1000, embedding_dim=50, pad_value=0)
     >>> tensor = avgembed(input)
     >>> print(tensor)
     Tensor([...], shape=(8, 50), dtype=float32)
@@ -433,16 +432,16 @@ class AverageEmbedding(Module):
 
     def __init__(
         self,
-        vocabulary_size,
-        embedding_size,
+        num_embeddings,
+        embedding_dim,
         pad_value=0,
         E_init='random_uniform',
         name=None,  # 'average_embedding',
     ):
 
         super(AverageEmbedding, self).__init__(name)
-        self.vocabulary_size = vocabulary_size
-        self.embedding_size = embedding_size
+        self.num_embeddings = num_embeddings
+        self.embedding_dim = embedding_dim
         self.pad_value = pad_value
         self.E_init = self.str_to_init(E_init)
 
@@ -450,12 +449,12 @@ class AverageEmbedding(Module):
             self.build(tuple())
             self._built = True
 
-        logging.info("AverageEmbedding %s: (%d, %d)" % (self.name, self.vocabulary_size, self.embedding_size))
+        logging.info("AverageEmbedding %s: (%d, %d)" % (self.name, self.num_embeddings, self.embedding_dim))
 
     def __repr__(self):
         s = ('{classname}(')
-        s += 'vocabulary_size={vocabulary_size}'
-        s += ', embedding_size={embedding_size}'
+        s += 'num_embeddings={num_embeddings}'
+        s += ', embedding_dim={embedding_dim}'
         s += ', pad_value={pad_value}'
         s += ')'
         return s.format(classname=self.__class__.__name__, **self.__dict__)
@@ -472,7 +471,7 @@ class AverageEmbedding(Module):
 
         self.embeddings = self._get_weights(
             "embeddings",
-            shape=(self.vocabulary_size, self.embedding_size),
+            shape=(self.num_embeddings, self.embedding_dim),
             init=self.E_init,
         )
         self.embedding_lookup = tlx.EmbeddingLookup()
@@ -499,7 +498,6 @@ class AverageEmbedding(Module):
 
         # Count number of non-padding words in each sentence
         sentence_lengths = self.count_nonzero(masks, axis=1)
-        print(masks, sentence_lengths)
         sentence_embeddings = tlx.ops.divide(
             sum_word_embeddings,
             sentence_lengths + 1e-8,  # Add epsilon to avoid dividing by 0

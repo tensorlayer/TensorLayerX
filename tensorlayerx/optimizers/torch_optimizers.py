@@ -11,15 +11,15 @@ class Adadelta(object):
 
     def __init__(
         self,
-        learning_rate=0.001,
+        lr=0.001,
         rho=0.95,
-        epsilon=1e-10,
+        eps=1e-10,
         weight_decay=0.0,
         grad_clip=None,
     ):
-        self.learn_rate = learning_rate
+        self.learn_rate = lr
         self.rho = rho
-        self.epsilon = epsilon
+        self.eps = eps
         self.init_optim = False
         self.weight_decay = weight_decay
         self.grad_clip = grad_clip
@@ -34,7 +34,7 @@ class Adadelta(object):
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
             self.optimizer_adadelta = optimizer.Adadelta(
-                params=weights, lr=self.learn_rate, rho=self.rho, eps=self.epsilon, weight_decay=self.weight_decay
+                params=weights, lr=self.learn_rate, rho=self.rho, eps=self.eps, weight_decay=self.weight_decay
             )
             self.init_optim = True
         self.optimizer_adadelta.zero_grad()
@@ -53,15 +53,15 @@ class Adagrad(object):
 
     def __init__(
         self,
-        learning_rate=0.001,
+        lr=0.001,
         initial_accumulator_value=0.1,
-        epsilon=1e-10,
+        eps=1e-10,
         weight_decay=0.0,
         grad_clip=None,
     ):
-        self.learn_rate = learning_rate
+        self.learn_rate = lr
         self.initial_accumulator_value = initial_accumulator_value
-        self.epsilon = epsilon
+        self.eps = eps
         self.init_optim = False
         self.weight_decay = weight_decay
         self.grad_clip = grad_clip
@@ -96,17 +96,17 @@ class Adam(object):
 
     def __init__(
         self,
-        learning_rate=0.001,
+        lr=0.001,
         beta_1=0.9,
         beta_2=0.999,
-        epsilon=1e-8,
+        eps=1e-8,
         weight_decay=0.0,
         grad_clip=None,
     ):
-        self.learn_rate = learning_rate
+        self.learn_rate = lr
         self.beta_1 = beta_1
         self.beta_2 = beta_2
-        self.epsilon = epsilon
+        self.eps = eps
         self.init_optim = False
         self.weight_decay = weight_decay
         self.grad_clip = grad_clip
@@ -121,7 +121,7 @@ class Adam(object):
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
             self.optimizer_adam = optimizer.Adam(
-                params=weights, lr=self.learn_rate, betas=(self.beta_1, self.beta_2), eps=self.epsilon,
+                params=weights, lr=self.learn_rate, betas=(self.beta_1, self.beta_2), eps=self.eps,
                 weight_decay=self.weight_decay
             )
             self.init_optim = True
@@ -141,17 +141,17 @@ class Adamax(object):
 
     def __init__(
         self,
-        learning_rate=0.001,
+        lr=0.001,
         beta_1=0.9,
         beta_2=0.999,
-        epsilon=1e-8,
+        eps=1e-8,
         weight_decay=0.0,
         grad_clip=None,
     ):
-        self.learning_rate = learning_rate
+        self.lr = lr
         self.beta_1 = beta_1
         self.beta_2 = beta_2
-        self.epsilon = epsilon
+        self.eps = eps
         self.init_optim = False
         self.weight_decay = weight_decay
         self.grad_clip = grad_clip
@@ -166,7 +166,7 @@ class Adamax(object):
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
             self.optimizer_adamax = optimizer.Adamax(
-                params=weights, lr=self.learning_rate, betas=(self.beta_1, self.beta_2), eps=self.epsilon,
+                params=weights, lr=self.lr, betas=(self.beta_1, self.beta_2), eps=self.eps,
                 weight_decay=self.weight_decay
             )
             self.init_optim = True
@@ -210,18 +210,18 @@ class RMSprop(object):
 
     def __init__(
         self,
-        learning_rate=0.001,
+        lr=0.001,
         rho=0.99,
         momentum=0.0,
-        epsilon=1e-08,
+        eps=1e-08,
         centered=False,
         weight_decay=0.0,
         grad_clip=None,
     ):
-        self.learn_rate = learning_rate
+        self.learn_rate = lr
         self.rho = rho
         self.momentum = momentum
-        self.epsilon = epsilon
+        self.eps = eps
         self.centered = centered
         self.init_optim = False
         self.weight_decay = weight_decay
@@ -237,7 +237,7 @@ class RMSprop(object):
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
             self.optimizer_rmsprop = optimizer.RMSprop(
-                params=weights, lr=self.learn_rate, alpha=self.rho, eps=self.epsilon, momentum=self.momentum,
+                params=weights, lr=self.learn_rate, alpha=self.rho, eps=self.eps, momentum=self.momentum,
                 centered=self.centered, weight_decay=self.weight_decay
             )
             self.init_optim = True
@@ -257,12 +257,12 @@ class SGD(object):
 
     def __init__(
         self,
-        learning_rate=0.001,
+        lr=0.001,
         momentum=0,
         weight_decay=0.0,
         grad_clip=None,
     ):
-        self.learn_rate = learning_rate
+        self.learn_rate = lr
         self.momentum = momentum
         self.init_optim = False
         self.weight_decay = weight_decay
@@ -297,12 +297,12 @@ class Momentum(object):
 
     def __init__(
         self,
-        learning_rate=0.001,
+        lr=0.001,
         momentum=0,
         weight_decay=0.0,
         grad_clip=None,
     ):
-        self.learn_rate = learning_rate
+        self.learn_rate = lr
         self.momentum = momentum
         self.init_optim = False
         self.weight_decay = weight_decay

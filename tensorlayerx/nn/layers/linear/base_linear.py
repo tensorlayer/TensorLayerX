@@ -11,7 +11,7 @@ __all__ = [
 
 
 class Linear(Module):
-    """The :class:`Linear` class is a fully connected layer.
+    """Applies a linear transformation to the incoming data: :math:`y = xA^T + b`
 
     Parameters
     ----------

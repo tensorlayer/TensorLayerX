@@ -12,8 +12,8 @@ __all__ = [
 
 class Dropout(Module):
     """
-    The :class:`Dropout` class is a noise layer which randomly set some
-    activations to zero according to a probability.
+    During training, randomly zeroes some of the elements of the input tensor with probability p using samples from a Bernoulli distribution.
+    Each channel will be zeroed out independently on every forward call.
 
     Parameters
     ----------

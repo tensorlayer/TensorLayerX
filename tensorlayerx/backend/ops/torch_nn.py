@@ -258,14 +258,14 @@ def relu6(x):
 
 class LeakyReLU(object):
 
-    def __init__(self, alpha=0.2):
-        self.alpha = alpha
+    def __init__(self, negative_slope=0.01):
+        self.negative_slope = negative_slope
 
     def __call__(self, x):
-        return F.leaky_relu(x, negative_slope=self.alpha)
+        return F.leaky_relu(x, negative_slope=self.negative_slope)
 
 
-def leaky_relu(x, alpha=0.2):
+def leaky_relu(x, negative_slope=0.01):
     """
     Compute the Leaky ReLU activation function.
 
@@ -280,7 +280,7 @@ def leaky_relu(x, alpha=0.2):
         The activation value.
     """
 
-    return F.leaky_relu(x, negative_slope=alpha)
+    return F.leaky_relu(x, negative_slope=negative_slope)
 
 
 class Softplus(object):
@@ -1530,7 +1530,7 @@ class BatchNorm(object):
         self, decay=0.9, epsilon=0.00001, beta=None, gamma=None, moving_mean=None, moving_var=None, num_features=None,
         data_format='channels_last', is_train=False
     ):
-        self.decay = decay
+        self.decay =  1-decay
         self.epsilon = epsilon
         self.data_format = data_format
         self.beta = beta
@@ -2166,3 +2166,19 @@ class QuanConvBn(object):
 
     def __call__(self, inputs):
         raise NotImplementedError
+
+
+class PReLU(object):
+
+    def __init__(self, data_format):
+
+        self.data_format = data_format
+
+    def __call__(self, input, weight):
+
+        return torch.prelu(input, weight)
+
+
+def prelu(input, weight, data_format):
+
+    return torch.prelu(input, weight)

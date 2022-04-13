@@ -257,14 +257,14 @@ def relu6(x):
 
 class LeakyReLU(object):
 
-    def __init__(self, alpha=0.2):
-        self.alpha = alpha
+    def __init__(self, negative_slope=0.2):
+        self.negative_slope = negative_slope
 
     def __call__(self, x):
-        return F.leaky_relu(x, negative_slope=self.alpha)
+        return F.leaky_relu(x, negative_slope=self.negative_slope)
 
 
-def leaky_relu(x):
+def leaky_relu(x, negative_slope=0.01):
     """
     Compute the Leaky ReLU activation function.
 
@@ -279,7 +279,7 @@ def leaky_relu(x):
         The activation value.
     """
 
-    return F.leaky_relu(x)
+    return F.leaky_relu(x, negative_slope)
 
 
 class Softplus(object):
@@ -327,11 +327,11 @@ def sigmoid(x):
 
 class Softmax(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, axis = -1):
+        self.axis = axis
 
     def __call__(self, x):
-        return F.softmax(x)
+        return F.softmax(x, axis=self.axis)
 
 
 def softmax(logits, axis=-1):
@@ -2011,3 +2011,19 @@ class QuanConvBn(object):
 
     def __call__(self, inputs):
         raise NotImplementedError
+
+
+class PReLU(object):
+
+    def __init__(self, data_format):
+        self.data_format, _ = preprocess_2d_format(data_format, None)
+
+    def __call__(self, input, weight):
+
+        return F.prelu(input, weight, data_format=self.data_format)
+
+
+def prelu(input, weight, data_format):
+
+    data_format, _ = preprocess_2d_format(data_format, None)
+    return F.prelu(input, weight, data_format=data_format)

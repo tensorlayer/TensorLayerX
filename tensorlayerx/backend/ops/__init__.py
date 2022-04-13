@@ -11,6 +11,7 @@ from .load_backend import nhwc_to_nchw
 from .load_backend import relu
 from .load_backend import elu
 from .load_backend import relu6
+from .load_backend import prelu
 from .load_backend import leaky_relu
 from .load_backend import sigmoid
 from .load_backend import softmax
@@ -43,6 +44,7 @@ from .load_backend import multiheadattention
 from .load_backend import ReLU
 from .load_backend import ELU
 from .load_backend import ReLU6
+from .load_backend import PReLU
 from .load_backend import LeakyReLU
 from .load_backend import Softplus
 from .load_backend import Tanh

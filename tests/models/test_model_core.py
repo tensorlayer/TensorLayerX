@@ -7,7 +7,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import numpy as np
 import tensorflow as tf
-import tensorlayerx as tl
+import tensorlayerx as tlx
 from tensorlayerx.model import *
 import tensorlayerx
 from tensorlayerx.nn import Input, Conv2d, MaxPool2d, Flatten, Linear
@@ -24,8 +24,8 @@ def basic_static_model():
     nn = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')(nn)
 
     nn = Flatten(name='flatten')(nn)
-    nn = Linear(100, act=None, name="dense1")(nn)
-    nn = Linear(10, act=None, name="dense2")(nn)
+    nn = Linear(100, act=None, name="linear1")(nn)
+    nn = Linear(10, act=None, name="linear2")(nn)
     M = Model(inputs=ni, outputs=nn)
     return M
 
@@ -41,8 +41,8 @@ class basic_dynamic_model(Model):
         self.pool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 
         self.flatten = Flatten(name='flatten')
-        self.dense1 = Linear(100, act=None, in_channels=576, name="dense1")
-        self.dense2 = Linear(10, act=None, in_channels=100, name="dense2")
+        self.linear1 = Linear(100, act=None, in_features=576, name="linear1")
+        self.linear2 = Linear(10, act=None, in_features=100, name="linear2")
 
     def forward(self, x):
         x = self.conv1(x)
@@ -50,8 +50,8 @@ class basic_dynamic_model(Model):
         x = self.conv2(x)
         x = self.pool2(x)
         x = self.flatten(x)
-        x = self.dense1(x)
-        x = self.dense2(x)
+        x = self.linear1(x)
+        x = self.linear2(x)
         return x
 
 
@@ -277,10 +277,10 @@ class Model_Core_Test(CustomTestCase):
 
                 def __init__(self):
                     super(ill_model, self).__init__()
-                    self.dense2 = Linear(10, act=None)
+                    self.linear2 = Linear(10, act=None)
 
                 def forward(self, x):
-                    x = self.dense2(x)
+                    x = self.linear2(x)
                     return x
 
             model = ill_model()
@@ -354,8 +354,8 @@ class Model_Core_Test(CustomTestCase):
 
             def __init__(self):
                 super(my_model, self).__init__()
-                self.dense = Linear(64, in_channels=3)
-                self.vgg = tl.model.vgg16()
+                self.linear = Linear(64, in_features=3)
+                self.vgg = tlx.model.vgg16()
 
             def forward(self, x):
                 return x
@@ -409,8 +409,8 @@ class Model_Core_Test(CustomTestCase):
 
             def __init__(self):
                 super(my_model, self).__init__()
-                self.dense = Linear(64)
-                self.vgg = tl.model.vgg16()
+                self.linear = Linear(64)
+                self.vgg = tlx.model.vgg16()
 
             def forward(self, x):
                 return x
