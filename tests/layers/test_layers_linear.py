@@ -74,8 +74,8 @@ class Layer_DropconnectLinear_Test(CustomTestCase):
         self.inputs_shape = [self.batch_size, 10]
 
         self.ni = tlx.nn.Input(self.inputs_shape, name='input_layer')
-        self.layer1 = tlx.nn.DropconnectLinear(out_features=5, keep=1.0)
-        self.layer2 = tlx.nn.DropconnectLinear(out_features=5, in_features=10, keep=0.01)
+        self.layer1 = tlx.nn.DropconnectLinear(out_features=5, keep=0.1)
+        self.layer2 = tlx.nn.DropconnectLinear(out_features=5, in_features=10, keep=0.99)
         self.n1 = self.layer1(self.ni)
         self.n2 = self.layer2(self.ni)
 
