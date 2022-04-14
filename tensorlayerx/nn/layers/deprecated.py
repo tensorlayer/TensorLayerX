@@ -456,3 +456,24 @@ __all__ += ['LayerList']
 
 def LayerList(*args, **kwargs):
     raise NonExistingLayerError("LayerList(layer_list) --> ModuleList(layer_list)" + __log__)
+
+
+__all__ += ['DeConv1d']
+
+
+def DeConv1d(*args, **kwargs):
+    raise NonExistingLayerError("DeConv1d --> ConvTranspose1d" + __log__)
+
+
+__all__ += ['DeConv2d']
+
+
+def DeConv2d(*args, **kwargs):
+    raise NonExistingLayerError("DeConv2d --> ConvTranspose2d" + __log__)
+
+
+__all__ += ['DeConv3d']
+
+
+def DeConv3d(*args, **kwargs):
+    raise NonExistingLayerError("DeConv3d --> ConvTranspose3d" + __log__)

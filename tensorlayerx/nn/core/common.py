@@ -54,14 +54,14 @@ def str2act(act):
     if len(act) > 5 and act[0:5] == "lrelu":
         try:
             alpha = float(act[5:])
-            return tlx.ops.LeakyReLU(alpha=alpha)
+            return tlx.ops.LeakyReLU(negative_slope=alpha)
         except Exception as e:
             raise Exception("{} can not be parsed as a float".format(act[5:]))
 
     if len(act) > 10 and act[0:10] == "leaky_relu":
         try:
             alpha = float(act[10:])
-            return tlx.ops.LeakyReLU(alpha=alpha)
+            return tlx.ops.LeakyReLU(negative_slope=alpha)
         except Exception as e:
             raise Exception("{} can not be parsed as a float".format(act[10:]))
 

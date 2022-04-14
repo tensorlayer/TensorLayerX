@@ -60,7 +60,6 @@ method, this part of the documentation is for you.
   modules/files
   modules/nn
   modules/model
-  modules/pretrain_models
   modules/vision
   modules/initializers
   modules/ops

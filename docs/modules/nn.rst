@@ -13,7 +13,7 @@ Layer list
 .. autosummary::
 
    Module
-   
+   ModuleList
    Sequential
 
    Input
@@ -125,7 +125,11 @@ Module
 ^^^^^^^^^^^^^^^^
 .. autoclass:: Module
 
-Sequential Layer
+ModuleList
+^^^^^^^^^^^^^^^^
+.. autoclass:: ModuleList
+
+Sequential
 ^^^^^^^^^^^^^^^^
 .. autoclass:: Sequential
 
