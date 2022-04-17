@@ -15,10 +15,10 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/tensorlayer/tensorlayer.svg)](https://hub.docker.com/r/tensorlayer/tensorlayer/)
 
 🇬🇧 TensorLayerX is a multi-backend AI framework, which supports TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow and Jittor as the backends, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend. 
-This project is maintained by researchers from Peking University, Imperial College London, Princeton, Stanford, Edinburgh and Peng Cheng Lab.
+This project is maintained by researchers from Peking University, Imperial College London, Princeton, Stanford, Tsinghua, Edinburgh and Peng Cheng Lab.
 [supported layers](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z). 
 
-🇨🇳 TensorLayerX 是一个跨平台开发框架，支持TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow和Jittor，用户不需要修改任何代码即可以运行在各类操作系统和AI硬件上（如Nvidia-GPU 和 Huawei-Ascend），并支持混合框架的开发。这个项目由北京大学、鹏城实验室、爱丁堡大学、帝国理工、普林斯顿、斯坦福等机构的研究人员维护。
+🇨🇳 TensorLayerX 是一个跨平台开发框架，支持TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow和Jittor，用户不需要修改任何代码即可以运行在各类操作系统和AI硬件上（如Nvidia-GPU 和 Huawei-Ascend），并支持混合框架的开发。这个项目由北京大学、鹏城实验室、爱丁堡大学、帝国理工、清华、普林斯顿、斯坦福等机构的研究人员维护。
 [支持列表](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)。
 
 
