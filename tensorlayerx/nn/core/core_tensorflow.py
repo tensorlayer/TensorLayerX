@@ -3,13 +3,14 @@
 
 from .common import str2act, str2init, tolist
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
+from collections import OrderedDict, abc as container_abcs
 from collections import OrderedDict
 import time
 import tensorlayerx as tlx
 import tensorflow as tf
 from tensorlayerx.nn.layers.utils import (get_variable_with_initializer, random_normal)
 
-__all__ = ['Module', 'Sequential', 'ModuleList']
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict']
 
 _global_layer_name_dict = {}
 _global_layer_node = []
@@ -780,7 +781,7 @@ class ModuleList(Module):
     Methods
     ---------
     __init__()
-        Initializing the Layer.
+        Initializing the ModuleList.
     insert()
         Inserts a given layer before a given index in the list.
     extend()
@@ -885,6 +886,137 @@ class ModuleList(Module):
 
     def forward(self, *inputs):
         raise NotImplementedError
+
+
+class ModuleDict(Module):
+    """
+    Holds submodules in a dictionary.
+
+    ModuleDict can be used like a regular Python dictionary, support
+    '__getitem__', '__setitem__', '__delitem__', '__len__', '__iter__' and '__contains__',
+    but module it contains are properly registered, and will be visible by all Modules methods.
+
+    Parameters
+    ----------
+        args : dict
+            a mapping (dictionary) of (string: module)
+            or an iterable of key-value pairs of type (string, module)
+
+    Methods
+    ---------
+    __init__()
+        Initializing the ModuleDict.
+    clear()
+        Remove all items from the ModuleDict.
+    pop()
+        Remove key from the ModuleDict and return its module.
+    keys()
+        Return an iterable of the ModuleDict keys.
+    items()
+        Return an iterable of the ModuleDict key/value pairs.
+    values()
+        Return an iterable of the ModuleDict values.
+    update()
+        Update the ModuleDict with the key-value pairs from a
+        mapping or an iterable, overwriting existing keys.
+
+    Examples
+    ---------
+    >>> from tensorlayerx.nn import Module, ModuleDict, Linear
+    >>> import tensorlayerx as tlx
+    >>> class MyModule(Module):
+    >>>     def __init__(self):
+    >>>         super(MyModule, self).__init__()
+    >>>         self.dict = ModuleDict({
+    >>>                 'linear1':Linear(out_features=800, act=tlx.ReLU, in_features=784, name='linear1'),
+    >>>                 'linear2':Linear(out_features=800, act=tlx.ReLU, in_features=800, name='linear2')
+    >>>                 })
+    >>>     def forward(self, x, linear):
+    >>>         x = self.dict[linear](x)
+    >>>         return x
+
+    """
+
+    def __init__(self, modules):
+        super(ModuleDict, self).__init__()
+        self.update(modules)
+
+    def __getitem__(self, key):
+
+        return self._layers[key]
+
+    def __setitem__(self, key, module):
+        if not isinstance(key, str):
+            raise TypeError("module name should be a string, but got {}".format(type(key)))
+        elif '.' in key:
+            raise KeyError("module name can't contain \".\", got: {}".format(key))
+        elif key == '':
+            raise KeyError("module name can't be empty string \"\"")
+        if _valid_module(module):
+            self._layers[key] = module
+
+    def __delitem__(self, key):
+
+        del self._layers[key]
+
+    def __len__(self):
+
+        return len(self._layers)
+
+    def __iter__(self):
+
+        return iter(self._layers)
+
+    def __contains__(self, key):
+
+        return key in self._layers
+
+    def clear(self):
+
+        self._layers.clear()
+
+    def pop(self, key):
+
+        temp = self[key]
+        del self[key]
+        return temp
+
+    def keys(self):
+
+        return self._layers.keys()
+
+    def items(self):
+
+        return self._layers.items()
+
+    def values(self):
+
+        return self._layers.values()
+
+    def update(self, modules):
+
+        if not isinstance(modules, container_abcs.Iterable):
+            raise TypeError(
+                "ModuleDict.update should be called with an "
+                "iterable of key/value pairs, but got " + type(modules).__name__
+            )
+        if isinstance(modules, (OrderedDict, ModuleDict, container_abcs.Mapping)):
+            for key, module in modules.items():
+                self[key] = module
+
+        else:
+            for j, m in enumerate(modules):
+                if not isinstance(m, container_abcs.Iterable):
+                    raise TypeError(
+                        "ModuleDict update sequence element "
+                        "#" + str(j) + " should be Iterable; is" + type(m).__name__
+                    )
+                if not len(m) == 2:
+                    raise ValueError(
+                        "ModuleDict update sequence element "
+                        "#" + str(j) + " has length " + str(len(m)) + "; 2 is required"
+                    )
+                self[m[0]] = m[1]
 
 
 def _valid_index(layer_num, index):

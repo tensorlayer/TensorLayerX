@@ -2,12 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import os
-# os.environ['TL_BACKEND'] = 'tensorflow'
+os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
-os.environ['TL_BACKEND'] = 'paddle'
-
-from tensorlayerx.nn import Module, ModuleList, Linear
+# os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'torch'
+import numpy as np
+from tensorlayerx.nn import Module, ModuleList, Linear, ModuleDict
 import tensorlayerx as tlx
+
+
+####################### Holds submodules in a list ########################################
 
 d1 = Linear(out_features=800, act=tlx.ReLU, in_features=784, name='linear1')
 d2 = Linear(out_features=800, act=tlx.ReLU, in_features=800, name='linear2')
@@ -42,3 +46,21 @@ net = model()
 print(net.trainable_weights)
 print(net)
 print(net(tlx.nn.Input((10, 784))))
+
+####################### Holds submodules in a Dict ########################################
+class MyModule(Module):
+
+    def __init__(self):
+        super(MyModule, self).__init__()
+        self.dict = ModuleDict({
+                'linear1': Linear(out_features=800, act=tlx.ReLU, in_features=784, name='linear1'),
+                'linear2': Linear(out_features=800, act=tlx.ReLU, in_features=800, name='linear2')
+               })
+    def forward(self, x, linear):
+        x = self.dict[linear](x)
+        return x
+
+x = tlx.convert_to_tensor(np.ones(shape=(1,784)), dtype=tlx.float32)
+net = MyModule()
+x = net(x, 'linear1')
+print(x)

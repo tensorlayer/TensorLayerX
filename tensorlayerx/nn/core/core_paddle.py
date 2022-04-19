@@ -11,10 +11,10 @@ from paddle.fluid.dygraph.base import program_desc_tracing_guard, param_guard
 from paddle.fluid.dygraph import parallel_helper
 import paddle as pd
 from collections import OrderedDict
-
+from collections import OrderedDict, abc as container_abcs
 _global_layer_name_dict = {}
 
-__all__ = ['Module', 'Sequential', 'ModuleList']
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict']
 
 
 class Module(Layer):
@@ -449,6 +449,89 @@ class ModuleList(Module):
 
     def forward(self, *inputs):
         raise NotImplementedError
+
+
+class ModuleDict(Module):
+
+    def __init__(self, modules):
+        super(ModuleDict, self).__init__()
+        self.update(modules)
+
+    def __getitem__(self, key):
+
+        return self._sub_layers[key]
+
+    def __setitem__(self, key, module):
+        if not isinstance(key, str):
+            raise TypeError("module name should be a string, but got {}".format(type(key)))
+        elif '.' in key:
+            raise KeyError("module name can't contain \".\", got: {}".format(key))
+        elif key == '':
+            raise KeyError("module name can't be empty string \"\"")
+        if _valid_module(module):
+            self._sub_layers[key] = module
+
+    def __delitem__(self, key):
+
+        del self._sub_layers[key]
+
+    def __len__(self):
+
+        return len(self._sub_layers)
+
+    def __iter__(self):
+
+        return iter(self._sub_layers)
+
+    def __contains__(self, key):
+
+        return key in self._sub_layers
+
+    def clear(self):
+
+        self._sub_layers.clear()
+
+    def pop(self, key):
+
+        temp = self[key]
+        del self[key]
+        return temp
+
+    def keys(self):
+
+        return self._sub_layers.keys()
+
+    def items(self):
+
+        return self._sub_layers.items()
+
+    def values(self):
+
+        return self._sub_layers.values()
+
+    def update(self, modules):
+
+        if not isinstance(modules, container_abcs.Iterable):
+            raise TypeError(
+                "ModuleDict.update should be called with an "
+                "iterable of key/value pairs, but got " + type(modules)
+            )
+        if isinstance(modules, (OrderedDict, ModuleDict, container_abcs.Mapping)):
+            for key, module in modules.items():
+                self[key] = module
+        else:
+            for j, m in enumerate(modules):
+                if not isinstance(m, container_abcs.Iterable):
+                    raise TypeError(
+                        "ModuleDict update sequence element "
+                        "#" + str(j) + " should be Iterable; is" + type(m)
+                    )
+                if not len(m) == 2:
+                    raise ValueError(
+                        "ModuleDict update sequence element "
+                        "#" + str(j) + " has length " + str(len(m)) + "; 2 is required"
+                    )
+                self[m[0]] = m[1]
 
 
 def _valid_index(layer_num, index):

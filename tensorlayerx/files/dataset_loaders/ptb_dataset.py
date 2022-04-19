@@ -3,7 +3,8 @@
 
 import os
 
-from tensorlayerx import logging, nlp
+from tensorlayerx import logging
+from tensorlayerx.text import nlp
 from tensorlayerx.files.utils import maybe_download_and_extract
 
 __all__ = ['load_ptb_dataset']

@@ -4,7 +4,7 @@
 import os
 
 from tensorlayerx import logging
-from tensorlayerx.utils import visualize
+from tensorlayerx.vision import load_images
 
 from tensorlayerx.files.utils import (
     del_file, folder_exists, load_file_list, load_folder_list, maybe_download_and_extract, read_file

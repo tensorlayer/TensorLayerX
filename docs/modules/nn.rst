@@ -13,8 +13,9 @@ Layer list
 .. autosummary::
 
    Module
-   ModuleList
    Sequential
+   ModuleList
+   ModuleDict
 
    Input
 
@@ -125,13 +126,17 @@ Module
 ^^^^^^^^^^^^^^^^
 .. autoclass:: Module
 
+Sequential
+^^^^^^^^^^^^^^^^
+.. autoclass:: Sequential
+
 ModuleList
 ^^^^^^^^^^^^^^^^
 .. autoclass:: ModuleList
 
-Sequential
+ModuleDict
 ^^^^^^^^^^^^^^^^
-.. autoclass:: Sequential
+.. autoclass:: ModuleDict
 
 .. -----------------------------------------------------------
 ..                        Input Layer

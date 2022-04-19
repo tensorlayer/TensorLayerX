@@ -1631,3 +1631,11 @@ def set_seed(seed):
 def is_tensor(x):
 
     return isinstance(x, torch.Tensor)
+
+def tensor_scatter_nd_update(tensor, indices, updates):
+
+    indices = torch.flatten(indices)
+    tensor[indices] = updates
+    return tensor
+
+
