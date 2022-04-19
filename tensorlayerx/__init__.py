@@ -21,7 +21,6 @@ if 'TENSORLAYER_PACKAGE_BUILDING' not in os.environ:
     from tensorlayerx import losses
     from tensorlayerx import decorators
     from tensorlayerx import files
-    from .utils import lazy_imports
     from tensorlayerx import logging
     from tensorlayerx import model
     from tensorlayerx import optimizers
