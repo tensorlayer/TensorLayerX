@@ -437,3 +437,12 @@ def weight_reshape(weight, reshape=False):
         if len(weight.shape) == 5:
             weight = np.moveaxis(weight, (3, 4), (1, 0))
     return weight
+
+def tolist(tensors):
+    if isinstance(tensors, list) or isinstance(tensors, tuple):
+        ntensors = list()
+        for t in tensors:
+            ntensors += tolist(t)
+        return ntensors
+    else:
+        return [tensors]

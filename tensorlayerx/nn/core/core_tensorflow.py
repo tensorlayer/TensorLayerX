@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .common import str2act, str2init
+from .common import str2act, str2init, tolist
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from collections import OrderedDict
 import time
@@ -12,6 +12,7 @@ from tensorlayerx.nn.layers.utils import (get_variable_with_initializer, random_
 __all__ = ['Module', 'Sequential', 'ModuleList']
 
 _global_layer_name_dict = {}
+_global_layer_node = []
 
 
 class Module(object):
@@ -322,23 +323,6 @@ class Module(object):
         except:
             pass
 
-    def _add_node(self, input_tensors, output_tensors):
-        """Add a LayerNode for this layer given input_tensors, output_tensors.
-
-        WARINING: This function should not be called from outside, it should only be called
-        in layer.__call__ when building static model.
-
-        Parameters
-        ----------
-        input_tensors : Tensor or a list of tensors
-            Input tensors to this layer.
-        output_tensors : Tensor or a list of tensors
-            Output tensors to this layer.
-
-        """
-
-        raise NotImplementedError
-
     @property
     def create_time(self):
         return self._create_time
@@ -596,6 +580,96 @@ class Module(object):
 
     def str_to_init(self, initializer):
         return str2init(initializer)
+
+    def node_build(self, *inputs, **kwargs):
+        self.forward(*inputs, **kwargs)
+        return _global_layer_node
+
+    def _add_node(self, input_tensors, output_tensors):
+        """Add a ModuleNode for this layer given input_tensors, output_tensors.
+
+        This function should not be called from outside, it should only be called
+        in __call__ when building static model.
+
+        Parameters
+        ----------
+        input_tensors : Tensor or a list of tensors
+            Input tensors to this layer.
+        output_tensors : Tensor or a list of tensors
+            Output tensors to this layer.
+
+        """
+        inputs_list = tolist(input_tensors)
+        outputs_list = tolist(output_tensors)
+
+        if self.__class__.__name__ in tlx.layers.inputs.__all__:
+            # for InputLayer, there should be no in_nodes
+            in_nodes = []
+            in_tensor_idxes = [0]
+        else:
+            in_nodes = [tensor for tensor in inputs_list]
+            in_tensor_idxes = [idx for idx, tensor in enumerate(inputs_list)]
+            # in_nodes = [tensor._info[0] for tensor in inputs_list]
+            # in_tensor_idxes = [tensor._info[1] for tensor in inputs_list]
+        node_index = len(_global_layer_node)
+
+        new_node = ModuleNode(self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes)
+        _global_layer_node.append(new_node)
+        for idx, tensor in enumerate(outputs_list):
+            tensor._info = (new_node, idx)
+
+
+class ModuleNode(object):
+    """
+    The class :class:`ModuleNode` class represents a conceptional node for a layer.
+
+    ModuleNode is used for building static model and it is actually a light weighted
+    wrapper over Layer. Specifically, it is used for building static computational graph
+    (see _construct_graph() in tl.models.Model). In static model, each layer relates to
+    one or more ModuleNode, and the connection relationship between layers is built upon
+    ModuleNode. In addition, ModuleNode eases layer reuse and weights sharing.
+
+    Parameters
+    ----------
+    layer : tl.layers.Layer
+        A tl layer that wants to create a node.
+    node_index : int
+        Index of this node in layer._nodes.
+    in_nodes ：a list of ModuleNode
+        Father nodes to this node.
+    in_tensors : a list of tensors
+        Input tensors to this node.
+    out_tensors : a list of tensors
+        Output tensors to this node.
+    in_tensor_idxes : a list of int
+        Indexes of each input tensor in its corresponding node's out_tensors.
+
+    Methods
+    ---------
+    __init__()
+        Initializing the ModuleNode.
+    __call__()
+        (1) Forwarding through the layer. (2) Update its input/output tensors.
+    """
+
+    def __init__(self, layer, node_index, in_nodes, in_tensors, out_tensors, in_tensor_idxes):
+        self.layer = layer
+        self.node_index = node_index
+        self.in_nodes = in_nodes
+        self.out_nodes = []
+        self.in_tensors = in_tensors
+        self.out_tensors = out_tensors
+        self.name = layer.name + "_node_{}".format(node_index)
+
+        self.in_tensors_idxes = in_tensor_idxes
+        self.visited = False
+
+    def __call__(self, inputs, **kwargs):
+        """(1) Forwarding through the layer. (2) Update its input/output tensors."""
+        outputs = self.layer.forward(inputs, **kwargs)
+        self.in_tensors = tolist(inputs)
+        self.out_tensors = tolist(outputs)
+        return self.out_tensors
 
 
 class Sequential(Module):

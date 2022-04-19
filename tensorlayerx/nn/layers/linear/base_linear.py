@@ -114,5 +114,8 @@ class Linear(Module):
             z = self.bias_add(z, self.b)
         if self.act_init_flag:
             z = self.act(z)
+
+        if not self._nodes_fixed:
+            self._add_node(inputs, z)
         return z
 
