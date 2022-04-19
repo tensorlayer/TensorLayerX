@@ -3598,3 +3598,20 @@ def is_tensor(x):
     """
 
     return tf.is_tensor(x)
+
+
+def tensor_scatter_nd_update(tensor, indices, updates):
+    """
+
+    Parameters
+    ----------
+    tensor
+    indices
+    updates
+
+    Returns
+    -------
+
+    """
+
+    return tf.tensor_scatter_nd_update(tensor, indices, updates)

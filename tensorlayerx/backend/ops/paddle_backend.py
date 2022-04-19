@@ -824,7 +824,15 @@ def transpose(a, perm=None, conjugate=False):
     -------
         A transposed Tensor.
     """
-
+    if perm == None:
+        if len(a.shape) <= 2:
+            return pd.t(a)
+        if len(a.shape) == 3:
+            perm = [2, 1, 0]
+        if len(a.shape) == 4:
+            perm = [3, 2, 1, 0]
+        if len(a.shape) == 5:
+            perm = [4, 3, 2, 1, 0]
     return pd.transpose(a, perm)
 
 
@@ -1504,3 +1512,11 @@ def set_seed(seed):
 def is_tensor(x):
 
     return pd.is_tensor(x)
+
+
+def tensor_scatter_nd_update(tensor, indices, updates):
+    a = pd.scatter_nd(indices, pd.ones_like(updates), tensor.shape)
+    a = pd.multiply(tensor, -a)
+    tensor = tensor + a
+    x = pd.scatter_nd_add(tensor, indices, updates)
+    return x

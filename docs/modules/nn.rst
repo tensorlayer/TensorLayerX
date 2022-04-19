@@ -15,6 +15,8 @@ Layer list
    Module
    ModuleList
    Sequential
+   ModuleList
+   ModuleDict
 
    Input
 
@@ -132,6 +134,14 @@ ModuleList
 Sequential
 ^^^^^^^^^^^^^^^^
 .. autoclass:: Sequential
+
+ModuleList
+^^^^^^^^^^^^^^^^
+.. autoclass:: ModuleList
+
+ModuleDict
+^^^^^^^^^^^^^^^^
+.. autoclass:: ModuleDict
 
 .. -----------------------------------------------------------
 ..                        Input Layer

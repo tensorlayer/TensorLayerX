@@ -1054,8 +1054,7 @@ def transpose(a, perm=None, conjugate=False):
         A transposed Tensor.
     """
     # TODO conjugate
-    trans_obj = P.Transpose()
-    outputs = trans_obj(a, perm)
+    outputs = msnp.transpose(a, perm)
     print(outputs)
 
 
@@ -1817,3 +1816,8 @@ def set_seed(seed):
 def is_tensor(x):
 
     return isinstance(x, ms.Tensor)
+
+def tensor_scatter_nd_update(tensor, indices, updates):
+
+    op = ms.ops.TensorScatterUpdate()
+    return op(tensor, indices, updates)

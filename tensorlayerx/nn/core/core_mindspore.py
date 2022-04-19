@@ -12,8 +12,8 @@ from mindspore import context
 import numpy
 from mindspore.common.api import _pynative_executor
 from mindspore.common.parameter import Parameter
-
-__all__ = ['Module', 'Sequential', 'ModuleList']
+from collections import OrderedDict, abc as container_abcs
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict']
 
 _global_layer_name_dict = {}
 
@@ -91,10 +91,7 @@ class Module(Cell):
     def build(self, inputs_shape):
         raise Exception("The build(self, inputs_shape) method must be implemented by inherited class")
 
-    def _get_weights(
-        self, var_name, shape, init=random_normal(), trainable=True, transposed=False,
-        order=False
-    ):
+    def _get_weights(self, var_name, shape, init=random_normal(), trainable=True, transposed=False, order=False):
         """ Get trainable variables. """
         var_name = self.name + "/" + var_name
         # TODO 2D mindspore weights shape : [out_channel, in_channel, kernel_h, kernel_w]
@@ -142,8 +139,10 @@ class Module(Cell):
 
     def __call__(self, *inputs, **kwargs):
         if self.__class__.construct is Cell.construct:
-            logger.warning(f"The '{self.__class__}' does not override the method 'construct', "
-                           f"will call the super class(Cell) 'construct'.")
+            logger.warning(
+                f"The '{self.__class__}' does not override the method 'construct', "
+                f"will call the super class(Cell) 'construct'."
+            )
         if kwargs:
             bound_args = inspect.signature(self.construct).bind(*inputs, **kwargs)
             inputs = bound_args.args
@@ -523,6 +522,90 @@ class ModuleList(Module):
 
     def forward(self, *inputs):
         raise NotImplementedError
+
+
+class ModuleDict(Module):
+
+    def __init__(self, modules):
+        super(ModuleDict, self).__init__()
+        self.update(modules)
+
+    def __getitem__(self, key):
+
+        return self._cells[key]
+
+    def __setitem__(self, key, module):
+        if not isinstance(key, str):
+            raise TypeError("module name should be a string, but got {}".format(type(key)))
+        elif '.' in key:
+            raise KeyError("module name can't contain \".\", got: {}".format(key))
+        elif key == '':
+            raise KeyError("module name can't be empty string \"\"")
+        if _valid_module(module):
+            self._cells[key] = module
+
+    def __delitem__(self, key):
+
+        del self._cells[key]
+
+    def __len__(self):
+
+        return len(self._cells)
+
+    def __iter__(self):
+
+        return iter(self._cells)
+
+    def __contains__(self, key):
+
+        return key in self._cells
+
+    def clear(self):
+
+        self._cells.clear()
+
+    def pop(self, key):
+
+        temp = self[key]
+        del self[key]
+        return temp
+
+    def keys(self):
+
+        return self._cells.keys()
+
+    def items(self):
+
+        return self._cells.items()
+
+    def values(self):
+
+        return self._cells.values()
+
+    def update(self, modules):
+
+        if not isinstance(modules, container_abcs.Iterable):
+            raise TypeError(
+                "ModuleDict.update should be called with an "
+                "iterable of key/value pairs, but got " + type(modules).__name__
+            )
+        if isinstance(modules, (OrderedDict, ModuleDict, container_abcs.Mapping)):
+            for key, module in modules.items():
+                self[key] = module
+
+        else:
+            for j, m in enumerate(modules):
+                if not isinstance(m, container_abcs.Iterable):
+                    raise TypeError(
+                        "ModuleDict update sequence element "
+                        "#" + str(j) + " should be Iterable; is" + type(m).__name__
+                    )
+                if not len(m) == 2:
+                    raise ValueError(
+                        "ModuleDict update sequence element "
+                        "#" + str(j) + " has length " + str(len(m)) + "; 2 is required"
+                    )
+                self[m[0]] = m[1]
 
 
 def _valid_index(layer_num, index):

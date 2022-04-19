@@ -8,13 +8,11 @@ import numpy as np
 import numbers
 import itertools
 import multiprocessing
-import threading
 import queue
 from collections import namedtuple
 from dataclasses import dataclass
 import sys
 import traceback
-
 
 def default_convert(data):
     data_type = type(data)
@@ -264,7 +262,6 @@ class _BaseDataLoaderIter(object):
         self._persistent_workers = loader.persistent_workers
         self._time_out = loader.time_out
         self._sampler_iter = iter(self._index_sampler)
-        # self._pin_memory = loader.pin_memory
         self._num_yielded = 0
 
     def __iter__(self):
@@ -321,7 +318,6 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
         self._worker_result_queue = multiprocessing.Queue()
         self._worker_done_event = multiprocessing.Event()
         self._worker_pids_set = False
-        self._shutdown = False
 
         self._index_queues = []
         self._workers = []
@@ -357,6 +353,7 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
             while resume_iteration_cnt > 0:
                 return_idx, return_data = self._get_data()
                 if isinstance(return_idx, _ResumeIteration):
+                    assert return_data is None
                     resume_iteration_cnt -= 1
         for _ in range(self._prefetch_factor * self._num_workers):
 
@@ -469,26 +466,19 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
         if not self._shutdown:
             self._shutdown = True
             try:
-                if hasattr(self, '_pin_memory_thread'):
-                    self._pin_memory_thread_done_event.set()
-                    self._worker_result_queue.put((None, None))
-                    self._pin_memory_thread.join()
-                    self._worker_result_queue.cancel_join_thread()
-                    self._worker_result_queue.close()
-
                 self._worker_done_event.set()
                 for worker_id in range(len(self._workers)):
                     if self._persistent_workers or self._workers_status[worker_id]:
                         self._mark_worker_as_unavailable(worker_id, shutdown=True)
                 for w in self._workers:
                     w.join(timeout=5.0)
-                    if w.is_alive():
-                        w.terminate()
                 for q in self._index_queues:
                     q.cancel_join_thread()
                     q.close()
             finally:
-                pass
+                for w in self._workers:
+                    if w.is_alive():
+                        w.terminate()
 
     def __del__(self):
         self._shutdown_workers()
@@ -565,7 +555,15 @@ def _worker_loop(
                 try:
                     data = fetcher.fetch(index)
                 except Exception as e:
-                    data = ExceptionWrapper(where="in DataLoader worker process {}".format(worker_id))
+                    if isinstance(e, StopIteration) and dataset_kind == _DatasetKind.Iter:
+                        data = _IterableDatasetStopIteration(worker_id)
+                        iteration_end = True
+                    else:
+                        # It is important that we don't store exc_info in a variable.
+                        # `ExceptionWrapper` does the correct thing.
+                        # See NOTE [ Python Traceback Reference Cycle Problem ]
+                        data = ExceptionWrapper(
+                            where="in DataLoader worker process {}".format(worker_id))
             data_queue.put((idx, data))
             del data, idx, index, r
     except KeyboardInterrupt:
