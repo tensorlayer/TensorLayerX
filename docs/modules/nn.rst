@@ -13,7 +13,6 @@ Layer list
 .. autosummary::
 
    Module
-   ModuleList
    Sequential
    ModuleList
    ModuleDict
@@ -126,10 +125,6 @@ Base Layer
 Module
 ^^^^^^^^^^^^^^^^
 .. autoclass:: Module
-
-ModuleList
-^^^^^^^^^^^^^^^^
-.. autoclass:: ModuleList
 
 Sequential
 ^^^^^^^^^^^^^^^^
