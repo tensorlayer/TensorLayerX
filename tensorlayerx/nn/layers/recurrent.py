@@ -4,7 +4,6 @@
 import numpy as np
 import tensorlayerx as tlx
 from tensorlayerx import logging
-from tensorlayerx import BACKEND
 from tensorlayerx.nn.core import Module
 
 __all__ = [
@@ -141,6 +140,10 @@ class RNNCell(Module):
         states_shape = tlx.get_tensor_shape(states)
         self.check_hidden(input_shape, states_shape, hidden_label='h')
         output, states = self.rnncell(inputs, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, [output, states])
+            self._nodes_fixed = True
         return output, states
 
 
@@ -267,6 +270,10 @@ class LSTMCell(Module):
         self.check_hidden(input_shape, h_shape, hidden_label='h')
         self.check_hidden(input_shape, c_shape, hidden_label='c')
         output, new_h, new_c = self.lstmcell(inputs, h, c)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, [output, new_h, new_c])
+            self._nodes_fixed = True
         return output, (new_h, new_c)
 
 
@@ -387,6 +394,10 @@ class GRUCell(Module):
         states_shape = tlx.get_tensor_shape(states)
         self.check_hidden(input_shape, states_shape, hidden_label='h')
         output, states = self.grucell(inputs, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, [output, states])
+            self._nodes_fixed = True
         return output, states
 
 
@@ -485,8 +496,11 @@ class RNNBase(Module):
         )
 
     def forward(self, input, states=None):
-
         output, new_states = self.rnn(input, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(input, [output, new_states])
+            self._nodes_fixed = True
         return output, new_states
 
 
@@ -572,6 +586,10 @@ class RNN(RNNBase):
         """
 
         output, new_states = self.rnn(input, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(input, [output, new_states])
+            self._nodes_fixed = True
         return output, new_states
 
 
@@ -648,6 +666,10 @@ class LSTM(RNNBase):
         """
 
         output, new_states = self.rnn(input, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(input, [output, new_states])
+            self._nodes_fixed = True
         return output, new_states
 
 
@@ -723,4 +745,8 @@ class GRU(RNNBase):
         """
 
         output, new_states = self.rnn(input, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(input, [output, new_states])
+            self._nodes_fixed = True
         return output, new_states

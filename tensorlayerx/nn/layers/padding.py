@@ -71,6 +71,10 @@ class PadLayer(Module):
 
     def forward(self, inputs):
         outputs = self.pad(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -124,6 +128,10 @@ class ZeroPad1d(Module):
 
     def forward(self, inputs):
         outputs = self.layer(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -179,6 +187,10 @@ class ZeroPad2d(Module):
 
     def forward(self, inputs):
         outputs = self.layer(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -234,4 +246,8 @@ class ZeroPad3d(Module):
 
     def forward(self, inputs):
         outputs = self.layer(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

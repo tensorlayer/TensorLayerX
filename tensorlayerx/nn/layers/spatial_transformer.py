@@ -277,4 +277,8 @@ class SpatialTransformer2dAffine(Module):
             outputs = tlx.reshape(outputs, shape=[batch_size, self.out_size[0], self.out_size[1], n_channels])
         else:
             raise Exception("unimplement data_format {}".format(self.data_format))
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

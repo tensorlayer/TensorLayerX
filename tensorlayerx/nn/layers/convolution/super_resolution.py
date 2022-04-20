@@ -90,6 +90,10 @@ class SubpixelConv1d(Module):
         outputs = self._PS(inputs)
         if self.act is not None:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
     def _PS(self, I):
@@ -180,4 +184,8 @@ class SubpixelConv2d(Module):
         outputs = self.depth_to_space(inputs)
         if self.act is not None:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

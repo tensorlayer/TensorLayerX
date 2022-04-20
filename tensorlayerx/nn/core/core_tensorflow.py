@@ -6,6 +6,7 @@ from .common import _save_weights, _load_weights, _save_standard_weights_dict, _
 from collections import OrderedDict, abc as container_abcs
 from collections import OrderedDict
 import time
+from queue import Queue
 import tensorlayerx as tlx
 import tensorflow as tf
 from tensorlayerx.nn.layers.utils import (get_variable_with_initializer, random_normal)
@@ -100,8 +101,8 @@ class Module(object):
         self._built = False
 
         # Layer nodes state
-        self._nodes = []
         self._nodes_fixed = False
+        self._build_graph = False
 
         # Layer weight state
         self._all_weights = None
@@ -583,8 +584,17 @@ class Module(object):
         return str2init(initializer)
 
     def node_build(self, *inputs, **kwargs):
-        self.forward(*inputs, **kwargs)
-        return _global_layer_node
+        # Add nodes only when the composition is needed.
+        layers = self.layers_and_names(name_prefix='')
+        for layer_name, layer in layers:
+            if isinstance(layer, Module):
+                layer._build_graph = True
+
+        outputs = self.forward(*inputs, **kwargs)
+        self.inputs = inputs
+        self.outputs = outputs
+        self._node_by_depth, self._all_layers = self._construct_graph()
+        return self._node_by_depth, self._all_layers
 
     def _add_node(self, input_tensors, output_tensors):
         """Add a ModuleNode for this layer given input_tensors, output_tensors.
@@ -602,16 +612,13 @@ class Module(object):
         """
         inputs_list = tolist(input_tensors)
         outputs_list = tolist(output_tensors)
-
         if self.__class__.__name__ in tlx.layers.inputs.__all__:
             # for InputLayer, there should be no in_nodes
             in_nodes = []
             in_tensor_idxes = [0]
         else:
-            in_nodes = [tensor for tensor in inputs_list]
-            in_tensor_idxes = [idx for idx, tensor in enumerate(inputs_list)]
-            # in_nodes = [tensor._info[0] for tensor in inputs_list]
-            # in_tensor_idxes = [tensor._info[1] for tensor in inputs_list]
+            in_nodes = [tensor._info[0] for tensor in inputs_list]
+            in_tensor_idxes = [tensor._info[1] for tensor in inputs_list]
         node_index = len(_global_layer_node)
 
         new_node = ModuleNode(self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes)
@@ -619,16 +626,73 @@ class Module(object):
         for idx, tensor in enumerate(outputs_list):
             tensor._info = (new_node, idx)
 
+    def _construct_graph(self):
+        """construct computation graph for model using ModuleNode object"""
+        all_layers = []
+        node_by_depth = []
+
+        input_tensors_list = self.inputs if isinstance(self.inputs, list) else [self.inputs]
+
+        queue_node = Queue()
+        # BFS to visit all nodes that should be involved in the computation graph
+        output_tensors_list = self.outputs if isinstance(self.outputs, list) else [self.outputs]
+        output_nodes = [tensor._info[0] for tensor in output_tensors_list]
+
+        visited_node_names = set()
+        for out_node in output_nodes:
+            if out_node.visited:
+                continue
+            queue_node.put(out_node)
+
+            while not queue_node.empty():
+                cur_node = queue_node.get()
+                in_nodes = cur_node.in_nodes
+
+                for node in in_nodes:
+                    node.out_nodes.append(cur_node)
+                    if not node.visited:
+                        queue_node.put(node)
+                        node.visited = True
+                        if node.node_name not in visited_node_names:
+                            visited_node_names.add(node.node_name)
+                        # else have multiple layers with the same name
+                        else:
+                            raise ValueError(
+                                'Layer name \'%s\' has already been used by another layer. Please change the layer name.'
+                                % node.layer.name
+                            )
+
+        # construct the computation graph in top-sort order
+        cur_depth = [tensor[0]._info[0] for tensor in input_tensors_list]
+        next_depth = []
+        indegrees = {}
+
+        visited_layer_names = []
+        while not len(cur_depth) == 0:
+            node_by_depth.append(cur_depth)
+            for node in cur_depth:
+                if node.layer.name not in visited_layer_names:
+                    all_layers.append(node.layer)
+                    visited_layer_names.append(node.layer.name)
+                for out_node in node.out_nodes:
+                    if out_node.node_name not in indegrees.keys():
+                        indegrees[out_node.node_name] = len(out_node.in_nodes)
+                    indegrees[out_node.node_name] -= 1
+                    if indegrees[out_node.node_name] == 0:
+                        next_depth.append(out_node)
+
+            cur_depth = next_depth
+            next_depth = []
+
+        return node_by_depth, all_layers
+
 
 class ModuleNode(object):
     """
     The class :class:`ModuleNode` class represents a conceptional node for a layer.
 
-    ModuleNode is used for building static model and it is actually a light weighted
-    wrapper over Layer. Specifically, it is used for building static computational graph
-    (see _construct_graph() in tl.models.Model). In static model, each layer relates to
-    one or more ModuleNode, and the connection relationship between layers is built upon
-    ModuleNode. In addition, ModuleNode eases layer reuse and weights sharing.
+    ModuleNode is used for building topology and it is actually a light weighted
+    wrapper over Layer.
 
     Parameters
     ----------
@@ -660,14 +724,14 @@ class ModuleNode(object):
         self.out_nodes = []
         self.in_tensors = in_tensors
         self.out_tensors = out_tensors
-        self.name = layer.name + "_node_{}".format(node_index)
+        self.node_name = layer.name + "_node_{}".format(node_index)
 
         self.in_tensors_idxes = in_tensor_idxes
         self.visited = False
 
     def __call__(self, inputs, **kwargs):
         """(1) Forwarding through the layer. (2) Update its input/output tensors."""
-        outputs = self.layer.forward(inputs, **kwargs)
+        outputs = self.layer(inputs, **kwargs)
         self.in_tensors = tolist(inputs)
         self.out_tensors = tolist(outputs)
         return self.out_tensors

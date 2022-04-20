@@ -65,8 +65,8 @@ class Module(Layer):
         self._paddle_built = False
 
         # Layer nodes state
-        self._nodes = []
         self._nodes_fixed = False
+        self._build_graph = False
 
         # Layer weight state
         self._all_weights = None

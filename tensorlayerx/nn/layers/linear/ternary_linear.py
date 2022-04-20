@@ -99,4 +99,8 @@ class TernaryLinear(Module):
         outputs = self.ternary_dense(inputs)
         if self.act:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

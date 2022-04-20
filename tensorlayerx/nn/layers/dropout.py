@@ -57,4 +57,8 @@ class Dropout(Module):
             outputs = self.dropout(inputs)
         else:
             outputs = inputs
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

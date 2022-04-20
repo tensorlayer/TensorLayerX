@@ -84,6 +84,10 @@ class PRelu(Module):
             self._forward_state = True
 
         output = self.prelu(inputs, self.alpha_var)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, output)
+            self._nodes_fixed = True
         return output
 
 
@@ -186,7 +190,6 @@ class PRelu6(Module):
         self.sigmoid = tlx.ops.Sigmoid()
         self.relu = tlx.ops.ReLU()
 
-    # @tf.function
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
@@ -198,6 +201,10 @@ class PRelu6(Module):
         pos = self.relu(inputs)
         pos_6 = -self.relu(inputs - 6)
         neg = -alpha_var_constrained * self.relu(-inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, pos + pos_6 + neg)
+            self._nodes_fixed = True
         return pos + pos_6 + neg
 
 
@@ -305,7 +312,6 @@ class PTRelu6(Module):
         # Alpha for outputs higher than 6
         self.alpha_high = self._get_weights("alpha_high", shape=w_shape, init=self.a_init)
 
-    # @tf.function
     def forward(self, inputs):
         if self._forward_state == False:
             if self._built == False:
@@ -319,6 +325,9 @@ class PTRelu6(Module):
         pos_6 = -self.relu(inputs - 6) + alpha_high_constrained * self.relu(inputs - 6)
         neg = -alpha_low_constrained * self.relu(-inputs)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, pos + pos_6 + neg)
+            self._nodes_fixed = True
         return pos + pos_6 + neg
 
 
@@ -355,7 +364,12 @@ class Ramp(Module):
         self.v_max = v_max
 
     def forward(self, x):
-        return tlx.ops.clip_by_value(x, clip_value_min=self.v_min, clip_value_max=self.v_max)
+        outputs = tlx.ops.clip_by_value(x, clip_value_min=self.v_min, clip_value_max=self.v_max)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class ELU(Module):
@@ -393,7 +407,12 @@ class ELU(Module):
         self._elu = tlx.ops.ELU(alpha=alpha)
 
     def forward(self, x):
-        return self._elu(x)
+        outputs = self._elu(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class Softmax(Module):
@@ -422,7 +441,12 @@ class Softmax(Module):
         self._softmax = tlx.ops.Softmax(axis)
 
     def forward(self, x):
-        return self._softmax(x)
+        outputs = self._softmax(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class Sigmoid(Module):
@@ -452,7 +476,12 @@ class Sigmoid(Module):
         self._sigmoid = tlx.ops.Sigmoid()
 
     def forward(self, x):
-        return self._sigmoid(x)
+        outputs = self._sigmoid(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class Tanh(Module):
@@ -481,7 +510,12 @@ class Tanh(Module):
         self._tanh = tlx.ops.Tanh()
 
     def forward(self, x):
-        return self._tanh(x)
+        outputs = self._tanh(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class Softplus(Module):
@@ -513,7 +547,12 @@ class Softplus(Module):
         self._softplus = tlx.ops.Softplus()
 
     def forward(self, x):
-        return self._softplus(x)
+        outputs = self._softplus(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class ReLU6(Module):
@@ -545,7 +584,12 @@ class ReLU6(Module):
         self._relu6 = tlx.ops.ReLU6()
 
     def forward(self, x):
-        return self._relu6(x)
+        outputs = self._relu6(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class ReLU(Module):
@@ -578,7 +622,12 @@ class ReLU(Module):
         self._relu = tlx.ops.ReLU()
 
     def forward(self, x):
-        return self._relu(x)
+        outputs = self._relu(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class LeakyReLU(Module):
@@ -617,7 +666,12 @@ class LeakyReLU(Module):
         self._leakyrelu = tlx.ops.LeakyReLU(negative_slope=self.negative_slope)
 
     def forward(self, x):
-        return self._leakyrelu(x)
+        outputs = self._leakyrelu(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class LeakyReLU6(Module):
@@ -669,7 +723,12 @@ class LeakyReLU6(Module):
         self.maximum = tlx.ops.Maximum()
 
     def forward(self, x):
-        return self.minimum(self.maximum(x, self.alpha * x), 6)
+        outputs = self.minimum(self.maximum(x, self.alpha * x), 6)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class LeakyTwiceRelu6(Module):
@@ -733,7 +792,12 @@ class LeakyTwiceRelu6(Module):
     def forward(self, x):
         x_is_above_0 = self.minimum(x, 6 * (1 - self.alpha_high) + self.alpha_high * x)
         x_is_below_0 = self.minimum(self.alpha_low * x, 0)
-        return self.maximum(x_is_above_0, x_is_below_0)
+        outputs = self.maximum(x_is_above_0, x_is_below_0)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class Swish(Module):
@@ -766,7 +830,12 @@ class Swish(Module):
         self._built = True
 
     def forward(self, x):
-        return self.sigmoid(x) * x
+        outputs = self.sigmoid(x) * x
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class HardTanh(Module):
@@ -798,7 +867,12 @@ class HardTanh(Module):
         self._built = True
 
     def forward(self, x):
-        return tlx.ops.clip_by_value(x, -1, 1)
+        outputs = tlx.ops.clip_by_value(x, -1, 1)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
 
 
 class Mish(Module):
@@ -833,4 +907,9 @@ class Mish(Module):
         self._built = True
 
     def forward(self, x):
-        return x * self._tanh(self._softplus(x))
+        outputs = x * self._tanh(self._softplus(x))
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs

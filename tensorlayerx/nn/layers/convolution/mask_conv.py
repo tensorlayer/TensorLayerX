@@ -174,4 +174,8 @@ class MaskedConv3d(Module):
             x = self.bias_add(x, self.bias)
         if self.act_init_flag:
             x = self.act(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, x)
+            self._nodes_fixed = True
         return x

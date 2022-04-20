@@ -175,6 +175,9 @@ class MultiheadAttention(Module):
 
         attn_output, attn_output_weights = self.multiheadattention(q, k, v, attn_mask, key_padding_mask)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node([q, k, v, attn_mask, key_padding_mask], [attn_output, attn_output_weights])
+            self._nodes_fixed = True
         return attn_output, attn_output_weights
 
 
@@ -308,6 +311,9 @@ class Transformer(Module):
             memory_key_padding_mask=memory_key_padding_mask
         )
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node([src, tgt, src_mask, tgt_mask, memory_mask, src_key_padding_mask, tgt_key_padding_mask, memory_key_padding_mask], output)
+            self._nodes_fixed = True
         return output
 
     def generate_square_subsequent_mask(self, length):
@@ -389,6 +395,9 @@ class TransformerEncoder(Module):
         if self.norm is not None:
             output = self.norm(output)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node([src, mask, src_key_padding_mask], output)
+            self._nodes_fixed = True
         return output
 
 
@@ -461,6 +470,9 @@ class TransformerDecoder(Module):
         if self.norm is not None:
             output = self.norm(output)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node([tgt, memory, tgt_mask, memory_mask, tgt_key_padding_mask, memory_key_padding_mask], output)
+            self._nodes_fixed = True
         return output
 
 
@@ -549,6 +561,9 @@ class TransformerEncoderLayer(Module):
             the mask for the src keys per batch.
 
         """
+
+        inputs = [src, src_mask, src_key_padding_mask]
+
         src1 = self.self_attn(src, src, src, src_mask, src_key_padding_mask)[0]
         src = src + self.dropout1(src1)
         src = self.norm1(src)
@@ -556,6 +571,9 @@ class TransformerEncoderLayer(Module):
         src = src + self.dropout3(src1)
         src = self.norm2(src)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, src)
+            self._nodes_fixed = True
         return src
 
 
@@ -650,6 +668,8 @@ class TransformerDecoderLayer(Module):
             the mask for the memory keys per batch.
 
         """
+        inputs = [tgt, memory, tgt_mask, memory_mask, tgt_key_padding_mask, memory_key_padding_mask]
+
         tgt1 = self.self_attn(tgt, tgt, tgt, tgt_mask, tgt_key_padding_mask)[0]
         tgt = tgt + self.dropout1(tgt1)
         tgt = self.norm1(tgt)
@@ -659,5 +679,9 @@ class TransformerDecoderLayer(Module):
         tgt1 = self.linear2(self.dropout3(self.act(self.linear1(tgt))))
         tgt = tgt + self.dropout3(tgt1)
         tgt = self.norm3(tgt)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, tgt)
+            self._nodes_fixed = True
         return tgt
 

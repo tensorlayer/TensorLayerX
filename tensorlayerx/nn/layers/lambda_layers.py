@@ -145,6 +145,9 @@ class Lambda(Module):
         else:
             outputs = self.fn(inputs, **kwargs)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
     def get_args(self):
@@ -274,4 +277,7 @@ class ElementwiseLambda(Module):
         else:
             outputs = self.fn(*inputs, **kwargs)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

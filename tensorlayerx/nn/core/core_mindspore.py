@@ -64,9 +64,10 @@ class Module(Cell):
 
         # Layer building state
         self._built = False
+
         # Layer nodes state
-        self._nodes = []
         self._nodes_fixed = False
+        self._build_graph = False
 
         # Layer weight state
         self._all_weights = []

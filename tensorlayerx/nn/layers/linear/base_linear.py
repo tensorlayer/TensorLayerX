@@ -115,7 +115,8 @@ class Linear(Module):
         if self.act_init_flag:
             z = self.act(z)
 
-        if not self._nodes_fixed:
+        if not self._nodes_fixed and self._build_graph:
             self._add_node(inputs, z)
+            self._nodes_fixed = True
         return z
 

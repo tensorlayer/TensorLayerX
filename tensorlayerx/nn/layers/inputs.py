@@ -37,6 +37,9 @@ class _InputLayer(Module):
             self.outputs = init(self.shape_without_none, dtype=self.dtype)
         self._built = True
 
+        self._add_node(self.outputs, self.outputs)
+        self._nodes_fixed = True
+
     def __repr__(self):
         s = 'Input(shape=%s' % str(self.shape)
         if self.name is not None:

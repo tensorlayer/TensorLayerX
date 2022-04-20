@@ -81,6 +81,10 @@ class OneHot(Module):
             The inputs are indices. The locations represented by indices in indices take value on_value, while all other locations take value off_value.
         """
         outputs = self.onehot(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -294,8 +298,14 @@ class Word2vecEmbedding(Module):
                 )
             )
 
+            if not self._nodes_fixed and self._build_graph:
+                self._add_node(inputs, [outputs, nce_cost])
+                self._nodes_fixed = True
             return outputs, nce_cost
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -385,6 +395,10 @@ class Embedding(Module):
             The input of a network.
         """
         outputs = self.embedding_lookup(params=self.embeddings, ids=inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -505,4 +519,7 @@ class AverageEmbedding(Module):
 
         outputs = sentence_embeddings
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

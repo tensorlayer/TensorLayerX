@@ -58,6 +58,10 @@ class Stack(Module):
 
     def forward(self, inputs):
         outputs = self.stack(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -110,4 +114,8 @@ class UnStack(Module):
 
     def forward(self, inputs):
         outputs = self.unstack(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

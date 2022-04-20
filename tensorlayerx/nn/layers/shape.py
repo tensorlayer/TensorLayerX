@@ -49,9 +49,12 @@ class Flatten(Module):
     def build(self, inputs_shape=None):
         self.flatten_reshape = tlx.ops.FlattenReshape()
 
-    # @tf.function
     def forward(self, inputs):
         outputs = self.flatten_reshape(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -94,6 +97,10 @@ class Reshape(Module):
 
     def forward(self, inputs):
         outputs = self.reshape(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -142,9 +149,12 @@ class Transpose(Module):
     def build(self, inputs_shape=None):
         self.transpose = tlx.ops.Transpose(perm=self.perm, conjugate=self.conjugate)
 
-    # @tf.function
     def forward(self, inputs):
         outputs = self.transpose(a=inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -211,4 +221,8 @@ class Shuffle(Module):
             temp = self.reshape1(inputs)
             temp = self.transpose(temp)
             outputs = self.reshape2(temp)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

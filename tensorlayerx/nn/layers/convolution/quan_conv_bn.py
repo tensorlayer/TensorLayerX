@@ -202,4 +202,7 @@ class QuanConv2dWithBN(Module):
         if self.act:
             conv_fold = self.act(conv_fold)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, conv_fold)
+            self._nodes_fixed = True
         return conv_fold

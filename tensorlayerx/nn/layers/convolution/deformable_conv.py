@@ -299,4 +299,8 @@ class DeformableConv2d(Module):
         # (b*c, h, w, n) --> (b, h, w, n, c)
         mapped_vals = self._to_b_h_w_n_c(mapped_vals, [batch_size, input_h, input_w, kernel_n, channel])
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, mapped_vals)
+            self._nodes_fixed = True
+
         return mapped_vals

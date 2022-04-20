@@ -152,6 +152,9 @@ class Conv1d(Module):
         if self.act_init_flag:
             outputs = self.act(outputs)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -295,6 +298,10 @@ class Conv2d(Module):
             outputs = self.bias_add(outputs, self.b)
         if self.act_init_flag:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -440,6 +447,10 @@ class Conv3d(Module):
             outputs = self.bias_add(outputs, self.b)
         if self.act_init_flag:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -584,6 +595,10 @@ class ConvTranspose1d(Module):
             outputs = self.bias_add(outputs, self.b)
         if self.act_init_flag:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -723,6 +738,10 @@ class ConvTranspose2d(Module):
             outputs = self.bias_add(outputs, self.b)
         if self.act_init_flag:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -865,4 +884,8 @@ class ConvTranspose3d(Module):
             outputs = self.bias_add(outputs, self.b)
         if self.act_init_flag:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

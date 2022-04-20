@@ -95,6 +95,10 @@ class PoolLayer(Module):
 
     def forward(self, inputs):
         outputs = self._pool(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -169,6 +173,10 @@ class MaxPool1d(Module):
 
     def forward(self, inputs):
         outputs = self.max_pool(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -244,6 +252,10 @@ class MeanPool1d(Module):
 
     def forward(self, inputs):
         outputs = self.avg_pool(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -320,6 +332,10 @@ class MaxPool2d(Module):
 
     def forward(self, inputs):
         outputs = self.max_pool(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -395,6 +411,10 @@ class MeanPool2d(Module):
 
     def forward(self, inputs):
         outputs = self.avg_pool(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -473,6 +493,10 @@ class MaxPool3d(Module):
 
     def forward(self, inputs):
         outputs = self.max_pool3d(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -550,6 +574,10 @@ class MeanPool3d(Module):
 
     def forward(self, inputs):
         outputs = self.avg_pool3d(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -606,6 +634,10 @@ class GlobalMaxPool1d(Module):
 
     def forward(self, inputs):
         outputs = self.reduce_max(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -661,6 +693,10 @@ class GlobalMeanPool1d(Module):
 
     def forward(self, inputs):
         outputs = self.reduce_mean(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -716,6 +752,10 @@ class GlobalMaxPool2d(Module):
 
     def forward(self, inputs):
         outputs = self.reduce_max(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -772,6 +812,10 @@ class GlobalMeanPool2d(Module):
 
     def forward(self, inputs):
         outputs = self.reduce_mean(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -828,6 +872,10 @@ class GlobalMaxPool3d(Module):
 
     def forward(self, inputs):
         outputs = self.reduce_max(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -883,6 +931,10 @@ class GlobalMeanPool3d(Module):
 
     def forward(self, inputs):
         outputs = self.reduce_mean(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -956,6 +1008,10 @@ class CornerPool2d(Module):
             outputs = tlx.add(temp_top, temp_left)
         else:
             outputs = tlx.identity(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -1009,8 +1065,11 @@ class AdaptiveMeanPool1d(Module):
         self.adaptivemeanpool1d = tlx.ops.AdaptiveMeanPool1D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
-
         outputs = self.adaptivemeanpool1d(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -1067,8 +1126,11 @@ class AdaptiveMeanPool2d(Module):
         self.adaptivemeanpool2d = tlx.ops.AdaptiveMeanPool2D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
-
         outputs = self.adaptivemeanpool2d(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -1125,8 +1187,11 @@ class AdaptiveMeanPool3d(Module):
         self.adaptivemeanpool3d = tlx.ops.AdaptiveMeanPool3D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
-
         outputs = self.adaptivemeanpool3d(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -1180,8 +1245,11 @@ class AdaptiveMaxPool1d(Module):
         self.adaptivemaxpool1d = tlx.ops.AdaptiveMaxPool1D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
-
         outputs = self.adaptivemaxpool1d(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -1237,8 +1305,11 @@ class AdaptiveMaxPool2d(Module):
         self.adaptivemaxpool2d = tlx.ops.AdaptiveMaxPool2D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
-
         outputs = self.adaptivemaxpool2d(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -1295,6 +1366,9 @@ class AdaptiveMaxPool3d(Module):
         self.adaptivemaxpool3d = tlx.ops.AdaptiveMaxPool3D(output_size=self.output_size, data_format=self.data_format)
 
     def forward(self, inputs):
-
         outputs = self.adaptivemaxpool3d(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
