@@ -583,7 +583,7 @@ class Module(object):
     def str_to_init(self, initializer):
         return str2init(initializer)
 
-    def node_build(self, *inputs, **kwargs):
+    def build_graph(self, *inputs, **kwargs):
         # Add nodes only when the composition is needed.
         layers = self.layers_and_names(name_prefix='')
         for layer_name, layer in layers:
@@ -680,10 +680,8 @@ class Module(object):
                     indegrees[out_node.node_name] -= 1
                     if indegrees[out_node.node_name] == 0:
                         next_depth.append(out_node)
-
             cur_depth = next_depth
             next_depth = []
-
         return node_by_depth, all_layers
 
 
