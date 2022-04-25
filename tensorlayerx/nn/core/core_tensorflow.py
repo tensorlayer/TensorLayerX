@@ -1,12 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .common import str2act, str2init, tolist
+from .common import str2act, str2init, tolist, construct_graph, ModuleNode
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from collections import OrderedDict, abc as container_abcs
 from collections import OrderedDict
 import time
-from queue import Queue
 import tensorlayerx as tlx
 import tensorflow as tf
 from tensorlayerx.nn.layers.utils import (get_variable_with_initializer, random_normal)
@@ -593,7 +592,7 @@ class Module(object):
         outputs = self.forward(*inputs, **kwargs)
         self.inputs = inputs
         self.outputs = outputs
-        self._node_by_depth, self._all_layers = self._construct_graph()
+        self._node_by_depth, self._all_layers = construct_graph(self.inputs, self.outputs)
         return self._node_by_depth, self._all_layers
 
     def _add_node(self, input_tensors, output_tensors):
@@ -625,114 +624,6 @@ class Module(object):
         _global_layer_node.append(new_node)
         for idx, tensor in enumerate(outputs_list):
             tensor._info = (new_node, idx)
-
-    def _construct_graph(self):
-        """construct computation graph for model using ModuleNode object"""
-        all_layers = []
-        node_by_depth = []
-
-        input_tensors_list = self.inputs if isinstance(self.inputs, list) else [self.inputs]
-
-        queue_node = Queue()
-        # BFS to visit all nodes that should be involved in the computation graph
-        output_tensors_list = self.outputs if isinstance(self.outputs, list) else [self.outputs]
-        output_nodes = [tensor._info[0] for tensor in output_tensors_list]
-
-        visited_node_names = set()
-        for out_node in output_nodes:
-            if out_node.visited:
-                continue
-            queue_node.put(out_node)
-
-            while not queue_node.empty():
-                cur_node = queue_node.get()
-                in_nodes = cur_node.in_nodes
-
-                for node in in_nodes:
-                    node.out_nodes.append(cur_node)
-                    if not node.visited:
-                        queue_node.put(node)
-                        node.visited = True
-                        if node.node_name not in visited_node_names:
-                            visited_node_names.add(node.node_name)
-                        # else have multiple layers with the same name
-                        else:
-                            raise ValueError(
-                                'Layer name \'%s\' has already been used by another layer. Please change the layer name.'
-                                % node.layer.name
-                            )
-
-        # construct the computation graph in top-sort order
-        cur_depth = [tensor[0]._info[0] for tensor in input_tensors_list]
-        next_depth = []
-        indegrees = {}
-
-        visited_layer_names = []
-        while not len(cur_depth) == 0:
-            node_by_depth.append(cur_depth)
-            for node in cur_depth:
-                if node.layer.name not in visited_layer_names:
-                    all_layers.append(node.layer)
-                    visited_layer_names.append(node.layer.name)
-                for out_node in node.out_nodes:
-                    if out_node.node_name not in indegrees.keys():
-                        indegrees[out_node.node_name] = len(out_node.in_nodes)
-                    indegrees[out_node.node_name] -= 1
-                    if indegrees[out_node.node_name] == 0:
-                        next_depth.append(out_node)
-            cur_depth = next_depth
-            next_depth = []
-        return node_by_depth, all_layers
-
-
-class ModuleNode(object):
-    """
-    The class :class:`ModuleNode` class represents a conceptional node for a layer.
-
-    ModuleNode is used for building topology and it is actually a light weighted
-    wrapper over Layer.
-
-    Parameters
-    ----------
-    layer : tl.layers.Layer
-        A tl layer that wants to create a node.
-    node_index : int
-        Index of this node in layer._nodes.
-    in_nodes ：a list of ModuleNode
-        Father nodes to this node.
-    in_tensors : a list of tensors
-        Input tensors to this node.
-    out_tensors : a list of tensors
-        Output tensors to this node.
-    in_tensor_idxes : a list of int
-        Indexes of each input tensor in its corresponding node's out_tensors.
-
-    Methods
-    ---------
-    __init__()
-        Initializing the ModuleNode.
-    __call__()
-        (1) Forwarding through the layer. (2) Update its input/output tensors.
-    """
-
-    def __init__(self, layer, node_index, in_nodes, in_tensors, out_tensors, in_tensor_idxes):
-        self.layer = layer
-        self.node_index = node_index
-        self.in_nodes = in_nodes
-        self.out_nodes = []
-        self.in_tensors = in_tensors
-        self.out_tensors = out_tensors
-        self.node_name = layer.name + "_node_{}".format(node_index)
-
-        self.in_tensors_idxes = in_tensor_idxes
-        self.visited = False
-
-    def __call__(self, inputs, **kwargs):
-        """(1) Forwarding through the layer. (2) Update its input/output tensors."""
-        outputs = self.layer(inputs, **kwargs)
-        self.in_tensors = tolist(inputs)
-        self.out_tensors = tolist(outputs)
-        return self.out_tensors
 
 
 class Sequential(Module):

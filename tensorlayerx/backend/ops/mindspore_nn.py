@@ -19,7 +19,7 @@ from mindspore.communication.management import get_group_size, get_rank
 from mindspore.ops.operations import LayerNorm
 import mindspore.numpy as np
 from mindspore.common.parameter import ParameterTuple
-from mindspore.nn.layer.rnns import _DynamicRNN
+from mindspore.nn.layer.rnns import _DynamicRNNBase
 import warnings
 import math
 
@@ -1953,7 +1953,7 @@ class rnnbase(Cell):
         self.w_hh_list = ParameterTuple(w_hh)
         self.b_ih_list = ParameterTuple(b_ih)
         self.b_hh_list = ParameterTuple(b_hh)
-        self.rnn = _DynamicRNN(mode)
+        self.rnn = _DynamicRNNBase(mode)
         self.is_lstm = mode == "LSTM"
 
         self.zeros = P.Zeros()

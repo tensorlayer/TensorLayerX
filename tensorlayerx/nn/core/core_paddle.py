@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import copy, six
-from .common import str2act, str2init
+from .common import str2act, str2init, tolist, construct_graph, ModuleNode
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from paddle.fluid import framework
 from paddle.fluid.dygraph import Layer
@@ -12,7 +12,11 @@ from paddle.fluid.dygraph import parallel_helper
 import paddle as pd
 from collections import OrderedDict
 from collections import OrderedDict, abc as container_abcs
+import tensorlayerx as tlx
+from queue import Queue
+
 _global_layer_name_dict = {}
+_global_layer_node = []
 
 __all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict']
 
@@ -304,6 +308,50 @@ class Module(Layer):
         if not isinstance(child, Module) and child is not None:
             raise TypeError("Child layer type is incorrect.")
         self._sub_layers[child_name] = child
+
+    def build_graph(self, *inputs, **kwargs):
+        # Add nodes only when the composition is needed.
+        # for layer in self.sublayers():
+        #     if isinstance(layer, Module):
+        #         layer._build_graph = True
+        #
+        # outputs = self.forward(*inputs, **kwargs)
+        # self.inputs = inputs
+        # self.outputs = outputs
+        # self._node_by_depth, self._all_layers = construct_graph(self.inputs, self.outputs)
+        # return self._node_by_depth, self._all_layers
+        raise NotImplementedError
+
+    def _add_node(self, input_tensors, output_tensors):
+        """Add a ModuleNode for this layer given input_tensors, output_tensors.
+
+        This function should not be called from outside, it should only be called
+        in __call__ when building static model.
+
+        Parameters
+        ----------
+        input_tensors : Tensor or a list of tensors
+            Input tensors to this layer.
+        output_tensors : Tensor or a list of tensors
+            Output tensors to this layer.
+
+        """
+        pass
+        # inputs_list = tolist(input_tensors)
+        # outputs_list = tolist(output_tensors)
+        # if self.__class__.__name__ in tlx.layers.inputs.__all__:
+        #     # for InputLayer, there should be no in_nodes
+        #     in_nodes = []
+        #     in_tensor_idxes = [0]
+        # else:
+        #     in_nodes = [tensor[0] for tensor in inputs_list]
+        #     in_tensor_idxes = [tensor[1] for tensor in inputs_list]
+        # node_index = len(_global_layer_node)
+        #
+        # new_node = ModuleNode(self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes)
+        # _global_layer_node.append(new_node)
+        # for idx, tensor in enumerate(outputs_list):
+        #     tensor._info = (new_node, idx)
 
 
 class Sequential(Module):

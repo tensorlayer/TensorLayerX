@@ -1,11 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .common import str2act, str2init, random_normal
+from .common import str2act, str2init, random_normal, tolist, construct_graph, ModuleNode
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from mindspore.nn import Cell
 import tensorlayerx as tlx
-from collections import OrderedDict
+import mindspore as ms
 from mindspore import log as logger
 import inspect
 from mindspore import context
@@ -16,6 +16,7 @@ from collections import OrderedDict, abc as container_abcs
 __all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict']
 
 _global_layer_name_dict = {}
+_global_layer_node = []
 
 
 class Module(Cell):
@@ -138,20 +139,24 @@ class Module(Cell):
             shape_mem = tlx.get_tensor_shape(tensors)
         return shape_mem
 
-    def __call__(self, *inputs, **kwargs):
+    def __call__(self, *args, **kwargs):
         if self.__class__.construct is Cell.construct:
-            logger.warning(
-                f"The '{self.__class__}' does not override the method 'construct', "
-                f"will call the super class(Cell) 'construct'."
-            )
+            logger.warning(f"The '{self.__class__}' does not override the method 'construct', "
+                           f"will call the super class(Cell) 'construct'.")
         if kwargs:
-            bound_args = inspect.signature(self.construct).bind(*inputs, **kwargs)
-            inputs = bound_args.args
-            kwargs = bound_args.kwargs
+            bound_arguments = inspect.signature(self.construct).bind(*args, **kwargs)
+            bound_arguments.apply_defaults()
+            args = bound_arguments.args
+            kwargs = bound_arguments.kwargs
 
         # Run in Graph mode.
-        if context.get_context("mode") == context.GRAPH_MODE:
-            raise NotImplemented("GRAPH MODE is not supported, please select PYNATIVE MODE.")
+        if context._get_mode() == context.GRAPH_MODE:
+            self._check_construct_args(*args, **kwargs)
+            if self.enable_hook:
+                raise ValueError("For 'Cell', it's not support hook function in graph mode, please use "
+                                 "context.set_context to set pynative mode.")
+            out = self.compile_and_run(*args)
+            return out
 
         # Run in PyNative mode.
         if _pynative_executor.is_top_cell():
@@ -159,20 +164,15 @@ class Module(Cell):
             # There many Casts in parameter_broadcast. Enable lazy_build and build faster.
             self._do_parameter_broadcast()
 
-        for item in inputs:
-            if isinstance(item, numpy.ndarray):
-                raise TypeError("The cell inputs should not be numpy arrays.")
+        for item in args:
+            if isinstance(item, ms.Tensor) and item.has_init:
+                item.init_data()
+            elif isinstance(item, numpy.ndarray):
+                raise TypeError("For 'Cell', inputs should not be numpy array.")
         if self.requires_grad is True:
             _pynative_executor.set_grad_flag(True)
-        _pynative_executor.new_graph(self, *inputs, **kwargs)
-        cast_inputs = list()
-        if hasattr(self, "_mindspore_flags"):
-            if self._mindspore_flags.get('fp16'):
-                cast_inputs = self._cast_mixed_precision_inputs(inputs, tlx.float16)
-            if self._mindspore_flags.get('fp32'):
-                cast_inputs = self._cast_mixed_precision_inputs(inputs, tlx.float32)
-        if not cast_inputs:
-            cast_inputs = inputs
+        _pynative_executor.new_graph(self, *args, **kwargs)
+        cast_inputs = self.auto_cast_inputs(args)
 
         with self.CellGuard():
             try:
@@ -182,28 +182,12 @@ class Module(Cell):
                 raise err
 
         if _pynative_executor.is_top_cell():
-            _pynative_executor.execute_all_task()
+            _pynative_executor.execute_lazy_task()
 
         if isinstance(output, Parameter):
             output = output.data
-        _pynative_executor.end_graph(self, output, *inputs, **kwargs)
+        _pynative_executor.end_graph(self, output, *args, **kwargs)
         return output
-
-    def _add_node(self, input_tensors, output_tensors):
-        """Add a LayerNode for this layer given input_tensors, output_tensors.
-
-        WARINING: This function should not be called from outside, it should only be called
-        in layer.__call__ when building static model.
-
-        Parameters
-        ----------
-        input_tensors : Tensor or a list of tensors
-            Input tensors to this layer.
-        output_tensors : Tensor or a list of tensors
-            Output tensors to this layer.
-
-        """
-        raise NotImplementedError
 
     def set_train(self):
         """
@@ -309,6 +293,49 @@ class Module(Cell):
         """
 
         self.forward(*inputs, **kwargs)
+
+    def build_graph(self, *inputs, **kwargs):
+        # Add nodes only when the composition is needed.
+        layers = self.cells_and_names(name_prefix='')
+        for layer_name, layer in layers:
+            if isinstance(layer, Module):
+                layer._build_graph = True
+
+        outputs = self.forward(*inputs, **kwargs)
+        self.inputs = inputs
+        self.outputs = outputs
+        self._node_by_depth, self._all_layers = construct_graph(self.inputs, self.outputs)
+        return self._node_by_depth, self._all_layers
+
+    def _add_node(self, input_tensors, output_tensors):
+        """Add a ModuleNode for this layer given input_tensors, output_tensors.
+
+        This function should not be called from outside, it should only be called
+        in __call__ when building static model.
+
+        Parameters
+        ----------
+        input_tensors : Tensor or a list of tensors
+            Input tensors to this layer.
+        output_tensors : Tensor or a list of tensors
+            Output tensors to this layer.
+
+        """
+        inputs_list = tolist(input_tensors)
+        outputs_list = tolist(output_tensors)
+        if self.__class__.__name__ in tlx.layers.inputs.__all__:
+            # for InputLayer, there should be no in_nodes
+            in_nodes = []
+            in_tensor_idxes = [0]
+        else:
+            in_nodes = [tensor._info[0] for tensor in inputs_list]
+            in_tensor_idxes = [tensor._info[1] for tensor in inputs_list]
+        node_index = len(_global_layer_node)
+
+        new_node = ModuleNode(self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes)
+        _global_layer_node.append(new_node)
+        for idx, tensor in enumerate(outputs_list):
+            tensor._info = (new_node, idx)
 
 
 class Sequential(Module):

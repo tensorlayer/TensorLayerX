@@ -24,21 +24,24 @@ class _InputLayer(Module):
 
     """
 
-    def __init__(self, shape, dtype=None, name=None, init=None):
+    def __init__(self, shape, dtype=None, name=None, init_method=None):
         super(_InputLayer, self).__init__(name)
 
         logging.info("Input  %s: %s" % (self.name, str(shape)))
         self.shape = shape
         self.dtype = dtype
         self.shape_without_none = [_ if _ is not None else 1 for _ in shape]
-        if init is None:
-            self.outputs = ones()(self.shape_without_none, dtype=self.dtype)
-        else:
-            self.outputs = init(self.shape_without_none, dtype=self.dtype)
-        self._built = True
 
+        if tlx.BACKEND == 'paddle':
+            self.outputs = tlx.ops.ones(self.shape)
+        else:
+            if init_method is None:
+                self.outputs = ones()(self.shape_without_none, dtype=self.dtype)
+            else:
+                self.outputs = init_method(self.shape_without_none, dtype=self.dtype)
+
+        self._built = True
         self._add_node(self.outputs, self.outputs)
-        self._nodes_fixed = True
 
     def __repr__(self):
         s = 'Input(shape=%s' % str(self.shape)
@@ -57,7 +60,7 @@ class _InputLayer(Module):
         return self.outputs
 
 
-def Input(shape, init=ones(), dtype=tlx.float32, name=None):
+def Input(shape, init=None, dtype=tlx.float32, name=None):
     """
     The :class:`Input` class is the starting layer of a neural network.
 
@@ -81,8 +84,6 @@ def Input(shape, init=ones(), dtype=tlx.float32, name=None):
 
     """
 
-    if tlx.BACKEND == 'paddle':
-        return tlx.ops.ones(shape, dtype)
-    input_layer = _InputLayer(shape, dtype=dtype, name=name, init=init)
+    input_layer = _InputLayer(shape, dtype=dtype, name=name, init_method=init)
     outputs = input_layer()
     return outputs
