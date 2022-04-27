@@ -477,9 +477,10 @@ class ModuleList(Module):
     >>> layer_list.append(d3)
     """
 
-    def __init__(self, args):
-        Module.__init__(self)
-        self.extend(args)
+    def __init__(self, modules = None):
+        super(ModuleList, self).__init__()
+        if modules is not None:
+            self.extend(modules)
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -554,9 +555,10 @@ class ModuleList(Module):
 
 class ModuleDict(Module):
 
-    def __init__(self, modules):
+    def __init__(self, modules = None):
         super(ModuleDict, self).__init__()
-        self.update(modules)
+        if modules is not None:
+            self.update(modules)
 
     def __getitem__(self, key):
 

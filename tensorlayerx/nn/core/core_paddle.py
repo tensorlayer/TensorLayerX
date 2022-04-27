@@ -416,10 +416,10 @@ class Sequential(Module):
 
 class ModuleList(Module):
 
-    def __init__(self, args):
+    def __init__(self, modules = None):
         super(ModuleList, self).__init__()
-        if args is not None:
-            self.extend(args)
+        if modules is not None:
+            self.extend(modules)
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -501,9 +501,10 @@ class ModuleList(Module):
 
 class ModuleDict(Module):
 
-    def __init__(self, modules):
+    def __init__(self, modules = None):
         super(ModuleDict, self).__init__()
-        self.update(modules)
+        if modules is not None:
+            self.update(modules)
 
     def __getitem__(self, key):
 
