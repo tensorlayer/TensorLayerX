@@ -2765,12 +2765,12 @@ class PReLU(object):
     def __call__(self, input, weight):
 
         pos = tf.nn.relu(input)
-        neg = -weight * tf.nn.relu(input)
+        neg = -tf.nn.sigmoid(weight) * tf.nn.relu(-input)
         return pos + neg
 
 
 def prelu(input, weight, data_format):
 
     pos = tf.nn.relu(input)
-    neg = -weight * tf.nn.relu(input)
+    neg = -tf.nn.sigmoid(weight) * tf.nn.relu(-input)
     return pos + neg
