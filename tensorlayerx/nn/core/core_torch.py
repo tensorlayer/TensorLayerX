@@ -186,6 +186,7 @@ class Module(T_Module):
         for name, layer in self.named_modules():
             if isinstance(layer, Module):
                 layer._build_graph = True
+        self.set_eval()
 
         outputs = self.forward(*inputs, **kwargs)
         self.inputs = inputs

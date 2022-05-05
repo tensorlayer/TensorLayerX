@@ -1,9 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorflow as tf
 from tensorlayerx import logging
-from tensorlayerx.files import utils
 from tensorlayerx.nn.core import Module
 
 __all__ = [
@@ -150,19 +148,6 @@ class Lambda(Module):
             self._nodes_fixed = True
         return outputs
 
-    def get_args(self):
-        init_args = {}
-        if isinstance(self.fn, tf.keras.layers.Layer) or isinstance(self.fn, tf.keras.Model):
-            init_args.update({"layer_type": "keraslayer"})
-            init_args["fn"] = utils.save_keras_model(self.fn)
-            init_args["fn_weights"] = None
-            if len(self._nodes) == 0:
-                init_args["keras_input_shape"] = []
-            else:
-                init_args["keras_input_shape"] = self._nodes[0].in_tensors[0].get_shape().as_list()
-        else:
-            init_args = {"layer_type": "normal"}
-        return init_args
 
 
 class ElementwiseLambda(Module):
@@ -264,7 +249,6 @@ class ElementwiseLambda(Module):
         # the weights of the function are provided when the Lambda layer is constructed
         pass
 
-    # @tf.function
     def forward(self, inputs, **kwargs):
 
         if not isinstance(inputs, list):
