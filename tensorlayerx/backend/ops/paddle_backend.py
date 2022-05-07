@@ -1531,8 +1531,15 @@ def is_tensor(x):
 
 
 def tensor_scatter_nd_update(tensor, indices, updates):
+    tensor = paddle.to_tensor(tensor)
+    indices = paddle.to_tensor(indices)
+    updates = paddle.to_tensor(updates)
     a = pd.scatter_nd(indices, pd.ones_like(updates), tensor.shape)
     a = pd.multiply(tensor, -a)
     tensor = tensor + a
     x = pd.scatter_nd_add(tensor, indices, updates)
     return x
+
+def diag(input, diagonal=0):
+
+    return paddle.diag(input, diagonal)

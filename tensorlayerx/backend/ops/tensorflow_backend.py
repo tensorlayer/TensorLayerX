@@ -3605,13 +3605,52 @@ def tensor_scatter_nd_update(tensor, indices, updates):
 
     Parameters
     ----------
-    tensor
-    indices
-    updates
+    tensor : Tensor
+        tensor to update.
+    indices : list
+        indices to update.
+    updates : Tensor
+        value to apply at the indices
 
     Returns
     -------
+        updated Tensor.
 
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> tensor = tlx.ops.ones(shape=(5,3))
+    >>> indices = [[0],[ 4],[ 2]]
+    >>> updates = tlx.ops.convert_to_tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    >>> new_tensor = tlx.ops.tensor_scatter_nd_update(tensor, indices, updates)
+    >>>  [[1. 2. 3.]
+    >>>  [1. 1. 1.]
+    >>>  [7. 8. 9.]
+    >>>  [1. 1. 1.]
+    >>>  [4. 5. 6.]]
     """
 
     return tf.tensor_scatter_nd_update(tensor, indices, updates)
+
+def diag(input, diagonal=0):
+    """
+
+    Parameters
+    ----------
+    input : Tensor
+        the input tensor.
+    diagonal : int
+         the diagonal to consider. Defualt is 0.
+
+    Returns
+    -------
+        the output tensor.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> tensor = tlx.ops.convert_to_tensor([[1,2,3],[4,5,6],[7,8,9]]))
+    >>> new_tensor = tlx.ops.diag(tensor)
+    >>> [1, 5, 9]
+    """
+    return tf.experimental.numpy.diag(input, diagonal)

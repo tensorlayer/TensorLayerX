@@ -1818,6 +1818,13 @@ def is_tensor(x):
     return isinstance(x, ms.Tensor)
 
 def tensor_scatter_nd_update(tensor, indices, updates):
-
+    if not isinstance(tensor,  ms.Tensor) or not isinstance(updates, ms.Tensor):
+        raise TypeError("tensor, updates should be Tensor, but got tensor type is {}, "
+                        "and updates type is {}.".format(type(tensor), type(updates)))
+    indices = ms.Tensor(indices)
     op = ms.ops.TensorScatterUpdate()
     return op(tensor, indices, updates)
+
+def diag(input, diagonal=0):
+
+    return ms.numpy.diag(input, diagonal)

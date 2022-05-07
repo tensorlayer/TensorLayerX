@@ -112,6 +112,8 @@ API - Operations
    unsorted_segment_max
    set_seed
    is_tensor
+   tensor_scatter_nd_update
+   diag
 
 TensorLayerX Tensor Operations
 --------------------------------
@@ -539,3 +541,11 @@ set_seed
 is_tensor
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: is_tensor
+
+tensor_scatter_nd_update
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: tensor_scatter_nd_update
+
+diag
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: diag

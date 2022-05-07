@@ -1633,9 +1633,13 @@ def is_tensor(x):
     return isinstance(x, torch.Tensor)
 
 def tensor_scatter_nd_update(tensor, indices, updates):
-
+    tensor = torch.tensor(tensor)
+    indices = torch.tensor(indices)
+    updates = torch.tensor(updates)
     indices = torch.flatten(indices)
     tensor[indices] = updates
     return tensor
 
+def diag(input, diagonal=0):
 
+    return torch.diag(input, diagonal)
