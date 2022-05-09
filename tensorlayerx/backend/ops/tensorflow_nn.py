@@ -400,7 +400,7 @@ class BiasAdd(object):
     """
 
     def __init__(self, data_format=None):
-        self.data_format = data_format
+        self.data_format, _ = preprocess_2d_format(data_format, None)
 
     def __call__(self, x, bias):
         return tf.nn.bias_add(x, bias, data_format=self.data_format)
@@ -425,7 +425,7 @@ def bias_add(x, bias, data_format=None, name=None):
     -------
         A Tensor with the same type as value.
     """
-
+    data_format , _ = preprocess_2d_format(data_format, None)
     x = tf.nn.bias_add(x, bias, data_format=data_format, name=name)
     return x
 
