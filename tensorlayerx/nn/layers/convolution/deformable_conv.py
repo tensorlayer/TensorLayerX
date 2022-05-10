@@ -22,7 +22,7 @@ class DeformableConv2d(Module):
         e.g. if apply a 3*3 kernel, the number of the last dimension should be 18 (2*3*3)
     out_channels : int
         The number of filters.
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         The filter size (height, width).
     act : activation function
         The activation function of this layer.
@@ -82,7 +82,7 @@ class DeformableConv2d(Module):
 
         self.offset_layer = offset_layer
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
+        self.kernel_size = self.check_param(kernel_size)
         self.padding = padding
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)

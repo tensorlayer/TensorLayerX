@@ -17,9 +17,9 @@ class GroupConv2d(Module):
       --------------
       out_channels : int
           The number of filters.
-      kernel_size : tuple of int
+      kernel_size : tuple or int
           The filter size.
-      stride : tuple of int
+      stride : tuple or int
           The stride step.
       n_group : int
           The number of groups.
@@ -29,7 +29,7 @@ class GroupConv2d(Module):
           The padding algorithm type: "SAME" or "VALID".
       data_format : str
           "channels_last" (NHWC, default) or "channels_first" (NCHW).
-      dilation : tuple of int
+      dilation : tuple or int
           Specifying the dilation rate to use for dilated convolution.
       W_init : initializer or str
           The initializer for the weight matrix.
@@ -70,12 +70,12 @@ class GroupConv2d(Module):
     ):
         super().__init__(name, act=act)
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self._stride = self.stride = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self._stride = self.stride = self.check_param(stride)
         self.n_group = n_group
         self.padding = padding
         self.data_format = data_format
-        self._dilation_rate = self.dilation = dilation
+        self._dilation_rate = self.dilation = self.check_param(dilation)
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels

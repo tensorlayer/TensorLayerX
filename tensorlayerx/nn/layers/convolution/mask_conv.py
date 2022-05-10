@@ -22,12 +22,12 @@ class MaskedConv3d(Module):
             The mask type('A', 'B')
         out_channels : int
             The number of filters.
-        filter_size : tuple of int
+        filter_size : tuple or int
             The filter size (height, width).
-        stride : tuple of int
+        stride : tuple or int
             The sliding window stride of corresponding input dimensions.
             It must be in the same order as the ``shape`` parameter.
-        dilation : tuple of int
+        dilation : tuple or int
             Specifying the dilation rate to use for dilated convolution.
         act : activation function
             The activation function of this layer.
@@ -77,9 +77,9 @@ class MaskedConv3d(Module):
         self.mask_type = mask_type
 
         self.out_channels = out_channels
-        self.filter_size = filter_size
-        self.stride = stride
-        self.dilation = dilation
+        self.filter_size = self.check_param(filter_size, '3d')
+        self.stride = self.check_param(stride, '3d')
+        self.dilation = self.check_param(dilation, '3d')
         self.padding = padding
         self.kernel_initializer = self.str_to_init(kernel_initializer)
         self.bias_initializer = self.str_to_init(bias_initializer)

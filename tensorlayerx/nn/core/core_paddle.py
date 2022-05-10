@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import copy, six
-from .common import str2act, str2init, tolist, construct_graph, ModuleNode
+from .common import check_parameter, str2act, str2init, tolist, construct_graph, ModuleNode
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from paddle.fluid import framework
 from paddle.fluid.dygraph import Layer
@@ -287,6 +287,9 @@ class Module(Layer):
 
     def str_to_init(self, initializer):
         return str2init(initializer)
+
+    def check_param(self, param, dim='2d'):
+        return check_parameter(param, dim)
 
     def insert_child_to_layer(self, child_name, child):
         """

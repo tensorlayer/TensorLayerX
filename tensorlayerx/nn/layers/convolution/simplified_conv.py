@@ -163,12 +163,12 @@ class Conv2d(Module):
     ----------
     out_channels  : int
         Number of channels produced by the convolution
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         The kernel size (height, width).
-    stride : tuple of int
+    stride : tuple or int
         The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
-    dilation : tuple of int
+    dilation : tuple or int
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The activation function of this layer.
@@ -213,11 +213,11 @@ class Conv2d(Module):
     ):
         super(Conv2d, self).__init__(name, act=act)
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self._strides = self.stride = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self._strides = self.stride = self.check_param(stride)
         self.padding = padding
         self.data_format = data_format
-        self._dilation_rate = self.dilation = dilation
+        self._dilation_rate = self.dilation = self.check_param(dilation)
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -308,12 +308,12 @@ class Conv3d(Module):
     ----------
     out_channels  : int
         Number of channels produced by the convolution
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         The kernel size (depth, height, width).
-    stride : tuple of int
+    stride : tuple or int
         The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
-    dilation : tuple of int
+    dilation : tuple or int
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The activation function of this layer.
@@ -358,11 +358,11 @@ class Conv3d(Module):
     ):
         super().__init__(name, act=act)
         self.out_channels  = out_channels
-        self.kernel_size = kernel_size
-        self._strides = self.stride = stride
+        self.kernel_size = self.check_param(kernel_size, dim='3d')
+        self._strides = self.stride = self.check_param(stride, dim='3d')
         self.padding = padding
         self.data_format = data_format
-        self._dilation_rate = self.dilation = dilation
+        self._dilation_rate = self.dilation = self.check_param(dilation, dim='3d')
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -601,12 +601,12 @@ class ConvTranspose2d(Module):
     ----------
     out_channels : int
         Number of channels produced by the convolution
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         The kernel size (height, width).
-    stride : tuple of int
+    stride : tuple or int
         The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
-    dilation : tuple of int
+    dilation : tuple or int
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The activation function of this layer.
@@ -651,11 +651,11 @@ class ConvTranspose2d(Module):
     ):
         super(ConvTranspose2d, self).__init__(name, act=act)
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self.stride = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self.stride = self.check_param(stride)
         self.padding = padding
         self.data_format = data_format
-        self.dilation = dilation
+        self.dilation = self.check_param(dilation)
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -742,12 +742,12 @@ class ConvTranspose3d(Module):
     ----------
     out_channels : int
         Number of channels produced by the convolution
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         The kernel size (depth, height, width).
-    stride : tuple of int
+    stride : tuple or int
         The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
-    dilation : tuple of int
+    dilation : tuple or int
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The activation function of this layer.
@@ -792,11 +792,11 @@ class ConvTranspose3d(Module):
     ):
         super(ConvTranspose3d, self).__init__(name, act=act)
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self.stride = stride
+        self.kernel_size = self.check_param(kernel_size, dim='3d')
+        self.stride = self.check_param(stride, dim='3d')
         self.padding = padding
         self.data_format = data_format
-        self.dilation = dilation
+        self.dilation = self.check_param(dilation, dim='3d')
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels

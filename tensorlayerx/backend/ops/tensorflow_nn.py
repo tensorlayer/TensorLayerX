@@ -54,9 +54,9 @@ def preprocess_1d_format(data_format, padding):
     -------
         str "NWC" or "NCW" and "SAME" or "VALID"
     """
-    if data_format in ["channels_last", "NWC"]:
+    if data_format in ["channels_last", "NWC", 'NLC']:
         data_format = "NWC"
-    elif data_format in ["channels_first", "NCW"]:
+    elif data_format in ["channels_first", "NCW", 'NCL']:
         data_format = "NCW"
     elif data_format == None:
         data_format = None
@@ -399,9 +399,11 @@ class BiasAdd(object):
         A Tensor with the same type as value.
     """
 
-    def __init__(self, data_format=None):
-        self.data_format, _ = preprocess_2d_format(data_format, None)
-
+    def __init__(self, data_format='channels_last'):
+        if data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
+            self.data_format = "NCHW"
+        elif data_format in ['channels_last', 'NLC', 'NWC', 'NHWC', 'NDHWC']:
+            self.data_format = "NHWC"
     def __call__(self, x, bias):
         return tf.nn.bias_add(x, bias, data_format=self.data_format)
 

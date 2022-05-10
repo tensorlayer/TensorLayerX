@@ -19,9 +19,9 @@ class QuanConv2dWithBN(Module):
     ----------
     out_channels : int
         The number of filters.
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         The filter size (height, width).
-    stride : tuple of int
+    stride : tuple or int
         The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
     padding : str
@@ -52,7 +52,7 @@ class QuanConv2dWithBN(Module):
         The arguments for the weight matrix initializer.
     data_format : str
         "NHWC" or "NCHW", default is "NHWC".
-    dilation : tuple of int
+    dilation : tuple or int
         Specifying the dilation rate to use for dilated convolution.
     in_channels : int
         The number of in channels.
@@ -93,8 +93,8 @@ class QuanConv2dWithBN(Module):
     ):
         super(QuanConv2dWithBN, self).__init__(act=act, name=name)
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self.stride = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self.stride = self.check_param(stride)
         self.padding = padding
         self.decay = decay
         self.epsilon = epsilon
@@ -107,7 +107,7 @@ class QuanConv2dWithBN(Module):
         self.W_init = self.str_to_init(W_init)
         self.W_init_args = W_init_args
         self.data_format = data_format
-        self.dilation = dilation
+        self.dilation = self.check_param(dilation)
         self.in_channels = in_channels
         logging.info(
             "QuanConv2dWithBN %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s " % (

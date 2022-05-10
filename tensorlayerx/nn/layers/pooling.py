@@ -264,9 +264,9 @@ class MaxPool2d(Module):
 
     Parameters
     -----------
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         (height, width) for filter size.
-    stride : tuple of int
+    stride : tuple or int
         (height, width) for stride.
     padding : str
         The padding method: 'VALID' or 'SAME'.
@@ -294,10 +294,10 @@ class MaxPool2d(Module):
         name=None  # 'maxpool2d'
     ):
         super().__init__(name)
-        self.kernel_size = kernel_size
+        self.kernel_size = self.check_param(kernel_size)
         if stride is None:
-            stride = kernel_size
-        self.stride = self._stride = stride
+            stride = self.kernel_size
+        self.stride = self._stride = self.check_param(stride)
         self.padding = padding
         self.data_format = data_format
 
@@ -344,9 +344,9 @@ class MeanPool2d(Module):
 
     Parameters
     -----------
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         (height, width) for filter size.
-    stride : tuple of int
+    stride : tuple or int
         (height, width) for stride.
     padding : str
         The padding method: 'VALID' or 'SAME'.
@@ -374,10 +374,10 @@ class MeanPool2d(Module):
         name=None  # 'meanpool2d'
     ):
         super().__init__(name)
-        self.kernel_size = kernel_size
+        self.kernel_size = self.check_param(kernel_size)
         if stride is None:
-            stride = kernel_size
-        self.stride = self._stride = stride
+            stride = self.kernel_size
+        self.stride = self._stride = self.check_param(stride)
         self.padding = padding
         self.data_format = data_format
 
@@ -423,9 +423,9 @@ class MaxPool3d(Module):
 
     Parameters
     ------------
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         Pooling window size.
-    stride : tuple of int
+    stride : tuple or int
         Strides of the pooling operation.
     padding : str
         The padding method: 'VALID' or 'SAME'.
@@ -458,8 +458,8 @@ class MaxPool3d(Module):
         name=None  # 'maxpool3d'
     ):
         super().__init__(name)
-        self.kernel_size = kernel_size
-        self.stride = self._stride = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self.stride = self._stride = self.check_param(stride)
         self.padding = padding
         self.data_format = data_format
 
@@ -505,9 +505,9 @@ class MeanPool3d(Module):
 
     Parameters
     ------------
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         Pooling window size.
-    stride : tuple of int
+    stride : tuple or int
         Strides of the pooling operation.
     padding : str
         The padding method: 'VALID' or 'SAME'.
@@ -540,8 +540,8 @@ class MeanPool3d(Module):
         name=None  # 'meanpool3d'
     ):
         super().__init__(name)
-        self.kernel_size = kernel_size
-        self.stride = self._stride = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self.stride = self._stride = self.check_param(stride)
         self.padding = padding
         self.data_format = data_format
 

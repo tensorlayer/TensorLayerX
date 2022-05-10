@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .common import str2act, str2init, tolist, construct_graph, ModuleNode
+from .common import check_parameter, str2act, str2init, tolist, construct_graph, ModuleNode, select_attrs
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from collections import OrderedDict, abc as container_abcs
 from collections import OrderedDict
@@ -582,6 +582,9 @@ class Module(object):
     def str_to_init(self, initializer):
         return str2init(initializer)
 
+    def check_param(self, param, dim='2d'):
+        return check_parameter(param, dim)
+
     def build_graph(self, *inputs, **kwargs):
         # Add nodes only when the composition is needed.
         layers = self.layers_and_names(name_prefix='')
@@ -621,7 +624,7 @@ class Module(object):
             in_tensor_idxes = [tensor._info[1] for tensor in inputs_list]
         node_index = len(_global_layer_node)
 
-        new_node = ModuleNode(self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes)
+        new_node = ModuleNode(self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes, select_attrs(self))
         _global_layer_node.append(new_node)
         for idx, tensor in enumerate(outputs_list):
             tensor._info = (new_node, idx)

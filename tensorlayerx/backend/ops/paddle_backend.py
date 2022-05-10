@@ -11,40 +11,61 @@ import paddle.nn.functional as F
 from .paddle_nn import nchw_to_nhwc, nhwc_to_nchw, preprocess_2d_format, preprocess_1d_format, preprocess_3d_format
 import random
 
-
-_dtypeDict = {
-    'DType': paddle.dtype,
-    'float16': paddle.float16,
-    'float32': paddle.float32,
-    'float64': paddle.float64,
-    'int8': paddle.int8,
-    'int16': paddle.int16,
-    'int32': paddle.int32,
-    'int64': paddle.int64,
-    'uint8': paddle.uint8,
-    'uint16': None,
-    'uint32': None,
-    'uint64': None,
-    'bool': paddle.bool,
-    'complex64': paddle.complex64,
-    'complex128': paddle.complex128
-}
-# TODO NotImplemented
-DType = paddle.dtype
-float16 = paddle.float16
-float32 = paddle.float32
-float64 = paddle.float64
-int8 = paddle.int8
-int16 = paddle.int16
-int32 = paddle.int32
-int64 = paddle.int64
-uint8 = paddle.uint8
-uint16 = None
-uint32 = None
-uint64 = None
-bool = paddle.bool
-complex64 = paddle.complex64
-complex128 = paddle.complex128
+if paddle.__version__ < '2.2.2':
+    _dtypeDict = [
+        "float16", "float32", "float64", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "bool",
+        "complex64", "complex128"
+    ]
+    # TODO NotImplemented
+    DType = None
+    float16 = "float16"
+    float32 = "float32"
+    float64 = "float64"
+    int8 = "int8"
+    int16 = "int16"
+    int32 = "int32"
+    int64 = "int64"
+    uint8 = "uint8"
+    uint16 = "uint16"
+    uint32 = "uint32"
+    uint64 = "uint64"
+    bool = "bool"
+    complex64 = "complex64"
+    complex128 = "complex128"
+else:
+    _dtypeDict = {
+        'DType': paddle.dtype ,
+        'float16': paddle.float16,
+        'float32': paddle.float32,
+        'float64': paddle.float64,
+        'int8': paddle.int8,
+        'int16': paddle.int16,
+        'int32': paddle.int32,
+        'int64': paddle.int64,
+        'uint8': paddle.uint8,
+        'uint16': None,
+        'uint32': None,
+        'uint64': None,
+        'bool': paddle.bool,
+        'complex64': paddle.complex64,
+        'complex128': paddle.complex128
+    }
+    # TODO NotImplemented
+    DType = paddle.dtype
+    float16 = paddle.float16
+    float32 = paddle.float32
+    float64 = paddle.float64
+    int8 = paddle.int8
+    int16 = paddle.int16
+    int32 = paddle.int32
+    int64 = paddle.int64
+    uint8 = paddle.uint8
+    uint16 = None
+    uint32 = None
+    uint64 = None
+    bool = paddle.bool
+    complex64 = paddle.complex64
+    complex128 = paddle.complex128
 
 
 def _getter(init_fn, **kwargs):

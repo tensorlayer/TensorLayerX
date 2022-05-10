@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .common import str2act, str2init, random_normal, tolist, construct_graph, ModuleNode
+from .common import check_parameter, str2act, str2init, random_normal, tolist, construct_graph, ModuleNode, select_attrs
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from mindspore.nn import Cell
 import tensorlayerx as tlx
@@ -105,7 +105,7 @@ class Module(Cell):
         if len(shape) == 3:
             shape = shape[::-1]
         if len(shape) == 4:
-            if not transposed and self.data_format == 'NHWC':
+            if not transposed and self.data_format in ['NHWC', 'channels_last']:
                 shape = (shape[3], shape[0], shape[1], shape[2])
             else:
                 shape = (shape[3], shape[2], shape[0], shape[1])
@@ -265,6 +265,9 @@ class Module(Cell):
     def str_to_init(self, initializer):
         return str2init(initializer)
 
+    def check_param(self, param, dim='2d'):
+        return check_parameter(param, dim)
+
     def insert_child_to_layer(self, child_name, child):
         """
         Adds a child layer to the current layer.
@@ -333,7 +336,7 @@ class Module(Cell):
             in_tensor_idxes = [tensor._info[1] for tensor in inputs_list]
         node_index = len(_global_layer_node)
 
-        new_node = ModuleNode(self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes)
+        new_node = ModuleNode(self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes, select_attrs(self))
         _global_layer_node.append(new_node)
         for idx, tensor in enumerate(outputs_list):
             tensor._info = (new_node, idx)

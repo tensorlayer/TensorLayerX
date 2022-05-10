@@ -529,13 +529,12 @@ class Conv2D(Cell):
     def __init__(self, strides, padding, data_format='NHWC', dilations=None, out_channel=None, k_size=None):
         super(Conv2D, self).__init__()
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-
         if self.data_format is 'NHWC':
-            self.ms_stride = strides[1]
-            self.ms_dilation = dilations[1]
+            self._stride = (strides[1], strides[2])
+            self._dilation = (dilations[1], dilations[2])
         elif self.data_format is 'NCHW':
-            self.ms_stride = strides[2]
-            self.ms_dilation = dilations[2]
+            self._stride = (strides[2], strides[3])
+            self._dilation = (dilations[2], dilations[3])
 
         self.conv2d = P.Conv2D(
             out_channel=out_channel, kernel_size=k_size, pad_mode=self.padding, stride=self.ms_stride,
@@ -582,12 +581,12 @@ class Conv3D(Cell):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
 
         if self.data_format is 'NDHWC':
-            self.ms_stride = strides[1]
-            self.ms_dilation = dilations[1]
+            self.ms_stride = (strides[1], strides[2], strides[3])
+            self.ms_dilation = (dilations[1], dilations[2], dilations[3])
             raise NotImplementedError("The optional value for data format. Currently only support “NCDHW”.")
         elif self.data_format is 'NCDHW':
-            self.ms_stride = strides[2]
-            self.ms_dilation = dilations[2]
+            self.ms_stride = (strides[2], strides[3], strides[4])
+            self.ms_dilation = (dilations[2], dilations[3], dilations[4])
 
         self.conv3d = P.Conv3D(
             out_channel=out_channel, kernel_size=k_size, pad_mode=self.padding, stride=self.ms_stride,

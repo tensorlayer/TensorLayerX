@@ -573,9 +573,13 @@ def same_padding(input, weight, strides, dilations):
 class Conv2D(object):
 
     def __init__(self, strides, padding, data_format='NHWC', dilations=None, out_channel=None, k_size=None, groups=1):
-        self.strides = (strides[1], strides[2])
-        self.dilations = (dilations[1], dilations[2])
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        if self.data_format is 'NHWC':
+            self.strides = (strides[1], strides[2])
+            self.dilations = (dilations[1], dilations[2])
+        elif self.data_format is 'NCHW':
+            self.strides = (strides[2], strides[3])
+            self.dilations = (dilations[2], dilations[3])
         self.groups = groups
 
     def __call__(self, input, filters):
@@ -644,13 +648,14 @@ def conv2d(input, filters, strides, padding, data_format='NHWC', dilations=None)
 class Conv3D(object):
 
     def __init__(self, strides, padding, data_format='NDHWC', dilations=None, out_channel=None, k_size=None):
-        if data_format is 'NDHWC':
+        self.data_format, self.padding = preprocess_3d_format(data_format, padding)
+        if self.data_format is 'NDHWC':
             self._strides = (strides[1], strides[2], strides[3])
             self._dilations = (dilations[1], dilations[2], dilations[3])
-        elif data_format is 'NCDHW':
+        elif self.data_format is 'NCDHW':
             self._strides = (strides[2], strides[3], strides[4])
             self._dilations = (dilations[2], dilations[3], dilations[4])
-        self.data_format, self.padding = preprocess_3d_format(data_format, padding)
+
 
     def __call__(self, input, filters):
         if self.data_format == 'NDHWC':

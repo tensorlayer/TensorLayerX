@@ -39,6 +39,22 @@ _initializers_dict = {
 }
 
 
+def check_parameter(parameter, dim='2d'):
+    if dim == '2d':
+        if isinstance(parameter, int):
+            out = (parameter, parameter)
+        else:
+            out = parameter
+    elif dim == '3d':
+        if isinstance(parameter, int):
+            out = (parameter, parameter, parameter)
+        else:
+            out = parameter
+    else:
+        raise ("dim must be 2d or 3d.")
+    return out
+
+
 def str2init(initializer):
     if isinstance(initializer, str):
         if initializer not in _initializers_dict.keys():
@@ -507,6 +523,19 @@ def construct_graph(inputs, outputs):
     return node_by_depth, all_layers
 
 
+def select_attrs(obj):
+    attrs_dict = obj.__dict__
+    attrs = {}
+    _select_key = ['kernel_size', 'stride', 'act', 'padding', 'data_format', 'concat_dim']
+    for k in _select_key:
+        if k in attrs_dict:
+            if k == 'act':
+                attrs[k] = attrs_dict[k].__class__.__name__
+            else:
+                attrs[k] = attrs_dict[k]
+    return attrs
+
+
 class ModuleNode(object):
     """
     The class :class:`ModuleNode` class represents a conceptional node for a layer.
@@ -537,7 +566,7 @@ class ModuleNode(object):
         (1) Forwarding through the layer. (2) Update its input/output tensors.
     """
 
-    def __init__(self, layer, node_index, in_nodes, in_tensors, out_tensors, in_tensor_idxes):
+    def __init__(self, layer, node_index, in_nodes, in_tensors, out_tensors, in_tensor_idxes, attr):
         self.layer = layer
         self.node_index = node_index
         self.in_nodes = in_nodes
@@ -547,6 +576,7 @@ class ModuleNode(object):
         self.node_name = layer.name + "_node_{}".format(node_index)
 
         self.in_tensors_idxes = in_tensor_idxes
+        self.attr = attr
         self.visited = False
 
     def __call__(self, inputs, **kwargs):

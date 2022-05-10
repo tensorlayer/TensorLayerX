@@ -171,9 +171,9 @@ class SeparableConv2d(Module):
         ------------
         out_channels : int
             The dimensionality of the output space (i.e. the number of filters in the convolution).
-        kernel_size : tuple of int
+        kernel_size : tuple or int
             Specifying the spatial dimensions of the filters. Can be a single integer to specify the same value for all spatial dimensions.
-        stride : tuple of int
+        stride : tuple or int
             Specifying the stride of the convolution. Can be a single integer to specify the same value for all spatial dimensions. Specifying any stride value != 1 is incompatible with specifying any dilation value != 1.
         act : activation function
             The activation function of this layer.
@@ -181,7 +181,7 @@ class SeparableConv2d(Module):
             One of "valid" or "same" (case-insensitive).
         data_format : str
             One of channels_last (default) or channels_first. The ordering of the dimensions in the inputs. channels_last corresponds to inputs with shape (batch, height, width, channels) while channels_first corresponds to inputs with shape (batch, channels, height, width).
-        dilation : tuple of int
+        dilation : tuple or int
             Specifying the dilation rate to use for dilated convolution. Can be a single integer to specify the same value for all spatial dimensions. Currently, specifying any dilation value != 1 is incompatible with specifying any stride value != 1.
         depth_multiplier : int
             The number of depthwise convolution output channels for each input channel. The total number of depthwise convolution output channels will be equal to num_filters_in * depth_multiplier.
@@ -214,11 +214,11 @@ class SeparableConv2d(Module):
     ):
         super(SeparableConv2d, self).__init__(name, act=act)
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self._strides = self.stride = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self._strides = self.stride = self.check_param(stride)
         self.padding = padding
         self.data_format = data_format
-        self._dilation_rate = self.dilation = dilation
+        self._dilation_rate = self.dilation = self.check_param(dilation)
         self.depth_multiplier = depth_multiplier
         self.depthwise_init = self.str_to_init(depthwise_init)
         self.pointwise_init = self.str_to_init(pointwise_init)

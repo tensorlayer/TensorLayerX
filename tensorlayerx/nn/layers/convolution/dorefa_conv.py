@@ -24,9 +24,9 @@ class DorefaConv2d(Module):
         The bits of the output of previous layer
     out_channels : int
         The number of filters.
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         The filter size (height, width).
-    stride : tuple of int
+    stride : tuple or int
         The sliding window strides of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
     act : activation function
@@ -35,7 +35,7 @@ class DorefaConv2d(Module):
         The padding algorithm type: "SAME" or "VALID".
     data_format : str
         "channels_last" (NHWC, default) or "channels_first" (NCHW).
-    dilation : tuple of int
+    dilation : tuple or int
         Specifying the dilation rate to use for dilated convolution.
     W_init : initializer or str
         The initializer for the the weight matrix.
@@ -79,11 +79,11 @@ class DorefaConv2d(Module):
         self.bitW = bitW
         self.bitA = bitA
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self.stride = self._stride = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self.stride = self._stride = self.check_param(stride)
         self.padding = padding
         self.data_format = data_format
-        self.dilation = self._dilation_rate = dilation
+        self.dilation = self._dilation_rate = self.check_param(dilation)
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels

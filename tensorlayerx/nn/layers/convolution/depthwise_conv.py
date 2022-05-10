@@ -21,9 +21,9 @@ class DepthwiseConv2d(Module):
 
     Parameters
     ------------
-    kernel_size : tuple of 2 int
+    kernel_size : tuple or int
         The filter size (height, width).
-    stride : tuple of 2 int
+    stride : tuple or int
         The stride step (height, width).
     act : activation function
         The activation function of this layer.
@@ -31,7 +31,7 @@ class DepthwiseConv2d(Module):
         The padding algorithm type: "SAME" or "VALID".
     data_format : str
         "channels_last" (NHWC, default) or "channels_first" (NCHW).
-    dilation: tuple of 2 int
+    dilation: tuple or int
         The dilation rate in which we sample input values across the height and width dimensions in atrous convolution. If it is greater than 1, then all values of strides must be 1.
     depth_multiplier : int
         The number of channels to expand to.
@@ -79,10 +79,10 @@ class DepthwiseConv2d(Module):
         name=None  # 'depthwise_conv2d'
     ):
         super().__init__(name, act=act)
-        self.kernel_size = kernel_size
-        self.stride = self._strides = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self.stride = self._strides = self.check_param(stride)
         self.padding = padding
-        self.dilation = self._dilation = dilation
+        self.dilation = self._dilation = self.check_param(dilation)
         self.data_format = data_format
         self.depth_multiplier = depth_multiplier
         self.W_init = self.str_to_init(W_init)

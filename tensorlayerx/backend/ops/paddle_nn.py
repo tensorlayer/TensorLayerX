@@ -548,10 +548,10 @@ class Conv3D(object):
 
     def __init__(self, strides, padding, data_format='NDHWC', dilations=None, out_channel=None, k_size=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
-        if data_format is 'NDHWC':
+        if self.data_format is 'NDHWC':
             self._strides = (strides[1], strides[2], strides[3])
             self._dilations = (dilations[1], dilations[2], dilations[3])
-        elif data_format is 'NCDHW':
+        elif self.data_format is 'NCDHW':
             self._strides = (strides[2], strides[3], strides[4])
             self._dilations = (dilations[2], dilations[3], dilations[4])
 

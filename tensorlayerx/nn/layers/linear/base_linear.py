@@ -94,7 +94,7 @@ class Linear(Module):
         if self.b_init:
             self.b = self._get_weights("biases", shape=(self.out_features, ), init=self.b_init)
             self.b_init_flag = True
-            self.bias_add = tlx.ops.BiasAdd(data_format='NHWC')
+            self.bias_add = tlx.ops.BiasAdd(data_format='NWC')
 
         self.act_init_flag = False
         if self.act:
