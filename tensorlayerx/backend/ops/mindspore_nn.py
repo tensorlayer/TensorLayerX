@@ -537,8 +537,8 @@ class Conv2D(Cell):
             self._dilation = (dilations[2], dilations[3])
 
         self.conv2d = P.Conv2D(
-            out_channel=out_channel, kernel_size=k_size, pad_mode=self.padding, stride=self.ms_stride,
-            dilation=self.ms_dilation, mode=1, group=1, data_format=self.data_format
+            out_channel=out_channel, kernel_size=k_size, pad_mode=self.padding, stride=self._stride,
+            dilation=self._dilation, mode=1, group=1, data_format=self.data_format
         )
 
     def construct(self, inputs, filters):
