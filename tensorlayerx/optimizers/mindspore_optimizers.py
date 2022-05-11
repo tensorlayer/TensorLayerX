@@ -27,13 +27,16 @@ class Adagrad(Cell):
         self.eps = eps
         self.weight_decay = weight_decay
         self.adagrad = optimizer.Adagrad
+        self.init_optim = False
 
     def apply_gradients(self, grads_and_vars):
         grads, vars = list(zip(*grads_and_vars))
-        optimizer = self.adagrad(
+        if not self.init_optim:
+            self.optimizer = self.adagrad(
             vars, learning_rate=self.lr, accum=self.initial_accumulator, weight_decay=self.weight_decay
         )
-        optimizer(grads)
+            self.init_optim = True
+        self.optimizer(grads)
 
 
 class Adam(Cell):
@@ -46,14 +49,17 @@ class Adam(Cell):
         self.beta_2 = beta_2
         self.eps = eps
         self.weight_decay = weight_decay
+        self.init_optim = False
 
     def apply_gradients(self, grads_and_vars):
         grads, vars = list(zip(*grads_and_vars))
-        optimizer_adam = self.adam(
+        if not self.init_optim:
+            self.optimizer_adam = self.adam(
             vars, learning_rate=self.lr, beta1=self.beta_1, beta2=self.beta_2, eps=self.eps,
             weight_decay=self.weight_decay
         )
-        optimizer_adam(grads)
+            self.init_optim = True
+        self.optimizer_adam(grads)
 
 
 class Adamax(Cell):
@@ -80,14 +86,17 @@ class Ftrl(Cell):
         self.l1 = l1_regularization_strength
         self.l2 = l2_regularization_strength
         self.weight_decay = weight_decay
+        self.init_optim = False
 
     def apply_gradients(self, grads_and_vars):
         grads, vars = list(zip(*grads_and_vars))
-        optimizer_adam = self.ftrl(
+        if not self.init_optim:
+            self.optimizer = self.ftrl(
             vars, learning_rate=self.lr, initial_accum=self.init_accum, lr_power=self.lr_power, l1=self.l1, l2=self.l2,
             weight_decay=self.weight_decay
         )
-        optimizer_adam(grads)
+            self.init_optim = True
+        self.optimizer(grads)
 
 
 class Nadam(Cell):
@@ -113,14 +122,17 @@ class RMSprop(Cell):
         self.centered = centered
         self.weight_decay = weight_decay
         self.rmsprop = optimizer.RMSProp
+        self.init_optim = False
 
     def apply_gradients(self, grads_and_vars):
         grads, vars = list(zip(*grads_and_vars))
-        optimizer_adam = self.rmsprop(
+        if not self.init_optim:
+            self.optimizer = self.rmsprop(
             vars, learning_rate=self.lr, decay=self.rho, momentum=self.momentum, epsilon=self.eps,
             centered=self.centered, weight_decay=self.weight_decay
         )
-        optimizer_adam(grads)
+            self.init_optim = True
+        self.optimizer(grads)
 
 
 class SGD(Cell):
@@ -131,13 +143,16 @@ class SGD(Cell):
         self.lr = lr
         self.momentum = momentum
         self.weight_decay = weight_decay
+        self.init_optim = False
 
     def apply_gradients(self, grads_and_vars):
         grads, vars = list(zip(*grads_and_vars))
-        optimizer_sgd = self.sgd(
+        if not self.init_optim:
+            self.optimizer_sgd = self.sgd(
             vars, learning_rate=self.lr, momentum=self.momentum, weight_decay=self.weight_decay
         )
-        optimizer_sgd(grads)
+            self.init_optim = True
+        self.optimizer_sgd(grads)
 
 
 class Momentum(Cell):
@@ -149,14 +164,17 @@ class Momentum(Cell):
         self.momentum = momentum
         self.use_nesterov = use_nesterov
         self.weight_decay = weight_decay
+        self.init_optim = False
 
     def apply_gradients(self, grads_and_vars):
         grads, vars = list(zip(*grads_and_vars))
-        optimizer_mom = self.mom(
+        if not self.init_optim:
+            self.optimizer_mom = self.mom(
             vars, learning_rate=self.lr, momentum=self.momentum, use_nesterov=self.use_nesterov,
             weight_decay=self.weight_decay
         )
-        optimizer_mom(grads)
+            self.init_optim = True
+        self.optimizer_mom(grads)
 
 
 class Lamb(Cell):
@@ -169,14 +187,17 @@ class Lamb(Cell):
         self.beta2 = beta_2
         self.eps = eps
         self.weight_decay = weight_decay
+        self.init_optim = False
 
     def apply_gradients(self, grads_and_vars):
         grads, vars = list(zip(*grads_and_vars))
-        optimizer_lamb = self.lamb(
+        if not self.init_optim:
+            self.optimizer_lamb = self.lamb(
             vars, learning_rate=self.lr, beta1=self.beta1, beta2=self.beta2, eps=self.eps,
             weight_decay=self.weight_decay
         )
-        optimizer_lamb(grads)
+            self.init_optim = True
+        self.optimizer_lamb(grads)
 
 
 class LARS(Cell):
