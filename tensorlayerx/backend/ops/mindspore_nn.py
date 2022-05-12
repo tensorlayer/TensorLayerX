@@ -44,9 +44,39 @@ def padding_format(padding):
         padding = "valid"
     elif padding == None:
         padding = None
+    elif isinstance(padding, tuple) or isinstance(padding, int):
+        return padding
     else:
         raise Exception("Unsupported padding: " + str(padding))
     return padding
+
+
+def preprocess_padding(padding, dim='2d'):
+    check_padding(padding, dim)
+    if dim == '1d':
+        out_padding = (0, 0, padding, padding)
+    elif dim == '2d':
+        if isinstance(padding, tuple):
+            out_padding = (padding[0], padding[0], padding[1], padding[1])
+        else:
+            out_padding = padding
+    elif dim == '3d':
+        if isinstance(padding, tuple):
+            out_padding = (padding[0], padding[0], padding[1], padding[1], padding[2], padding[2])
+        else:
+            out_padding = padding
+    else:
+        raise RuntimeError("Unsupported input dimensions.")
+    return out_padding
+
+
+def check_padding(padding, dim='2d'):
+    if dim == '1d' and isinstance(object, tuple):
+        raise RuntimeError("expected padding to be a single integer value or a list of 1 values to match the convolution dimensions.")
+    if dim == '2d' and isinstance(padding, tuple) and len(padding) > 2:
+        raise RuntimeError("expected padding to be a single integer value or a list of 2 values to match the convolution dimensions.")
+    if dim == '3d' and isinstance(padding, tuple) and len(padding) > 3:
+        raise RuntimeError("expected padding to be a single integer value or a list of 3 values to match the convolution dimensions.")
 
 
 def preprocess_1d_format(data_format, padding):
@@ -458,20 +488,24 @@ def bias_add(x, bias):
     """
     raise NotImplementedError
 
-
 class Conv1D(Cell):
 
     def __init__(self, stride, padding, data_format='NWC', dilations=None, out_channel=None, k_size=None):
         super(Conv1D, self).__init__()
-        self.data_format, self.padding = preprocess_1d_format(data_format, padding)
+        self.data_format, self.pad_mode = preprocess_1d_format(data_format, padding)
+        self.padding = 0
         self.stride = (1, stride)
         self.dilations = (1, dilations)
         self.k_size = (1, k_size)
         self.out_channel = out_channel
 
+        if isinstance(self.pad_mode, int):
+            self.padding = preprocess_padding(self.pad_mode, '1d')
+            self.pad_mode = "pad"
+
         self.conv2d = P.Conv2D(
-            out_channel=self.out_channel, kernel_size=self.k_size, pad_mode=self.padding, stride=self.stride,
-            dilation=self.dilations, mode=1, group=1
+            out_channel=self.out_channel, kernel_size=self.k_size, pad_mode=self.pad_mode, pad=self.padding,
+            stride=self.stride, dilation=self.dilations, mode=1, group=1
         )
 
         self.expand_dims = P.ExpandDims()
@@ -528,7 +562,8 @@ class Conv2D(Cell):
 
     def __init__(self, strides, padding, data_format='NHWC', dilations=None, out_channel=None, k_size=None):
         super(Conv2D, self).__init__()
-        self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        self.data_format, self.pad_mode = preprocess_2d_format(data_format, padding)
+        self.padding = 0
         if self.data_format is 'NHWC':
             self._stride = (strides[1], strides[2])
             self._dilation = (dilations[1], dilations[2])
@@ -536,8 +571,12 @@ class Conv2D(Cell):
             self._stride = (strides[2], strides[3])
             self._dilation = (dilations[2], dilations[3])
 
+        if isinstance(self.pad_mode, int) or isinstance(self.pad_mode, tuple):
+            self.padding = preprocess_padding(self.pad_mode, '2d')
+            self.pad_mode = "pad"
+
         self.conv2d = P.Conv2D(
-            out_channel=out_channel, kernel_size=k_size, pad_mode=self.padding, stride=self._stride,
+            out_channel=out_channel, kernel_size=k_size, pad_mode=self.pad_mode, pad=self.padding, stride=self._stride,
             dilation=self._dilation, mode=1, group=1, data_format=self.data_format
         )
 
@@ -578,8 +617,8 @@ class Conv3D(Cell):
 
     def __init__(self, strides, padding, data_format='NDHWC', dilations=None, out_channel=None, k_size=None):
         super(Conv3D, self).__init__()
-        self.data_format, self.padding = preprocess_3d_format(data_format, padding)
-
+        self.data_format, self.pad_mode = preprocess_3d_format(data_format, padding)
+        self.padding = 0
         if self.data_format is 'NDHWC':
             self.ms_stride = (strides[1], strides[2], strides[3])
             self.ms_dilation = (dilations[1], dilations[2], dilations[3])
@@ -588,9 +627,13 @@ class Conv3D(Cell):
             self.ms_stride = (strides[2], strides[3], strides[4])
             self.ms_dilation = (dilations[2], dilations[3], dilations[4])
 
+        if isinstance(self.pad_mode, int) or isinstance(self.pad_mode, tuple):
+            self.padding = preprocess_padding(self.pad_mode, '3d')
+            self.pad_mode = "pad"
+
         self.conv3d = P.Conv3D(
-            out_channel=out_channel, kernel_size=k_size, pad_mode=self.padding, stride=self.ms_stride,
-            dilation=self.ms_dilation, data_format=data_format
+            out_channel=out_channel, kernel_size=k_size, pad_mode=self.pad_mode, pad=self.padding, stride=self.ms_stride,
+            dilation=self.ms_dilation, data_format=self.data_format
         )
 
     def construct(self, input, filters):

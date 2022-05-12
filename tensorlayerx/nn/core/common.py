@@ -526,7 +526,7 @@ def construct_graph(inputs, outputs):
 def select_attrs(obj):
     attrs_dict = obj.__dict__
     attrs = {}
-    _select_key = ['kernel_size', 'stride', 'act', 'padding', 'data_format', 'concat_dim']
+    _select_key = ['kernel_size', 'stride', 'act', 'padding', 'data_format', 'concat_dim', 'dilation', 'bias']
     for k in _select_key:
         if k in attrs_dict:
             if k == 'act':

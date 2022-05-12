@@ -27,6 +27,8 @@ def padding_format(padding):
         padding = "valid"
     elif padding == None:
         padding = None
+    elif isinstance(padding, tuple) or isinstance(padding, int):
+        return padding
     else:
         raise Exception("Unsupported padding: " + str(padding))
     return padding
@@ -798,17 +800,17 @@ class MaxPool(object):
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool1d_same_padding(inputs)
             else:
-                out = F.max_pool1d(inputs, self.ksize, self.strides)
+                out = F.max_pool1d(inputs, self.ksize, self.strides, padding=self.padding)
         if len(inputs.shape) == 4:
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool2d_same_padding(inputs)
             else:
-                out = F.max_pool2d(inputs, self.ksize, (self.strides[1], self.strides[2]))
+                out = F.max_pool2d(inputs, self.ksize, (self.strides[1], self.strides[2]), padding=self.padding)
         if len(inputs.shape) == 5:
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool3d_same_padding(inputs)
             else:
-                out = F.max_pool3d(inputs, self.ksize, (self.strides[1], self.strides[2], self.strides[3]))
+                out = F.max_pool3d(inputs, self.ksize, (self.strides[1], self.strides[2], self.strides[3]), padding=self.padding)
 
         if self.data_format == 'channels_last':
             return nchw_to_nhwc(out)
@@ -900,17 +902,17 @@ class AvgPool(object):
             if self.padding in ['SAME', 'same']:
                 out = self.avgpool1d_same_padding(inputs)
             else:
-                out = F.avg_pool1d(inputs, self.ksize, self.strides)
+                out = F.avg_pool1d(inputs, self.ksize, self.strides, padding=self.padding)
         if len(inputs.shape) == 4:
             if self.padding in ['SAME', 'same']:
                 out = self.avgpool2d_same_padding(inputs)
             else:
-                out = F.avg_pool2d(inputs, self.ksize, (self.strides[1], self.strides[2]))
+                out = F.avg_pool2d(inputs, self.ksize, (self.strides[1], self.strides[2]), padding=self.padding)
         if len(inputs.shape) == 5:
             if self.padding in ['SAME', 'same']:
                 out = self.avgpool3d_same_padding(inputs)
             else:
-                out = F.avg_pool3d(inputs, self.ksize, (self.strides[1], self.strides[2], self.strides[3]))
+                out = F.avg_pool3d(inputs, self.ksize, (self.strides[1], self.strides[2], self.strides[3]), padding=self.padding)
 
         if self.data_format == 'channels_last':
             return nchw_to_nhwc(out)

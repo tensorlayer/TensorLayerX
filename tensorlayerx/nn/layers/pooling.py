@@ -111,7 +111,7 @@ class MaxPool1d(Module):
         Pooling window size.
     stride : int
         Stride of the pooling operation.
-    padding : str
+    padding : str or int
         The padding method: 'VALID' or 'SAME'.
     data_format : str
         One of channels_last (default, [batch, length, channel]) or channels_first. The ordering of the dimensions in the inputs.
@@ -189,7 +189,7 @@ class MeanPool1d(Module):
         Pooling window size.
     stride : int
         Strides of the pooling operation.
-    padding : str
+    padding : int、tuple or str
         The padding method: 'VALID' or 'SAME'.
     data_format : str
         One of channels_last (default, [batch, length, channel]) or channels_first. The ordering of the dimensions in the inputs.
@@ -268,7 +268,7 @@ class MaxPool2d(Module):
         (height, width) for filter size.
     stride : tuple or int
         (height, width) for stride.
-    padding : str
+    padding : int、tuple or str
         The padding method: 'VALID' or 'SAME'.
     data_format : str
         One of channels_last (default, [batch, height, width, channel]) or channels_first. The ordering of the dimensions in the inputs.
@@ -348,7 +348,7 @@ class MeanPool2d(Module):
         (height, width) for filter size.
     stride : tuple or int
         (height, width) for stride.
-    padding : str
+    padding : int、tuple or str
         The padding method: 'VALID' or 'SAME'.
     data_format : str
         One of channels_last (default, [batch, height, width, channel]) or channels_first. The ordering of the dimensions in the inputs.
@@ -427,7 +427,7 @@ class MaxPool3d(Module):
         Pooling window size.
     stride : tuple or int
         Strides of the pooling operation.
-    padding : str
+    padding : int、tuple or str
         The padding method: 'VALID' or 'SAME'.
     data_format : str
         One of channels_last (default, [batch, depth, height, width, channel]) or channels_first. The ordering of the dimensions in the inputs.
@@ -458,8 +458,8 @@ class MaxPool3d(Module):
         name=None  # 'maxpool3d'
     ):
         super().__init__(name)
-        self.kernel_size = self.check_param(kernel_size)
-        self.stride = self._stride = self.check_param(stride)
+        self.kernel_size = self.check_param(kernel_size, '3d')
+        self.stride = self._stride = self.check_param(stride, '3d')
         self.padding = padding
         self.data_format = data_format
 
@@ -509,7 +509,7 @@ class MeanPool3d(Module):
         Pooling window size.
     stride : tuple or int
         Strides of the pooling operation.
-    padding : str
+    padding : int、tuple or str
         The padding method: 'VALID' or 'SAME'.
     data_format : str
         One of channels_last (default, [batch, depth, height, width, channel]) or channels_first. The ordering of the dimensions in the inputs.
@@ -540,8 +540,8 @@ class MeanPool3d(Module):
         name=None  # 'meanpool3d'
     ):
         super().__init__(name)
-        self.kernel_size = self.check_param(kernel_size)
-        self.stride = self._stride = self.check_param(stride)
+        self.kernel_size = self.check_param(kernel_size, '3d')
+        self.stride = self._stride = self.check_param(stride, '3d')
         self.padding = padding
         self.data_format = data_format
 

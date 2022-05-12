@@ -30,7 +30,7 @@ class Conv1d(Module):
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The function that is applied to the layer activations
-    padding : str
+    padding : str or int
         The padding algorithm type: "SAME" or "VALID".
     data_format : str
         "channel_last" (NWC, default) or "channels_first" (NCW).
@@ -172,8 +172,9 @@ class Conv2d(Module):
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The activation function of this layer.
-    padding : str
+    padding : int, tuple or str
         The padding algorithm type: "SAME" or "VALID".
+        If padding is int or tuple, padding added to all four sides of the input. Default: ‘SAME’
     data_format : str
         "channels_last" (NHWC, default) or "channels_first" (NCHW).
     W_init : initializer or str
@@ -317,7 +318,7 @@ class Conv3d(Module):
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The activation function of this layer.
-    padding : str
+    padding : int, tuple or str
         The padding algorithm type: "SAME" or "VALID".
     data_format : str
         "channels_last" (NDHWC, default) or "channels_first" (NCDHW).
