@@ -1249,7 +1249,7 @@ def gather(params, indices, axis=None):
     indices : indices
         The index Tensor. Must be one of the following types: int32, int64. The values must be in range [0, params.shape[axis]).
     axis : tensor.
-        Must be one of the following types: int32, int64. The axis in params to gather indices from.
+        Must be one of the following types: int32, int64. The axis in params to gather indices from. The default value is None, if None, the axis is 0.
 
     Returns
     -------

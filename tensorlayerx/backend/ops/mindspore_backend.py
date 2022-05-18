@@ -1170,6 +1170,8 @@ def floor(x):
 
 def gather(params, indices, axis=None):
     op = P.Gather()
+    if axis is None:
+        axis = 0
     return op(params, indices, axis)
 
 
@@ -1590,10 +1592,7 @@ def reduce_std(x, axis=None, keepdims=False):
 
 
 def reduce_sum(x, axis=None, keepdims=False):
-    op = P.ReduceSum(keep_dims=keepdims)
-    if axis is None:
-        return op(x)
-    return op(x, axis=axis)
+    return msnp.sum(x, axis=axis, keepdims=keepdims)
 
 
 def reduce_variance(x, axis=None, keepdims=False):
@@ -1729,11 +1728,15 @@ def tanh(x):
 
 def any(x, axis=None, keepdims=False):
     op = P.ReduceAny(keep_dims=keepdims)
+    if axis is None:
+        return op(x)
     return op(x, axis)
 
 
 def all(x, axis=None, keepdims=False):
     op = P.ReduceAll(keep_dims=keepdims)
+    if axis is None:
+        return op(x)
     return op(x, axis)
 
 
@@ -1779,8 +1782,7 @@ def zeros_like(x, dtype=None):
 
 
 def squeeze(x, axis=None):
-    op = P.Squeeze(axis)
-    return op(x)
+    return msnp.squeeze(x, axis)
 
 
 def unsorted_segment_sum(x, segment_ids, num_segments):
@@ -1792,7 +1794,7 @@ def unsorted_segment_sum(x, segment_ids, num_segments):
 def unsorted_segment_mean(x, segment_ids, num_segments):
     segment_ids = ms.Tensor(segment_ids)
     op = P.UnsortedSegmentSum()
-    x_one =  msnp.ones_like(x, dtype=x.dtype)
+    x_one = msnp.ones_like(x, dtype=x.dtype)
     sum = op(x, segment_ids, num_segments)
     one = op(x_one, segment_ids, num_segments)
     return sum/one

@@ -37,7 +37,7 @@ class Adadelta(object):
     With TensorLayerx
 
     >>> import tensorlayerx as tlx
-    >>> optimizer = tlx.optimizers.Adadelta(0.0001)
+    >>> optimizer = tlx.optimizers.Adadelta(0.001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -48,27 +48,30 @@ class Adadelta(object):
         self.eps = eps
         if weight_decay < 0.0:
             raise ValueError("weight_decay should not smaller than 0.0, but got {}".format(weight_decay))
-        self.weight_decay = float(weight_decay)
+        self.weight_decay = tf.convert_to_tensor(float(weight_decay))
         self.grad_clip = grad_clip
         self.adadelta = tf.optimizers.Adadelta(learning_rate=self.lr, rho=self.rho, epsilon=self.eps)
 
     def apply_gradients(self, grads_and_vars):
         if grads_and_vars is None:
             raise ValueError('grads_and_vars is not set.')
-        grads, vars = zip(*grads_and_vars)
-        if self.weight_decay != 0.0:
-            self.weight_decay = tf.convert_to_tensor(self.weight_decay)
-            for weight in vars:
-                weight.assign_sub(self.weight_decay * weight)
-        if self.grad_clip is not None:
-            if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
-                clip_grad, _ = self.grad_clip(grads)
-            else:
-                clip_grad = []
-                for g in grads:
-                    clip_grad.append(self.grad_clip(g))
-            grads = clip_grad
-        grads_and_vars = zip(grads, vars)
+        if self.weight_decay != 0.0 or self.grad_clip is not None:
+            grads, vars = zip(*grads_and_vars)
+            if self.weight_decay != 0.0:
+                new_grads = []
+                for grad, var in zip(grads, vars):
+                    grad = grad + self.weight_decay * var
+                    new_grads.append(grad)
+                grads = new_grads
+            if self.grad_clip is not None:
+                if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
+                    new_grads, _ = self.grad_clip(grads)
+                else:
+                    new_grads = []
+                    for g in grads:
+                        new_grads.append(self.grad_clip(g))
+                grads = new_grads
+            grads_and_vars = zip(grads, vars)
         self.adadelta.apply_gradients(grads_and_vars)
 
 
@@ -102,7 +105,7 @@ class Adagrad(object):
     With TensorLayerx
 
     >>> import tensorlayerx as tlx
-    >>> optimizer = tlx.optimizers.Adagrad(0.0001)
+    >>> optimizer = tlx.optimizers.Adagrad(0.001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -113,29 +116,32 @@ class Adagrad(object):
         self.eps = eps
         if weight_decay < 0.0:
             raise ValueError("weight_decay should not smaller than 0.0, but got {}".format(weight_decay))
-        self.weight_decay = float(weight_decay)
+        self.weight_decay = tf.convert_to_tensor(float(weight_decay))
         self.grad_clip = grad_clip
         self.adagrad = tf.optimizers.Adagrad(
-            learning_rate=self.lr, initial_accumulator=self.initial_accumulator, epsilon=self.eps
+            learning_rate=self.lr, initial_accumulator_value=self.initial_accumulator, epsilon=self.eps
         )
 
     def apply_gradients(self, grads_and_vars):
         if grads_and_vars is None:
             raise ValueError('grads_and_vars is not set.')
-        grads, vars = zip(*grads_and_vars)
-        if self.weight_decay != 0.0:
-            self.weight_decay = tf.convert_to_tensor(self.weight_decay)
-            for weight in vars:
-                weight.assign_sub(self.weight_decay * weight)
-        if self.grad_clip is not None:
-            if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
-                clip_grad, _ = self.grad_clip(grads)
-            else:
-                clip_grad = []
-                for g in grads:
-                    clip_grad.append(self.grad_clip(g))
-            grads = clip_grad
-        grads_and_vars = zip(grads, vars)
+        if self.weight_decay != 0.0 or self.grad_clip is not None:
+            grads, vars = zip(*grads_and_vars)
+            if self.weight_decay != 0.0:
+                new_grads = []
+                for grad, var in zip(grads, vars):
+                    grad = grad + self.weight_decay * var
+                    new_grads.append(grad)
+                grads = new_grads
+            if self.grad_clip is not None:
+                if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
+                    new_grads, _ = self.grad_clip(grads)
+                else:
+                    new_grads = []
+                    for g in grads:
+                        new_grads.append(self.grad_clip(g))
+                grads = new_grads
+            grads_and_vars = zip(grads, vars)
         self.adagrad.apply_gradients(grads_and_vars)
 
 
@@ -170,7 +176,7 @@ class Adam(object):
     With TensorLayerx
 
     >>> import tensorlayerx as tlx
-    >>> optimizer = tlx.optimizers.Adam(0.0001)
+    >>> optimizer = tlx.optimizers.Adam(0.001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -182,7 +188,7 @@ class Adam(object):
         self.eps = eps
         if weight_decay < 0.0:
             raise ValueError("weight_decay should not smaller than 0.0, but got {}".format(weight_decay))
-        self.weight_decay = float(weight_decay)
+        self.weight_decay = tf.convert_to_tensor(float(weight_decay))
         self.grad_clip = grad_clip
         self.adam = tf.optimizers.Adam(
             learning_rate=self.lr, beta_1=self.beta_1, beta_2=self.beta_2, epsilon=self.eps
@@ -191,20 +197,23 @@ class Adam(object):
     def apply_gradients(self, grads_and_vars):
         if grads_and_vars is None:
             raise ValueError('grads_and_vars is not set.')
-        grads, vars = zip(*grads_and_vars)
-        if self.weight_decay != 0.0:
-            self.weight_decay = tf.convert_to_tensor(self.weight_decay)
-            for weight in vars:
-                weight.assign_sub(self.weight_decay * weight)
-        if self.grad_clip is not None:
-            if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
-                clip_grad, _ = self.grad_clip(grads)
-            else:
-                clip_grad = []
-                for g in grads:
-                    clip_grad.append(self.grad_clip(g))
-            grads = clip_grad
-        grads_and_vars = zip(grads, vars)
+        if self.weight_decay != 0.0 or self.grad_clip is not None:
+            grads, vars = zip(*grads_and_vars)
+            if self.weight_decay != 0.0:
+                new_grads = []
+                for grad, var in zip(grads, vars):
+                    grad = grad + self.weight_decay * var
+                    new_grads.append(grad)
+                grads = new_grads
+            if self.grad_clip is not None:
+                if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
+                    new_grads, _ = self.grad_clip(grads)
+                else:
+                    new_grads = []
+                    for g in grads:
+                        new_grads.append(self.grad_clip(g))
+                grads = new_grads
+            grads_and_vars = zip(grads, vars)
         self.adam.apply_gradients(grads_and_vars)
 
 
@@ -239,7 +248,7 @@ class Adamax(object):
     With TensorLayerx
 
     >>> import tensorlayerx as tlx
-    >>> optimizer = tlx.optimizers.Adamax(0.0001)
+    >>> optimizer = tlx.optimizers.Adamax(0.001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -251,7 +260,7 @@ class Adamax(object):
         self.eps = eps
         if weight_decay < 0.0:
             raise ValueError("weight_decay should not smaller than 0.0, but got {}".format(weight_decay))
-        self.weight_decay = float(weight_decay)
+        self.weight_decay = tf.convert_to_tensor(float(weight_decay))
         self.grad_clip = grad_clip
         self.adamax = tf.optimizers.Adamax(
             learning_rate=self.lr, beta_1=self.beta_1, beta_2=self.beta_2, epsilon=self.eps
@@ -260,20 +269,23 @@ class Adamax(object):
     def apply_gradients(self, grads_and_vars):
         if grads_and_vars is None:
             raise ValueError('grads_and_vars is not set.')
-        grads, vars = zip(*grads_and_vars)
-        if self.weight_decay != 0.0:
-            self.weight_decay = tf.convert_to_tensor(self.weight_decay)
-            for weight in vars:
-                weight.assign_sub(self.weight_decay * weight)
-        if self.grad_clip is not None:
-            if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
-                clip_grad, _ = self.grad_clip(grads)
-            else:
-                clip_grad = []
-                for g in grads:
-                    clip_grad.append(self.grad_clip(g))
-            grads = clip_grad
-        grads_and_vars = zip(grads, vars)
+        if self.weight_decay != 0.0 or self.grad_clip is not None:
+            grads, vars = zip(*grads_and_vars)
+            if self.weight_decay != 0.0:
+                new_grads = []
+                for grad, var in zip(grads, vars):
+                    grad = grad + self.weight_decay * var
+                    new_grads.append(grad)
+                grads = new_grads
+            if self.grad_clip is not None:
+                if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
+                    new_grads, _ = self.grad_clip(grads)
+                else:
+                    new_grads = []
+                    for g in grads:
+                        new_grads.append(self.grad_clip(g))
+                grads = new_grads
+            grads_and_vars = zip(grads, vars)
         self.adamax.apply_gradients(grads_and_vars)
 
 
@@ -315,7 +327,7 @@ class Ftrl(object):
     With TensorLayerx
 
     >>> import tensorlayerx as tlx
-    >>> optimizer = tlx.optimizers.Ftrl(0.0001)
+    >>> optimizer = tlx.optimizers.Ftrl(0.001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -334,7 +346,7 @@ class Ftrl(object):
         self.l2_shrinkage_regularization_strength = l2_shrinkage_regularization_strength
         if weight_decay < 0.0:
             raise ValueError("weight_decay should not smaller than 0.0, but got {}".format(weight_decay))
-        self.weight_decay = float(weight_decay)
+        self.weight_decay = tf.convert_to_tensor(float(weight_decay))
         self.grad_clip = grad_clip
         self.ftrl = tf.optimizers.Ftrl(
             learning_rate=self.lr, learning_rate_power=self.lr_power,
@@ -347,20 +359,23 @@ class Ftrl(object):
     def apply_gradients(self, grads_and_vars):
         if grads_and_vars is None:
             raise ValueError('grads_and_vars is not set.')
-        grads, vars = zip(*grads_and_vars)
-        if self.weight_decay != 0.0:
-            self.weight_decay = tf.convert_to_tensor(self.weight_decay)
-            for weight in vars:
-                weight.assign_sub(self.weight_decay * weight)
-        if self.grad_clip is not None:
-            if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
-                clip_grad, _ = self.grad_clip(grads)
-            else:
-                clip_grad = []
-                for g in grads:
-                    clip_grad.append(self.grad_clip(g))
-            grads = clip_grad
-        grads_and_vars = zip(grads, vars)
+        if self.weight_decay != 0.0 or self.grad_clip is not None:
+            grads, vars = zip(*grads_and_vars)
+            if self.weight_decay != 0.0:
+                new_grads = []
+                for grad, var in zip(grads, vars):
+                    grad = grad + self.weight_decay * var
+                    new_grads.append(grad)
+                grads = new_grads
+            if self.grad_clip is not None:
+                if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
+                    new_grads, _ = self.grad_clip(grads)
+                else:
+                    new_grads = []
+                    for g in grads:
+                        new_grads.append(self.grad_clip(g))
+                grads = new_grads
+            grads_and_vars = zip(grads, vars)
         self.ftrl.apply_gradients(grads_and_vars)
 
 
@@ -395,7 +410,7 @@ class Nadam(object):
     With TensorLayerx
 
     >>> import tensorlayerx as tlx
-    >>> optimizer = tlx.optimizers.Nadam(0.0001)
+    >>> optimizer = tlx.optimizers.Nadam(0.001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -407,7 +422,7 @@ class Nadam(object):
         self.eps = eps
         if weight_decay < 0.0:
             raise ValueError("weight_decay should not smaller than 0.0, but got {}".format(weight_decay))
-        self.weight_decay = float(weight_decay)
+        self.weight_decay = tf.convert_to_tensor(float(weight_decay))
         self.grad_clip = grad_clip
         self.nadam = tf.optimizers.Nadam(
             learning_rate=self.lr, beta_1=self.beta_1, beta_2=self.beta_2, epsilon=self.eps
@@ -416,20 +431,23 @@ class Nadam(object):
     def apply_gradients(self, grads_and_vars):
         if grads_and_vars is None:
             raise ValueError('grads_and_vars is not set.')
-        grads, vars = zip(*grads_and_vars)
-        if self.weight_decay != 0.0:
-            self.weight_decay = tf.convert_to_tensor(self.weight_decay)
-            for weight in vars:
-                weight.assign_sub(self.weight_decay * weight)
-        if self.grad_clip is not None:
-            if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
-                clip_grad, _ = self.grad_clip(grads)
-            else:
-                clip_grad = []
-                for g in grads:
-                    clip_grad.append(self.grad_clip(g))
-            grads = clip_grad
-        grads_and_vars = zip(grads, vars)
+        if self.weight_decay != 0.0 or self.grad_clip is not None:
+            grads, vars = zip(*grads_and_vars)
+            if self.weight_decay != 0.0:
+                new_grads = []
+                for grad, var in zip(grads, vars):
+                    grad = grad + self.weight_decay * var
+                    new_grads.append(grad)
+                grads = new_grads
+            if self.grad_clip is not None:
+                if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
+                    new_grads, _ = self.grad_clip(grads)
+                else:
+                    new_grads = []
+                    for g in grads:
+                        new_grads.append(self.grad_clip(g))
+                grads = new_grads
+            grads_and_vars = zip(grads, vars)
         self.nadam.apply_gradients(grads_and_vars)
 
 
@@ -468,7 +486,7 @@ class RMSprop(object):
     With TensorLayerx
 
     >>> import tensorlayerx as tlx
-    >>> optimizer = tlx.optimizers.RMSprop(0.0001)
+    >>> optimizer = tlx.optimizers.RMSprop(0.001)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -484,7 +502,7 @@ class RMSprop(object):
         self.centered = centered
         if weight_decay < 0.0:
             raise ValueError("weight_decay should not smaller than 0.0, but got {}".format(weight_decay))
-        self.weight_decay = float(weight_decay)
+        self.weight_decay = tf.convert_to_tensor(float(weight_decay))
         self.grad_clip = grad_clip
         self.rmsprop = tf.optimizers.RMSprop(
             learning_rate=self.lr, rho=self.rho, momentum=self.momentum, epsilon=self.eps,
@@ -494,20 +512,23 @@ class RMSprop(object):
     def apply_gradients(self, grads_and_vars):
         if grads_and_vars is None:
             raise ValueError('grads_and_vars is not set.')
-        grads, vars = zip(*grads_and_vars)
-        if self.weight_decay != 0.0:
-            self.weight_decay = tf.convert_to_tensor(self.weight_decay)
-            for weight in vars:
-                weight.assign_sub(self.weight_decay * weight)
-        if self.grad_clip is not None:
-            if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
-                clip_grad, _ = self.grad_clip(grads)
-            else:
-                clip_grad = []
-                for g in grads:
-                    clip_grad.append(self.grad_clip(g))
-            grads = clip_grad
-        grads_and_vars = zip(grads, vars)
+        if self.weight_decay != 0.0 or self.grad_clip is not None:
+            grads, vars = zip(*grads_and_vars)
+            if self.weight_decay != 0.0:
+                new_grads = []
+                for grad, var in zip(grads, vars):
+                    grad = grad + self.weight_decay * var
+                    new_grads.append(grad)
+                grads = new_grads
+            if self.grad_clip is not None:
+                if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
+                    new_grads, _ = self.grad_clip(grads)
+                else:
+                    new_grads = []
+                    for g in grads:
+                        new_grads.append(self.grad_clip(g))
+                grads = new_grads
+            grads_and_vars = zip(grads, vars)
         self.rmsprop.apply_gradients(grads_and_vars)
 
 
@@ -539,7 +560,7 @@ class SGD(object):
     With TensorLayerx
 
     >>> import tensorlayerx as tlx
-    >>> optimizer = tlx.optimizers.SGD(0.0001)
+    >>> optimizer = tlx.optimizers.SGD(0.01)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -549,27 +570,30 @@ class SGD(object):
         self.momentum = momentum
         if weight_decay < 0.0:
             raise ValueError("weight_decay should not smaller than 0.0, but got {}".format(weight_decay))
-        self.weight_decay = float(weight_decay)
+        self.weight_decay = tf.convert_to_tensor(float(weight_decay))
         self.grad_clip = grad_clip
         self.sgd = tf.optimizers.SGD(learning_rate=self.lr, momentum=self.momentum, nesterov=False)
 
     def apply_gradients(self, grads_and_vars):
         if grads_and_vars is None:
             raise ValueError('grads_and_vars is not set.')
-        grads, vars = zip(*grads_and_vars)
-        if self.weight_decay != 0.0:
-            self.weight_decay = tf.convert_to_tensor(self.weight_decay)
-            for weight in vars:
-                weight.assign_sub(self.weight_decay * weight)
-        if self.grad_clip is not None:
-            if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
-                clip_grad, _ = self.grad_clip(grads)
-            else:
-                clip_grad = []
-                for g in grads:
-                    clip_grad.append(self.grad_clip(g))
-            grads = clip_grad
-        grads_and_vars = zip(grads, vars)
+        if self.weight_decay != 0.0 or self.grad_clip is not None:
+            grads, vars = zip(*grads_and_vars)
+            if self.weight_decay != 0.0:
+                new_grads = []
+                for grad, var in zip(grads, vars):
+                    grad = grad + self.weight_decay * var
+                    new_grads.append(grad)
+                grads = new_grads
+            if self.grad_clip is not None:
+                if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
+                    new_grads, _ = self.grad_clip(grads)
+                else:
+                    new_grads = []
+                    for g in grads:
+                        new_grads.append(self.grad_clip(g))
+                grads = new_grads
+            grads_and_vars = zip(grads, vars)
         self.sgd.apply_gradients(grads_and_vars)
 
 
@@ -609,7 +633,7 @@ class Momentum(object):
     With TensorLayerx
 
     >>> import tensorlayerx as tlx
-    >>> optimizer = tlx.optimizers.Momentum(0.0001)
+    >>> optimizer = tlx.optimizers.Momentum(0.01, momentum=0.9)
     >>> optimizer.apply_gradients(zip(grad, train_weights))
 
     """
@@ -619,7 +643,7 @@ class Momentum(object):
         self.momentum = momentum
         if weight_decay < 0.0:
             raise ValueError("weight_decay should not smaller than 0.0, but got {}".format(weight_decay))
-        self.weight_decay = float(weight_decay)
+        self.weight_decay = tf.convert_to_tensor(float(weight_decay))
         self.grad_clip = grad_clip
         self.nesterov = nesterov
         self.sgd = tf.optimizers.SGD(learning_rate=self.lr, momentum=self.momentum, nesterov=self.nesterov)
@@ -627,20 +651,23 @@ class Momentum(object):
     def apply_gradients(self, grads_and_vars):
         if grads_and_vars is None:
             raise ValueError('grads_and_vars is not set.')
-        grads, vars = zip(*grads_and_vars)
-        if self.weight_decay != 0.0:
-            self.weight_decay = tf.convert_to_tensor(self.weight_decay)
-            for weight in vars:
-                weight.assign_sub(self.weight_decay * weight)
-        if self.grad_clip is not None:
-            if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
-                clip_grad, _ = self.grad_clip(grads)
-            else:
-                clip_grad = []
-                for g in grads:
-                    clip_grad.append(self.grad_clip(g))
-            grads = clip_grad
-        grads_and_vars = zip(grads, vars)
+        if self.weight_decay != 0.0 or self.grad_clip is not None:
+            grads, vars = zip(*grads_and_vars)
+            if self.weight_decay != 0.0:
+                new_grads = []
+                for grad, var in zip(grads, vars):
+                    grad = grad + self.weight_decay * var
+                    new_grads.append(grad)
+                grads = new_grads
+            if self.grad_clip is not None:
+                if isinstance(self.grad_clip, tlx.ops.ClipByGlobalNorm):
+                    new_grads, _ = self.grad_clip(grads)
+                else:
+                    new_grads = []
+                    for g in grads:
+                        new_grads.append(self.grad_clip(g))
+                grads = new_grads
+            grads_and_vars = zip(grads, vars)
         self.sgd.apply_gradients(grads_and_vars)
 
 

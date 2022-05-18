@@ -429,19 +429,16 @@ class Model:
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
         print_freq, test_dataset
     ):
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        network.to(device)
         for epoch in range(n_epoch):
             start_time = time.time()
 
             train_loss, train_acc, n_iter = 0, 0, 0
             for X_batch, y_batch in train_dataset:
-                device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
                 network.set_train()
-                X_batch = X_batch.to(device)
-                y_batch = y_batch.to(device)
-                network.to(device)
                 output = network(X_batch)
                 loss = loss_fn(output, y_batch)
-
                 grads = optimizer.gradient(loss, train_weights)
                 optimizer.apply_gradients(zip(grads, train_weights))
 

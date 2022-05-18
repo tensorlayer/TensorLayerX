@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-os.environ['TL_BACKEND'] = 'tensorflow'
-# os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'tensorflow'
+os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'torch'
 
 import tensorlayerx as tlx
@@ -105,7 +106,7 @@ class CNN(Module):
 cnn = CNN()
 # cnn.save_standard_weights('./model.npz')
 # TODO Tensorflow trained parameters are imported to the TensorFlow backend.
-cnn.load_standard_weights('./model.npz', skip=False)
+cnn.load_standard_weights('./model.npz', skip=False, reshape=True)
 
 # TODO Tensorflow backend trained parameters imported to PaddlePaddle/PyTorch/MindSpore to
 #  set reshape to True parameter to convert convolution shape.

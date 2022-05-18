@@ -1012,7 +1012,9 @@ def floor(x):
     return torch.floor(x)
 
 
-def gather(params, indices, axis = 0):
+def gather(params, indices, axis = None):
+    if axis is None:
+        axis = 0
     if axis < 0:
         axis = len(params.shape) + axis
     if axis == 0:
@@ -1522,11 +1524,16 @@ def tanh(x):
 
 
 def any(x, axis=None, keepdims=False):
-    return torch.any(x, dim=axis, keepdim=keepdims)
-
+    if axis is not None:
+        return torch.any(x, dim=axis, keepdim=keepdims)
+    else:
+        return torch.any(x)
 
 def all(x, axis=None, keepdims=False):
-    return  torch.all(x, dim=axis, keepdim=keepdims)
+    if axis is not None:
+        return torch.all(x, dim=axis, keepdim=keepdims)
+    else:
+        return torch.all(x)
 
 
 def logical_and(x, y):
