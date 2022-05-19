@@ -35,6 +35,7 @@ Layer list
    Conv1d
    Conv2d
    Conv3d
+   ConvTranspose1d
    ConvTranspose2d
    ConvTranspose3d
    DepthwiseConv2d
@@ -195,6 +196,10 @@ Conv3d
 
 Deconvolutions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ConvTranspose1d
+"""""""""""""""""""""
+.. autoclass:: ConvTranspose1d
 
 ConvTranspose2d
 """""""""""""""""""""

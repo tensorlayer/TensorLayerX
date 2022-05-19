@@ -8,10 +8,10 @@ from paddle.fluid.initializer import TruncatedNormalInitializer
 from paddle.fluid.initializer import MSRAInitializer
 from paddle.fluid.initializer import XavierInitializer
 import paddle
-
+import tensorlayerx as tlx
 __all__ = [
     'Initializer', 'Zeros', 'Ones', 'Constant', 'RandomUniform', 'RandomNormal', 'TruncatedNormal',
-    'deconv2d_bilinear_upsampling_initializer', 'HeNormal', 'XavierNormal', 'XavierUniform'
+    'deconv2d_bilinear_upsampling_initializer', 'HeNormal', 'HeUniform', 'XavierNormal', 'XavierUniform'
 ]
 
 
@@ -181,7 +181,7 @@ class TruncatedNormal(TruncatedNormalInitializer):
         return {"mean": self.mean, "stddev": self.stddev, "seed": self.seed}
 
 
-class HeNormal(MSRAInitializer):
+class HeNormal(Initializer):
     """He normal initializer.
 
     Parameters
@@ -191,15 +191,54 @@ class HeNormal(MSRAInitializer):
 
     """
 
-    def __init__(self, seed=0):
-        super(HeNormal, self).__init__(uniform=False, fan_in=None, seed=seed)
+    def __init__(self, a=0, mode='fan_in', nonlinearity='leaky_relu', seed=None):
+        self.a = a
+        self.mode = mode
+        self.nonlinearity = nonlinearity
         self.seed = seed
 
+    def __call__(self, var, block=None):
+        return tlx.ops.he_normal(
+            var=var, a=self.a, mode=self.mode, nonlinearity=self.nonlinearity, seed=self.seed, block=block
+        )
+
     def get_config(self):
-        return {"seed", self.seed}
+        return {"a": self.a, "mode ": self.mode, "nonlinearity": self.nonlinearity}
 
 
-class XavierNormal(XavierInitializer):
+class HeUniform(Initializer):
+    """He uniform initializer.
+
+    Parameters
+    ----------
+    seed : A Python integer.
+        Used to seed the random generator.
+
+    Examples
+    --------
+
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.he_normal()
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
+
+    """
+
+    def __init__(self, a=0, mode='fan_in', nonlinearity='leaky_relu', seed=None):
+        self.a = a
+        self.mode = mode
+        self.nonlinearity = nonlinearity
+        self.seed = seed
+
+    def __call__(self, var, block=None):
+        return tlx.ops.he_normal(
+            var=var, a=self.a, mode=self.mode, nonlinearity=self.nonlinearity, seed=self.seed, block=block
+        )
+
+    def get_config(self):
+        return {"a": self.a, "mode ": self.mode, "nonlinearity": self.nonlinearity}
+
+
+class XavierNormal(Initializer):
     """This class implements the Xavier weight initializer from the paper
     by Xavier Glorot and Yoshua Bengio.using a normal distribution.
 
@@ -210,11 +249,18 @@ class XavierNormal(XavierInitializer):
 
     """
 
-    def __init__(self, seed=0):
-        super(XavierNormal, self).__init__(uniform=False, fan_in=None, fan_out=None, seed=seed)
+    def __init__(self, gain=1.0, seed=None):
+        self.gain = gain
+        self.seed = seed
+
+    def __call__(self, var, block=None):
+        return tlx.ops.xavier_normal(var=var, gain=self.gain, seed=self.seed, block=block)
+
+    def get_config(self):
+        return {"gain": self.gain}
 
 
-class XavierUniform(XavierInitializer):
+class XavierUniform(Initializer):
     """This class implements the Xavier weight initializer from the paper
     by Xavier Glorot and Yoshua Bengio.using a uniform distribution.
 
@@ -225,8 +271,15 @@ class XavierUniform(XavierInitializer):
 
     """
 
-    def __init__(self, seed=0):
-        super(XavierUniform, self).__init__(uniform=True, fan_in=None, fan_out=None, seed=seed)
+    def __init__(self, gain=1.0, seed=None):
+        self.gain = gain
+        self.seed = seed
+
+    def __call__(self, var, block=None):
+        return tlx.ops.xavier_uniform(var=var, gain=self.gain, seed=self.seed, block=block)
+
+    def get_config(self):
+        return {"gain": self.gain}
 
 
 def deconv2d_bilinear_upsampling_initializer(shape):

@@ -10,6 +10,11 @@ import numpy as np
 import paddle.nn.functional as F
 from .paddle_nn import nchw_to_nhwc, nhwc_to_nchw, preprocess_2d_format, preprocess_1d_format, preprocess_3d_format
 import random
+from paddle.fluid.framework import in_dygraph_mode, default_main_program
+from paddle.fluid import framework, core, unique_name
+from paddle.fluid.core import VarDesc
+from paddle.fluid.data_feeder import check_variable_and_dtype, check_type, check_dtype
+import math
 
 if paddle.__version__ < '2.2.2':
     _dtypeDict = [
@@ -214,8 +219,50 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype="float32", seed=None):
     """
     raise NotImplementedError
 
+def _compute_fans(var):
+    shape = var.shape
+    if not shape or len(shape) == 0:
+        fan_in = fan_out = 1
+    elif len(shape) == 1:
+        fan_in = fan_out = shape[0]
+    elif len(shape) == 2:
+        # This is the case for simple matrix multiply
+        fan_in = shape[0]
+        fan_out = shape[1]
+    else:
+        receptive_field_size = np.prod(shape[2:])
+        fan_in = shape[1] * receptive_field_size
+        fan_out = shape[0] * receptive_field_size
 
-def he_normal(shape, dtype, seed=None):
+    return fan_in, fan_out
+
+def _check_block(block):
+    if block is None:
+        block = default_main_program().global_block()
+    return block
+
+def calculate_gain(nonlinearity, param=None):
+    linear_fns = ['linear', 'conv1d', 'conv2d', 'conv3d', 'conv_transpose1d', 'conv_transpose2d', 'conv_transpose3d']
+    if nonlinearity in linear_fns or nonlinearity == 'sigmoid':
+        return 1
+    elif nonlinearity == 'tanh':
+        return 5.0 / 3
+    elif nonlinearity == 'relu':
+        return math.sqrt(2.0)
+    elif nonlinearity == 'leaky_relu':
+        if param is None:
+            negative_slope = 0.01
+        elif isinstance(param, int) or isinstance(param, float):
+            negative_slope = param
+        else:
+            raise ValueError("negative_slope {} not a valid number".format(param))
+        return math.sqrt(2.0 / (1 + negative_slope ** 2))
+    elif nonlinearity == 'selu':
+        return 3.0 / 4
+    else:
+        raise ValueError("Unsupported nonlinearity {}".format(nonlinearity))
+
+def he_normal(var, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype='float32', seed=None, block = None):
     """
     He normal initializer.
 
@@ -232,11 +279,110 @@ def he_normal(shape, dtype, seed=None):
     -------
         A tensor of the specified shape filled with he normal values.
     """
-    # shape = shape[::-1]
-    raise NotImplementedError
+    _uniform = False
+    block = _check_block(block)
+    assert isinstance(var, framework.Variable)
+    assert isinstance(block, framework.Block)
+    f_in, f_out = _compute_fans(var)
+    correct_fan = f_in if mode == 'fan_in' else f_out
+    if seed is None:
+        seed = block.program.random_seed
 
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        out_dtype = VarDesc.VarType.FP32
+        out_var = block.create_var(
+            name=unique_name.generate(".".join(
+                ['masra_init', var.name, 'tmp'])),
+            shape=var.shape,
+            dtype=out_dtype,
+            type=VarDesc.VarType.LOD_TENSOR,
+            persistable=False)
+    else:
+        out_dtype = var.dtype
+        out_var = var
 
-def xavier_normal(shape, dtype, seed=None):
+    gain = calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(correct_fan)
+    op = block.append_op(
+        type="gaussian_random",
+        outputs={"Out": out_var},
+        attrs={
+            "shape": out_var.shape,
+            "dtype": int(out_dtype),
+            "mean": 0.0,
+            "std": std,
+            "seed": seed
+        },
+        stop_gradient=True)
+
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        block.append_op(
+            type="cast",
+            inputs={"X": out_var},
+            outputs={"Out": var},
+            attrs={"in_dtype": out_var.dtype,
+                   "out_dtype": var.dtype})
+
+    if not framework.in_dygraph_mode():
+        var.op = op
+    return op
+
+def he_uniform(var, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype='float32', seed=None, block = None):
+    _uniform = True
+    block = _check_block(block)
+    assert isinstance(var, framework.Variable)
+    assert isinstance(block, framework.Block)
+    f_in, f_out = _compute_fans(var)
+    correct_fan = f_in if mode == 'fan_in' else f_out
+    if seed is None:
+        seed = block.program.random_seed
+
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        out_dtype = VarDesc.VarType.FP32
+        out_var = block.create_var(
+            name=unique_name.generate(".".join(
+                ['masra_init', var.name, 'tmp'])),
+            shape=var.shape,
+            dtype=out_dtype,
+            type=VarDesc.VarType.LOD_TENSOR,
+            persistable=False)
+    else:
+        out_dtype = var.dtype
+        out_var = var
+
+    gain = calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(correct_fan)
+    limit = math.sqrt(3.0) * std
+    op = block.append_op(
+        type="uniform_random",
+        inputs={},
+        outputs={"Out": out_var},
+        attrs={
+            "shape": out_var.shape,
+            "dtype": int(out_dtype),
+            "min": -limit,
+            "max": limit,
+            "seed": seed
+        },
+        stop_gradient=True)
+
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        block.append_op(
+            type="cast",
+            inputs={"X": out_var},
+            outputs={"Out": var},
+            attrs={"in_dtype": out_var.dtype,
+                   "out_dtype": var.dtype})
+
+    if not framework.in_dygraph_mode():
+        var.op = op
+    return op
+
+def xavier_normal(var, gain = 1.0, dtype='float32', seed=None, block = None):
     """
     xavier normal initializer.
 
@@ -254,10 +400,57 @@ def xavier_normal(shape, dtype, seed=None):
         A tensor of the specified shape filled with xavier normal values.
     """
 
-    raise NotImplementedError
+    block = _check_block(block)
+    _uniform = False
+    assert isinstance(block, framework.Block)
+    check_variable_and_dtype(var, "Out",
+                             ["uint16", "float16", "float32", "float64"],
+                             "xavier_init")
 
+    fan_in, fan_out = _compute_fans(var)
+    if seed is None:
+        seed = block.program.random_seed
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        out_dtype = VarDesc.VarType.FP32
+        out_var = block.create_var(
+            name=unique_name.generate(".".join(
+                ['xavier_init', var.name, 'tmp'])),
+            shape=var.shape,
+            dtype=out_dtype,
+            type=VarDesc.VarType.LOD_TENSOR,
+            persistable=False)
+    else:
+        out_dtype = var.dtype
+        out_var = var
 
-def xavier_uniform(shape, dtype, seed=None):
+    std = gain * math.sqrt(2.0 / float(fan_in + fan_out))
+    op = block.append_op(
+        type="gaussian_random",
+        outputs={"Out": out_var},
+        attrs={
+            "shape": out_var.shape,
+            "dtype": out_dtype,
+            "mean": 0.0,
+            "std": std,
+            "seed": seed
+        },
+        stop_gradient=True)
+
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        block.append_op(
+            type="cast",
+            inputs={"X": out_var},
+            outputs={"Out": var},
+            attrs={"in_dtype": out_var.dtype,
+                   "out_dtype": var.dtype})
+
+    if not framework.in_dygraph_mode():
+        var.op = op
+    return op
+
+def xavier_uniform(var, gain = 1.0, dtype='float32', seed=None, block = None):
     """
     xavier uniform initializer.
 
@@ -275,7 +468,57 @@ def xavier_uniform(shape, dtype, seed=None):
         A tensor of the specified shape filled with xavier uniform values.
     """
 
-    raise NotImplementedError
+    block = _check_block(block)
+    _uniform = True
+    assert isinstance(block, framework.Block)
+    check_variable_and_dtype(var, "Out",
+                             ["uint16", "float16", "float32", "float64"],
+                             "xavier_init")
+
+    fan_in, fan_out = _compute_fans(var)
+    if seed is None:
+        seed = block.program.random_seed
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        out_dtype = VarDesc.VarType.FP32
+        out_var = block.create_var(
+            name=unique_name.generate(".".join(
+                ['xavier_init', var.name, 'tmp'])),
+            shape=var.shape,
+            dtype=out_dtype,
+            type=VarDesc.VarType.LOD_TENSOR,
+            persistable=False)
+    else:
+        out_dtype = var.dtype
+        out_var = var
+
+    std = gain * math.sqrt(2.0 / float(fan_in + fan_out))
+    limit = math.sqrt(3.0) * std
+    op = block.append_op(
+        type="uniform_random",
+        inputs={},
+        outputs={"Out": out_var},
+        attrs={
+            "shape": out_var.shape,
+            "dtype": out_dtype,
+            "min": -limit,
+            "max": limit,
+            "seed": seed
+        },
+        stop_gradient=True)
+
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        block.append_op(
+            type="cast",
+            inputs={"X": out_var},
+            outputs={"Out": var},
+            attrs={"in_dtype": out_var.dtype,
+                   "out_dtype": var.dtype})
+
+    if not framework.in_dygraph_mode():
+        var.op = op
+    return op
 
 
 def Variable(initial_value, name, trainable=None, device = None):

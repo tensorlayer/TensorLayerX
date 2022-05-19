@@ -204,7 +204,7 @@ from .load_backend import (
 )
 # initlizers
 from .load_backend import (
-    zeros, ones, constant, random_uniform, random_normal, truncated_normal, he_normal, xavier_normal, xavier_uniform
+    zeros, ones, constant, random_uniform, random_normal, truncated_normal, he_normal, he_uniform, xavier_normal, xavier_uniform
 )
 # backend
 from .load_backend import BACKEND

@@ -5,6 +5,12 @@ from .tensorflow_nn import nchw_to_nhwc, nhwc_to_nchw, preprocess_1d_format, pre
 import tensorflow as tf
 import random
 import numpy as np
+import math
+from tensorflow.python.framework import dtypes
+from tensorflow.python.keras import backend
+from tensorflow.python.ops import random_ops
+from tensorflow.python.ops import stateless_random_ops
+
 
 _dtypeDict = {
     'DType': tf.DType,
@@ -267,7 +273,87 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype='float32', seed=None):
     return outputs
 
 
-def he_normal(shape, dtype='float32', seed=None):
+def _get_dtype(dtype):
+    if dtype is None:
+        dtype = backend.floatx()
+    return dtype
+
+def _assert_float_dtype(dtype):
+    if not dtype.is_floating:
+        raise ValueError('Expected floating point type, got %s.' % dtype)
+    return dtype
+
+class _RandomGenerator(object):
+
+    def __init__(self, seed=None):
+        super(_RandomGenerator, self).__init__()
+        if seed is not None:
+            self.seed = [seed, 0]
+        else:
+            self.seed = None
+
+    def random_normal(self, shape, mean=0.0, stddev=1, dtype=dtypes.float32):
+        if self.seed:
+            op = stateless_random_ops.stateless_random_normal
+        else:
+            op = random_ops.random_normal
+        return op(
+        shape=shape, mean=mean, stddev=stddev, dtype=dtype, seed=self.seed)
+
+    def random_uniform(self, shape, minval, maxval, dtype):
+        if self.seed:
+            op = stateless_random_ops.stateless_random_uniform
+        else:
+            op = random_ops.random_uniform
+        return op(
+        shape=shape, minval=minval, maxval=maxval, dtype=dtype, seed=self.seed)
+
+    def truncated_normal(self, shape, mean, stddev, dtype):
+        if self.seed:
+            op = stateless_random_ops.stateless_truncated_normal
+        else:
+            op = random_ops.truncated_normal
+        return op(
+        shape=shape, mean=mean, stddev=stddev, dtype=dtype, seed=self.seed)
+
+def _compute_fans(shape):
+    if len(shape) < 1:  # Just to avoid errors for constants.
+        fan_in = fan_out = 1
+    elif len(shape) == 1:
+        fan_in = fan_out = shape[0]
+    elif len(shape) == 2:
+        fan_in = shape[0]
+        fan_out = shape[1]
+    else:
+        receptive_field_size = 1
+        for dim in shape[:-2]:
+            receptive_field_size *= dim
+        fan_in = shape[-2] * receptive_field_size
+        fan_out = shape[-1] * receptive_field_size
+    return int(fan_in), int(fan_out)
+
+def calculate_gain(nonlinearity, param=None):
+    linear_fns = ['linear', 'conv1d', 'conv2d', 'conv3d', 'conv_transpose1d', 'conv_transpose2d', 'conv_transpose3d']
+    if nonlinearity in linear_fns or nonlinearity == 'sigmoid':
+        return 1
+    elif nonlinearity == 'tanh':
+        return 5.0 / 3
+    elif nonlinearity == 'relu':
+        return math.sqrt(2.0)
+    elif nonlinearity == 'leaky_relu':
+        if param is None:
+            negative_slope = 0.01
+        elif isinstance(param, int) or isinstance(param, float):
+            negative_slope = param
+        else:
+            raise ValueError("negative_slope {} not a valid number".format(param))
+        return math.sqrt(2.0 / (1 + negative_slope ** 2))
+    elif nonlinearity == 'selu':
+        return 3.0 / 4
+    else:
+        raise ValueError("Unsupported nonlinearity {}".format(nonlinearity))
+
+def he_normal(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu',dtype='float32', seed=None):
     """
     He normal initializer.
 
@@ -291,11 +377,38 @@ def he_normal(shape, dtype='float32', seed=None):
     >>> y = tlx.ops.he_normal((10, 25, 25, 10), dtype='float32')
 
     """
+    fan_in, fan_out = _compute_fans(shape)
+    correct_fan = fan_in if mode == 'fan_in' else fan_out
+    gain = calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(correct_fan)
+    dtype = _assert_float_dtype(_get_dtype(dtype))
+    return _RandomGenerator(seed).random_normal(shape, 0.0, std, dtype)
 
-    return tf.initializers.he_normal(seed)(shape=shape, dtype=dtype_str(dtype))
+def he_uniform(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu',dtype='float32', seed=None):
+    """
 
+    Parameters
+    ----------
+    shape
+    a
+    mode
+    nonlinearity
+    dtype
+    seed
 
-def xavier_normal(shape, dtype='float32', seed=None):
+    Returns
+    -------
+
+    """
+    fan_in, fan_out = _compute_fans(shape)
+    correct_fan = fan_in if mode == 'fan_in' else fan_out
+    gain = calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(correct_fan)
+    bound = math.sqrt(3.0) * std
+    dtype = _assert_float_dtype(_get_dtype(dtype))
+    return _RandomGenerator(seed).random_uniform(shape, -bound, bound, dtype)
+
+def xavier_normal(shape, gain = 1.0, dtype='float32', seed=None):
     """
     Xavier normal.
 
@@ -319,11 +432,13 @@ def xavier_normal(shape, dtype='float32', seed=None):
     >>> y = tlx.ops.xavier_normal((10, 25, 25, 10), dtype='float32')
 
     """
+    fan_in, fan_out = _compute_fans(shape)
+    std = gain * math.sqrt(2.0 / float(fan_in + fan_out))
+    dtype = _assert_float_dtype(_get_dtype(dtype))
+    return _RandomGenerator(seed).random_normal(shape, 0.0, std, dtype)
 
-    return tf.initializers.glorot_normal(seed)(shape=shape, dtype=dtype_str(dtype))
 
-
-def xavier_uniform(shape, dtype='float32', seed=None):
+def xavier_uniform(shape, gain = 1.0, dtype='float32', seed=None):
     """
     Xavier uniform.
 
@@ -347,8 +462,11 @@ def xavier_uniform(shape, dtype='float32', seed=None):
     >>> y = tlx.ops.xavier_uniform((10, 25, 25, 10), dtype='float32')
 
     """
-
-    return tf.initializers.glorot_uniform(seed)(shape=shape, dtype=dtype_str(dtype))
+    fan_in, fan_out = _compute_fans(shape)
+    std = gain * math.sqrt(2.0 / float(fan_in + fan_out))
+    bound = math.sqrt(3.0) * std
+    dtype = _assert_float_dtype(_get_dtype(dtype))
+    return _RandomGenerator(seed).random_uniform(shape, -bound, bound, dtype)
 
 
 def Variable(initial_value, name, trainable=True, device = None):

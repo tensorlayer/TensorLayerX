@@ -14,6 +14,7 @@ from .load_initializers_backend import RandomNormal
 from .load_initializers_backend import TruncatedNormal
 from .load_initializers_backend import deconv2d_bilinear_upsampling_initializer
 from .load_initializers_backend import HeNormal
+from .load_initializers_backend import HeUniform
 from .load_initializers_backend import XavierNormal
 from .load_initializers_backend import XavierUniform
 
@@ -25,5 +26,6 @@ random_uniform = RandomUniform
 random_normal = RandomNormal
 truncated_normal = TruncatedNormal
 he_normal = HeNormal
+he_uniform = HeUniform
 xavier_normal = XavierNormal
 xavier_uniform = XavierUniform

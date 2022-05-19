@@ -9,8 +9,8 @@ from mindspore.common import dtype as mstype
 
 from mindspore.common.parameter import Parameter
 from mindspore.common.initializer import (
-    initializer, Constant, Normal, TruncatedNormal, Initializer, _assignment, _calculate_in_and_out, One, Zero,
-    _calculate_fan_in_and_fan_out
+    initializer, Constant, Normal, TruncatedNormal, Initializer, _assignment, _calculate_gain, One, Zero,
+    _calculate_fan_in_and_fan_out, _calculate_correct_fan
 )
 from mindspore.common.tensor import Tensor
 from mindspore.ops import operations as P
@@ -321,31 +321,7 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype=mstype.float32, seed=Non
     return Tensor(arr, dtype=dtype)
 
 
-class HeNormal(Initializer):
-    r"""
-    he_normal: It draws samples from a truncated normal distribution centered on 0 with
-    stddev = sqrt(2 / fan_in) where fan_in is the number of input units in the weight tensor.
-
-    Args:
-        arr (Array): The array to be assigned.
-
-    Returns:
-        Array, assigned array.
-    """
-
-    def __init__(self, seed=None):
-        super(HeNormal, self).__init__(seed=seed)
-        self.seed = seed
-
-    def _initialize(self, arr):
-        n_in, _ = _calculate_in_and_out(arr)
-        boundary = np.sqrt(2.0 / n_in)
-        random.seed(self.seed)
-        data = np.random.normal(-boundary, boundary, arr.shape)
-        _assignment(arr, data)
-
-
-def he_normal(shape, dtype, seed=None):
+def he_normal(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype=mstype.float32, seed=None):
     """
     He normal initializer.
 
@@ -362,54 +338,43 @@ def he_normal(shape, dtype, seed=None):
     -------
         A tensor of the specified shape filled with he normal values.
     """
-    # shape = shape[::-1]
     arr = np.ndarray(shape)
-    init_obj = HeNormal(seed)
-    init_obj(arr)
+    fan = _calculate_correct_fan(shape, mode)
+    gain = _calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(fan)
+    data = np.random.normal(0, std, shape)
+    _assignment(arr, data)
+    return Tensor(arr, dtype=dtype)
+
+def he_uniform(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu',dtype=mstype.float32, seed=None):
+
+    arr = np.ndarray(shape)
+    fan = _calculate_correct_fan(shape, mode)
+    gain = _calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(fan)
+    boundary = math.sqrt(3.0) * std
+    data = np.random.uniform(-boundary, boundary, shape)
+    _assignment(arr, data)
     return Tensor(arr, dtype=dtype)
 
 
-class XavierUniform(Initializer):
-
-    def __init__(self, seed=None):
-        super(XavierUniform, self).__init__(seed=seed)
-        self.seed = seed
-
-    def _initialize(self, arr):
-        n_in, n_out = _calculate_fan_in_and_fan_out(arr.shape)
-        boundary = math.sqrt(6.0 / (n_in + n_out))
-        random.seed(self.seed)
-        data = np.random.uniform(-boundary, boundary, arr.shape)
-        _assignment(arr, data)
-
-
-def xavier_uniform(shape, dtype, seed=None):
+def xavier_uniform(shape, gain = 1.0, dtype=mstype.float32, seed=None):
 
     arr = np.ndarray(shape)
-    init_obj = XavierUniform(seed)
-    init_obj(arr)
+    fan_in, fan_out = _calculate_fan_in_and_fan_out(shape)
+    bound = gain * math.sqrt(6.0 / (fan_in + fan_out))
+    data = np.random.uniform(-bound, bound, shape)
+    _assignment(arr, data)
     return Tensor(arr, dtype=dtype)
 
 
-class XavierNormal(Initializer):
-
-    def __init__(self, seed=None):
-        super(XavierNormal, self).__init__(seed=seed)
-        self.seed = seed
-
-    def _initialize(self, arr):
-        n_in, n_out = _calculate_fan_in_and_fan_out(arr.shape)
-        boundary = math.sqrt(2.0 / (n_in + n_out))
-        random.seed(self.seed)
-        data = np.random.normal(0, boundary, arr.shape)
-        _assignment(arr, data)
-
-
-def xavier_normal(shape, dtype, seed=None):
+def xavier_normal(shape, gain = 1.0, dtype=mstype.float32, seed=None):
 
     arr = np.ndarray(shape)
-    init_obj = XavierNormal(seed)
-    init_obj(arr)
+    fan_in, fan_out = _calculate_fan_in_and_fan_out(shape)
+    std = gain * math.sqrt(2.0 / float(fan_in + fan_out))
+    data = np.random.normal(0, std, shape)
+    _assignment(arr, data)
     return Tensor(arr, dtype=dtype)
 
 

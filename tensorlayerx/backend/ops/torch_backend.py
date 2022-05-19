@@ -215,7 +215,7 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
     return out
 
 
-def he_normal(shape, dtype=None, seed=None):
+def he_normal(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype=None, seed=None):
     """
     He normal initializer.
 
@@ -234,18 +234,23 @@ def he_normal(shape, dtype=None, seed=None):
     """
 
     tensor = torch.empty(size=shape, dtype=dtype)
-    out = torch.nn.init.kaiming_normal_(tensor)
+    out = torch.nn.init.kaiming_normal_(tensor, a=a, mode = mode, nonlinearity = nonlinearity)
     return out
 
+def he_uniform(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype=None, seed=None):
 
-def xavier_normal(shape, dtype=None, seed=None):
+    tensor = torch.empty(size=shape, dtype=dtype)
+    out = torch.nn.init.kaiming_uniform_(tensor, a=a, mode = mode, nonlinearity = nonlinearity)
+    return out
+
+def xavier_normal(shape, gain = 1.0, dtype=None, seed=None):
     _tensor = torch.empty(size=shape, dtype=dtype)
-    return torch.nn.init.xavier_normal_(_tensor)
+    return torch.nn.init.xavier_normal_(_tensor, gain)
 
 
-def xavier_uniform(shape, dtype=None, seed=None):
+def xavier_uniform(shape, gain = 1.0, dtype=None, seed=None):
     _tensor = torch.empty(size=shape, dtype=dtype)
-    return torch.nn.init.xavier_uniform_(_tensor)
+    return torch.nn.init.xavier_uniform_(_tensor, gain)
 
 
 def Variable(initial_value, name=None, trainable=True):

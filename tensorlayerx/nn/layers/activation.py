@@ -12,7 +12,7 @@ __all__ = [
 
 
 class PRelu(Module):
-    """Applies the element-wise function:
+    r"""Applies the element-wise function:
 
     .. math::
         \text{PReLU}(x) = \max(0,x) + a * \min(0,x)
@@ -92,7 +92,7 @@ class PRelu(Module):
 
 
 class PRelu6(Module):
-    """
+    r"""
     The :class:`PRelu6` class is Parametric Rectified Linear layer integrating ReLU6 behaviour.
 
     This activation layer use a modified version :func:`tlx.nn.LeakyReLU` introduced by the following paper:
@@ -209,7 +209,7 @@ class PRelu6(Module):
 
 
 class PTRelu6(Module):
-    """
+    r"""
     The :class:`PTRelu6` class is Parametric Rectified Linear layer integrating ReLU6 behaviour.
 
     This activation layer use a modified version :func:`tlx.nn.LeakyReLU` introduced by the following paper:
@@ -332,7 +332,7 @@ class PTRelu6(Module):
 
 
 class Ramp(Module):
-    """Ramp activation function.
+    r"""Ramp activation function.
 
     Reference: [tf.clip_by_value]<https://www.tensorflow.org/api_docs/python/tf/clip_by_value>
 
@@ -373,7 +373,7 @@ class Ramp(Module):
 
 
 class ELU(Module):
-    """Applies the element-wise function:
+    r"""Applies the element-wise function:
 
     .. math::
         \text{ELU}(x) = \begin{cases}
@@ -631,10 +631,10 @@ class ReLU(Module):
 
 
 class LeakyReLU(Module):
-    """Applies the element-wise function:
+    r"""Applies the element-wise function:
 
     .. math::
-        \text{LeakyReLU}(x) = \max(0, x) + \text{negative\_slope} * \min(0, x)
+        \text{LeakyReLU}(x) = \max(0, x) + negative\_slope * \min(0, x)
 
     Parameters
     ----------
@@ -675,7 +675,7 @@ class LeakyReLU(Module):
 
 
 class LeakyReLU6(Module):
-    """
+    r"""
         This activation function is a modified version :func:`leaky_relu` introduced by the following paper:
         `Rectifier Nonlinearities Improve Neural Network Acoustic Models [A. L. Maas et al., 2013] <https://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf>`__
 
@@ -876,7 +876,7 @@ class HardTanh(Module):
 
 
 class Mish(Module):
-    """Applies the Mish function, element-wise. Mish: A Self Regularized Non-Monotonic Neural Activation Function.
+    r"""Applies the Mish function, element-wise. Mish: A Self Regularized Non-Monotonic Neural Activation Function.
 
         .. math::
         \text{Mish}(x) = x * \text{Tanh}(\text{Softplus}(x))

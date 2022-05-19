@@ -24,7 +24,7 @@ __all__ = [
 
 
 class BatchNorm(Module):
-    """
+    r"""
     This interface is used to construct a callable object of the BatchNorm class. For more details, refer to code examples.
     It implements the function of the Batch Normalization Layer and can be used as a normalizer function for conv2d and fully connected operations.
     The data is normalized by the mean and variance of the channel based on the current batch data.
@@ -43,8 +43,8 @@ class BatchNorm(Module):
     - :math:`x` : mini-batch data
     - :math:`m` : the size of the mini-batch data
 
-    the :math:`\\mu_{\\beta}`
-    and :math:`\\sigma_{\\beta}^{2}` are not the statistics of one mini-batch.
+    the :math:`\mu_{\beta}`
+    and :math:`\sigma_{\beta}^{2}` are not the statistics of one mini-batch.
     They are global or running statistics (moving_mean and moving_variance). It usually got from the
     pre-trained model. Calculated as follows:
 
