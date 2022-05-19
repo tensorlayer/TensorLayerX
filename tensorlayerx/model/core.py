@@ -307,7 +307,7 @@ class Model:
                     val_loss, val_acc, n_iter = 0, 0, 0
                     for X_batch, y_batch in test_dataset:
                         _logits = network(X_batch)  # is_train=False, disable dropout
-                        val_loss += loss_fn(_logits, y_batch, name='eval_loss')
+                        val_loss += loss_fn(_logits, y_batch)
                         if metrics:
                             metrics.update(_logits, y_batch)
                             val_acc += metrics.result()
@@ -360,7 +360,7 @@ class Model:
                     val_loss, val_acc, n_iter = 0, 0, 0
                     for X_batch, y_batch in test_dataset:
                         _logits = network(X_batch)
-                        val_loss += loss_fn(_logits, y_batch, name='eval_loss')
+                        val_loss += loss_fn(_logits, y_batch)
                         if metrics:
                             metrics.update(_logits, y_batch)
                             val_acc += metrics.result()
@@ -414,7 +414,7 @@ class Model:
                     val_loss, val_acc, n_iter = 0, 0, 0
                     for X_batch, y_batch in test_dataset:
                         _logits = network(X_batch)  # is_train=False, disable dropout
-                        val_loss += loss_fn(_logits, y_batch, name='eval_loss')
+                        val_loss += loss_fn(_logits, y_batch)
                         if metrics:
                             metrics.update(_logits, y_batch)
                             val_acc += metrics.result()
@@ -468,7 +468,7 @@ class Model:
                     val_loss, val_acc, n_iter = 0, 0, 0
                     for X_batch, y_batch in test_dataset:
                         _logits = network(X_batch)  # is_train=False, disable dropout
-                        val_loss += loss_fn(_logits, y_batch, name='eval_loss')
+                        val_loss += loss_fn(_logits, y_batch)
                         if metrics:
                             metrics.update(_logits, y_batch)
                             val_acc += metrics.result()
