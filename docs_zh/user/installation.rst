@@ -1,24 +1,23 @@
 .. _installation:
 
 ============
-Installation
+安装
 ============
 
-TensorLayerX has some prerequisites that need to be installed first, including
-`TensorFlow`_ , `MindSpore <https://www.mindspore.cn/>`__, `PaddlePaddle <https://www.paddlepaddle.org.cn/>`__,  `PyTorch <https://pytorch.org/>`__, numpy and matplotlib. For GPU
-support CUDA and cuDNN are required.
+TensorLayerX需要先安装一些先决条件，包括
+`TensorFlow`_ , `MindSpore <https://www.mindspore.cn/>`__, `PaddlePaddle <https://www.paddlepaddle.org.cn/>`__,  `PyTorch <https://pytorch.org/>`__, numpy 和 matplotlib. 
+支持GPU功能则需要配置CUDA和cuDNN加速库。
 
-If you run into any trouble, please check the `TensorFlow installation
+如果运行中出现问题，请查阅 `TensorFlow installation
 instructions <https://www.tensorflow.org/versions/master/get_started/os_setup.html>`__,
 `MindSpore installation instructions <https://www.mindspore.cn/install>`__,
 `PaddlePaddle installation instructions <https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html>`__,
 `PyTorch installation instructions <https://pytorch.org/get-started/locally/>`__,
-which cover installing the TensorFlow for a range of operating systems including
-Mac OX, Linux and Windows, or ask for help on `tensorlayer@gmail.com <tensorlayer@gmail.com>`_
-or `FAQ <http://tensorlayer.readthedocs.io/en/latest/user/more.html>`_.
+它包含了Tensorflow在Mac OSX,Linux和Windows上的安装问题, 或者向 `tensorlayer@gmail.com <tensorlayer@gmail.com>`_
+or `FAQ <http://tensorlayer.readthedocs.io/en/latest/user/more.html>`_ 寻求帮助
 
 
-Install Backend
+安装后端
 =========================
 TensorLayerX supports multiple deep learning backends, default TensorFlow as backend also supports MindSpore, PaddlePaddle and PyTorch.
 

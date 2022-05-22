@@ -62,9 +62,9 @@ Editable Mode
 Load Model
 ===========
 
-Note that, the ``tl.files.load_npz()`` can only able to load the npz model saved by ``tl.files.save_npz()``.
-If you have a model want to load into your TensorLayerX network, you can first assign your parameters into a list in order,
-then use ``tl.files.assign_params()`` to load the parameters into your TensorLayerX model.
+Note that, the ``tlx.files.load_npz()`` can only able to load the npz model saved by ``tlx.files.save_npz()``.
+If you have a series of model parameters want to load into your TensorLayerX model, you can first assign your parameters into a list in order,
+then use ``tlx.files.assign_params()`` to load the parameters into your TensorLayerX model.
 
 
 
