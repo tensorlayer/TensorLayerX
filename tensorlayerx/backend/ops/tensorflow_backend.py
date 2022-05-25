@@ -3772,3 +3772,58 @@ def diag(input, diagonal=0):
     >>> [1, 5, 9]
     """
     return tf.experimental.numpy.diag(input, diagonal)
+
+def mask_select(x, mask, axis = 0):
+    """
+
+    Parameters
+    ----------
+    x : Tensor
+        N-D Tensor.
+    mask : Tensor
+        N-D boolean Tensor or 1-D boolean Tensor
+    axis :
+        the axis in tensor to mask from. By default, axis is 0.
+
+    Returns
+    -------
+        the output tensor.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> tensor = tlx.ops.convert_to_tensor([[1,2,3],[4,5,6],[7,8,9]]))
+    >>> mask = tlx.ops.convert_to_tensor(np.array([True, False, True]), dtype=tlx.bool)
+    >>> new_tensor = tlx.ops.mask_select(tensor, mask)
+    >>> [[1, 2, 3],[7, 8, 9]]
+    """
+
+    return tf.boolean_mask(x, mask, axis = axis)
+
+def eye(n, m = None, dtype = None):
+    """
+
+    Parameters
+    ----------
+    n : int
+        the number of rows
+    m : int or None
+        the number of columns with default being n
+    dtype : str or None
+        the desired data type of returned tensor. Default: if None, use float32
+
+    Returns
+    -------
+        A 2-D tensor with ones on the diagonal and zeros elsewhere
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> tlx.ops.eye(2)
+    >>> [[1,0],
+    >>> [0,1]]
+    """
+    if dtype is None:
+        dtype = tf.dtypes.float32
+    return tf.eye(n, m, dtype = dtype)
+

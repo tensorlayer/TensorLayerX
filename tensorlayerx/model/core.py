@@ -430,7 +430,7 @@ class Model:
         print_freq, test_dataset
     ):
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        network.to(device)
+        network = network.to(device)
         for epoch in range(n_epoch):
             start_time = time.time()
 

@@ -43,7 +43,7 @@ class ImdbNet(Module):
         super(ImdbNet, self).__init__()
         self.embedding = Embedding(num_embeddings=vocab_size, embedding_dim=64)
         self.lstm = LSTM(input_size=64, hidden_size=64)
-        self.linear1 = Linear(in_features=64, out_features=64, act=tlx.ReLU)
+        self.linear1 = Linear(in_features=64, out_features=64, act=tlx.nn.ReLU)
         self.linear2 = Linear(in_features=64, out_features=2)
 
     def forward(self, x):

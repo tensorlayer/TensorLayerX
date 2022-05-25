@@ -1510,7 +1510,8 @@ def is_nan(x):
 
 
 def l2_normalize(x, axis=None, eps=1e-12):
-    return pd.divide(x, pd.sqrt(pd.max(pd.sum(pd.pow(x, 2), axis=axis))))
+    axis = 0 if axis is None else axis
+    return F.normalize(x, p=2.0, axis=axis, epsilon=eps)
 
 
 def less(x, y):
@@ -1807,3 +1808,29 @@ def tensor_scatter_nd_update(tensor, indices, updates):
 def diag(input, diagonal=0):
 
     return paddle.diag(input, diagonal)
+
+def mask_select(x, mask, axis = 0):
+    def _apply_mask_1d(reshaped_tensor, mask, axis=None):
+        indices = paddle.nonzero(paddle.cast(mask, paddle.int32), as_tuple=True)
+        return paddle.gather(reshaped_tensor, indices, axis=axis)
+    shape_mask = mask.shape
+    ndims_mask = len(shape_mask)
+    if ndims_mask == 0:
+        raise ValueError("mask cannot be scalar.")
+    if ndims_mask is None:
+        raise ValueError(
+                "Number of mask dimensions must be specified, even if some dimensions"
+                " are None.  E.g. shape=[None] is ok, but shape=None is not.")
+    axis = 0 if axis is None else axis
+    leading_size = np.prod(x.shape[axis:axis + ndims_mask], 0)
+    tensor = paddle.reshape(
+            x,
+            list(np.concatenate([
+                x.shape[:axis], [leading_size],
+                x.shape[axis + ndims_mask:]
+            ], 0)))
+    mask = paddle.reshape(mask, [-1])
+    return _apply_mask_1d(tensor, mask, axis)
+
+def eye(n, m=None, dtype=None):
+    return paddle.eye(n, m, dtype)

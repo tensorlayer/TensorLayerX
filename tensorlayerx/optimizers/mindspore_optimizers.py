@@ -157,12 +157,12 @@ class SGD(Cell):
 
 class Momentum(Cell):
 
-    def __init__(self, lr, momentum, use_nesterov=False, weight_decay=0.0, grad_clip=None):
+    def __init__(self, lr=0.001, momentum=0.0, nesterov=False, weight_decay=0.0, grad_clip=None):
         super(Momentum, self).__init__()
         self.mom = optimizer.Momentum
         self.lr = lr
         self.momentum = momentum
-        self.use_nesterov = use_nesterov
+        self.nesterov = nesterov
         self.weight_decay = weight_decay
         self.init_optim = False
 
@@ -170,7 +170,7 @@ class Momentum(Cell):
         grads, vars = list(zip(*grads_and_vars))
         if not self.init_optim:
             self.optimizer_mom = self.mom(
-            vars, learning_rate=self.lr, momentum=self.momentum, use_nesterov=self.use_nesterov,
+            vars, learning_rate=self.lr, momentum=self.momentum, use_nesterov=self.nesterov,
             weight_decay=self.weight_decay
         )
             self.init_optim = True

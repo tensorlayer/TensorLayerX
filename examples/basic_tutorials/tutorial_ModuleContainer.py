@@ -13,9 +13,9 @@ import tensorlayerx as tlx
 
 ####################### Holds submodules in a list ########################################
 
-d1 = Linear(out_features=800, act=tlx.ReLU, in_features=784, name='linear1')
-d2 = Linear(out_features=800, act=tlx.ReLU, in_features=800, name='linear2')
-d3 = Linear(out_features=10, act=tlx.ReLU, in_features=800, name='linear3')
+d1 = Linear(out_features=800, act=tlx.nn.ReLU, in_features=784, name='linear1')
+d2 = Linear(out_features=800, act=tlx.nn.ReLU, in_features=800, name='linear2')
+d3 = Linear(out_features=10, act=tlx.nn.ReLU, in_features=800, name='linear3')
 
 layer_list = ModuleList([d1, d2])
 # Inserts a given d2 before a given index in the list
@@ -53,8 +53,8 @@ class MyModule(Module):
     def __init__(self):
         super(MyModule, self).__init__()
         self.dict = ModuleDict({
-                'linear1': Linear(out_features=800, act=tlx.ReLU, in_features=784, name='linear1'),
-                'linear2': Linear(out_features=800, act=tlx.ReLU, in_features=800, name='linear2')
+                'linear1': Linear(out_features=800, act=tlx.nn.ReLU, in_features=784, name='linear1'),
+                'linear2': Linear(out_features=800, act=tlx.nn.ReLU, in_features=800, name='linear2')
                })
     def forward(self, x, linear):
         x = self.dict[linear](x)

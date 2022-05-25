@@ -20,11 +20,11 @@ class CustomModel(Module):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(p=0.2)
         self.linear1 = Linear(out_features=800)
-        self.batchnorm = BatchNorm1d(act=tlx.ReLU)
+        self.batchnorm = BatchNorm1d(act=tlx.nn.ReLU)
         self.dropout2 = Dropout(p=0.2)
-        self.linear2 = Linear(out_features=800, act=tlx.ReLU)
+        self.linear2 = Linear(out_features=800, act=tlx.nn.ReLU)
         self.dropout3 = Dropout(p=0.2)
-        self.linear3 = Linear(out_features=10, act=tlx.ReLU)
+        self.linear3 = Linear(out_features=10, act=tlx.nn.ReLU)
 
     def forward(self, x, foo=None):
         z = self.dropout1(x)

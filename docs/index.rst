@@ -56,6 +56,7 @@ method, this part of the documentation is for you.
 
   modules/activation
   modules/losses
+  modules/metrics
   modules/dataflow
   modules/files
   modules/nn

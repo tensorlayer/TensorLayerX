@@ -1240,13 +1240,7 @@ class DepthToSpace(object):
     def __call__(self, input):
         if self.data_format == 'NHWC':
             input = nhwc_to_nchw(input)
-        bH = self.block_size
-        bW = self.block_size
-        N, C, H, W = input.shape
-        oC, oH, oW = C // (self.block_size * self.block_size), bH * H, bW * W
-        output = input.reshape(N, C, bH, bW, H, W)
-        output = output.permute(0, 1, 4, 2, 5, 3)
-        output = output.reshape(N, oC, oH, oW)
+        output = torch.nn.functional.pixel_shuffle(input, upscale_factor=self.block_size)
         if  self.data_format == 'NHWC':
             output = nchw_to_nhwc(output)
         return output
@@ -1354,9 +1348,8 @@ def is_nan(x):
 
 
 def l2_normalize(x, axis=None, eps=1e-12):
-    if axis == None:
-        return torch.divide(x, torch.sqrt(torch.max(torch.sum(torch.pow(x, 2)))))
-    return torch.divide(x, torch.sqrt(torch.max(torch.sum(torch.pow(x, 2), dim=axis))))
+    axis = 0 if axis is None else axis
+    return F.normalize(x, p=2.0, dim=axis, eps=eps)
 
 
 def less(x, y):
@@ -1655,3 +1648,22 @@ def tensor_scatter_nd_update(tensor, indices, updates):
 def diag(input, diagonal=0):
 
     return torch.diag(input, diagonal)
+
+def mask_select(x, mask, axis = 0):
+    if axis is None:
+        axis = 0
+    if axis < 0:
+        axis = len(x.shape) + axis
+    if x.shape == mask.shape:
+        return torch.masked_select(x, mask)
+    if axis == 0:
+        return x[mask]
+    elif axis == 1:
+        return x[:, mask]
+    elif axis == 2:
+        return x[:, :, mask]
+    elif axis == 3:
+        return x[:,:,:, mask]
+
+def eye(n, m=None, dtype=None):
+    return torch.eye(n = n, m = m, dtype =dtype)

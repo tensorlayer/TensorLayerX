@@ -47,19 +47,19 @@ class CNN(Module):
         b_init2 = tlx.nn.initializers.constant(value=0.1)
 
         self.conv1 = Conv2d(64, (5, 5), (1, 1), padding='SAME', W_init=W_init, b_init=None, name='conv1', in_channels=3)
-        self.bn = BatchNorm2d(num_features=64, act=tlx.ReLU)
+        self.bn = BatchNorm2d(num_features=64, act=tlx.nn.ReLU)
         self.maxpool1 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool1')
 
         self.conv2 = Conv2d(
-            64, (5, 5), (1, 1), padding='SAME', act=tlx.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
+            64, (5, 5), (1, 1), padding='SAME', act=tlx.nn.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
         )
         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 
         self.flatten = Flatten(name='flatten')
-        self.linear1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_features=2304)
+        self.linear1 = Linear(384, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_features=2304)
         self.linear_add = self.make_layer(in_channel=384)
 
-        self.linear2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_features=384)
+        self.linear2 = Linear(192, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_features=384)
         self.linear3 = Linear(10, act=None, W_init=W_init2, name='output', in_features=192)
 
     def forward(self, x):

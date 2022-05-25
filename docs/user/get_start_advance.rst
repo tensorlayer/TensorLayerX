@@ -95,8 +95,8 @@ The full implementation is as follow, which supports both automatic inference in
     With TensorLayerx
 
     >>> net = tlx.nn.Input([100, 50], name='input')
-    >>> linear = tlx.nn.Linear(out_features=800, act=tlx.ReLU, in_features=50, name='linear_1')
-    >>> tensor = tlx.nn.Linear(out_features=800, act=tlx.ReLU, name='linear_2')(net)
+    >>> linear = tlx.nn.Linear(out_features=800, act=tlx.nn.ReLU, in_features=50, name='linear_1')
+    >>> tensor = tlx.nn.Linear(out_features=800, act=tlx.nn.ReLU, name='linear_2')(net)
 
     Notes
     -----

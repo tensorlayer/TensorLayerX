@@ -114,6 +114,8 @@ API - Operations
    is_tensor
    tensor_scatter_nd_update
    diag
+   mask_select
+   eye
 
 TensorLayerX Tensor Operations
 --------------------------------
@@ -549,3 +551,11 @@ tensor_scatter_nd_update
 diag
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: diag
+
+mask_select
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: mask_select
+
+eye
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: eye

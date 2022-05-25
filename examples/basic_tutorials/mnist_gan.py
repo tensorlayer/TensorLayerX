@@ -41,9 +41,9 @@ class generator(Module):
 
     def __init__(self):
         super(generator, self).__init__()
-        self.g_fc1 = Linear(out_features=256, in_features=100, act=tlx.ReLU)
-        self.g_fc2 = Linear(out_features=256, in_features=256, act=tlx.ReLU)
-        self.g_fc3 = Linear(out_features=784, in_features=256, act=tlx.Tanh)
+        self.g_fc1 = Linear(out_features=256, in_features=100, act=tlx.nn.ReLU)
+        self.g_fc2 = Linear(out_features=256, in_features=256, act=tlx.nn.ReLU)
+        self.g_fc3 = Linear(out_features=784, in_features=256, act=tlx.nn.Tanh)
 
     def forward(self, x):
         out = self.g_fc1(x)

@@ -1,6 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
-
+import numpy as np
 from paddle.fluid.initializer import ConstantInitializer
 from paddle.fluid.initializer import UniformInitializer
 from paddle.fluid.initializer import NormalInitializer
@@ -78,7 +78,7 @@ class Ones(ConstantInitializer):
         super(Ones, self).__init__(value=1.0, force_cpu=False)
 
 
-class Constant(ConstantInitializer):
+class Constant(object):
     """Initializer that generates tensors initialized to a constant value.
 
     Parameters
@@ -91,9 +91,14 @@ class Constant(ConstantInitializer):
     def __init__(self, value=0.0):
         if value is None:
             raise ValueError("value must not be none.")
-        super(Constant, self).__init__(value=value, force_cpu=False)
         self.value = value
-
+        if isinstance(value, (int, float)):
+            self.constant_init = paddle.nn.initializer.Constant(value=value)
+        elif isinstance(value, (paddle.Tensor, list, np.ndarray)):
+            self.constant_init = paddle.nn.initializer.Assign(value=value)
+    def __call__(self, var, block=None):
+        return self.constant_init(var)
+    
     def get_config(self):
         return {"value": self.value}
 

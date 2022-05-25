@@ -54,7 +54,7 @@ class Adadelta(Optimizer):
 
 class Adagrad(Optimizer):
 
-    def __init__(self, lr, initial_accumulator_value=0.0, eps=1.0e-6, weight_decay=0.0, grad_clip=None):
+    def __init__(self, lr=0.001, initial_accumulator_value=0.0, eps=1.0e-6, weight_decay=0.0, grad_clip=None):
 
         if lr is None:
             raise ValueError('lr is not set.')
@@ -315,7 +315,7 @@ class SGD(Optimizer):
 
 class Momentum(Optimizer):
 
-    def __init__(self, lr=0.001, momentum=0.9, nesterov=False, weight_decay=0.0, grad_clip=None):
+    def __init__(self, lr=0.001, momentum=0.9,  weight_decay=0.0, nesterov=False, grad_clip=None):
         if lr is None:
             raise ValueError("lr is not set")
         if momentum is None:

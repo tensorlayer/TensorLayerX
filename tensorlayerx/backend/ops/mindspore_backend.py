@@ -572,7 +572,7 @@ def concat(values, axis):
     Concatenates tensors along one dimension.
 
     Parameters
-    ----------
+    ----------nonzero
     values : list
          A list of Tensor objects or a single Tensor
     axis : int
@@ -1795,3 +1795,29 @@ def tensor_scatter_nd_update(tensor, indices, updates):
 def diag(input, diagonal=0):
 
     return ms.numpy.diag(input, diagonal)
+
+def mask_select(x, mask, axis = 0):
+    if axis is None:
+        axis = 0
+    if axis < 0:
+        axis = len(x.shape) + axis
+    if x.shape == mask.shape:
+        return ms.ops.MaskedSelect()(x, mask)
+    if isinstance(mask, ms.Tensor):
+        mask = mask.asnumpy()
+    mask = np.nonzero(mask)[0].tolist()
+    if axis < 0:
+        axis = len(x.shape) + axis
+    if axis == 0:
+        return x[mask]
+    elif axis == 1:
+        return x[:, mask]
+    elif axis == 2:
+        return x[:, :, mask]
+    elif axis == 3:
+        return x[:,:,:, mask]
+
+def eye(n, m = None, dtype = None):
+    if dtype is None:
+        dtype = mstype.float32
+    return ms.numpy.eye(n, m, dtype = dtype)
