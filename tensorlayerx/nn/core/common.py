@@ -87,6 +87,28 @@ def str2act(act):
     return _act_dict[act]
 
 
+def processing_act(act):
+    # Processing strings as input, activation functions without parameters。
+    if isinstance(act, str):
+        str_act = str2act(act)
+    if act:
+        # Processing strings as input, activation functions with parameters。
+        if isinstance(act, str) and (len(act) > 5 and act[0:5] == "lrelu" or
+                                     len(act) > 10 and act[0:10] == "leaky_relu"):
+            out_act = str_act
+        elif isinstance(act, str):
+            out_act = str_act()
+        # Processing classes or functions as input, activation functions without parameters
+        elif type(act) == type(tlx.nn.ReLU):
+            out_act = act()
+        # Processing class or function as input, activation function with parameters
+        else:
+            out_act = act
+    else:
+        out_act = act
+    return out_act
+
+
 def _save_weights(net, file_path, format=None):
     """Input file_path, save model weights into a file of given format.
                 Use net.load_weights() to restore.

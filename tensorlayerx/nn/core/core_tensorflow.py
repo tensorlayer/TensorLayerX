@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .common import check_parameter, str2act, str2init, tolist, construct_graph, ModuleNode, select_attrs
+from .common import check_parameter, processing_act, str2init, tolist, construct_graph, ModuleNode, select_attrs
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from collections import OrderedDict, abc as container_abcs
 from collections import OrderedDict
@@ -82,19 +82,7 @@ class Module(object):
 
         self.name = name
 
-        if isinstance(act, str):
-            str_act = str2act(act)
-
-        if act:
-            if isinstance(act, str) and (len(act) > 5 and act[0:5] == "lrelu" or
-                                         len(act) > 10 and act[0:10] == "leaky_relu"):
-                self.act = str_act
-            elif isinstance(act, str):
-                self.act = str_act()
-            else:
-                self.act = act()
-        else:
-            self.act = act
+        self.act = processing_act(act)
 
         # Layer building state
         self._built = False
@@ -587,8 +575,7 @@ class Module(object):
 
     def build_graph(self, *inputs, **kwargs):
         # Add nodes only when the composition is needed.
-        layers = self.layers_and_names(name_prefix='')
-        for layer_name, layer in layers:
+        for layer_name, layer in self._layers.items():
             if isinstance(layer, Module):
                 layer._build_graph = True
         self.set_eval()
