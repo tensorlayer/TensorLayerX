@@ -330,7 +330,7 @@ def save_standard_npz_dict(save_list=None, name='model.npz'):
         save_list_var = []
         for named, values in save_list:
             save_list_names.append(named)
-            save_list_var.append(values.detach().numpy())
+            save_list_var.append(values.cpu().detach().numpy())
     else:
         raise NotImplementedError('Not implemented')
 

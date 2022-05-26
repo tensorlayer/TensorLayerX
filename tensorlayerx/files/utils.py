@@ -2155,7 +2155,7 @@ def save_npz_dict(save_list=None, name='model.npz'):
         save_list_var = []
         for named, values in save_list:
             save_list_names.append(named)
-            save_list_var.append(values.detach().numpy())
+            save_list_var.append(values.cpu().detach().numpy())
     else:
         raise NotImplementedError('Not implemented')
     save_var_dict = {save_list_names[idx]: val for idx, val in enumerate(save_list_var)}
@@ -2678,7 +2678,7 @@ def th_variables_to_numpy(variables):
         var_list = [variables]
     else:
         var_list = variables
-    results = [v.detach().numpy() for v in var_list]
+    results = [v.cpu().detach().numpy() for v in var_list]
     return results
 
 

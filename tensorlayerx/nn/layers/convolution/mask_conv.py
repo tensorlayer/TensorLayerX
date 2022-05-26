@@ -113,13 +113,11 @@ class MaskedConv3d(Module):
 
     def build(self, inputs_shape):
         if self.data_format == 'channels_last':
-            self._data_format = 'NDHWC'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
             self._strides = [1, self.stride[0], self.stride[1], self.stride[2], 1]
             self._dilation_rate = [1, self.dilation[0], self.dilation[1], self.dilation[2], 1]
         elif self.data_format == 'channels_first':
-            self._data_format = 'NCDHW'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
             self._strides = [1, 1, self.stride[0], self.stride[1], self.stride[2]]
