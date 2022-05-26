@@ -120,12 +120,10 @@ class DepthwiseConv2d(Module):
 
     def build(self, inputs_shape):
         if self.data_format == 'channels_last':
-            self.data_format = 'NHWC'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
             self._strides = [1, self._strides[0], self._strides[1], 1]
         elif self.data_format == 'channels_first':
-            self.data_format = 'NCHW'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
             self._strides = [1, 1, self._strides[0], self._strides[1]]

@@ -103,11 +103,9 @@ class SeparableConv1d(Module):
 
     def build(self, inputs_shape):
         if self.data_format == 'channels_last':
-            self.data_format = 'NWC'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
         elif self.data_format == 'channels_first':
-            self.data_format = 'NCW'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
         else:

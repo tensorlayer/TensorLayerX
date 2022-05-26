@@ -109,13 +109,11 @@ class GroupConv2d(Module):
 
     def build(self, inputs_shape):
         if self.data_format == 'channels_last':
-            self.data_format = 'NHWC'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
             self._stride = [1, self._stride[0], self._stride[1], 1]
             self._dilation_rate = [1, self._dilation_rate[0], self._dilation_rate[1], 1]
         elif self.data_format == 'channels_first':
-            self.data_format = 'NCHW'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
             self._stride = [1, 1, self._stride[0], self._stride[1]]

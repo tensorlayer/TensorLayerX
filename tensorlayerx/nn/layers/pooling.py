@@ -159,12 +159,6 @@ class MaxPool1d(Module):
 
     def build(self, inputs_shape=None):
         # https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/nn/pool
-        if self.data_format == 'channels_last':
-            self.data_format = 'NWC'
-        elif self.data_format == 'channels_first':
-            self.data_format = 'NCW'
-        else:
-            raise Exception("unsupported data format")
         self._filter_size = [self.kernel_size]
         self._stride = [self.stride]
         self.max_pool = tlx.ops.MaxPool1d(
@@ -238,12 +232,6 @@ class MeanPool1d(Module):
 
     def build(self, inputs_shape=None):
         # https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/nn/pool
-        if self.data_format == 'channels_last':
-            self.data_format = 'NWC'
-        elif self.data_format == 'channels_first':
-            self.data_format = 'NCW'
-        else:
-            raise Exception("unsupported data format")
         self._filter_size = [self.kernel_size]
         self._stride = [self.stride]
         self.avg_pool = tlx.ops.AvgPool1d(
@@ -318,10 +306,8 @@ class MaxPool2d(Module):
 
     def build(self, inputs_shape=None):
         if self.data_format == 'channels_last':
-            self.data_format = 'NHWC'
             self._stride = [1, self.stride[0], self.stride[1], 1]
         elif self.data_format == 'channels_first':
-            self.data_format = 'NCHW'
             self._stride = [1, 1, self.stride[0], self.stride[1]]
         else:
             raise Exception("unsupported data format")
@@ -398,10 +384,8 @@ class MeanPool2d(Module):
 
     def build(self, inputs_shape=None):
         if self.data_format == 'channels_last':
-            self.data_format = 'NHWC'
             self._stride = [1, self.stride[0], self.stride[1], 1]
         elif self.data_format == 'channels_first':
-            self.data_format = 'NCHW'
             self._stride = [1, 1, self.stride[0], self.stride[1]]
         else:
             raise Exception("unsupported data format")
@@ -480,10 +464,8 @@ class MaxPool3d(Module):
 
     def build(self, inputs_shape=None):
         if self.data_format == 'channels_last':
-            self.data_format = 'NDHWC'
             self._stride = [1, self.stride[0], self.stride[1], self.stride[2], 1]
         elif self.data_format == 'channels_first':
-            self.data_format = 'NCDHW'
             self._stride = [1, 1, self.stride[0], self.stride[1], self.stride[2]]
         else:
             raise Exception("unsupported data format")
@@ -562,12 +544,6 @@ class MeanPool3d(Module):
 
     def build(self, inputs_shape=None):
         self._stride = [1, self.stride[0], self.stride[1], self.stride[2], 1]
-        if self.data_format == 'channels_last':
-            self.data_format = 'NDHWC'
-        elif self.data_format == 'channels_first':
-            self.data_format = 'NCDHW'
-        else:
-            raise Exception("unsupported data format")
         self.avg_pool3d = tlx.ops.AvgPool3d(
             ksize=self.kernel_size, strides=self._stride, padding=self.padding, data_format=self.data_format
         )
@@ -1055,12 +1031,6 @@ class AdaptiveMeanPool1d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        if self.data_format == 'channels_last':
-            self.data_format = 'NWC'
-        elif self.data_format == 'channels_first':
-            self.data_format = 'NCW'
-        else:
-            raise Exception("unsupported data format")
 
         self.adaptivemeanpool1d = tlx.ops.AdaptiveMeanPool1D(output_size=self.output_size, data_format=self.data_format)
 
@@ -1113,12 +1083,6 @@ class AdaptiveMeanPool2d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        if self.data_format == 'channels_last':
-            self.data_format = 'NHWC'
-        elif self.data_format == 'channels_first':
-            self.data_format = 'NCHW'
-        else:
-            raise Exception("unsupported data format")
 
         if isinstance(self.output_size, int):
             self.output_size = (self.output_size, ) * 2
@@ -1174,12 +1138,6 @@ class AdaptiveMeanPool3d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        if self.data_format == 'channels_last':
-            self.data_format = 'NDHWC'
-        elif self.data_format == 'channels_first':
-            self.data_format = 'NCDHW'
-        else:
-            raise Exception("unsupported data format")
 
         if isinstance(self.output_size, int):
             self.output_size = (self.output_size, ) * 3
@@ -1235,12 +1193,6 @@ class AdaptiveMaxPool1d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        if self.data_format == 'channels_last':
-            self.data_format = 'NWC'
-        elif self.data_format == 'channels_first':
-            self.data_format = 'NCW'
-        else:
-            raise Exception("unsupported data format")
 
         self.adaptivemaxpool1d = tlx.ops.AdaptiveMaxPool1D(output_size=self.output_size, data_format=self.data_format)
 
@@ -1293,12 +1245,7 @@ class AdaptiveMaxPool2d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        if self.data_format == 'channels_last':
-            self.data_format = 'NHWC'
-        elif self.data_format == 'channels_first':
-            self.data_format = 'NCHW'
-        else:
-            raise Exception("unsupported data format")
+
         if isinstance(self.output_size, int):
             self.output_size = (self.output_size, ) * 2
 
@@ -1353,12 +1300,6 @@ class AdaptiveMaxPool3d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        if self.data_format == 'channels_last':
-            self.data_format = 'NDHWC'
-        elif self.data_format == 'channels_first':
-            self.data_format = 'NCDHW'
-        else:
-            raise Exception("unsupported data format")
 
         if isinstance(self.output_size, int):
             self.output_size = (self.output_size, ) * 3
