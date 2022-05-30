@@ -257,7 +257,7 @@ class Recall(object):
     """
     Recall score for binary classification task.
 
-        Examples
+    Examples
     -----------
     >>> import tensorlayerx as tlx
     >>> y_pred = tlx.ops.convert_to_tensor(np.array([0.3, 0.2, 0.1, 0.7]))
