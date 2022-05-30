@@ -1821,3 +1821,21 @@ def eye(n, m = None, dtype = None):
     if dtype is None:
         dtype = mstype.float32
     return ms.numpy.eye(n, m, dtype = dtype)
+
+
+def einsum(equation, *operands):
+    if ms.__version__ < '1.7.0':
+        raise NotImplementedError("Only MindSpore versions later than 1.7.0 are supported.")
+    einsum_obj = ms.ops.Einsum(equation)
+    return einsum_obj(tuple(operands))
+
+
+class Einsum(Cell):
+    def __init__(self, equation):
+        super(Einsum, self).__init__()
+        if ms.__version__ < '1.7.0':
+            raise NotImplementedError("Only MindSpore versions later than 1.7.0 are supported.")
+        self.einsum = ms.ops.Einsum(equation)
+
+    def __call__(self, *args):
+        return self.einsum(tuple(args))

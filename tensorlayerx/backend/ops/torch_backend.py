@@ -1667,3 +1667,16 @@ def mask_select(x, mask, axis = 0):
 
 def eye(n, m=None, dtype=None):
     return torch.eye(n = n, m = m, dtype =dtype)
+
+
+def einsum(equation, *operands):
+    return torch.einsum(equation, *operands)
+
+
+class Einsum(object):
+    def __init__(self, equation):
+        super(Einsum, self).__init__()
+        self.equation = equation
+
+    def __call__(self, *args):
+        return torch.einsum(self.equation, *args)

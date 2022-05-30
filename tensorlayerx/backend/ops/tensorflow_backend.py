@@ -3827,3 +3827,44 @@ def eye(n, m = None, dtype = None):
         dtype = tf.dtypes.float32
     return tf.eye(n, m, dtype = dtype)
 
+
+def einsum(equation, *operands):
+    """
+    Sums the product of the elements of the input operands along dimensions specified
+    using a notation based on the Einstein summation convention.
+
+    Parameters
+    ----------
+    equation : An attribute
+        represent the operation you want to do.
+        the value can contain only letters([a-z][A-Z]), commas(,), ellipsis(…), and arrow(->).
+        the letters represent inputs’s tensor dimension, commas(,)represent separate tensors, ellipsis(…) indicates
+        the tensor dimension that you do not care about, the left of the arrow(->) indicates the input tensors,
+        and the right of it indicates the desired output dimension.
+
+    operands : list
+        input tensor used for calculation. the data type of the tensor must be the same.
+
+    Returns
+    -------
+        Tensor, the shape of it can be obtained from the equation, and the data type is the same as input tensors.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.nn.Input((5,))
+    >>> y = tlx.nn.Input((4,))
+    >>> out = tlx.ops.einsum('i,j->ij', x, y)
+    >>> cal_enisum = tlx.ops.Einsum('i,j->ij')
+    >>> out = cal_enisum(x, y)
+    """
+    return tf.einsum(equation, *operands)
+
+
+class Einsum(object):
+    def __init__(self, equation):
+        super(Einsum, self).__init__()
+        self.equation = equation
+
+    def __call__(self, *args):
+        return tf.einsum(self.equation, *args)

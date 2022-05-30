@@ -287,8 +287,7 @@ class Module(Cell):
 
     def build_graph(self, *inputs, **kwargs):
         # Add nodes only when the composition is needed.
-        layers = self.cells_and_names(name_prefix='')
-        for layer_name, layer in layers:
+        for layer_name, layer in self._cells.items():
             if isinstance(layer, Module):
                 layer._build_graph = True
         self.set_eval()

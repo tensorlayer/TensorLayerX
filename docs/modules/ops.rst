@@ -116,6 +116,7 @@ API - Operations
    diag
    mask_select
    eye
+   einsum
 
 TensorLayerX Tensor Operations
 --------------------------------
@@ -559,3 +560,7 @@ mask_select
 eye
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: eye
+
+einsum
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: einsum

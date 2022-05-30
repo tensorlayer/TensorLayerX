@@ -174,7 +174,7 @@ class Module(T_Module):
 
     def build_graph(self, *inputs, **kwargs):
         # Add nodes only when the composition is needed.
-        for name, layer in self.named_modules():
+        for name, layer in self._modules.items():
             if isinstance(layer, Module):
                 layer._build_graph = True
         self.set_eval()

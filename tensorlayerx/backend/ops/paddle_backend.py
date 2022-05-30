@@ -1834,3 +1834,25 @@ def mask_select(x, mask, axis = 0):
 
 def eye(n, m=None, dtype=None):
     return paddle.eye(n, m, dtype)
+
+
+def einsum(equation, *operands):
+    try:
+        from paddlenlp.ops import einsum
+    except:
+        raise Exception("Paddlenlp needs to be installed.")
+    return einsum(equation, *operands)
+
+
+class Einsum(object):
+    def __init__(self, equation):
+        super(Einsum, self).__init__()
+        try:
+            from paddlenlp.ops import einsum
+        except:
+            raise Exception("Paddlenlp needs to be installed.")
+        self.equation = equation
+
+    def __call__(self, *args):
+        return einsum(self.equation, *args)
+

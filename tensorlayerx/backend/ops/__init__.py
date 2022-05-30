@@ -84,6 +84,7 @@ from .load_backend import QuanConv
 from .load_backend import QuanConvBn
 
 # load ops
+from .load_backend import einsum
 from .load_backend import Variable
 from .load_backend import matmul
 from .load_backend import add
@@ -245,3 +246,4 @@ from .load_backend import DepthToSpace
 from .load_backend import ClipGradByValue
 from .load_backend import ClipGradByNorm
 from .load_backend import ClipByGlobalNorm
+from .load_backend import Einsum
