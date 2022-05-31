@@ -108,7 +108,10 @@ TensorLayerX has extensive documentation for both beginners and professionals.
 
 
 # Contributing
-Join our community as a code contributor, find out more in our [Contributing](https://tensorlayerx.readthedocs.io/en/latest/user/contributing.html) guide!
+Join our community as a code contributor, find out more in our [Help wanted list](https://github.com/tensorlayer/TensorLayerX/issues/5) and [Contributing](https://tensorlayerx.readthedocs.io/en/latest/user/contributing.html) guide!
+
+
+
 
 # Contact
  - hao.dong@pku.edu.cn
