@@ -22,6 +22,11 @@ This project is maintained by researchers from Peking University, Imperial Colle
 [支持列表](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)。
 
 
+# Document
+TensorLayerX has extensive documentation for both beginners and professionals. 
+
+[![English Documentation](https://img.shields.io/badge/documentation-english-blue.svg)](https://tensorlayerx.readthedocs.io/en/latest/)
+
 
 # Design Features
 
@@ -100,12 +105,6 @@ class CustomModel(Module):
 MLP = CustomModel()
 MLP.set_eval()
 ```
-
-# Document
-TensorLayerX has extensive documentation for both beginners and professionals. 
-
-[![English Documentation](https://img.shields.io/badge/documentation-english-blue.svg)](https://tensorlayerx.readthedocs.io/en/latest/)
-
 
 # Contributing
 Join our community as a code contributor, find out more in our [Help wanted list](https://github.com/tensorlayer/TensorLayerX/issues/5) and [Contributing](https://tensorlayerx.readthedocs.io/en/latest/user/contributing.html) guide!
