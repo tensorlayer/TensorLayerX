@@ -2704,7 +2704,7 @@ def assign_ms_variable(variable, value):
 
 
 def assign_pd_variable(variable, value):
-    pd.assign(value, variable)
+    variable.set_value(value)
 
 
 def assign_th_variable(variable, value):
