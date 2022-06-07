@@ -127,55 +127,8 @@ class Module(Cell):
             shape_mem = tlx.get_tensor_shape(tensors)
         return shape_mem
 
-    def __call__(self, *args, **kwargs):
-        if self.__class__.construct is Cell.construct:
-            logger.warning(f"The '{self.__class__}' does not override the method 'construct', "
-                           f"will call the super class(Cell) 'construct'.")
-        if kwargs:
-            bound_arguments = inspect.signature(self.construct).bind(*args, **kwargs)
-            bound_arguments.apply_defaults()
-            args = bound_arguments.args
-            kwargs = bound_arguments.kwargs
-
-        # Run in Graph mode.
-        if context._get_mode() == context.GRAPH_MODE:
-            self._check_construct_args(*args, **kwargs)
-            if self.enable_hook:
-                raise ValueError("For 'Cell', it's not support hook function in graph mode, please use "
-                                 "context.set_context to set pynative mode.")
-            out = self.compile_and_run(*args)
-            return out
-
-        # Run in PyNative mode.
-        if _pynative_executor.is_top_cell():
-            _pynative_executor.set_lazy_build(True)
-            # There many Casts in parameter_broadcast. Enable lazy_build and build faster.
-            self._do_parameter_broadcast()
-
-        for item in args:
-            if isinstance(item, ms.Tensor) and item.has_init:
-                item.init_data()
-            elif isinstance(item, numpy.ndarray):
-                raise TypeError("For 'Cell', inputs should not be numpy array.")
-        if self.requires_grad is True:
-            _pynative_executor.set_grad_flag(True)
-        _pynative_executor.new_graph(self, *args, **kwargs)
-        cast_inputs = self.auto_cast_inputs(args)
-
-        with self.CellGuard():
-            try:
-                output = self.run_construct(cast_inputs, kwargs)
-            except Exception as err:
-                _pynative_executor.clear_res()
-                raise err
-
-        if _pynative_executor.is_top_cell():
-            _pynative_executor.execute_lazy_task()
-
-        if isinstance(output, Parameter):
-            output = output.data
-        _pynative_executor.end_graph(self, output, *args, **kwargs)
-        return output
+    # def __call__(self, *args, **kwargs):
+        ## TODO With MindSpore __call__, refactoring is required when there are special cases to consider
 
     def set_train(self):
         """
