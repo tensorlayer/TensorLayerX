@@ -1183,66 +1183,132 @@ class Conv2d_transpose(Cell):
         if self.data_format == 'NHWC':
             raise NotImplementedError("The optional value for data format. Currently only support “NCWH”.")
 
-        self.conv2d_transpose = P.Conv2DBackpropInput(
-            out_channel=self.in_channels, kernel_size=self.k_size, pad_mode=self.padding, stride=self.strides,
-            dilation=self.dilations, mode=1, group=1, data_format=self.data_format
-        )
-        self.shape = P.Shape()
+        if isinstance(self.padding, str):
+            self.pad_mode = self.padding
+            self.pad = 0
+        else:
+            self.pad_mode = 'pad'
+            if isinstance(self.padding, tuple):
+                self.padding = (self.padding[0], self.padding[0], self.padding[1], self.padding[1])
+            self.pad = self.padding
+        self.is_valid = self.pad_mode == 'valid'
+        self.is_same = self.pad_mode == 'same'
+        self.is_pad = self.pad_mode == 'pad'
+        # cause Conv2DTranspose's out_channel refers to Conv2D's out_channel.
+        self.conv2d_transpose = P.Conv2DTranspose(out_channel=in_channels,
+                                                  kernel_size=self.k_size,
+                                                  mode=1,
+                                                  pad_mode=self.pad_mode,
+                                                  pad=self.pad,
+                                                  stride=self.strides,
+                                                  dilation=self.dilations,
+                                                  group=1)
+        if isinstance(self.padding, int):
+            self.padding_top, self.padding_bottom, self.padding_left, self.padding_right = (self.padding,) * 4
+        else:
+            self.padding_top, self.padding_bottom = (self.padding[0],) * 2
+            self.padding_left, self.padding_right = (self.padding[1],) * 2
 
-    def _deconv_output_length(self, input_length, filter_size, stride_size, dilation_size):
+    def construct(self, x, filters):
+        n, _, h, w = P.Shape()(x)
+        h_out = self._deconv_output_length(self.is_valid, self.is_same, self.is_pad, h, self.k_size[0],
+                                      self.strides[0], self.dilations[0], self.padding_top + self.padding_bottom)
+        w_out = self._deconv_output_length(self.is_valid, self.is_same, self.is_pad, w, self.k_size[1],
+                                      self.strides[1], self.dilations[1], self.padding_left + self.padding_right)
+        output = self.conv2d_transpose(x, filters, (n, self.out_channel, h_out, w_out))
+        return output
+
+    def _deconv_output_length(self, is_valid, is_same, is_pad, input_length, filter_size, stride_size, dilation_size,
+                              padding):
+        """Calculate the width and height of output."""
         length = 0
         filter_size = filter_size + (filter_size - 1) * (dilation_size - 1)
-
-        if self.padding == 'same':
+        if is_valid:
+            if filter_size - stride_size > 0:
+                length = input_length * stride_size + filter_size - stride_size
+            else:
+                length = input_length * stride_size
+        elif is_same:
             length = input_length * stride_size
-        elif self.padding == 'valid':
-            length = input_length * stride_size + max(filter_size - stride_size, 0)
+        elif is_pad:
+            length = input_length * stride_size - padding + filter_size - stride_size
 
         return length
 
-    def construct(self, x, filters):
-        if self.data_format == 'NHWC':
-            h_axis, w_axis = 1, 2
-            n, h, w, _ = self.shape(x)
-        else:
-            h_axis, w_axis = 2, 3
-            n, _, h, w = self.shape(x)
-
-        if isinstance(self.strides, int):
-            strides_h = self.strides
-            strides_w = self.strides
-        else:
-            strides_list = list(self.strides)
-            if len(strides_list) == 2:
-                strides_h = strides_list[0]
-                strides_w = strides_list[1]
-            elif len(strides_list) == 4:
-                strides_h = strides_list[h_axis]
-                strides_w = strides_list[w_axis]
-
-        if self.dilations is not None:
-            if isinstance(self.dilations, int):
-                dilations_h = self.dilations
-                dilations_w = self.dilations
-            else:
-                dilations_list = list(self.dilations)
-                if len(dilations_list) == 2:
-                    dilations_h = dilations_list[0]
-                    dilations_w = dilations_list[1]
-                elif len(dilations_list) == 4:
-                    dilations_h = dilations_list[h_axis]
-                    dilations_w = dilations_list[w_axis]
-
-        h_out = self._deconv_output_length(h, self.k_size[0], strides_h, dilations_h)
-        w_out = self._deconv_output_length(w, self.k_size[1], strides_w, dilations_w)
-
-        if self.data_format == 'NCHW':
-            output_size = (n, self.out_channel, h_out, w_out)
-        else:
-            output_size = (n, h_out, w_out, self.out_channel)
-        output = self.conv2d_transpose(x, filters, output_size)
-
-        return output
+# class Conv2d_transpose(Cell):
+#
+#     def __init__(self, strides, padding, data_format, dilations=None, out_channel=None, k_size=None, in_channels=None):
+#         super(Conv2d_transpose, self).__init__()
+#         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+#         self.in_channels = in_channels
+#         self.out_channel = out_channel
+#         self.k_size = k_size
+#         self.strides = strides
+#         self.dilations = dilations
+#
+#         if self.data_format == 'NHWC':
+#             raise NotImplementedError("The optional value for data format. Currently only support “NCWH”.")
+#
+#         self.conv2d_transpose = P.Conv2DBackpropInput(
+#             out_channel=self.in_channels, kernel_size=self.k_size, pad_mode=self.padding, stride=self.strides,
+#             dilation=self.dilations, mode=1, group=1, data_format=self.data_format
+#         )
+#         self.shape = P.Shape()
+#
+#     def _deconv_output_length(self, input_length, filter_size, stride_size, dilation_size):
+#         length = 0
+#         filter_size = filter_size + (filter_size - 1) * (dilation_size - 1)
+#
+#         if self.padding == 'same':
+#             length = input_length * stride_size
+#         elif self.padding == 'valid':
+#             length = input_length * stride_size + max(filter_size - stride_size, 0)
+#
+#         return length
+#
+#     def construct(self, x, filters):
+#         if self.data_format == 'NHWC':
+#             h_axis, w_axis = 1, 2
+#             n, h, w, _ = self.shape(x)
+#         else:
+#             h_axis, w_axis = 2, 3
+#             n, _, h, w = self.shape(x)
+#
+#         if isinstance(self.strides, int):
+#             strides_h = self.strides
+#             strides_w = self.strides
+#         else:
+#             strides_list = list(self.strides)
+#             if len(strides_list) == 2:
+#                 strides_h = strides_list[0]
+#                 strides_w = strides_list[1]
+#             elif len(strides_list) == 4:
+#                 strides_h = strides_list[h_axis]
+#                 strides_w = strides_list[w_axis]
+#
+#         if self.dilations is not None:
+#             if isinstance(self.dilations, int):
+#                 dilations_h = self.dilations
+#                 dilations_w = self.dilations
+#             else:
+#                 dilations_list = list(self.dilations)
+#                 if len(dilations_list) == 2:
+#                     dilations_h = dilations_list[0]
+#                     dilations_w = dilations_list[1]
+#                 elif len(dilations_list) == 4:
+#                     dilations_h = dilations_list[h_axis]
+#                     dilations_w = dilations_list[w_axis]
+#
+#         h_out = self._deconv_output_length(h, self.k_size[0], strides_h, dilations_h)
+#         w_out = self._deconv_output_length(w, self.k_size[1], strides_w, dilations_w)
+#
+#         if self.data_format == 'NCHW':
+#             output_size = (n, self.out_channel, h_out, w_out)
+#         else:
+#             output_size = (n, h_out, w_out, self.out_channel)
+#         output = self.conv2d_transpose(x, filters, output_size)
+#
+#         return output
 
 
 def conv2d_transpose(

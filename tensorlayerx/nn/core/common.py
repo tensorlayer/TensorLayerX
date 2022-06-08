@@ -98,13 +98,15 @@ def processing_act(act):
             out_act = str_act
         elif isinstance(act, str):
             out_act = str_act()
-        # Processing classes or functions as input, activation functions without parameters
-        elif type(act) == type(tlx.nn.ReLU):
-            out_act = act()
-        # Processing class or function as input, activation function with parameters
         else:
-            out_act = act
+            # Processing classes or functions as input, activation functions without parameters
+            try:
+                out_act = act()
+            # Processing class or function as input, activation function with parameters
+            except:
+                out_act = act
     else:
+        # Processing act is None
         out_act = act
     return out_act
 

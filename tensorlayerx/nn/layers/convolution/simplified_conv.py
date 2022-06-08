@@ -611,7 +611,7 @@ class ConvTranspose2d(Module):
         Specifying the dilation rate to use for dilated convolution.
     act : activation function
         The activation function of this layer.
-    padding : str
+    padding : int, tuple or str
         The padding algorithm type: "SAME" or "VALID".
     data_format : str
         "channels_last" (NHWC, default) or "channels_first" (NCHW).

@@ -1310,13 +1310,23 @@ class Conv2d_transpose(object):
         kernel_h = kernel_h + (kernel_h - 1) * (dilations_h - 1)
         kernel_w = kernel_w + (kernel_w - 1) * (dilations_w - 1)
 
-        assert self.padding in {'SAME', 'VALID'}
+        if tf.__version__ < '2.4.0' and not isinstance(self.padding, str):
+            assert self.padding in {'SAME', 'VALID'}
         if self.padding == 'VALID':
             output_h = input_h * strides_h + max(kernel_h - strides_h, 0)
             output_w = input_w * strides_w + max(kernel_w - strides_w, 0)
         elif self.padding == 'SAME':
             output_h = input_h * strides_h
             output_w = input_w * strides_w
+        else:
+            if isinstance(self.padding, int):
+                output_h = input_h * strides_h + max(kernel_h - strides_h, 0) - 2 * self.padding
+                output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2 * self.padding
+                self.padding = [[0, 0], [self.padding, self.padding],[self.padding, self.padding], [0, 0]]
+            else:
+                output_h = input_h * strides_h + max(kernel_h - strides_h, 0) - 2 * self.padding[0]
+                output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2* self.padding[1]
+                self.padding = [[0, 0], [self.padding[0], self.padding[0]],[self.padding[1], self.padding[1]], [0, 0]]
 
         if self.data_format == 'NCHW':
             out_shape = (batch_size, output_channels, output_h, output_w)
