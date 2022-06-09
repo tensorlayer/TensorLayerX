@@ -78,22 +78,22 @@ def default_collate_torch(batch):
     data = batch[0]
     data_type = type(data)
     import torch
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     if isinstance(data, torch.Tensor):
         batch = torch.stack(batch, 0)
-        batch = batch.to(device)
+        # batch = batch.to(device)
         return batch
     elif isinstance(data, np.ndarray):
         batch = np.stack(batch, axis=0)
         batch = torch.as_tensor(batch)
-        batch = batch.to(device)
+        # batch = batch.to(device)
         return batch
     elif isinstance(data, numbers.Number):
         batch = torch.as_tensor(batch)
-        batch = batch.to(device)
+        # batch = batch.to(device)
         return batch
     elif isinstance(data, (str, bytes)):
-        batch = batch.to(device)
+        # batch = batch.to(device)
         return batch
     elif isinstance(data, collections.abc.Mapping):
         return {key: default_collate_torch([d[key] for d in batch]) for key in data}

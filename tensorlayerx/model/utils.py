@@ -177,20 +177,20 @@ class TrainOneStepWithPD(object):
 class TrainOneStepWithTH(object):
 
     def __init__(self, net_with_loss, optimizer, train_weights):
-        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        # self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.net_with_loss = net_with_loss
-        self.net_with_loss = self.net_with_loss.to(self.device)
+        # self.net_with_loss = self.net_with_loss.to(self.device)
         self.optimizer = optimizer
         self.train_weights = train_weights
 
     def __call__(self, data, label):
-        if isinstance(data, dict):
-            for k, v in data.items():
-                if isinstance(v, torch.Tensor):
-                    data[k] = v.to(self.device)
-        elif isinstance(data, torch.Tensor):
-            data = data.to(self.device)
-        label = label.to(self.device)
+        # if isinstance(data, dict):
+        #     for k, v in data.items():
+        #         if isinstance(v, torch.Tensor):
+        #             data[k] = v.to(self.device)
+        # elif isinstance(data, torch.Tensor):
+        #     data = data.to(self.device)
+        # label = label.to(self.device)
         loss = self.net_with_loss(data, label)
         grads = self.optimizer.gradient(loss, self.train_weights)
         self.optimizer.apply_gradients(zip(grads, self.train_weights))

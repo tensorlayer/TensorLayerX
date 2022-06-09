@@ -429,8 +429,8 @@ class Model:
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
         print_freq, test_dataset
     ):
-        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        network = network.to(device)
+        # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        # network = network.to(device)
         for epoch in range(n_epoch):
             start_time = time.time()
 

@@ -2182,7 +2182,7 @@ class PReLU(object):
         self.data_format = data_format
 
     def __call__(self, input, weight):
-        weight = weight.to(input.device)
+        # weight = weight.to(input.device)
         return torch.prelu(input, weight)
 
 
