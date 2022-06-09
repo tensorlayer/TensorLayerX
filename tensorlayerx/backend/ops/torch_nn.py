@@ -1240,7 +1240,7 @@ class Conv1d_transpose(object):
             out = F.conv_transpose1d(
                 input,
                 weight=filters,
-                padding=0,
+                padding=(0 if isinstance(self.padding, str) else self.padding),
                 stride=self.stride,
                 dilation=self.dilations
             )
@@ -1319,7 +1319,7 @@ class Conv2d_transpose(object):
             out = F.conv_transpose2d(
                 input,
                 weight=filters,
-                padding=0,
+                padding=(0 if isinstance(self.padding, str) else self.padding),
                 stride=self.strides,
                 dilation=self.dilations
             )
@@ -1399,7 +1399,7 @@ class Conv3d_transpose(object):
             out = F.conv_transpose3d(
                 input,
                 weight=filters,
-                padding=0,
+                padding=(0 if isinstance(self.padding, str) else self.padding),
                 stride=self.strides,
                 dilation=self.dilations
             )
