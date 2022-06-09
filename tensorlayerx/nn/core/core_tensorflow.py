@@ -4,13 +4,13 @@
 from .common import check_parameter, processing_act, str2init, tolist, construct_graph, ModuleNode, select_attrs
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from collections import OrderedDict, abc as container_abcs
-from collections import OrderedDict
+import warnings
 import time
 import tensorlayerx as tlx
 import tensorflow as tf
 from tensorlayerx.nn.layers.utils import (get_variable_with_initializer, random_normal)
 
-__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict']
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict']
 
 _global_layer_name_dict = {}
 _global_layer_node = []
@@ -611,7 +611,9 @@ class Module(object):
             in_tensor_idxes = [tensor._info[1] for tensor in inputs_list]
         node_index = len(_global_layer_node)
 
-        new_node = ModuleNode(self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes, select_attrs(self))
+        new_node = ModuleNode(
+            self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes, select_attrs(self)
+        )
         _global_layer_node.append(new_node)
         for idx, tensor in enumerate(outputs_list):
             tensor._info = (new_node, idx)
@@ -750,7 +752,7 @@ class ModuleList(Module):
     >>> layer_list.append(d3)
     """
 
-    def __init__(self, modules = None):
+    def __init__(self, modules=None):
         super(ModuleList, self).__init__()
         if modules is not None:
             self.extend(modules)
@@ -882,7 +884,7 @@ class ModuleDict(Module):
 
     """
 
-    def __init__(self, modules = None):
+    def __init__(self, modules=None):
         super(ModuleDict, self).__init__()
         if modules is not None:
             self.update(modules)
@@ -963,6 +965,284 @@ class ModuleDict(Module):
                         "#" + str(j) + " has length " + str(len(m)) + "; 2 is required"
                     )
                 self[m[0]] = m[1]
+
+
+def Parameter(data=None, requires_grad=True):
+    """This function creates a parameter. The parameter is a learnable variable, which can have gradient, and can be optimized.
+
+    Parameters
+    ----------
+    data : Tensor
+        parameter tensor
+    requires_grad : bool
+        if the parameter requires gradient. Default: True
+
+    Returns
+    -------
+        Parameter
+
+    Examples
+    ----------
+    >>> import tensorlayerx as tlx
+    >>> para = tlx.nn.Parameter(data=tlx.ones((5,5)), requires_grad=True)
+
+    """
+
+    return tf.Variable(initial_value=data, trainable=requires_grad)
+
+
+class ParameterList(Module):
+    """Holds parameters in a list.
+
+    ParameterList can be indexed like a regular Python list. Support
+    '__getitem__', '__setitem__', '__delitem__', '__len__', '__iter__' and '__iadd__'.
+
+    Parameters
+    ----------
+        Parameters : list
+            List of Parameter.
+    Methods
+    ---------
+    __init__()
+        Initializing the ParameterList.
+    extend(parameter)
+        Appends parameters from a Python iterable to the end of the list.
+    append(parameters)
+        Appends a given parameter to the end of the list.
+
+    Examples
+    ---------
+    >>> from tensorlayerx.nn import Module, ModuleList, Linear
+    >>> import tensorlayerx as tlx
+    >>> class MyModule(Module):
+    >>>     def __init__(self):
+    >>>         super(MyModule, self).__init__()
+    >>>         self.params2 = ParameterList([Parameter(tlx.ones((10,5))), Parameter(tlx.ones((5,10)))])
+    >>>     def forward(self, x):
+    >>>         x = tlx.matmul(x, self.params2[0])
+    >>>         x = tlx.matmul(x, self.params2[1])
+    >>>         return x
+    """
+
+    def __init__(self, parameters=None):
+        super(ParameterList, self).__init__()
+        if parameters is not None:
+            self += parameters
+
+    def _get_abs_string_index(self, idx):
+        if not (-len(self) <= idx < len(self)):
+            raise IndexError('index {} is out of range'.format(idx))
+        if idx < 0:
+            idx += len(self)
+        return str(idx)
+
+    def __getitem__(self, idx):
+        if isinstance(idx, slice):
+            return self.__class__(list(self._params.values())[idx])
+        else:
+            idx = self._get_abs_string_index(idx)
+            return self._params[str(idx)]
+
+    def __setitem__(self, idx, parameter):
+        idx = self._get_abs_string_index(idx)
+        self._params[str(idx)] = parameter
+
+    def __setattr__(self, key, value):
+        if not hasattr(self, key) and not isinstance(value, tf.Variable):
+            warnings.warn("Setting attributes on ParameterList is not supported.")
+        super(ParameterList, self).__setattr__(key, value)
+
+    def __len__(self):
+        return len(self._params)
+
+    def __iter__(self):
+        return iter(self._params.values())
+
+    def __iadd__(self, parameters):
+        return self.extend(parameters)
+
+    def __dir__(self):
+        keys = super(ParameterList, self).__dir__()
+        keys = [key for key in keys if not key.isdigit()]
+        return keys
+
+    def append(self, parameter):
+        self._params[str(len(self))] = parameter
+        return self
+
+    def extend(self, parameters):
+        if not isinstance(parameters, container_abcs.Iterable):
+            raise TypeError(
+                "ParameterList.extend should be called with an "
+                "iterable, but got " + type(parameters).__name__
+            )
+        offset = len(self)
+        for i, para in enumerate(parameters):
+            self._params[str(offset + i)] = para
+        return self
+
+    def __call__(self, input):
+        raise RuntimeError('ParameterList should not be called.')
+
+
+class ParameterDict(Module):
+    """
+    Holds parameters in a dictionary.
+
+    ParameterDict can be used like a regular Python dictionary, support
+    '__getitem__', '__setitem__', '__delitem__', '__len__', '__iter__' and '__contains__',
+
+
+    Parameters
+    ----------
+        parameters : dict
+            a mapping (dictionary) of (string: parameter)
+            or an iterable of key-value pairs of type (string, parameter)
+
+    Methods
+    ---------
+    __init__()
+        Initializing the ParameterDict.
+    setdefault()
+
+    clear()
+        Remove all items from the ParameterDict.
+    setdefault(key, default=None)
+        If key is in the ParameterDict, return its parameter.
+        If not, insert `key` with a parameter `default` and return `default`.
+        `default` defaults to `None`.
+    popitem()
+        Remove and return the last inserted `(key, parameter)` pair from the ParameterDict
+    pop(key)
+        Remove key from the ParameterDict and return its parameter.
+    get(key, default = None):
+        Return the parameter associated with key if present. Otherwise return default if provided, None if not.
+    fromkeys(keys, default = None)
+        Return a new ParameterDict with the keys provided
+    keys()
+        Return an iterable of the ParameterDict keys.
+    items()
+        Return an iterable of the ParameterDict key/value pairs.
+    values()
+        Return an iterable of the ParameterDict values.
+    update()
+        Update the ParameterDict with the key-value pairs from a
+        mapping or an iterable, overwriting existing keys.
+
+    Examples
+    ---------
+    >>> from tensorlayerx.nn import Module, ParameterDict, Parameter
+    >>> import tensorlayerx as tlx
+    >>> class MyModule(Module):
+    >>>     def __init__(self):
+    >>>         super(MyModule, self).__init__()
+    >>>         self.dict = ParameterDict({
+    >>>                 'left': Parameter(tlx.ones((5, 10))),
+    >>>                 'right': Parameter(tlx.zeros((5, 10)))
+    >>>                 })
+    >>>     def forward(self, x, choice):
+    >>>         x = tlx.matmul(x, self.dict[choice])
+    >>>         return x
+
+    """
+
+    def __init__(self, parameters=None):
+        super(ParameterDict, self).__init__()
+        if parameters is not None:
+            self.update(parameters)
+
+    def __getitem__(self, key):
+        return self._params[key]
+
+    def __setitem__(self, key, parameter):
+        self._params[key] = parameter
+
+    def __delitem__(self, key):
+        del self._params[key]
+
+    def __setattr__(self, key, value):
+        if not hasattr(self, key) and not isinstance(value, tf.Variable):
+            warnings.warn("Setting attributes on ParameterDict is not supported.")
+        super(ParameterDict, self).__setattr__(key, value)
+
+    def __len__(self) -> int:
+        return len(self._params)
+
+    def __reversed__(self):
+        return reversed(list(self._params.keys()))
+
+    def __iter__(self):
+        return iter(self._params.keys())
+
+    def copy(self):
+        return ParameterDict(self._params.copy())
+
+    def __contains__(self, key):
+        return key in self._params
+
+    def setdefault(self, key, default=None):
+        if key in self._params:
+            return self._params[key]
+        self[key] = default
+        return self._params[key]
+
+    def clear(self):
+        return self._params.clear()
+
+    def pop(self, key):
+        v = self[key]
+        del self[key]
+        return v
+
+    def popitem(self):
+        return self._params.popitem()
+
+    def get(self, key, default=None):
+        return self._params.get(key, default)
+
+    def fromkeys(self, keys, default=None):
+        return ParameterDict(self._params.fromkeys(keys, default))
+
+    def keys(self):
+        return self._params.keys()
+
+    def items(self):
+        return self._params.items()
+
+    def values(self):
+        return self._params.values()
+
+    def update(self, parameters):
+        if not isinstance(parameters, container_abcs.Iterable):
+            raise TypeError(
+                "ParametersDict.update should be called with an "
+                "iterable of key/value pairs, but got " + type(parameters).__name__
+            )
+
+        if isinstance(parameters, (OrderedDict, ParameterDict)):
+            for key, parameter in parameters.items():
+                self[key] = parameter
+        elif isinstance(parameters, container_abcs.Mapping):
+            for key, parameter in sorted(parameters.items()):
+                self[key] = parameter
+        else:
+            for j, p in enumerate(parameters):
+                if not isinstance(p, container_abcs.Iterable):
+                    raise TypeError(
+                        "ParameterDict update sequence element "
+                        "#" + str(j) + " should be Iterable; is" + type(p).__name__
+                    )
+                print(p)
+                if not len(p) == 2:
+                    raise ValueError(
+                        "ParameterDict update sequence element "
+                        "#" + str(j) + " has length " + str(len(p)) + "; 2 is required"
+                    )
+                # parameters as length-2 list too cumbersome to type, see ModuleDict.update comment
+                self[p[0]] = p[1]  # type: ignore[assignment]
+
+    def __call__(self, input):
+        raise RuntimeError('ParameterDict should not be called.')
 
 
 def _valid_index(layer_num, index):

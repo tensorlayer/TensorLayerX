@@ -5,17 +5,18 @@ from torch.nn import Module as T_Module
 from .common import check_parameter, processing_act, str2init, tolist, construct_graph, ModuleNode, select_attrs
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from torch.nn.parameter import Parameter
-from collections import OrderedDict
+from torch._C import _disabled_torch_function_impl
 import torch
 import operator
 from itertools import islice
 from collections import OrderedDict, abc as container_abcs
+import warnings
 import tensorlayerx as tlx
 
 _global_layer_name_dict = {}
 _global_layer_node = []
 
-__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict']
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict']
 
 
 class Module(T_Module):
@@ -211,7 +212,9 @@ class Module(T_Module):
             in_tensor_idxes = [tensor._info[1] for tensor in inputs_list]
         node_index = len(_global_layer_node)
 
-        new_node = ModuleNode(self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes, select_attrs(self))
+        new_node = ModuleNode(
+            self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes, select_attrs(self)
+        )
         _global_layer_node.append(new_node)
         for idx, tensor in enumerate(outputs_list):
             tensor._info = (new_node, idx)
@@ -367,7 +370,7 @@ class ModuleList(Module):
     >>> layer_list.append(d3)
     """
 
-    def __init__(self, modules = None):
+    def __init__(self, modules=None):
         super(ModuleList, self).__init__()
         if modules is not None:
             self.extend(modules)
@@ -452,7 +455,7 @@ class ModuleList(Module):
 
 class ModuleDict(Module):
 
-    def __init__(self, modules = None):
+    def __init__(self, modules=None):
         super(ModuleDict, self).__init__()
         if modules is not None:
             self.update(modules)
@@ -526,6 +529,192 @@ class ModuleDict(Module):
                         "#" + str(j) + " has length " + str(len(m)) + "; 2 is required"
                     )
                 self[m[0]] = m[1]
+
+
+class ParameterList(Module):
+
+    def __init__(self, parameters=None):
+        super(ParameterList, self).__init__()
+        self._initialized = True
+        if parameters is not None:
+            self += parameters
+
+    def __setstate__(self, state):
+        state['_initialized'] = False
+        super(ParameterList, self).__setstate__(state)
+        self._initialized = True
+
+    def _get_abs_string_index(self, idx):
+        idx = operator.index(idx)
+        if not (-len(self) <= idx < len(self)):
+            raise IndexError('index {} is out of range'.format(idx))
+        if idx < 0:
+            idx += len(self)
+        return str(idx)
+
+    def __getitem__(self, idx):
+        if isinstance(idx, slice):
+            return self.__class__(list(self._parameters.values())[idx])
+        else:
+            idx = self._get_abs_string_index(idx)
+            return self._parameters[str(idx)]
+
+    def __setitem__(self, idx, param):
+        idx = self._get_abs_string_index(idx)
+        return self.register_parameter(str(idx), param)
+
+    def __setattr__(self, key, value):
+        if getattr(self, "_initialized", False):
+            if not hasattr(self, key) and not isinstance(value, torch.nn.Parameter):
+                warnings.warn("Setting attributes on ParameterList is not supported.")
+        super(ParameterList, self).__setattr__(key, value)
+
+    def __len__(self):
+        return len(self._parameters)
+
+    def __iter__(self):
+        return iter(self._parameters.values())
+
+    def __iadd__(self, parameters):
+        return self.extend(parameters)
+
+    def __dir__(self):
+        keys = super(ParameterList, self).__dir__()
+        keys = [key for key in keys if not key.isdigit()]
+        return keys
+
+    def append(self, parameter: 'Parameter') -> 'ParameterList':
+
+        self.register_parameter(str(len(self)), parameter)
+        return self
+
+    def extend(self, parameters):
+        if not isinstance(parameters, container_abcs.Iterable):
+            raise TypeError(
+                "ParameterList.extend should be called with an "
+                "iterable, but got " + type(parameters).__name__
+            )
+        offset = len(self)
+        for i, param in enumerate(parameters):
+            self.register_parameter(str(offset + i), param)
+        return self
+
+    def __call__(self, input):
+        raise RuntimeError('ParameterList should not be called.')
+
+
+class ParameterDict(Module):
+
+    def __init__(self, parameters=None):
+        super(ParameterDict, self).__init__()
+        self._initialized = True
+        if parameters is not None:
+            self.update(parameters)
+
+    def __setstate__(self, state):
+        state['_initialized'] = False
+        super(ParameterDict, self).__setstate__(state)
+        self._initialized = True
+
+    def __getitem__(self, key):
+        return self._parameters[key]
+
+    def __setitem__(self, key, parameter):
+        self.register_parameter(key, parameter)
+
+    def __delitem__(self, key):
+        del self._parameters[key]
+
+    def __setattr__(self, key, value):
+        if getattr(self, "_initialized", False):
+            if not hasattr(self, key) and not isinstance(value, torch.nn.Parameter):
+                warnings.warn("Setting attributes on ParameterDict is not supported.")
+        super(ParameterDict, self).__setattr__(key, value)
+
+    def __len__(self):
+        return len(self._parameters)
+
+    def __iter__(self):
+        return iter(self._parameters.keys())
+
+    def __reversed__(self):
+        return reversed(list(self._parameters.keys()))
+
+    def copy(self):
+
+        return ParameterDict(self._parameters.copy())
+
+    def __contains__(self, key):
+        return key in self._parameters
+
+    def setdefault(self, key, default=None):
+        if key in self._parameters:
+            return self._parameters[key]
+        self[key] = default
+        return self._parameters[key]
+
+    def clear(self):
+        self._parameters.clear()
+
+    def pop(self, key):
+        v = self[key]
+        del self[key]
+        return v
+
+    def popitem(self):
+        return self._parameters.popitem()
+
+    def get(self, key, default=None):
+
+        return self._parameters.get(key, default)
+
+    def fromkeys(self, keys, default=None):
+
+        return ParameterDict(self._parameters.fromkeys(keys, default))  # type: ignore[arg-type]
+
+    def keys(self):
+
+        return self._parameters.keys()
+
+    def items(self):
+
+        return self._parameters.items()
+
+    def values(self):
+
+        return self._parameters.values()
+
+    def update(self, parameters):
+        if not isinstance(parameters, container_abcs.Iterable):
+            raise TypeError(
+                "ParametersDict.update should be called with an "
+                "iterable of key/value pairs, but got " + type(parameters).__name__
+            )
+
+        if isinstance(parameters, (OrderedDict, ParameterDict)):
+            for key, parameter in parameters.items():
+                self[key] = parameter
+        elif isinstance(parameters, container_abcs.Mapping):
+            for key, parameter in sorted(parameters.items()):
+                self[key] = parameter
+        else:
+            for j, p in enumerate(parameters):
+                if not isinstance(p, container_abcs.Iterable):
+                    raise TypeError(
+                        "ParameterDict update sequence element "
+                        "#" + str(j) + " should be Iterable; is" + type(p).__name__
+                    )
+                print(p)
+                if not len(p) == 2:
+                    raise ValueError(
+                        "ParameterDict update sequence element "
+                        "#" + str(j) + " has length " + str(len(p)) + "; 2 is required"
+                    )
+                # parameters as length-2 list too cumbersome to type, see ModuleDict.update comment
+                self[p[0]] = p[1]  # type: ignore[assignment]
+
+    def __call__(self, input):
+        raise RuntimeError('ParameterDict should not be called.')
 
 
 def _valid_index(layer_num, index):

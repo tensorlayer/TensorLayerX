@@ -84,7 +84,6 @@ from .load_backend import QuanConv
 from .load_backend import QuanConvBn
 
 # load ops
-from .load_backend import einsum
 from .load_backend import Variable
 from .load_backend import matmul
 from .load_backend import add
@@ -200,6 +199,8 @@ from .load_backend import tensor_scatter_nd_update
 from .load_backend import diag
 from .load_backend import mask_select
 from .load_backend import eye
+from .load_backend import einsum
+from .load_backend import set_device
 # dtype
 from .load_backend import (
     DType, float16, float32, float64, int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, complex64,

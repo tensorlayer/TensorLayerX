@@ -1856,3 +1856,9 @@ class Einsum(object):
     def __call__(self, *args):
         return einsum(self.equation, *args)
 
+
+def set_device(device = 'GPU', id = 0):
+    device = device.lower()
+    if device == 'GPU':
+        device = device + ':' + str(id)
+    paddle.device.set_device(device)

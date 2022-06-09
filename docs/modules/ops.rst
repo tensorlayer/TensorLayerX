@@ -117,6 +117,7 @@ API - Operations
    mask_select
    eye
    einsum
+   set_device
 
 TensorLayerX Tensor Operations
 --------------------------------
@@ -564,3 +565,7 @@ eye
 einsum
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: einsum
+
+set_device
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: set_device

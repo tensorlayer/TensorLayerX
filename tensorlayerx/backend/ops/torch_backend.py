@@ -1680,3 +1680,8 @@ class Einsum(object):
 
     def __call__(self, *args):
         return torch.einsum(self.equation, *args)
+
+def set_device(device = 'GPU', id = 0):
+    if device == 'GPU':
+        torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        torch.cuda.set_device(id)

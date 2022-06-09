@@ -3868,3 +3868,26 @@ class Einsum(object):
 
     def __call__(self, *args):
         return tf.einsum(self.equation, *args)
+
+def set_device(device = 'GPU', id = 0):
+    """This function can specify the global device which the OP will run.
+
+    Parameters
+    ----------
+    device : str
+        Specific running device. It can be 'CPU', 'GPU' and 'Ascend'(In mindspore backend).
+    id : int
+        Device id.
+
+    """
+    if device not in ['GPU', 'CPU']:
+        raise ValueError ("Only support 'CPU', 'GPU'.")
+    if device == 'GPU':
+        gpus = tf.config.experimental.list_physical_devices('GPU')
+        if gpus:
+            try:
+                for gpu in gpus:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+                tf.config.experimental.set_visible_devices(gpus[id], 'GPU')
+            except RuntimeError as e:
+                print(e)

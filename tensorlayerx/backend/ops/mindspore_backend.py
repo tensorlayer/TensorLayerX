@@ -1839,3 +1839,9 @@ class Einsum(Cell):
 
     def __call__(self, *args):
         return self.einsum(tuple(args))
+
+def set_device(device = 'GPU', id = 0):
+    if device not in ['GPU', 'CPU', 'Ascend']:
+        raise ValueError ("In mindspore, only support 'CPU', 'GPU' and 'Ascend'.")
+    ms.context.set_context(device_target=device)
+    ms.context.set_context(device_id = id)

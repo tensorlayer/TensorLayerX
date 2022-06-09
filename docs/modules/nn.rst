@@ -16,6 +16,9 @@ Layer list
    Sequential
    ModuleList
    ModuleDict
+   Parameter
+   ParameterList
+   ParameterDict
 
    Input
 
@@ -138,6 +141,18 @@ ModuleList
 ModuleDict
 ^^^^^^^^^^^^^^^^
 .. autoclass:: ModuleDict
+
+Parameter
+^^^^^^^^^^^^^^^^
+.. autofunction:: Parameter
+
+ParameterList
+^^^^^^^^^^^^^^^^
+.. autoclass:: ParameterList
+
+ParameterDict
+^^^^^^^^^^^^^^^^
+.. autoclass:: ParameterDict
 
 .. -----------------------------------------------------------
 ..                        Input Layer
