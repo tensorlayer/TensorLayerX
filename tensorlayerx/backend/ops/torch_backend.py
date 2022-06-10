@@ -1666,6 +1666,8 @@ def mask_select(x, mask, axis = 0):
         return x[:,:,:, mask]
 
 def eye(n, m=None, dtype=None):
+    if m is None:
+        m = n
     return torch.eye(n = n, m = m, dtype =dtype)
 
 
