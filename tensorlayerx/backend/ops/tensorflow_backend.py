@@ -3891,3 +3891,74 @@ def set_device(device = 'GPU', id = 0):
                 tf.config.experimental.set_visible_devices(gpus[id], 'GPU')
             except RuntimeError as e:
                 print(e)
+
+def scatter_update(tensor, indices, updates):
+    """Applies sparse updates to a variable
+
+    Parameters
+    ----------
+    tensor : Tensor
+        A Tensor. The dim of tensor must be 1.
+    indices : Tensor
+        Indices into the tensor.
+    updates : Tensor
+        Updated values
+
+    Returns
+    -------
+        Tensor after updated.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.ones((5,))
+    >>> indices = tlx.ops.convert_to_tensor([0,  4,  2])
+    >>> updates = tlx.ops.convert_to_tensor([1., 4., 7.])
+    >>> res = tlx.ops.scatter_update(x, indices, updates)
+    >>> [1. 1. 7. 1. 4.]
+    """
+    shape = indices.shape
+    indices = tf.reshape(indices, shape = (shape[0], 1))
+    return tf.tensor_scatter_nd_update(tensor, indices, updates)
+
+def get_device():
+    """This function can get the specified global device.
+
+    Returns
+    -------
+        The global device.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.get_device()
+    >>> "CPU"
+    """
+    device = tf.config.experimental.get_visible_devices('GPU')
+    if len(device) == 0:
+        device = tf.config.experimental.get_visible_devices('CPU')
+    return device
+
+def to_device(tensor, device = 'GPU', id = 0):
+    """Returns a copy of Tensor in specified device.
+
+    Parameters
+    ----------
+    tensor : Tensor
+        A tensor.
+    device : str
+        The specified device. Support 'GPU' and 'CPU'. Default is 'GPU'.
+    id : int
+        The id of specified device. Default is 0.
+
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.ones((5,))
+    >>> x = tlx.ops.to_device(x, device="GPU", id=0)
+    """
+    if device is None:
+        return tensor
+    with tf.device("/" + device.upper()+':'+str(id)):
+        return tf.identity(tensor)
