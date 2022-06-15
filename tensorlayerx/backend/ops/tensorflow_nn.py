@@ -1325,7 +1325,6 @@ class Conv2d_transpose(object):
                 output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2 * self._padding
                 self.padding = [[0, 0], [self._padding, self._padding],[self._padding, self._padding], [0, 0]]
             else:
-                print(input_h, strides_h, kernel_h, strides_h, self._padding[0], self._padding)
                 output_h = input_h * strides_h + max(kernel_h - strides_h, 0) - 2 * self._padding[0]
                 output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2* self._padding[1]
                 self.padding = [[0, 0], [self._padding[0], self._padding[0]],[self._padding[1], self._padding[1]], [0, 0]]
