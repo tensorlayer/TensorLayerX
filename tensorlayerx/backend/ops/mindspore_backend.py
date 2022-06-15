@@ -68,7 +68,7 @@ def set_context(**kwargs):
 
 
 def get_tensor_shape(x):
-    return list(P.Shape()(x))
+    return list(x.shape)
 
 
 # initializers

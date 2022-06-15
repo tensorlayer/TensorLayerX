@@ -83,7 +83,7 @@ def set_context(**kwargs):
 
 
 def get_tensor_shape(x):
-    return pd.shape(x)
+    return list(x.shape)
 
 
 # initializers
@@ -1213,6 +1213,8 @@ def floor(x):
 def gather(params, indices, axis=None):
     if axis < 0:
         axis = len(params.shape) + axis
+    if axis is None:
+        axis = 0
     return pd.gather(params, indices, axis)
 
 
