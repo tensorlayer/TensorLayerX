@@ -1267,6 +1267,7 @@ class Conv2d_transpose(object):
         self.dilations = dilations
         self.name = name
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        self._padding = padding
 
     def __call__(self, input, filters):
         if self.data_format == 'NHWC':
@@ -1320,13 +1321,14 @@ class Conv2d_transpose(object):
             output_w = input_w * strides_w
         else:
             if isinstance(self.padding, int):
-                output_h = input_h * strides_h + max(kernel_h - strides_h, 0) - 2 * self.padding
-                output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2 * self.padding
-                self.padding = [[0, 0], [self.padding, self.padding],[self.padding, self.padding], [0, 0]]
+                output_h = input_h * strides_h + max(kernel_h - strides_h, 0) - 2 * self._padding
+                output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2 * self._padding
+                self.padding = [[0, 0], [self._padding, self._padding],[self._padding, self._padding], [0, 0]]
             else:
-                output_h = input_h * strides_h + max(kernel_h - strides_h, 0) - 2 * self.padding[0]
-                output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2* self.padding[1]
-                self.padding = [[0, 0], [self.padding[0], self.padding[0]],[self.padding[1], self.padding[1]], [0, 0]]
+                print(input_h, strides_h, kernel_h, strides_h, self._padding[0], self._padding)
+                output_h = input_h * strides_h + max(kernel_h - strides_h, 0) - 2 * self._padding[0]
+                output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2* self._padding[1]
+                self.padding = [[0, 0], [self._padding[0], self._padding[0]],[self._padding[1], self._padding[1]], [0, 0]]
 
         if self.data_format == 'NCHW':
             out_shape = (batch_size, output_channels, output_h, output_w)
