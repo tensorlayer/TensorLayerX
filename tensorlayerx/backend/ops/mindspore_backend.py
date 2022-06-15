@@ -68,7 +68,7 @@ def set_context(**kwargs):
 
 
 def get_tensor_shape(x):
-    return list(P.Shape()(x))
+    return list(x.shape)
 
 
 # initializers
@@ -1845,3 +1845,23 @@ def set_device(device = 'GPU', id = 0):
         raise ValueError ("In mindspore, only support 'CPU', 'GPU' and 'Ascend'.")
     ms.context.set_context(device_target=device)
     ms.context.set_context(device_id = id)
+
+def scatter_update(tensor, indices, updates):
+    if not isinstance(tensor,  ms.Tensor) or not isinstance(updates, ms.Tensor):
+        raise TypeError("tensor, updates should be Tensor, but got tensor type is {}, "
+                        "and updates type is {}.".format(type(tensor), type(updates)))
+    indices = ms.Tensor(indices)
+    shape = indices.shape
+    indices = ms.ops.reshape(indices, (shape[0], 1))
+    op = ms.ops.TensorScatterUpdate()
+    return op(tensor, indices, updates)
+
+def get_device():
+    device = ms.context.get_context("device_target")
+    id = ms.context.get_context("device_id")
+    device = device + ":" +str(id)
+    return device
+
+def to_device(tensor, device = 'GPU', id = 0):
+
+    return tensor

@@ -1639,7 +1639,7 @@ def is_tensor(x):
 
 def tensor_scatter_nd_update(tensor, indices, updates):
     tensor = torch.tensor(tensor)
-    indices = torch.tensor(indices)
+    indices = torch.tensor(indices, dtype=torch.long)
     updates = torch.tensor(updates)
     indices = torch.flatten(indices)
     tensor[indices] = updates
@@ -1666,6 +1666,8 @@ def mask_select(x, mask, axis = 0):
         return x[:,:,:, mask]
 
 def eye(n, m=None, dtype=None):
+    if m is None:
+        m = n
     return torch.eye(n = n, m = m, dtype =dtype)
 
 
@@ -1685,3 +1687,26 @@ def set_device(device = 'GPU', id = 0):
     if device == 'GPU':
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
         torch.cuda.set_device(id)
+
+def scatter_update(tensor, indices, updates):
+    tensor = torch.tensor(tensor)
+    indices = torch.tensor(indices, dtype=torch.long)
+    updates = torch.tensor(updates)
+    tensor[indices] = updates
+    return tensor
+
+def get_device():
+    try:
+        id = torch.cuda.current_device()
+        device = 'GPU:' + str(id)
+        return device
+    except:
+        device = 'CPU'
+        return device
+
+def to_device(tensor, device='GPU', id=0):
+    device = device.lower()
+    if device == 'gpu':
+        device = 'cuda' + ':' + str(id)
+    tensor = tensor.detach().to(device)
+    return tensor

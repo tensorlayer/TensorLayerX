@@ -83,7 +83,7 @@ def set_context(**kwargs):
 
 
 def get_tensor_shape(x):
-    return pd.shape(x)
+    return list(x.shape)
 
 
 # initializers
@@ -1211,7 +1211,10 @@ def floor(x):
 
 
 def gather(params, indices, axis=None):
-
+    if axis < 0:
+        axis = len(params.shape) + axis
+    if axis is None:
+        axis = 0
     return pd.gather(params, indices, axis)
 
 
@@ -1859,6 +1862,21 @@ class Einsum(object):
 
 def set_device(device = 'GPU', id = 0):
     device = device.lower()
-    if device == 'GPU':
+    if device == 'gpu':
         device = device + ':' + str(id)
     paddle.device.set_device(device)
+
+def scatter_update(tensor, indices, updates):
+
+    return pd.scatter(tensor, indices, updates)
+
+def get_device():
+
+    return paddle.device.get_device()
+
+def to_device(tensor, device = 'GPU', id = 0):
+    device = device.upper()
+    if device == 'GPU':
+        return paddle.to_tensor(tensor, place=paddle.CUDAPlace(id))
+    if device == 'CPU':
+        return paddle.to_tensor(tensor, place=paddle.CPUPlace())
