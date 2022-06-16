@@ -1103,8 +1103,6 @@ class ParameterDict(Module):
     ---------
     __init__()
         Initializing the ParameterDict.
-    setdefault()
-
     clear()
         Remove all items from the ParameterDict.
     setdefault(key, default=None)

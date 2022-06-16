@@ -547,11 +547,13 @@ class ReduceMax(object):
 
     def __call__(self, inputs):
         if self.axis is not None:
-            out = inputs
-            for dim in self.axis[-1]:
-                print(dim)
-                out = torch.max(out, dim=dim, keepdim=self.keepdims).values
-            return out
+            if isinstance(self.axis, (list, tuple)):
+                out = inputs
+                for dim in self.axis[::-1]:
+                    out = torch.max(out, dim=dim, keepdim=self.keepdims).values
+                return out
+            else:
+                return torch.max(inputs, dim=self.axis, keepdim=self.keepdims).values
         else:
             return torch.max(inputs)
 

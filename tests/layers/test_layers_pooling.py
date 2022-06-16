@@ -24,12 +24,12 @@ class Layer_Pooling_Test(CustomTestCase):
 
         n1 = tlx.nn.Conv1d(out_channels=32, kernel_size=5, stride=2, name='test_conv1d')(nin_1)
         n2 = tlx.nn.MaxPool1d(kernel_size=3, stride=2, padding='SAME', name='test_maxpool1d')(n1)
-        n3 = tlx.nn.MeanPool1d(kernel_size=3, stride=2, padding='SAME', name='test_meanpool1d')(n1)
+        n3 = tlx.nn.AvgPool1d(kernel_size=3, stride=2, padding='SAME', name='test_meanpool1d')(n1)
         n4 = tlx.nn.GlobalMaxPool1d(name='test_maxpool1d')(n1)
-        n5 = tlx.nn.GlobalMeanPool1d(name='test_meanpool1d')(n1)
+        n5 = tlx.nn.GlobalAvgPool1d(name='test_meanpool1d')(n1)
         n16 = tlx.nn.MaxPool1d(kernel_size=3, stride=1, padding='VALID', name='test_maxpool1d')(n1)
-        n17 = tlx.nn.MeanPool1d(kernel_size=3, stride=1, padding='VALID', name='test_meanpool1d')(n1)
-        n19 = tlx.nn.AdaptiveMeanPool1d(output_size=44, name='test_adaptivemeanpool1d')(n1)
+        n17 = tlx.nn.AvgPool1d(kernel_size=3, stride=1, padding='VALID', name='test_meanpool1d')(n1)
+        n19 = tlx.nn.AdaptiveAvgPool1d(output_size=44, name='test_adaptivemeanpool1d')(n1)
         n20 = tlx.nn.AdaptiveMaxPool1d(output_size=44, name='test_adaptivemaxpool1d')(n1)
 
         cls.n1_shape = tlx.get_tensor_shape(n1)
@@ -49,13 +49,13 @@ class Layer_Pooling_Test(CustomTestCase):
         n6 = tlx.nn.Conv2d(out_channels=32, kernel_size=(3, 3), stride=(2, 2), name='test_conv2d')(nin_2)
         n7 = tlx.nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding='SAME',
                                            name='test_maxpool2d')(n6)
-        n8 = tlx.nn.MeanPool2d(kernel_size=(3, 3), stride=(2, 2), padding='SAME',
+        n8 = tlx.nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding='SAME',
                                             name='test_meanpool2d')(n6)
         n9 = tlx.nn.GlobalMaxPool2d(name='test_maxpool2d')(n6)
-        n10 = tlx.nn.GlobalMeanPool2d(name='test_meanpool2d')(n6)
-        n15 = tlx.nn.PoolLayer(name='test_pool2d')(n6)
+        n10 = tlx.nn.GlobalAvgPool2d(name='test_meanpool2d')(n6)
+        # n15 = tlx.nn.PoolLayer(name='test_pool2d')(n6)
         # n18 = tlx.layers.CornerPool2d('TopLeft', name='test_cornerpool2d')(n6)
-        n21 = tlx.nn.AdaptiveMeanPool2d(output_size=(45, 32), name='test_adaptivemeanpool2d')(n6)
+        n21 = tlx.nn.AdaptiveAvgPool2d(output_size=(45, 32), name='test_adaptivemeanpool2d')(n6)
         n22 = tlx.nn.AdaptiveMaxPool2d(output_size=(45, 32), name='test_adaptivemaxpool2d')(n6)
 
         cls.n6_shape = tlx.get_tensor_shape(n6)
@@ -63,7 +63,7 @@ class Layer_Pooling_Test(CustomTestCase):
         cls.n8_shape = tlx.get_tensor_shape(n8)
         cls.n9_shape = tlx.get_tensor_shape(n9)
         cls.n10_shape = tlx.get_tensor_shape(n10)
-        cls.n15_shape = tlx.get_tensor_shape(n15)
+        # cls.n15_shape = tlx.get_tensor_shape(n15)
         cls.n21_shape = tlx.get_tensor_shape(n21)
         cls.n22_shape = tlx.get_tensor_shape(n22)
 
@@ -72,16 +72,16 @@ class Layer_Pooling_Test(CustomTestCase):
         x_3_input_shape = [None, 100, 100, 100, 3]
         nin_3 = Input(x_3_input_shape, name='test_in3')
 
-        n11 = tlx.nn.MeanPool3d(
+        n11 = tlx.nn.AvgPool3d(
             kernel_size=(3, 3, 3), stride=(2, 2, 2), padding='SAME', name='test_meanpool3d'
         )(nin_3)
         n12 = tlx.nn.GlobalMaxPool3d(name='test_maxpool3d')(nin_3)
-        n13 = tlx.nn.GlobalMeanPool3d(name='test_meanpool3d')(nin_3)
+        n13 = tlx.nn.GlobalAvgPool3d(name='test_meanpool3d')(nin_3)
         n14 = tlx.nn.MaxPool3d(
             kernel_size=(3, 3, 3), stride=(2, 2, 2), padding='SAME', name='test_maxpool3d'
         )(nin_3)
 
-        n23 = tlx.nn.AdaptiveMeanPool3d(output_size=(45, 32, 55), name='test_adaptivemeanpool3d')(nin_3)
+        n23 = tlx.nn.AdaptiveAvgPool3d(output_size=(45, 32, 55), name='test_adaptivemeanpool3d')(nin_3)
         n24 = tlx.nn.AdaptiveMaxPool3d(output_size=(45, 32, 55), name='test_adaptivemaxpool3d')(nin_3)
 
         cls.n11_shape = n11.get_shape().as_list()
@@ -140,8 +140,8 @@ class Layer_Pooling_Test(CustomTestCase):
     def test_n14_shape(self):
         self.assertEqual(self.n14_shape[1:5], [50, 50, 50, 3])
 
-    def test_n15_shape(self):
-        self.assertEqual(self.n15_shape[1:4], [25, 25, 32])
+    # def test_n15_shape(self):
+    #     self.assertEqual(self.n15_shape[1:4], [25, 25, 32])
 
     def test_n16_shape(self):
         self.assertEqual(self.n16_shape[1:4], [48, 32])
