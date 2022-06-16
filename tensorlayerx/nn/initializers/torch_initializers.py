@@ -3,6 +3,7 @@
 
 import torch
 import tensorlayerx as tlx
+import numpy as np
 
 __all__ = [
     'Initializer',
@@ -123,7 +124,11 @@ class Constant(Initializer):
 
     def __call__(self, shape, dtype=tlx.float32):
         _tensor = torch.empty(size=shape, dtype=dtype)
-        return torch.nn.init.constant_(_tensor, val=self.value)
+        if isinstance(self.value, (int, float)):
+            return torch.nn.init.constant_(_tensor, val=self.value)
+        elif isinstance(self.value, (torch.Tensor, list, np.ndarray)):
+            _tensor.data = torch.as_tensor(self.value)
+            return _tensor
 
     def get_config(self):
         return {"value": self.value}
