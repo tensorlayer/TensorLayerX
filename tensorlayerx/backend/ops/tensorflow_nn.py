@@ -868,8 +868,7 @@ class AvgPool(object):
     def __init__(self, ksize, strides, padding, data_format=None):
         self.ksize = ksize
         self.strides = strides
-        self.data_format = data_format
-        self.padding = padding_format(padding)
+        self.data_format, self.padding = preprocess_2d_format(data_format=data_format, padding=padding)
         self.padding_value = None
         if not isinstance(self.padding, str):
             self.padding_value = preprocess_padding(self.padding, '2d', self.data_format)
@@ -1334,7 +1333,6 @@ class Conv2d_transpose(object):
                 output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2 * self._padding
                 self.padding = [[0, 0], [self._padding, self._padding],[self._padding, self._padding], [0, 0]]
             else:
-                print(input_h, strides_h, kernel_h, strides_h, self._padding[0], self._padding)
                 output_h = input_h * strides_h + max(kernel_h - strides_h, 0) - 2 * self._padding[0]
                 output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2* self._padding[1]
                 self.padding = [[0, 0], [self._padding[0], self._padding[0]],[self._padding[1], self._padding[1]], [0, 0]]

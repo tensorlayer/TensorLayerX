@@ -6,22 +6,22 @@ from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
 
 __all__ = [
-    'PoolLayer',
+    # 'PoolLayer',
     'MaxPool1d',
-    'MeanPool1d',
+    'AvgPool1d',
     'MaxPool2d',
-    'MeanPool2d',
+    'AvgPool2d',
     'MaxPool3d',
-    'MeanPool3d',
+    'AvgPool3d',
     'GlobalMaxPool1d',
-    'GlobalMeanPool1d',
+    'GlobalAvgPool1d',
     'GlobalMaxPool2d',
-    'GlobalMeanPool2d',
+    'GlobalAvgPool2d',
     'GlobalMaxPool3d',
-    'GlobalMeanPool3d',
-    'AdaptiveMeanPool1d',
-    'AdaptiveMeanPool2d',
-    'AdaptiveMeanPool3d',
+    'GlobalAvgPool3d',
+    'AdaptiveAvgPool1d',
+    'AdaptiveAvgPool2d',
+    'AdaptiveAvgPool3d',
     'AdaptiveMaxPool1d',
     'AdaptiveMaxPool2d',
     'AdaptiveMaxPool3d',
@@ -29,77 +29,77 @@ __all__ = [
 ]
 
 
-class PoolLayer(Module):
-    """
-    The :class:`PoolLayer` class is a Pooling layer.
-    You can choose ``tlx.ops.max_pool`` and ``tlx.ops.avg_pool`` for 2D input or
-    ``tlx.ops.max_pool3d`` and ``tlx.ops.avg_pool3d`` for 3D input.
-
-    Parameters
-    ----------
-    kernel_size : tuple of int
-        The size of the window for each dimension of the input tensor.
-        Note that: len(kernel_size) >= 4.
-    stride : tuple of int
-        The stride of the sliding window for each dimension of the input tensor.
-        Note that: len(stride) >= 4.
-    padding : str
-        The padding algorithm type: "SAME" or "VALID".
-    pool : pooling function
-        One of ``tlx.ops.max_pool``, ``tlx.ops.avg_pool``, ``tlx.ops.max_pool3d`` and ``f.ops.avg_pool3d``.
-        See `TensorFlow pooling APIs <https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/nn/>`__
-    name : None or str
-        A unique layer name.
-
-    Examples
-    ---------
-    With TensorLayerX
-
-    >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
-    >>> net = tlx.nn.PoolLayer()(net)
-    >>> output shape : [10, 25, 25, 32]
-
-    """
-
-    def __init__(
-        self,
-        kernel_size=(1, 2, 2, 1),
-        stride=(1, 2, 2, 1),
-        padding='SAME',
-        pool=tlx.ops.MaxPool,
-        name=None  # 'pool_pro',
-    ):
-        super().__init__(name)
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.padding = padding
-        self.pool = pool
-
-        self.build()
-        self._built = True
-
-        logging.info(
-            "PoolLayer %s: kernel_size: %s stride: %s padding: %s pool: %s" %
-            (self.name, str(self.kernel_size), str(self.stride), self.padding, pool.__name__)
-        )
-
-    def __repr__(self):
-        s = '{classname}(pool={poolname}, kernel_size={stride}, padding={padding}'
-        if self.name is not None:
-            s += ', name=\'{name}\''
-        s += ')'
-        return s.format(classname=self.__class__.__name__, poolname=self.pool.__name__, **self.__dict__)
-
-    def build(self, inputs_shape=None):
-        self._pool = self.pool(ksize=self.kernel_size, strides=self.stride, padding=self.padding)
-
-    def forward(self, inputs):
-        outputs = self._pool(inputs)
-
-        if not self._nodes_fixed and self._build_graph:
-            self._add_node(inputs, outputs)
-            self._nodes_fixed = True
-        return outputs
+# class PoolLayer(Module):
+#     """
+#     The :class:`PoolLayer` class is a Pooling layer.
+#     You can choose ``tlx.ops.max_pool`` and ``tlx.ops.avg_pool`` for 2D input or
+#     ``tlx.ops.max_pool3d`` and ``tlx.ops.avg_pool3d`` for 3D input.
+#
+#     Parameters
+#     ----------
+#     kernel_size : tuple of int
+#         The size of the window for each dimension of the input tensor.
+#         Note that: len(kernel_size) >= 4.
+#     stride : tuple of int
+#         The stride of the sliding window for each dimension of the input tensor.
+#         Note that: len(stride) >= 4.
+#     padding : str
+#         The padding algorithm type: "SAME" or "VALID".
+#     pool : pooling function
+#         One of ``tlx.ops.max_pool``, ``tlx.ops.avg_pool``, ``tlx.ops.max_pool3d`` and ``f.ops.avg_pool3d``.
+#         See `TensorFlow pooling APIs <https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/nn/>`__
+#     name : None or str
+#         A unique layer name.
+#
+#     Examples
+#     ---------
+#     With TensorLayerX
+#
+#     >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
+#     >>> net = tlx.nn.PoolLayer()(net)
+#     >>> output shape : [10, 25, 25, 32]
+#
+#     """
+#
+#     def __init__(
+#         self,
+#         kernel_size=(1, 2, 2, 1),
+#         stride=(1, 2, 2, 1),
+#         padding='SAME',
+#         pool=tlx.ops.MaxPool,
+#         name=None  # 'pool_pro',
+#     ):
+#         super().__init__(name)
+#         self.kernel_size = kernel_size
+#         self.stride = stride
+#         self.padding = padding
+#         self.pool = pool
+#
+#         self.build()
+#         self._built = True
+#
+#         logging.info(
+#             "PoolLayer %s: kernel_size: %s stride: %s padding: %s pool: %s" %
+#             (self.name, str(self.kernel_size), str(self.stride), self.padding, pool.__name__)
+#         )
+#
+#     def __repr__(self):
+#         s = '{classname}(pool={poolname}, kernel_size={stride}, padding={padding}'
+#         if self.name is not None:
+#             s += ', name=\'{name}\''
+#         s += ')'
+#         return s.format(classname=self.__class__.__name__, poolname=self.pool.__name__, **self.__dict__)
+#
+#     def build(self, inputs_shape=None):
+#         self._pool = self.pool(ksize=self.kernel_size, strides=self.stride, padding=self.padding)
+#
+#     def forward(self, inputs):
+#         outputs = self._pool(inputs)
+#
+#         if not self._nodes_fixed and self._build_graph:
+#             self._add_node(inputs, outputs)
+#             self._nodes_fixed = True
+#         return outputs
 
 
 class MaxPool1d(Module):
@@ -174,8 +174,8 @@ class MaxPool1d(Module):
         return outputs
 
 
-class MeanPool1d(Module):
-    """Mean pooling for 1D signal.
+class AvgPool1d(Module):
+    """Avg pooling for 1D signal.
 
     Parameters
     ------------
@@ -195,7 +195,7 @@ class MeanPool1d(Module):
     With TensorLayerX
 
     >>> net = tlx.nn.Input([10, 50, 32], name='input')
-    >>> net = tlx.nn.MeanPool1d(kernel_size=3, stride=2, padding='SAME')(net)
+    >>> net = tlx.nn.AvgPool1d(kernel_size=3, stride=2, padding='SAME')(net)
     >>> output shape : [10, 25, 32]
 
     """
@@ -207,7 +207,7 @@ class MeanPool1d(Module):
         padding='SAME',
         data_format='channels_last',
         dilation_rate=1,
-        name=None  # 'meanpool1d'
+        name=None  # 'Avgpool1d'
     ):
         super().__init__(name)
         self.kernel_size = self._filter_size = kernel_size
@@ -219,7 +219,7 @@ class MeanPool1d(Module):
         self._built = True
 
         logging.info(
-            "MeanPool1d %s: kernel_size: %s stride: %s padding: %s" %
+            "AvgPool1d %s: kernel_size: %s stride: %s padding: %s" %
             (self.name, str(kernel_size), str(stride), str(padding))
         )
 
@@ -325,8 +325,8 @@ class MaxPool2d(Module):
         return outputs
 
 
-class MeanPool2d(Module):
-    """Mean pooling for 2D image [batch, height, width, channel].
+class AvgPool2d(Module):
+    """Avg pooling for 2D image [batch, height, width, channel].
 
     Parameters
     -----------
@@ -346,7 +346,7 @@ class MeanPool2d(Module):
     With TensorLayerX
 
     >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
-    >>> net = tlx.nn.MeanPool2d(kernel_size=(3, 3), stride=(2, 2), padding='SAME')(net)
+    >>> net = tlx.nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), padding='SAME')(net)
     >>> output shape : [10, 25, 25, 32]
 
     """
@@ -357,7 +357,7 @@ class MeanPool2d(Module):
         stride=(2, 2),
         padding='SAME',
         data_format='channels_last',
-        name=None  # 'meanpool2d'
+        name=None  # 'Avgpool2d'
     ):
         super().__init__(name)
         self.kernel_size = self.check_param(kernel_size)
@@ -371,7 +371,7 @@ class MeanPool2d(Module):
         self._built = True
 
         logging.info(
-            "MeanPool2d %s: kernel_size: %s stride: %s padding: %s" %
+            "AvgPool2d %s: kernel_size: %s stride: %s padding: %s" %
             (self.name, str(kernel_size), str(stride), str(padding))
         )
 
@@ -482,8 +482,8 @@ class MaxPool3d(Module):
         return outputs
 
 
-class MeanPool3d(Module):
-    """Mean pooling for 3D volume.
+class AvgPool3d(Module):
+    """Avg pooling for 3D volume.
 
     Parameters
     ------------
@@ -501,14 +501,14 @@ class MeanPool3d(Module):
     Returns
     -------
     :class:`tf.Tensor`
-        A mean pooling 3-D layer with a output rank as 5.
+        A Avg pooling 3-D layer with a output rank as 5.
 
     Examples
     ---------
     With TensorLayerX
 
     >>> net = tlx.nn.Input([10, 50, 50, 50, 32], name='input')
-    >>> net = tlx.nn.MeanPool3d(kernel_size=(3, 3, 3), stride=(2, 2, 2), padding='SAME')(net)
+    >>> net = tlx.nn.AvgPool3d(kernel_size=(3, 3, 3), stride=(2, 2, 2), padding='SAME')(net)
     >>> output shape : [10, 25, 25, 25, 32]
 
     """
@@ -519,7 +519,7 @@ class MeanPool3d(Module):
         stride=(2, 2, 2),
         padding='VALID',
         data_format='channels_last',
-        name=None  # 'meanpool3d'
+        name=None  # 'Avgpool3d'
     ):
         super().__init__(name)
         self.kernel_size = self.check_param(kernel_size, '3d')
@@ -531,7 +531,7 @@ class MeanPool3d(Module):
         self._built = True
 
         logging.info(
-            "MeanPool3d %s: kernel_size: %s stride: %s padding: %s" %
+            "AvgPool3d %s: kernel_size: %s stride: %s padding: %s" %
             (self.name, str(kernel_size), str(stride), str(padding))
         )
 
@@ -617,8 +617,8 @@ class GlobalMaxPool1d(Module):
         return outputs
 
 
-class GlobalMeanPool1d(Module):
-    """The :class:`GlobalMeanPool1d` class is a 1D Global Mean Pooling layer.
+class GlobalAvgPool1d(Module):
+    """The :class:`GlobalAvgPool1d` class is a 1D Global Avg Pooling layer.
 
     Parameters
     ------------
@@ -632,7 +632,7 @@ class GlobalMeanPool1d(Module):
     With TensorLayerX
 
     >>> net = tlx.nn.Input([10, 100, 30], name='input')
-    >>> net = tlx.nn.GlobalMeanPool1d()(net)
+    >>> net = tlx.nn.GlobalAvgPool1d()(net)
     >>> output shape : [10, 30]
 
     """
@@ -640,7 +640,7 @@ class GlobalMeanPool1d(Module):
     def __init__(
         self,
         data_format='channels_last',
-        name=None  # 'globalmeanpool1d'
+        name=None  # 'globalAvgpool1d'
     ):
         super().__init__(name)
         self.data_format = data_format
@@ -648,7 +648,7 @@ class GlobalMeanPool1d(Module):
         self.build()
         self._built = True
 
-        logging.info("GlobalMeanPool1d %s" % self.name)
+        logging.info("GlobalAvgPool1d %s" % self.name)
 
     def __repr__(self):
         s = '{classname}('
@@ -735,8 +735,8 @@ class GlobalMaxPool2d(Module):
         return outputs
 
 
-class GlobalMeanPool2d(Module):
-    """The :class:`GlobalMeanPool2d` class is a 2D Global Mean Pooling layer.
+class GlobalAvgPool2d(Module):
+    """The :class:`GlobalAvgPool2d` class is a 2D Global Avg Pooling layer.
 
     Parameters
     ------------
@@ -750,7 +750,7 @@ class GlobalMeanPool2d(Module):
     With TensorLayerX
 
     >>> net = tlx.nn.Input([10, 100, 100, 30], name='input')
-    >>> net = tlx.nn.GlobalMeanPool2d()(net)
+    >>> net = tlx.nn.GlobalAvgPool2d()(net)
     >>> output shape : [10, 30]
 
     """
@@ -758,7 +758,7 @@ class GlobalMeanPool2d(Module):
     def __init__(
         self,
         data_format='channels_last',
-        name=None  # 'globalmeanpool2d'
+        name=None  # 'globalAvgpool2d'
     ):
         super().__init__(name)
 
@@ -767,7 +767,7 @@ class GlobalMeanPool2d(Module):
         self.build()
         self._built = True
 
-        logging.info("GlobalMeanPool2d %s" % self.name)
+        logging.info("GlobalAvgPool2d %s" % self.name)
 
     def __repr__(self):
         s = '{classname}('
@@ -855,8 +855,8 @@ class GlobalMaxPool3d(Module):
         return outputs
 
 
-class GlobalMeanPool3d(Module):
-    """The :class:`GlobalMeanPool3d` class is a 3D Global Mean Pooling layer.
+class GlobalAvgPool3d(Module):
+    """The :class:`GlobalAvgPool3d` class is a 3D Global Avg Pooling layer.
 
     Parameters
     ------------
@@ -870,7 +870,7 @@ class GlobalMeanPool3d(Module):
     With TensorLayerX
 
     >>> net = tlx.nn.Input([10, 100, 100, 100, 30], name='input')
-    >>> net = tlx.nn.GlobalMeanPool3d()(net)
+    >>> net = tlx.nn.GlobalAvgPool3d()(net)
     >>> output shape : [10, 30]
 
     """
@@ -878,7 +878,7 @@ class GlobalMeanPool3d(Module):
     def __init__(
         self,
         data_format='channels_last',
-        name=None  # 'globalmeanpool3d'
+        name=None  # 'globalAvgpool3d'
     ):
         super().__init__(name)
         self.data_format = data_format
@@ -886,7 +886,7 @@ class GlobalMeanPool3d(Module):
         self.build()
         self._built = True
 
-        logging.info("GlobalMeanPool3d %s" % self.name)
+        logging.info("GlobalAvgPool3d %s" % self.name)
 
     def __repr__(self):
         s = '{classname}('
@@ -991,8 +991,8 @@ class CornerPool2d(Module):
         return outputs
 
 
-class AdaptiveMeanPool1d(Module):
-    """The :class:`AdaptiveMeanPool1d` class is a 1D Adaptive Mean Pooling layer.
+class AdaptiveAvgPool1d(Module):
+    """The :class:`AdaptiveAvgPool1d` class is a 1D Adaptive Avg Pooling layer.
 
     Parameters
     ------------
@@ -1008,20 +1008,20 @@ class AdaptiveMeanPool1d(Module):
     With TensorLayerX
 
     >>> net = tlx.nn.Input([10, 32, 3], name='input')
-    >>> net = tlx.nn.AdaptiveMeanPool1d(output_size=16)(net)
+    >>> net = tlx.nn.AdaptiveAvgPool1d(output_size=16)(net)
     >>> output shape : [10, 16, 3]
 
     """
 
     def __init__(self, output_size, data_format='channels_last', name=None):
-        super(AdaptiveMeanPool1d, self).__init__(name)
+        super(AdaptiveAvgPool1d, self).__init__(name)
         self.output_size = output_size
         self.data_format = data_format
 
         self.build()
         self._built = True
 
-        logging.info("AdaptiveMeanPool1d %s: output_size: %s " % (self.name, str(output_size)))
+        logging.info("AdaptiveAvgPool1d %s: output_size: %s " % (self.name, str(output_size)))
 
     def __repr__(self):
         s = ('{classname}(output_size={output_size}')
@@ -1043,8 +1043,8 @@ class AdaptiveMeanPool1d(Module):
         return outputs
 
 
-class AdaptiveMeanPool2d(Module):
-    """The :class:`AdaptiveMeanPool2d` class is a 2D Adaptive Mean Pooling layer.
+class AdaptiveAvgPool2d(Module):
+    """The :class:`AdaptiveAvgPool2d` class is a 2D Adaptive Avg Pooling layer.
 
     Parameters
     ------------
@@ -1060,20 +1060,20 @@ class AdaptiveMeanPool2d(Module):
     With TensorLayerX
 
     >>> net = tlx.nn.Input([10,32, 32, 3], name='input')
-    >>> net = tlx.nn.AdaptiveMeanPool2d(output_size=16)(net)
+    >>> net = tlx.nn.AdaptiveAvgPool2d(output_size=16)(net)
     >>> output shape : [10,16, 16, 3]
 
     """
 
     def __init__(self, output_size, data_format='channels_last', name=None):
-        super(AdaptiveMeanPool2d, self).__init__(name)
+        super(AdaptiveAvgPool2d, self).__init__(name)
         self.output_size = output_size
         self.data_format = data_format
 
         self.build()
         self._built = True
 
-        logging.info("AdaptiveMeanPool2d %s: output_size: %s " % (self.name, str(output_size)))
+        logging.info("AdaptiveAvgPool2d %s: output_size: %s " % (self.name, str(output_size)))
 
     def __repr__(self):
         s = ('{classname}(output_size={output_size}')
@@ -1098,8 +1098,8 @@ class AdaptiveMeanPool2d(Module):
         return outputs
 
 
-class AdaptiveMeanPool3d(Module):
-    """The :class:`AdaptiveMeanPool3d` class is a 3D Adaptive Mean Pooling layer.
+class AdaptiveAvgPool3d(Module):
+    """The :class:`AdaptiveAvgPool3d` class is a 3D Adaptive Avg Pooling layer.
 
         Parameters
         ------------
@@ -1115,20 +1115,20 @@ class AdaptiveMeanPool3d(Module):
         With TensorLayerX
 
         >>> net = tlx.nn.Input([10,32, 32, 32, 3], name='input')
-        >>> net = tlx.nn.AdaptiveMeanPool3d(output_size=16)(net)
+        >>> net = tlx.nn.AdaptiveAvgPool3d(output_size=16)(net)
         >>> output shape : [10, 16, 16, 16, 3]
 
         """
 
     def __init__(self, output_size, data_format='channels_last', name=None):
-        super(AdaptiveMeanPool3d, self).__init__(name)
+        super(AdaptiveAvgPool3d, self).__init__(name)
         self.output_size = output_size
         self.data_format = data_format
 
         self.build()
         self._built = True
 
-        logging.info("AdaptiveMeanPool3d %s: output_size: %s " % (self.name, str(output_size)))
+        logging.info("AdaptiveAvgPool3d %s: output_size: %s " % (self.name, str(output_size)))
 
     def __repr__(self):
         s = ('{classname}(output_size={output_size}')

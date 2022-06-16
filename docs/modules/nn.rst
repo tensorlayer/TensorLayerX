@@ -48,27 +48,26 @@ Layer list
    GroupConv2d
 
    PadLayer
-   PoolLayer
    ZeroPad1d
    ZeroPad2d
    ZeroPad3d
    MaxPool1d
-   MeanPool1d
+   AvgPool1d
    MaxPool2d
-   MeanPool2d
+   AvgPool2d
    MaxPool3d
-   MeanPool3d
+   AvgPool3d
    GlobalMaxPool1d
-   GlobalMeanPool1d
+   GlobalAvgPool1d
    GlobalMaxPool2d
-   GlobalMeanPool2d
+   GlobalAvgPool2d
    GlobalMaxPool3d
-   GlobalMeanPool3d
-   AdaptiveMeanPool1d
+   GlobalAvgPool3d
+   AdaptiveAvgPool1d
    AdaptiveMaxPool1d
-   AdaptiveMeanPool2d
+   AdaptiveAvgPool2d
    AdaptiveMaxPool2d
-   AdaptiveMeanPool3d
+   AdaptiveAvgPool3d
    AdaptiveMaxPool3d
    CornerPool2d
 
@@ -410,83 +409,77 @@ Padding layer for any modes.
 Pooling Layers
 ------------------------
 
-Pool Layer (Expert API)
-^^^^^^^^^^^^^^^^^^^^^^^^^
-Pooling layer for any dimensions and any pooling functions.
-
-.. autoclass:: PoolLayer
-
 1D Max pooling
 ^^^^^^^^^^^^^^^^^^^
 .. autoclass:: MaxPool1d
 
-1D Mean pooling
+1D Avg pooling
 ^^^^^^^^^^^^^^^^^^^
-.. autoclass:: MeanPool1d
+.. autoclass:: AvgPool1d
 
 2D Max pooling
 ^^^^^^^^^^^^^^^^^^^
 .. autoclass:: MaxPool2d
 
-2D Mean pooling
+2D Avg pooling
 ^^^^^^^^^^^^^^^^^^^
-.. autoclass:: MeanPool2d
+.. autoclass:: AvgPool2d
 
 3D Max pooling
 ^^^^^^^^^^^^^^^^^^^
 .. autoclass:: MaxPool3d
 
-3D Mean pooling
+3D Avg pooling
 ^^^^^^^^^^^^^^^^^^^
-.. autoclass:: MeanPool3d
+.. autoclass:: AvgPool3d
 
 1D Global Max pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: GlobalMaxPool1d
 
-1D Global Mean pooling
+1D Global Avg pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: GlobalMeanPool1d
+.. autoclass:: GlobalAvgPool1d
 
 2D Global Max pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: GlobalMaxPool2d
 
-2D Global Mean pooling
+2D Global Avg pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: GlobalMeanPool2d
+.. autoclass:: GlobalAvgPool2d
 
 3D Global Max pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: GlobalMaxPool3d
 
-3D Global Mean pooling
+3D Global Avg pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: GlobalMeanPool3d
+.. autoclass:: GlobalAvgPool3d
 
 1D Adaptive Max pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: AdaptiveMaxPool1d
 
-1D Adaptive Mean pooling
+1D Adaptive Avg pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: AdaptiveMeanPool1d
+.. autoclass:: AdaptiveAvgPool1d
 
 2D Adaptive Max pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: AdaptiveMaxPool2d
 
-2D Adaptive Mean pooling
+2D Adaptive Avg pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: AdaptiveMeanPool2d
+.. autoclass:: AdaptiveAvgPool2d
 
 3D Adaptive Max pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autoclass:: AdaptiveMaxPool3d
 
-3D Adaptive Mean pooling
+3D Adaptive Avg pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: AdaptiveMeanPool3d
+.. autoclass:: AdaptiveAvgPool3d
 
 2D Corner pooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

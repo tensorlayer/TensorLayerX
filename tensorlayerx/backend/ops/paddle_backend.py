@@ -1211,10 +1211,10 @@ def floor(x):
 
 
 def gather(params, indices, axis=None):
-    if axis < 0:
-        axis = len(params.shape) + axis
     if axis is None:
         axis = 0
+    if axis < 0:
+        axis = len(params.shape) + axis
     return pd.gather(params, indices, axis)
 
 

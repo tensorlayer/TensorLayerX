@@ -792,6 +792,8 @@ class MaxPool(object):
         elif data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
             self.data_format = 'channels_first'
         self.padding = padding
+        if self.padding in ['VALID', 'valid']:
+            self.padding = 0
 
     def __call__(self, inputs):
         if self.data_format == 'channels_last':
@@ -818,7 +820,7 @@ class MaxPool(object):
             return out
 
     def maxpool1d_same_padding(self, input):
-        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides, 1)
+        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides[0], 1)
         if rows_odd:
             input = F.pad(input, [0, int(rows_odd)], 'constant', float('-inf'))
         return F.max_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2))
@@ -894,6 +896,8 @@ class AvgPool(object):
         elif data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
             self.data_format = 'channels_first'
         self.padding = padding
+        if self.padding in ['VALID', 'valid']:
+            self.padding = 0
 
     def __call__(self, inputs):
         if self.data_format == 'channels_last':
@@ -920,7 +924,7 @@ class AvgPool(object):
             return out
 
     def avgpool1d_same_padding(self, input):
-        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides, 1)
+        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides[0], 1)
         if rows_odd:
             input = F.pad(input, [0, int(rows_odd)], 'replicate')
         return F.avg_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2))

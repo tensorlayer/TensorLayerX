@@ -681,6 +681,7 @@ class MaxPool(object):
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
         self.ksize = ksize
+        print(self.data_format)
         if self.data_format is 'NHWC':
             self._stride = (strides[1], strides[2])
         elif self.data_format is 'NCHW':
