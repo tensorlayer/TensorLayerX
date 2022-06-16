@@ -477,3 +477,34 @@ __all__ += ['DeConv3d']
 
 def DeConv3d(*args, **kwargs):
     raise NonExistingLayerError("DeConv3d --> ConvTranspose3d" + __log__)
+
+
+def MeanPool1d(*args, **kwargs):
+    raise NonExistingLayerError("MeanPool1d --> AvgPool1d" + __log__)
+
+def MeanPool2d(*args, **kwargs):
+    raise NonExistingLayerError("MeanPool2d --> AvgPool2d" + __log__)
+
+def MeanPool3d(*args, **kwargs):
+    raise NonExistingLayerError("MeanPool3d --> AvgPool3d" + __log__)
+
+def GlobalMeanPool1d(*args, **kwargs):
+    raise NonExistingLayerError("GlobalMeanPool1d --> GlobalAvgPool1d" + __log__)
+
+def GlobalMeanPool2d(*args, **kwargs):
+    raise NonExistingLayerError("GlobalMeanPool2d --> GlobalAvgPool2d" + __log__)
+
+def GlobalMeanPool3d(*args, **kwargs):
+    raise NonExistingLayerError("GlobalMeanPool3d --> GlobalAvgPool3d" + __log__)
+
+def AdaptiveMeanPool1d(*args, **kwargs):
+    raise NonExistingLayerError("AdaptiveMeanPool1d --> AdaptiveAvgPool1d" + __log__)
+
+def AdaptiveMeanPool2d(*args, **kwargs):
+    raise NonExistingLayerError("AdaptiveMeanPool2d --> AdaptiveAvgPool2d" + __log__)
+
+def AdaptiveMeanPool3d(*args, **kwargs):
+    raise NonExistingLayerError("AdaptiveMeanPool3d --> AdaptiveAvgPool3d" + __log__)
+
+__all__ += ['MeanPool1d', 'MeanPool2d', 'MeanPool3d', 'GlobalMeanPool1d', 'GlobalMeanPool2d', 'GlobalMeanPool3d',
+            'AdaptiveMeanPool1d', 'AdaptiveMeanPool2d', 'AdaptiveMeanPool3d']
