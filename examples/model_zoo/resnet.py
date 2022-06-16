@@ -14,7 +14,7 @@ import tensorlayerx as tlx
 
 from tensorlayerx import logging
 from tensorlayerx.files import (maybe_download_and_extract)
-from tensorlayerx.nn import (BatchNorm, Conv2d, Linear, Elementwise, GlobalMeanPool2d, MaxPool2d)
+from tensorlayerx.nn import (BatchNorm, Conv2d, Linear, Elementwise, GlobalAvgPool2d, MaxPool2d)
 from tensorlayerx.nn import Module, Sequential
 
 __all__ = [
@@ -159,7 +159,7 @@ class ResNet50_model(Module):
                 else:
                     layer_list.append(identity_block(3, block_filters[stage - 2], stage=stage, block=block))
             elif block_name == 'avg_pool':
-                layer_list.append(GlobalMeanPool2d(name='avg_pool'))
+                layer_list.append(GlobalAvgPool2d(name='avg_pool'))
             elif block_name == 'fc1000':
                 layer_list.append(Linear(self.n_classes, name='fc1000', in_features=2048))
 
