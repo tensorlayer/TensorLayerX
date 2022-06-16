@@ -117,18 +117,18 @@ class QuanLinearWithBN(Module):
             raise Exception("TODO. The current version use tf.matmul for inferencing.")
 
         n_in = inputs_shape[-1]
-        self.W = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
+        self.weights = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
 
         para_bn_shape = (self.out_features, )
         if self.gamma_init:
-            self.scale_para = self._get_weights("gamm_weights", shape=para_bn_shape, init=self.gamma_init)
+            self.gamm_weights = self._get_weights("gamm_weights", shape=para_bn_shape, init=self.gamma_init)
         else:
-            self.scale_para = None
+            self.gamm_weights = None
 
         if self.beta_init:
-            self.offset_para = self._get_weights("beta_weights", shape=para_bn_shape, init=self.beta_init)
+            self.beta_weights = self._get_weights("beta_weights", shape=para_bn_shape, init=self.beta_init)
         else:
-            self.offset_para = None
+            self.beta_weights = None
 
         self.moving_mean = self._get_weights(
             "moving_mean", shape=para_bn_shape, init=tlx.nn.initializers.constant(1.0), trainable=False
@@ -138,7 +138,7 @@ class QuanLinearWithBN(Module):
         )
 
         self.quan_dense_bn = tlx.ops.QuanDenseBn(
-            self.W, self.scale_para, self.offset_para, self.moving_mean, self.moving_variance, self.decay, self.bitW,
+            self.weights, self.gamm_weights, self.beta_weights, self.moving_mean, self.moving_variance, self.decay, self.bitW,
             self.bitA, self.epsilon, self.is_train
         )
 

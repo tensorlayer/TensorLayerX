@@ -5,7 +5,7 @@ from torch.nn import Module as T_Module
 from .common import check_parameter, processing_act, str2init, tolist, construct_graph, ModuleNode, select_attrs
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from torch.nn.parameter import Parameter
-from torch._C import _disabled_torch_function_impl
+from typing import Any, Callable
 import torch
 import operator
 from itertools import islice
@@ -67,6 +67,10 @@ class Module(T_Module):
         # layer forward  state
         self._forward_state = False
 
+        # weights check state
+        self._check = False
+
+
     def set_train(self, mode=True):
         if not isinstance(mode, bool):
             raise ValueError("training mode is expected to be boolean")
@@ -85,8 +89,6 @@ class Module(T_Module):
         raise Exception("The forward method must be implemented by inherited class")
 
     def _get_weights(self, var_name, shape, init=None, trainable=True, transposed=None, order=False):
-        var_name = self.name + "/" + var_name
-
         if order:
             w_tmp = Parameter(init(shape), requires_grad=trainable)
             return w_tmp
@@ -103,7 +105,38 @@ class Module(T_Module):
         # TODO paramters name should be add
         _param = init(shape)
         param = Parameter(_param, requires_grad=trainable)
+        self.var_name = var_name
         return param
+
+    def _call_impl_tlx(self, *input, **kwargs):
+        if self._check == False:
+            _param_name = []
+            for name, param in self.named_parameters(recurse=True):
+                if name not in _param_name:
+                    _param_name.append(name)
+                else:
+                    raise Exception("parameter name [{}] have be been used. "
+                                    "In training, the name of layer can't be same."
+                                    "Please check the layers name".format(name))
+            self._check = True
+
+        result = self._call_impl(*input, **kwargs)
+        return result
+
+    __call__: Callable[..., Any] = _call_impl_tlx
+
+    def _named_members(self, get_members_fn, prefix='', recurse=True):
+        r"""Helper method for yielding various names + members of modules."""
+        memo = set()
+        modules = self.named_modules(prefix=prefix) if recurse else [(prefix, self)]
+        for module_prefix, module in modules:
+            members = get_members_fn(module)
+            for k, v in members:
+                if v is None or v in memo:
+                    continue
+                memo.add(v)
+                name = module.name + '/' + k
+                yield name, v
 
     @property
     def all_weights(self):

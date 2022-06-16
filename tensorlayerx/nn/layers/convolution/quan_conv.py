@@ -143,13 +143,13 @@ class QuanConv2d(Module):
 
         self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.out_channels)
 
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(data_format=self.data_format)
 
         self.quan_conv = tlx.ops.QuanConv(
-            weights=self.W, strides=self._strides, padding=self.padding, data_format=self.data_format,
+            weights=self.filters, strides=self._strides, padding=self.padding, data_format=self.data_format,
             dilations=self._dilation_rate, bitW=self.bitW, bitA=self.bitA
         )
 
@@ -163,7 +163,7 @@ class QuanConv2d(Module):
         outputs = self.quan_conv(inputs)
 
         if self.b_init:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.biases)
         if self.act:
             outputs = self.act(outputs)
 

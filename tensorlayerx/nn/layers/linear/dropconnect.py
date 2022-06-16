@@ -101,9 +101,9 @@ class DropconnectLinear(Module):
             self.in_features = inputs_shape[1]
 
         n_in = inputs_shape[-1]
-        self.W = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
+        self.weights = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_features), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_features), init=self.b_init)
 
         self.dropout = tlx.ops.Dropout(p=self.keep)
         self.matmul = tlx.ops.MatMul()
@@ -116,10 +116,10 @@ class DropconnectLinear(Module):
                 self._built = True
             self._forward_state = True
 
-        W_dropcon = self.dropout(self.W)
+        W_dropcon = self.dropout(self.weights)
         outputs = self.matmul(inputs, W_dropcon)
         if self.b_init:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.biases)
         if self.act:
             outputs = self.act(outputs)
 

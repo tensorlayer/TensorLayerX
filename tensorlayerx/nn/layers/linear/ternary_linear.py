@@ -84,11 +84,11 @@ class TernaryLinear(Module):
 
         n_in = inputs_shape[-1]
 
-        self.W = self._get_weights(var_name="weights", shape=(n_in, self.out_features), init=self.W_init)
-        self.b = None
+        self.weights = self._get_weights(var_name="weights", shape=(n_in, self.out_features), init=self.W_init)
+        self.biases = None
         if self.b_init is not None:
-            self.b = self._get_weights(var_name="biases", shape=(self.out_features), init=self.b_init)
-        self.ternary_dense = tlx.ops.TernaryDense(self.W, self.b)
+            self.biases = self._get_weights(var_name="biases", shape=(self.out_features), init=self.b_init)
+        self.ternary_dense = tlx.ops.TernaryDense(self.weights, self.biases)
 
     def forward(self, inputs):
         if self._forward_state == False:

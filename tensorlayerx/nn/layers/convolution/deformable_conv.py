@@ -146,10 +146,10 @@ class DeformableConv2d(Module):
 
         self.filter_shape = (1, 1, self.kernel_n, self.in_channels, self.out_channels)
 
-        self.W = self._get_weights("W_deformableconv2d", shape=self.filter_shape, init=self.W_init)
+        self.W_deformableconv2d = self._get_weights("W_deformableconv2d", shape=self.filter_shape, init=self.W_init)
 
         if self.b_init:
-            self.b = self._get_weights("b_deformableconv2d", shape=(self.out_channels, ), init=self.b_init)
+            self.b_deformableconv2d = self._get_weights("b_deformableconv2d", shape=(self.out_channels, ), init=self.b_init)
 
         self.conv3d = tlx.ops.Conv3D(strides=[1, 1, 1, 1, 1], padding='VALID')
         self.bias_add = tlx.ops.BiasAdd()
@@ -166,12 +166,12 @@ class DeformableConv2d(Module):
         grid_offset = self.grid_offset
 
         input_deform = self._tf_batch_map_offsets(inputs, offset, grid_offset)
-        outputs = self.conv3d(input=input_deform, filters=self.W)
+        outputs = self.conv3d(input=input_deform, filters=self.W_deformableconv2d)
         outputs = tlx.ops.reshape(
             tensor=outputs, shape=[outputs.get_shape()[0], self.input_h, self.input_w, self.out_channels]
         )
         if self.b_init:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.b_deformableconv2d)
         if self.act:
             outputs = self.act(outputs)
         return outputs

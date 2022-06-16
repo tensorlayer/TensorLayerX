@@ -159,7 +159,7 @@ class QuanConv2dWithBN(Module):
             raise Exception("data_format should be either channels_last or channels_first")
 
         self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.out_channels)
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         para_bn_shape = (self.out_channels, )
         if self.gamma_init:
@@ -184,7 +184,7 @@ class QuanConv2dWithBN(Module):
         )
 
         self.quan_conv_bn = tlx.ops.QuanConvBn(
-            weights=self.W, scale_para=self.scale_para, offset_para=self.offset_para, moving_mean=self.moving_mean,
+            weights=self.filters, scale_para=self.scale_para, offset_para=self.offset_para, moving_mean=self.moving_mean,
             moving_variance=self.moving_variance, strides=self._strides, padding=self.padding,
             data_format=self.data_format, dilations=self._dilation_rate, bitW=self.bitW, bitA=self.bitA,
             decay=self.decay, epsilon=self.epsilon, is_train=self.is_train

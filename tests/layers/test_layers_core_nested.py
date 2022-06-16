@@ -55,7 +55,7 @@ class Layer_nested(CustomTestCase):
         cls.assertEqual(len(model_dynamic.all_weights), 3)
         cls.assertEqual(len(model_dynamic.trainable_weights), 3)
 
-        model_dynamic.layer.input_layer.b.assign_add(tlx.ones((20, )))
+        model_dynamic.layer.input_layer.biases.assign_add(tlx.ones((20, )))
         cls.assertEqual(np.sum(model_dynamic.all_weights[-1].numpy() - tlx.ones(20, ).numpy()), 0)
 
 

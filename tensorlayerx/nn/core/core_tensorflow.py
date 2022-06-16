@@ -102,6 +102,9 @@ class Module(object):
         # Layer training state
         self.is_train = True
 
+        # weights check state
+        self._check = False
+
     def extend_repr(self):
         """
         Sets the extended representation of the Module.
@@ -160,10 +163,22 @@ class Module(object):
             object.__setattr__(self, name, value)
 
     def __call__(self, inputs, *args, **kwargs):
+        if self._check == False:
+            self.train_weights_check()
+            self._check = True
 
         output = self.forward(inputs, *args, **kwargs)
-
         return output
+
+    def train_weights_check(self):
+        _param_name = []
+        for w in self.trainable_weights:
+            if w.name not in _param_name:
+                _param_name.append(w.name)
+            else:
+                raise Exception("parameter name [{}] have be been used. "
+                "In training, the name of layer can't be same."
+                "Please check the layers name".format(w.name))
 
     def forward(self, *inputs, **kwargs):
         raise Exception("The forward method must be implemented by inherited class")

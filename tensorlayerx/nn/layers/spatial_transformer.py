@@ -253,9 +253,9 @@ class SpatialTransformer2dAffine(Module):
             # shape = [inputs_shape[1], 6]
             self.in_channels = inputs_shape[0][-1]  # zsdonghao
             shape = [self.in_channels, 6]
-        self.W = self._get_weights("weights", shape=tuple(shape), init=tlx.nn.initializers.Zeros())
+        self.weights = self._get_weights("weights", shape=tuple(shape), init=tlx.nn.initializers.Zeros())
         identity = np.reshape(np.array([[1, 0, 0], [0, 1, 0]], dtype=np.float32), newshape=(6, ))
-        self.b = self._get_weights("biases", shape=(6, ), init=tlx.nn.initializers.Constant(identity))
+        self.biases = self._get_weights("biases", shape=(6, ), init=tlx.nn.initializers.Constant(identity))
 
     def forward(self, inputs):
         """
@@ -267,7 +267,7 @@ class SpatialTransformer2dAffine(Module):
                     n_channels is identical to that of U.
         """
         theta_input, U = inputs
-        theta = tlx.tanh(tlx.matmul(theta_input, self.W) + self.b)
+        theta = tlx.tanh(tlx.matmul(theta_input, self.weights) + self.biases)
         outputs = transformer(U, theta, out_size=self.out_size)
         # automatically set batch_size and channels
         # e.g. [?, 40, 40, ?] --> [64, 40, 40, 1] or [64, 20, 20, 4]

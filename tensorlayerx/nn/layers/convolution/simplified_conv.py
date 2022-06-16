@@ -120,11 +120,11 @@ class Conv1d(Module):
         self.filter_shape = (self.kernel_size, self.in_channels, self.out_channels )
 
         # TODO : check
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels , ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_channels , ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -144,9 +144,9 @@ class Conv1d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.conv1d(inputs, self.W)
+        outputs = self.conv1d(inputs, self.filters)
         if self.b_init_flag:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.biases)
         if self.act_init_flag:
             outputs = self.act(outputs)
 
@@ -266,11 +266,11 @@ class Conv2d(Module):
 
         #TODO channels first filter shape [out_channel, in_channel, filter_h, filter_w]
         self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.out_channels)
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels , ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_channels , ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -290,9 +290,9 @@ class Conv2d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.conv2d(inputs, self.W)
+        outputs = self.conv2d(inputs, self.filters)
         if self.b_init_flag:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.biases)
         if self.act_init_flag:
             outputs = self.act(outputs)
 
@@ -413,11 +413,11 @@ class Conv3d(Module):
             self.kernel_size[0], self.kernel_size[1], self.kernel_size[2], self.in_channels, self.out_channels
         )
 
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels , ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_channels , ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -437,9 +437,9 @@ class Conv3d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.conv3d(inputs, self.W)
+        outputs = self.conv3d(inputs, self.filters)
         if self.b_init_flag:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.biases)
         if self.act_init_flag:
             outputs = self.act(outputs)
 
@@ -554,11 +554,11 @@ class ConvTranspose1d(Module):
         self.filter_shape = (self.kernel_size, self.out_channels, self.in_channels)
 
         # TODO : check
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -583,9 +583,9 @@ class ConvTranspose1d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.conv1d_transpose(inputs, self.W)
+        outputs = self.conv1d_transpose(inputs, self.filters)
         if self.b_init_flag:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.biases)
         if self.act_init_flag:
             outputs = self.act(outputs)
 
@@ -700,11 +700,11 @@ class ConvTranspose2d(Module):
 
         #TODO channels first filter shape [out_channel, in_channel, filter_h, filter_w]
         self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.out_channels, self.in_channels)
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)#, transposed=True)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)#, transposed=True)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -724,9 +724,9 @@ class ConvTranspose2d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.conv2d_transpose(inputs, self.W)
+        outputs = self.conv2d_transpose(inputs, self.filters)
         if self.b_init_flag:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.biases)
         if self.act_init_flag:
             outputs = self.act(outputs)
 
@@ -843,11 +843,11 @@ class ConvTranspose3d(Module):
             self.kernel_size[0], self.kernel_size[1], self.kernel_size[2], self.out_channels, self.in_channels
         )
 
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)#, transposed=True)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)#, transposed=True)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -868,9 +868,9 @@ class ConvTranspose3d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.conv3d_transpose(inputs, self.W)
+        outputs = self.conv3d_transpose(inputs, self.filters)
         if self.b_init_flag:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.biases)
         if self.act_init_flag:
             outputs = self.act(outputs)
 

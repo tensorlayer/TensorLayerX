@@ -137,15 +137,15 @@ class DepthwiseConv2d(Module):
             self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, 1)
 
         if BACKEND in ['tensorflow', 'mindspore']:
-            self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init, transposed=True)
-            self.point_W = None
+            self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init, transposed=True)
+            self.point_filter = None
         # TODO The number of parameters on multiple backends is not equal.
         # TODO It might be better to use deepwise convolution and pointwise convolution for other backends as well.
         if BACKEND in ['paddle', 'torch']:
             self.filter_depthwise = (self.in_channels, 1, self.kernel_size[0], self.kernel_size[1])
             self.filter_pointwise = (self.in_channels * self.depth_multiplier, self.in_channels, 1, 1)
-            self.W = self._get_weights("filters", shape=self.filter_depthwise, init=self.W_init, order=True)
-            self.point_W = self._get_weights("point_filter", shape=self.filter_pointwise, init=self.W_init, order=True)
+            self.filters = self._get_weights("filters", shape=self.filter_depthwise, init=self.W_init, order=True)
+            self.point_filter = self._get_weights("point_filter", shape=self.filter_pointwise, init=self.W_init, order=True)
 
         self.depthwise_conv2d = tlx.ops.DepthwiseConv2d(
             strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation,
@@ -169,7 +169,7 @@ class DepthwiseConv2d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.depthwise_conv2d(input=inputs, filter=self.W, point_filter=self.point_W)
+        outputs = self.depthwise_conv2d(input=inputs, filter=self.filters, point_filter=self.point_filter)
         if self.b_init_flag:
             outputs = self.bias_add(outputs, self.b)
         if self.act_init_flag:

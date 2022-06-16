@@ -88,11 +88,11 @@ class Linear(Module):
             self.in_features = inputs_shape[-1]
             shape = [self.in_features, self.out_features]
 
-        self.W = self._get_weights("weights", shape=tuple(shape), init=self.W_init)
+        self.weights = self._get_weights("weights", shape=tuple(shape), init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_features, ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_features, ), init=self.b_init)
             self.b_init_flag = True
             self.bias_add = tlx.ops.BiasAdd(data_format='NWC')
 
@@ -109,9 +109,9 @@ class Linear(Module):
                 self._built = True
             self._forward_state = True
 
-        z = self.matmul(inputs, self.W)
+        z = self.matmul(inputs, self.weights)
         if self.b_init_flag:
-            z = self.bias_add(z, self.b)
+            z = self.bias_add(z, self.biases)
         if self.act_init_flag:
             z = self.act(z)
 

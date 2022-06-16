@@ -73,7 +73,7 @@ class PRelu(Module):
             elif dim < 3:
                 w_shape = (self.num_parameters, )
 
-        self.alpha_var = self._get_weights("alpha", shape=w_shape, init=tlx.initializers.constant(value=self.init))
+        self.alpha = self._get_weights("alpha", shape=w_shape, init=tlx.initializers.constant(value=self.init))
         self.prelu = tlx.ops.PReLU(data_format = self.data_format)
 
     def forward(self, inputs):
@@ -83,7 +83,7 @@ class PRelu(Module):
                 self._built = True
             self._forward_state = True
 
-        output = self.prelu(inputs, self.alpha_var)
+        output = self.prelu(inputs, self.alpha)
 
         if not self._nodes_fixed and self._build_graph:
             self._add_node(inputs, output)
@@ -186,7 +186,7 @@ class PRelu6(Module):
                 w_shape = (1, self.in_channels, 1, 1, 1)
             else:
                 raise Exception("Dim should be equal to 1, 2 or 3")
-        self.alpha_var = self._get_weights("alpha", shape=w_shape, init=self.a_init)
+        self.alpha = self._get_weights("alpha", shape=w_shape, init=self.a_init)
         self.sigmoid = tlx.ops.Sigmoid()
         self.relu = tlx.ops.ReLU()
 
@@ -197,7 +197,7 @@ class PRelu6(Module):
                 self._built = True
             self._forward_state = True
 
-        alpha_var_constrained = self.sigmoid(self.alpha_var)
+        alpha_var_constrained = self.sigmoid(self.alpha)
         pos = self.relu(inputs)
         pos_6 = -self.relu(inputs - 6)
         neg = -alpha_var_constrained * self.relu(-inputs)

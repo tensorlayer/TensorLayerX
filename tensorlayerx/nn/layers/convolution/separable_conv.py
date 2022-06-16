@@ -118,10 +118,10 @@ class SeparableConv1d(Module):
 
         self.pointwise_filter_shape = (1, self.depth_multiplier * self.in_channels, self.out_channels)
 
-        self.depthwise_W = self._get_weights(
+        self.depthwise_filters = self._get_weights(
             'depthwise_filters', shape=self.depthwise_filter_shape, init=self.depthwise_init
         )
-        self.pointwise_W = self._get_weights(
+        self.pointwise_filters = self._get_weights(
             'pointwise_filters', shape=self.pointwise_filter_shape, init=self.pointwise_init
         )
 
@@ -149,7 +149,7 @@ class SeparableConv1d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.separable_conv1d(inputs, self.depthwise_W, self.pointwise_W)
+        outputs = self.separable_conv1d(inputs, self.depthwise_filters, self.pointwise_filters)
         if self.b_init_flag:
             outputs = self.bias_add(outputs, self.b)
         if self.act_init_flag:
@@ -278,11 +278,11 @@ class SeparableConv2d(Module):
             )
             self.pointwise_filter_shape = (1, 1, self.depth_multiplier * self.in_channels, self.out_channels)
 
-        self.depthwise_W = self._get_weights(
+        self.depthwise_filters = self._get_weights(
             'depthwise_filters', shape=self.depthwise_filter_shape, init=self.depthwise_init
         )
 
-        self.pointwise_W = self._get_weights(
+        self.pointwise_filters = self._get_weights(
             'pointwise_filters', shape=self.pointwise_filter_shape, init=self.pointwise_init
         )
 
@@ -309,7 +309,7 @@ class SeparableConv2d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.separable_conv2d(inputs, self.depthwise_W, self.pointwise_W)
+        outputs = self.separable_conv2d(inputs, self.depthwise_filters, self.pointwise_filters)
         if self.b_init_flag:
             outputs = self.bias_add(outputs, self.b)
         if self.act_init_flag:

@@ -143,11 +143,11 @@ class GroupConv2d(Module):
             self.kernel_size[0], self.kernel_size[1], int(self.in_channels / self.n_group), self.out_channels
         )
 
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -167,9 +167,9 @@ class GroupConv2d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.group_conv2d(inputs, self.W)
+        outputs = self.group_conv2d(inputs, self.filters)
         if self.b_init_flag:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.biases)
         if self.act_init_flag:
             outputs = self.act(outputs)
 

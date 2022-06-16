@@ -90,13 +90,14 @@ class BinaryLinear(Module):
             raise Exception("TODO. The current version use tf.matmul for inferencing.")
 
         n_in = inputs_shape[-1]
-        self.W = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
-        self.b = None
+        self.weights = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
+
+        self.biases = None
         if self.b_init is not None:
-            self.b = self._get_weights("biases", shape=(self.out_features), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_features), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd()
 
-        self.binary_dense = tlx.ops.BinaryDense(self.W, self.b)
+        self.binary_dense = tlx.ops.BinaryDense(self.weights, self.biases)
 
     def forward(self, inputs):
         if self._forward_state == False:

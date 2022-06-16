@@ -40,6 +40,37 @@ def padding_format(padding):
         raise Exception("Unsupported padding: " + str(padding))
     return padding
 
+def channel_format(data_format, dim='2d'):
+    if dim == '1d':
+        if data_format in ["channels_last", "NWC", 'NLC']:
+            data_format = "NWC"
+        elif data_format in ["channels_first", "NCW", 'NCL']:
+            data_format = "NCW"
+        elif data_format == None:
+            data_format = None
+        else:
+            raise Exception("Unsupported data format: " + str(data_format))
+    elif dim == '2d':
+        if data_format in ["channels_last", "NHWC"]:
+            data_format = "NHWC"
+        elif data_format in ["channels_first", "NCHW"]:
+            data_format = "NCHW"
+        elif data_format == None:
+            data_format = None
+        else:
+            raise Exception("Unsupported data format: " + str(data_format))
+    elif dim == '3d':
+        if data_format in ['channels_last', 'NDHWC']:
+            data_format = 'NDHWC'
+        elif data_format in ['channels_first', 'NCDHW']:
+            data_format = 'NCDHW'
+        elif data_format == None:
+            data_format = None
+        else:
+            raise Exception("Unsupported data format: " + str(data_format))
+    else:
+        raise Exception("dim must be '1d', '2d', '3d'.")
+    return data_format
 
 def preprocess_padding(padding, dim='2d', data_format='NHWC'):
     # When explicit padding is used and data_format is "NHWC",
@@ -88,8 +119,6 @@ def check_padding(padding, dim='2d'):
         raise RuntimeError("expected padding to be a single integer value or a list of 3 values to match the convolution dimensions.")
 
 
-
-
 def preprocess_1d_format(data_format, padding):
     """
     Checks that the 1-D dataformat format correspond format.
@@ -105,14 +134,7 @@ def preprocess_1d_format(data_format, padding):
     -------
         str "NWC" or "NCW" and "SAME" or "VALID"
     """
-    if data_format in ["channels_last", "NWC", 'NLC']:
-        data_format = "NWC"
-    elif data_format in ["channels_first", "NCW", 'NCL']:
-        data_format = "NCW"
-    elif data_format == None:
-        data_format = None
-    else:
-        raise Exception("Unsupported data format: " + str(data_format))
+    data_format = channel_format(data_format, dim='1d')
     padding = padding_format(padding)
     return data_format, padding
 
@@ -133,14 +155,7 @@ def preprocess_2d_format(data_format, padding):
         str "NHWC" or "NCHW" and "SAME" or "VALID"
     """
 
-    if data_format in ["channels_last", "NHWC"]:
-        data_format = "NHWC"
-    elif data_format in ["channels_first", "NCHW"]:
-        data_format = "NCHW"
-    elif data_format == None:
-        data_format = None
-    else:
-        raise Exception("Unsupported data format: " + str(data_format))
+    data_format = channel_format(data_format, dim='2d')
     padding = padding_format(padding)
     return data_format, padding
 
@@ -161,14 +176,7 @@ def preprocess_3d_format(data_format, padding):
         str "NDHWC" or "NCDHW" and "SAME" or "VALID"
     """
 
-    if data_format in ['channels_last', 'NDHWC']:
-        data_format = 'NDHWC'
-    elif data_format in ['channels_first', 'NCDHW']:
-        data_format = 'NCDHW'
-    elif data_format == None:
-        data_format = None
-    else:
-        raise Exception("Unsupported data format: " + str(data_format))
+    data_format = channel_format(data_format, dim='3d')
     padding = padding_format(padding)
     return data_format, padding
 
@@ -868,10 +876,11 @@ class AvgPool(object):
             self.padding = "VALID"
 
     def __call__(self, inputs):
+        data_format = channel_format(self.data_format, str(len(inputs.shape) - 2) + 'd')
         if self.padding_value is not None:
             inputs = tf.pad(inputs, self.padding_value)
         outputs = tf.nn.avg_pool(
-            input=inputs, ksize=self.ksize, strides=self.strides, padding=self.padding, data_format=self.data_format
+            input=inputs, ksize=self.ksize, strides=self.strides, padding=self.padding, data_format=data_format
         )
         return outputs
 

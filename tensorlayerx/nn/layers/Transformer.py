@@ -103,16 +103,16 @@ class MultiheadAttention(Module):
     def build(self, inputs_shape):
         bias_init = tlx.nn.initializers.zeros()
         weight_init = tlx.nn.initializers.XavierNormal()
-        self.q_proj_weight = self._get_weights(
+        self.q_weight = self._get_weights(
             'q_weight', shape=(self.embed_dim, self.embed_dim), init=weight_init, order=True
         )
-        self.k_proj_weight = self._get_weights(
+        self.k_weight = self._get_weights(
             'k_weight', shape=(self.embed_dim, self.kdim), init=weight_init, order=True
         )
-        self.v_proj_weight = self._get_weights(
+        self.v_weight = self._get_weights(
             'v_weight', shape=(self.embed_dim, self.vdim), init=weight_init, order=True
         )
-        self.out_proj_weight = self._get_weights(
+        self.out_weight = self._get_weights(
             'out_weight', shape=(self.embed_dim, self.embed_dim), init=weight_init, order=True
         )
         self.q_bias = None
@@ -127,8 +127,8 @@ class MultiheadAttention(Module):
 
         self.multiheadattention = tlx.ops.multiheadattention(
             embed_dim=self.embed_dim, num_heads=self.num_heads, dropout=self.dropout, batch_first=self.batch_first,
-            need_weights=self.need_weights, q_weight=self.q_proj_weight, k_weight=self.k_proj_weight,
-            v_weight=self.v_proj_weight, out_weight=self.out_proj_weight, q_bias=self.q_bias, k_bias=self.k_bias,
+            need_weights=self.need_weights, q_weight=self.q_weight, k_weight=self.k_weight,
+            v_weight=self.v_weight, out_weight=self.out_weight, q_bias=self.q_bias, k_bias=self.k_bias,
             v_bias=self.v_bias, out_bias=self.out_bias, train=self.is_train
         )
 
