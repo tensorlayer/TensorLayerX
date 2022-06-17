@@ -4,7 +4,7 @@
 import numpy as np
 import tensorlayerx as tlx
 from tensorlayerx import logging
-from tensorlayerx.nn.core import Module
+from tensorlayerx.nn.core import Module, ParameterTuple
 
 __all__ = [
     'RNN',
@@ -488,7 +488,10 @@ class RNNBase(Module):
                             var_name='bias_hh_l{}{}'.format(layer, suffix), shape=(gate_size, ), init=_init
                         )
                     )
-
+        # self.weight_ih = ParameterTuple(self.w_ih)
+        # self.weight_hh = ParameterTuple(self.w_hh)
+        # self.bias_ih = ParameterTuple(self.b_ih)
+        # self.bias_hh = ParameterTuple(self.b_hh)
         self.rnn = tlx.ops.rnnbase(
             mode=self.mode, input_size=self.input_size, hidden_size=self.hidden_size, num_layers=self.num_layers,
             bias=self.bias, batch_first=self.batch_first, dropout=self.dropout, bidirectional=self.bidirectional,

@@ -14,13 +14,12 @@ from paddle.fluid.dygraph.base import program_desc_tracing_guard, param_guard
 from paddle.fluid.dygraph import parallel_helper
 import paddle as pd
 from collections import OrderedDict, abc as container_abcs
-import tensorlayerx as tlx
-from queue import Queue
+from paddle.nn import ParameterList as ParameterTuple
 
 _global_layer_name_dict = {}
 _global_layer_node = []
-
-__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict']
+# TODO Need to implement ParameterTuple
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict', 'ParameterTuple']
 
 
 class Module(Layer):
@@ -743,7 +742,6 @@ class ParameterDict(Module):
 
     def __call__(self, input):
         raise RuntimeError('ParameterDict should not be called.')
-
 
 def _valid_index(layer_num, index):
     if not isinstance(index, int):

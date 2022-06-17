@@ -10,7 +10,7 @@ import tensorlayerx as tlx
 import tensorflow as tf
 from tensorlayerx.nn.layers.utils import (get_variable_with_initializer, random_normal)
 
-__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict']
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict', 'ParameterTuple']
 
 _global_layer_name_dict = {}
 _global_layer_node = []
@@ -55,6 +55,7 @@ class Module(object):
     def __init__(self, name=None, act=None, *args, **kwargs):
         self._params = OrderedDict()
         self._layers = OrderedDict()
+        self._params_tuple = OrderedDict()
         self._params_status = OrderedDict()
         self._parameter_layout_dict = {}
         self._create_time = int(time.time() * 1e9)
@@ -144,6 +145,9 @@ class Module(object):
             if layers and name in layers:
                 raise TypeError("Expected type is Module, but got Parameter.")
             self.insert_param_to_layer(name, value)
+
+        elif isinstance(value, ParameterTuple):
+            self.set_attr_for_parameter_tuple(name, value)
 
         elif isinstance(value, Module):
             if layers is None:
@@ -293,6 +297,27 @@ class Module(object):
             shape_mem = tlx.get_tensor_shape(tensors)
         return shape_mem
 
+    def set_attr_for_parameter_tuple(self, name, value):
+        """Set attr for parameter in ParameterTuple."""
+        params = self.__dict__.get('_params')
+        params_tuple = self.__dict__.get('_params_tuple')
+        if params is None:
+            raise AttributeError("For 'Module', can not assign params before Module.__init__() is called.")
+        exist_names = set("")
+
+        for item in value:
+            self.insert_param_to_layer(item.name, item, check_name=False)
+            if item.name in exist_names:
+                raise ValueError("The value {} , its name '{}' already exists.".
+                                 format(value, item.name))
+            exist_names.add(item.name)
+
+        if name in self.__dict__:
+            del self.__dict__[name]
+        if name in params:
+            del params[name]
+        params_tuple[name] = value
+
     def insert_param_to_layer(self, param_name, param, check_name=True):
         """
         Adds a parameter to the current layer.
@@ -344,6 +369,11 @@ class Module(object):
             params_status = self.__dict__['_params_status']
             if name in params_status:
                 return params_status[name]
+        if '_params_tuple' in self.__dict__:
+            params_tuple = self.__dict__['_params_tuple']
+            if name in params_tuple:
+                para_list = params_tuple[name]
+                return para_list
         raise AttributeError("'{}' object has no attribute '{}'.".format(type(self).__name__, name))
 
     def __delattr__(self, name):
@@ -1257,6 +1287,33 @@ class ParameterDict(Module):
     def __call__(self, input):
         raise RuntimeError('ParameterDict should not be called.')
 
+
+class ParameterTuple(tuple):
+    """
+    ParameterTuple for storing tuple of parameters.
+    """
+    def __new__(cls, iterable):
+        data = tuple(iterable)
+        ids = set()
+        orders = {}
+        for x in data:
+            if not isinstance(x, tf.Variable):
+                raise TypeError(f"ParameterTuple input should be `Parameter` collection."
+                                f"But got a {type(iterable)}, {iterable}")
+            if id(x) not in ids:
+                ids.add(id(x))
+                if x.name not in orders.keys():
+                    orders[x.name] = [0, x]
+                else:
+                    if isinstance(orders[x.name], list):
+                        name = x.name
+                        orders[name][1].name = name + "_" + str(0)
+                        x.name = x.name + "_" + str(1)
+                        orders[name] = 1
+                    else:
+                        orders[x.name] += 1
+                        x.name = x.name + "_" + str(orders[x.name])
+        return tuple.__new__(ParameterTuple, tuple(data))
 
 def _valid_index(layer_num, index):
     if not isinstance(index, int):

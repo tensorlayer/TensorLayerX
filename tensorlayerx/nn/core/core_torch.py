@@ -12,11 +12,12 @@ from itertools import islice
 from collections import OrderedDict, abc as container_abcs
 import warnings
 import tensorlayerx as tlx
+from torch.nn import ParameterList as ParameterTuple
 
 _global_layer_name_dict = {}
 _global_layer_node = []
 
-__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict']
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict', 'ParameterTuple']
 
 
 class Module(T_Module):
@@ -122,21 +123,21 @@ class Module(T_Module):
 
         result = self._call_impl(*input, **kwargs)
         return result
-
-    __call__: Callable[..., Any] = _call_impl_tlx
-
-    def _named_members(self, get_members_fn, prefix='', recurse=True):
-        r"""Helper method for yielding various names + members of modules."""
-        memo = set()
-        modules = self.named_modules(prefix=prefix) if recurse else [(prefix, self)]
-        for module_prefix, module in modules:
-            members = get_members_fn(module)
-            for k, v in members:
-                if v is None or v in memo:
-                    continue
-                memo.add(v)
-                name = module.name + '/' + k
-                yield name, v
+    # # TODO RNN enabled after repair
+    # __call__: Callable[..., Any] = _call_impl_tlx
+    #
+    # def _named_members(self, get_members_fn, prefix='', recurse=True):
+    #     r"""Helper method for yielding various names + members of modules."""
+    #     memo = set()
+    #     modules = self.named_modules(prefix=prefix) if recurse else [(prefix, self)]
+    #     for module_prefix, module in modules:
+    #         members = get_members_fn(module)
+    #         for k, v in members:
+    #             if v is None or v in memo:
+    #                 continue
+    #             memo.add(v)
+    #             name = module.name + '/' + k
+    #             yield name, v
 
     @property
     def all_weights(self):
