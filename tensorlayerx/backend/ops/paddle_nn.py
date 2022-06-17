@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import paddle as pd
+import paddle.nn
 from paddle import framework
 import paddle.nn.functional as F
 import numpy as np
@@ -13,7 +14,7 @@ from paddle.fluid.dygraph import Layer, LayerList
 from paddle.nn.layer.rnn import RNNCellBase
 import warnings
 import math
-
+from paddle import _C_ops
 
 def padding_format(padding):
     """
@@ -1503,7 +1504,6 @@ def concat_states(states, bidirectional=False, state_components=1):
             componnets.append(states[i::state_components])
         return tuple([pd.stack(item) for item in componnets])
 
-
 class rnnbase(LayerList):
 
     def __init__(
@@ -1539,7 +1539,6 @@ class rnnbase(LayerList):
         self.bias = bias
         RNN = pd.nn.RNN
         BiRNN = pd.nn.BiRNN
-
         kwargs = {"weight_ih_attr": None, "weight_hh_attr": None, "bias_ih_attr": self.bias, "bias_hh_attr": self.bias}
         act = None
         rnn_cls = None
@@ -1618,16 +1617,11 @@ class rnnbase(LayerList):
 
     def flatten_parameters(self):
         if self.could_use_cudnn:
-            params = self.parameters(include_sublayers=False)
-            shape = [np.prod(param.shape) for param in params]
-            self._all_weights = [None] * len(params)
-            for i, param in enumerate(params):
-                offset = 0 if i % 4 < 2 else (2 * self.num_layers * self.bidirect)
-                layer_idx = i // 4
-                self._all_weights[offset + layer_idx * 2 + i % 2] = param
+            self._all_weights = self.parameters(include_sublayers=False)
+            shape = [np.prod(param.shape) for param in self._all_weights]
             self._flat_weight = [
                 self.create_parameter(
-                    shape=[np.sum(shape)], dtype=params[0].dtype, default_initializer=I.Constant(0.0)
+                    shape=[np.sum(shape)], dtype=self._all_weights[0].dtype, default_initializer=I.Constant(0.0)
                 )
             ]
             self._dropout_state = self.create_variable(dtype=fluid.core.VarDesc.VarType.UINT8)
@@ -1640,42 +1634,20 @@ class rnnbase(LayerList):
                         }, attrs={
                             "copy_data": True,
                             "use_align": False,
-                            "dtype": params[0].dtype
+                            "dtype": self._all_weights[0].dtype
                         }
                     )
 
     def _cudnn_impl(self, inputs, initial_states, sequence_length):
         if not self.time_major:
             inputs = pd.tensor.transpose(inputs, [1, 0, 2])
-        out = self._helper.create_variable_for_type_inference(inputs.dtype)
-        state = [self._helper.create_variable_for_type_inference(inputs.dtype) for i in range(self.state_components)]
-        reserve = self._helper.create_variable_for_type_inference(
-            dtype=fluid.core.VarDesc.VarType.UINT8, stop_gradient=True
-        )
-
-        inputs = {
-            'Input': inputs,
-            'WeightList': self._all_weights,
-            'PreState': initial_states,
-            'SequenceLength': sequence_length
-        }
-        attrs = {
-            'dropout_prob': self.dropout,
-            'is_bidirec': self.bidirect == 2,
-            'input_size': self.input_size,
-            'hidden_size': self.hidden_size,
-            'num_layers': self.num_layers,
-            'mode': self.mode,
-            'is_test': not self.training
-        }
-
-        outputs = {
-            'Out': out,
-            'State': state,
-            'Reserve': reserve,
-            'DropoutState': self._dropout_state,
-        }
-        self._helper.append_op(type="rnn", inputs=inputs, outputs=outputs, attrs=attrs)
+        _, _, out, state = _C_ops.rnn(
+            inputs, initial_states, self._all_weights, sequence_length,
+            self._dropout_state, self.state_components, 'dropout_prob',
+            self.dropout, 'is_bidirec', self.bidirect == 2,
+            'input_size', self.input_size, 'hidden_size', self.hidden_size,
+            'num_layers', self.num_layers, 'mode', self.mode, 'is_test',
+            not self.training)
         out = pd.tensor.transpose(out, [1, 0, 2]) if not self.time_major else out
         return out, tuple(state) if len(state) > 1 else state[0]
 

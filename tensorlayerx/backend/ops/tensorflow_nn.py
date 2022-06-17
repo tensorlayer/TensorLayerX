@@ -2183,7 +2183,6 @@ class rnnbase(object):
         self.w_hh = w_hh
         self.b_ih = b_ih
         self.b_hh = b_hh
-
         self.act_fn = None
         if mode == 'LSTM':
             # gate_size = 4 * hidden_size

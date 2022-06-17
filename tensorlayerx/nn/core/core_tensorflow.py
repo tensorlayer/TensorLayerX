@@ -146,9 +146,6 @@ class Module(object):
                 raise TypeError("Expected type is Module, but got Parameter.")
             self.insert_param_to_layer(name, value)
 
-        elif isinstance(value, ParameterTuple):
-            self.set_attr_for_parameter_tuple(name, value)
-
         elif isinstance(value, Module):
             if layers is None:
                 raise AttributeError("Can not assign layers before Module.__init__() call.")
@@ -296,27 +293,6 @@ class Module(object):
         else:
             shape_mem = tlx.get_tensor_shape(tensors)
         return shape_mem
-
-    def set_attr_for_parameter_tuple(self, name, value):
-        """Set attr for parameter in ParameterTuple."""
-        params = self.__dict__.get('_params')
-        params_tuple = self.__dict__.get('_params_tuple')
-        if params is None:
-            raise AttributeError("For 'Module', can not assign params before Module.__init__() is called.")
-        exist_names = set("")
-
-        for item in value:
-            self.insert_param_to_layer(item.name, item, check_name=False)
-            if item.name in exist_names:
-                raise ValueError("The value {} , its name '{}' already exists.".
-                                 format(value, item.name))
-            exist_names.add(item.name)
-
-        if name in self.__dict__:
-            del self.__dict__[name]
-        if name in params:
-            del params[name]
-        params_tuple[name] = value
 
     def insert_param_to_layer(self, param_name, param, check_name=True):
         """

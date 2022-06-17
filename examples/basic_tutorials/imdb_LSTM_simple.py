@@ -4,9 +4,9 @@
 # The same set of code can switch the backend with one line
 import os
 # os.environ['TL_BACKEND'] = 'tensorflow'
-# os.environ['TL_BACKEND'] = 'mindspore'
+os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
-os.environ['TL_BACKEND'] = 'torch'
+# os.environ['TL_BACKEND'] = 'torch'
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Linear, LSTM, Embedding
@@ -42,7 +42,7 @@ class ImdbNet(Module):
     def __init__(self):
         super(ImdbNet, self).__init__()
         self.embedding = Embedding(num_embeddings=vocab_size, embedding_dim=64)
-        self.lstm = LSTM(input_size=64, hidden_size=64, num_layers=2)
+        self.lstm = LSTM(input_size=64, hidden_size=64)
         self.linear1 = Linear(in_features=64, out_features=64, act=tlx.nn.ReLU)
         self.linear2 = Linear(in_features=64, out_features=2)
 
