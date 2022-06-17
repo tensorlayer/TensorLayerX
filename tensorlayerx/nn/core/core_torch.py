@@ -12,12 +12,11 @@ from itertools import islice
 from collections import OrderedDict, abc as container_abcs
 import warnings
 import tensorlayerx as tlx
-from torch.nn import ParameterList as ParameterTuple
 
 _global_layer_name_dict = {}
 _global_layer_node = []
 
-__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict', 'ParameterTuple']
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict']
 
 
 class Module(T_Module):

@@ -14,12 +14,11 @@ from paddle.fluid.dygraph.base import program_desc_tracing_guard, param_guard
 from paddle.fluid.dygraph import parallel_helper
 import paddle as pd
 from collections import OrderedDict, abc as container_abcs
-from paddle.nn import ParameterList as ParameterTuple
 
 _global_layer_name_dict = {}
 _global_layer_node = []
-# TODO Need to implement ParameterTuple
-__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict', 'ParameterTuple']
+
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict']
 
 
 class Module(Layer):

@@ -12,9 +12,9 @@ from mindspore import context
 import numpy
 from mindspore.common.api import _pynative_executor
 from collections import OrderedDict, abc as container_abcs
-from mindspore.nn.cell import ParameterTuple
 
-__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict', 'ParameterTuple']
+
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict']
 
 _global_layer_name_dict = {}
 _global_layer_node = []

@@ -10,7 +10,7 @@ import tensorlayerx as tlx
 import tensorflow as tf
 from tensorlayerx.nn.layers.utils import (get_variable_with_initializer, random_normal)
 
-__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict', 'ParameterTuple']
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict']
 
 _global_layer_name_dict = {}
 _global_layer_node = []
@@ -1286,34 +1286,6 @@ class ParameterDict(Module):
 
     def __call__(self, input):
         raise RuntimeError('ParameterDict should not be called.')
-
-
-class ParameterTuple(tuple):
-    """
-    ParameterTuple for storing tuple of parameters.
-    """
-    def __new__(cls, iterable):
-        data = tuple(iterable)
-        ids = set()
-        orders = {}
-        for x in data:
-            if not isinstance(x, tf.Variable):
-                raise TypeError(f"ParameterTuple input should be `Parameter` collection."
-                                f"But got a {type(iterable)}, {iterable}")
-            if id(x) not in ids:
-                ids.add(id(x))
-                if x.name not in orders.keys():
-                    orders[x.name] = [0, x]
-                else:
-                    if isinstance(orders[x.name], list):
-                        name = x.name
-                        orders[name][1].name = name + "_" + str(0)
-                        x.name = x.name + "_" + str(1)
-                        orders[name] = 1
-                    else:
-                        orders[x.name] += 1
-                        x.name = x.name + "_" + str(orders[x.name])
-        return tuple.__new__(ParameterTuple, tuple(data))
 
 def _valid_index(layer_num, index):
     if not isinstance(index, int):
