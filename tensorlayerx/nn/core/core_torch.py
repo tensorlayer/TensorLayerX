@@ -122,21 +122,22 @@ class Module(T_Module):
 
         result = self._call_impl(*input, **kwargs)
         return result
-    # # TODO RNN enabled after repair
-    # __call__: Callable[..., Any] = _call_impl_tlx
-    #
-    # def _named_members(self, get_members_fn, prefix='', recurse=True):
-    #     r"""Helper method for yielding various names + members of modules."""
-    #     memo = set()
-    #     modules = self.named_modules(prefix=prefix) if recurse else [(prefix, self)]
-    #     for module_prefix, module in modules:
-    #         members = get_members_fn(module)
-    #         for k, v in members:
-    #             if v is None or v in memo:
-    #                 continue
-    #             memo.add(v)
-    #             name = module.name + '/' + k
-    #             yield name, v
+    # TODO RNN enabled after repair
+    __call__: Callable[..., Any] = _call_impl_tlx
+
+    def _named_members(self, get_members_fn, prefix='', recurse=True):
+        r"""Helper method for yielding various names + members of modules."""
+        memo = set()
+        modules = self.named_modules(prefix=prefix) if recurse else [(prefix, self)]
+        for module_prefix, module in modules:
+            members = get_members_fn(module)
+            for k, v in members:
+                if v is None or v in memo:
+                    continue
+                memo.add(v)
+                name = module.name + '/' + k
+                yield name, v
+
 
     @property
     def all_weights(self):

@@ -448,10 +448,10 @@ class RNNBase(Module):
 
     def build(self, inputs_shape):
         bidirect = 2 if self.bidirectional else 1
-        self.weight_ih = ParameterList()
-        self.weight_hh = ParameterList()
-        self.bias_ih = ParameterList()
-        self.bias_hh =ParameterList()
+        self.weight_ih = []
+        self.weight_hh = []
+        self.bias_ih = []
+        self.bias_hh = []
         stdv = 1.0 / np.sqrt(self.hidden_size)
         _init = tlx.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
         if self.mode == 'LSTM':
@@ -488,6 +488,10 @@ class RNNBase(Module):
                             var_name='bias_hh_l{}{}'.format(layer, suffix), shape=(gate_size, ), init=_init
                         )
                     )
+        self.weight_ih = ParameterList(self.weight_ih)
+        self.weight_hh = ParameterList(self.weight_hh)
+        self.bias_ih = ParameterList(self.bias_ih)
+        self.bias_hh =ParameterList(self.bias_hh)
         self.rnn = tlx.ops.rnnbase(
             mode=self.mode, input_size=self.input_size, hidden_size=self.hidden_size, num_layers=self.num_layers,
             bias=self.bias, batch_first=self.batch_first, dropout=self.dropout, bidirectional=self.bidirectional,
