@@ -55,7 +55,7 @@ class Module(object):
     def __init__(self, name=None, act=None, *args, **kwargs):
         self._params = OrderedDict()
         self._layers = OrderedDict()
-        self._params_tuple = OrderedDict()
+        self._params_list = OrderedDict()
         self._params_status = OrderedDict()
         self._parameter_layout_dict = {}
         self._create_time = int(time.time() * 1e9)
@@ -146,6 +146,9 @@ class Module(object):
                 raise TypeError("Expected type is Module, but got Parameter.")
             self.insert_param_to_layer(name, value)
 
+        elif isinstance(value, ParameterList):
+            self.set_attr_for_parameter_tuple(name, value)
+
         elif isinstance(value, Module):
             if layers is None:
                 raise AttributeError("Can not assign layers before Module.__init__() call.")
@@ -153,12 +156,6 @@ class Module(object):
                 del self.__dict__[name]
             if params and name in params:
                 raise TypeError("Expected type is Parameter, but got Module.")
-            # TODO Automatic shape inference when the user does not enter inchannels.
-            # if value._built is False:
-            #     raise AttributeError(
-            #         "The registered layer `{}` should be built in advance. "
-            #         "Do you forget to pass the keyword argument 'in_channels'? ".format(value.name)
-            #     )
             layers[name] = value
         else:
             object.__setattr__(self, name, value)
@@ -253,6 +250,27 @@ class Module(object):
             if isinstance(layer, Module):
                 layer.is_train = is_train
 
+    def set_attr_for_parameter_tuple(self, name, value):
+        """Set attr for parameter in ParameterTuple."""
+        params = self.__dict__.get('_params')
+        params_list = self.__dict__.get('_params_list')
+        if params is None:
+            raise AttributeError("For 'Module', can not assign params before Module.__init__() is called.")
+        exist_names = set("")
+
+        for item in value:
+            self.insert_param_to_layer(item.name, item, check_name=False)
+            if item.name in exist_names:
+                raise ValueError("The value {} , its name '{}' already exists.".
+                                 format(value, item.name))
+            exist_names.add(item.name)
+
+        if name in self.__dict__:
+            del self.__dict__[name]
+        if name in params:
+            del params[name]
+        params_list[name] = value
+
     def set_train(self):
         """Set this network in training mode. After calling this method,
         all layers in network are in training mode, in particular, BatchNorm, Dropout, etc.
@@ -345,10 +363,10 @@ class Module(object):
             params_status = self.__dict__['_params_status']
             if name in params_status:
                 return params_status[name]
-        if '_params_tuple' in self.__dict__:
-            params_tuple = self.__dict__['_params_tuple']
-            if name in params_tuple:
-                para_list = params_tuple[name]
+        if '_params_list' in self.__dict__:
+            params_list = self.__dict__['_params_list']
+            if name in params_list:
+                para_list = params_list[name]
                 return para_list
         raise AttributeError("'{}' object has no attribute '{}'.".format(type(self).__name__, name))
 
@@ -988,7 +1006,7 @@ class ModuleDict(Module):
                 self[m[0]] = m[1]
 
 
-def Parameter(data=None, requires_grad=True):
+class Parameter(Module):
     """This function creates a parameter. The parameter is a learnable variable, which can have gradient, and can be optimized.
 
     Parameters
@@ -1009,7 +1027,29 @@ def Parameter(data=None, requires_grad=True):
 
     """
 
-    return tf.Variable(initial_value=data, trainable=requires_grad)
+    def __new__(self, data=None, requires_grad=True, name=None):
+        if name is None:
+            prefix = self.__class__.__name__.lower()
+
+            if _global_layer_name_dict.get(prefix) is not None:
+                _global_layer_name_dict[prefix] += 1
+                name = prefix + '_' + str(_global_layer_name_dict[prefix])
+            else:
+                _global_layer_name_dict[prefix] = 0
+                name = prefix
+            while True:
+                if _global_layer_name_dict.get(name) is None:
+                    break
+                _global_layer_name_dict[prefix] += 1
+                name = prefix + '_' + str(_global_layer_name_dict[prefix])
+        else:
+            if _global_layer_name_dict.get(name) is not None:
+                pass
+            else:
+                _global_layer_name_dict[name] = 0
+
+        self.name = name
+        return tf.Variable(initial_value=data, trainable=requires_grad, name=name)
 
 
 class ParameterList(Module):
@@ -1068,10 +1108,10 @@ class ParameterList(Module):
         idx = self._get_abs_string_index(idx)
         self._params[str(idx)] = parameter
 
-    def __setattr__(self, key, value):
-        if not hasattr(self, key) and not isinstance(value, tf.Variable):
-            warnings.warn("Setting attributes on ParameterList is not supported.")
-        super(ParameterList, self).__setattr__(key, value)
+    # def __setattr__(self, key, value):
+    #     if not hasattr(self, key) and not isinstance(value, tf.Variable):
+    #         warnings.warn("Setting attributes on ParameterList is not supported.")
+    #     super(ParameterList, self).__setattr__(key, value)
 
     def __len__(self):
         return len(self._params)
@@ -1251,7 +1291,6 @@ class ParameterDict(Module):
                         "ParameterDict update sequence element "
                         "#" + str(j) + " should be Iterable; is" + type(p).__name__
                     )
-                print(p)
                 if not len(p) == 2:
                     raise ValueError(
                         "ParameterDict update sequence element "
