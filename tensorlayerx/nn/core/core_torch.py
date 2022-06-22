@@ -617,7 +617,7 @@ class ParameterList(Module):
         keys = [key for key in keys if not key.isdigit()]
         return keys
 
-    def append(self, parameter: 'Parameter') -> 'ParameterList':
+    def append(self, parameter):
 
         self.register_parameter(str(len(self)), parameter)
         return self

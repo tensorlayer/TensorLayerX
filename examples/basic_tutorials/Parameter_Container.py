@@ -1,8 +1,8 @@
 import os
-os.environ['TL_BACKEND'] = 'tensorflow'
+# os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
-# os.environ['TL_BACKEND'] = 'torch'
+os.environ['TL_BACKEND'] = 'torch'
 
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module, Parameter, ParameterList, ParameterDict
@@ -28,6 +28,10 @@ class MyModule(Module):
 
 input = tlx.nn.Input(shape=(5,5))
 net = MyModule()
-
+trainable_weights = net.trainable_weights
+print("-----------------------------trainable_weights-------------------------------")
+for weight in trainable_weights:
+    print(weight)
+print("-----------------------------------output------------------------------------")
 output = net(input, choice = 'right')
 print(output)
