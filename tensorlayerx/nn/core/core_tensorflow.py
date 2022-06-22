@@ -56,6 +56,7 @@ class Module(object):
         self._params = OrderedDict()
         self._layers = OrderedDict()
         self._params_list = OrderedDict()
+        self._params_dict = OrderedDict()
         self._params_status = OrderedDict()
         self._parameter_layout_dict = {}
         self._create_time = int(time.time() * 1e9)
@@ -105,6 +106,7 @@ class Module(object):
 
         # weights check state
         self._check = False
+        self.trainable = True
 
     def extend_repr(self):
         """
@@ -148,6 +150,9 @@ class Module(object):
 
         elif isinstance(value, ParameterList):
             self.set_attr_for_parameter_tuple(name, value)
+
+        elif isinstance(value, ParameterDict):
+            self.set_attr_for_parameter_dict(name, value)
 
         elif isinstance(value, Module):
             if layers is None:
@@ -249,6 +254,26 @@ class Module(object):
         for layer_name, layer in layers:
             if isinstance(layer, Module):
                 layer.is_train = is_train
+
+    def set_attr_for_parameter_dict(self, name, value):
+        """Set attr for parameter in ParameterDict."""
+        params = self.__dict__.get('_params')
+        params_dict = self.__dict__.get('_params_dict')
+        if params is None:
+            raise AttributeError("For 'Module', can not assign params before Module.__init__() is called.")
+        exist_names = set("")
+        for item in value:
+            self.insert_param_to_layer(item, value[item], check_name=False)
+            if item in exist_names:
+                raise ValueError("The value {} , its name '{}' already exists.".
+                                 format(value[item], item))
+            exist_names.add(item)
+
+        if name in self.__dict__:
+            del self.__dict__[name]
+        if name in params:
+            del params[name]
+        params_dict[name] = value
 
     def set_attr_for_parameter_tuple(self, name, value):
         """Set attr for parameter in ParameterTuple."""
@@ -368,6 +393,10 @@ class Module(object):
             if name in params_list:
                 para_list = params_list[name]
                 return para_list
+        if '_params_dict' in self.__dict__:
+            params_dict = self.__dict__['_params_dict']
+            if name in params_dict:
+                return params_dict[name]
         raise AttributeError("'{}' object has no attribute '{}'.".format(type(self).__name__, name))
 
     def __delattr__(self, name):
@@ -1027,9 +1056,10 @@ class Parameter(Module):
 
     """
 
-    def __new__(self, data=None, requires_grad=True, name=None):
+    def __new__(self, data=None, name=None):
+        instance = super().__new__(self)
         if name is None:
-            prefix = self.__class__.__name__.lower()
+            prefix = 'parameter'
 
             if _global_layer_name_dict.get(prefix) is not None:
                 _global_layer_name_dict[prefix] += 1
@@ -1047,9 +1077,13 @@ class Parameter(Module):
                 pass
             else:
                 _global_layer_name_dict[name] = 0
+        if data is None:
+            return instance
+        else:
+            return instance(data, name)
 
-        self.name = name
-        return tf.Variable(initial_value=data, trainable=requires_grad, name=name)
+    def __call__(self, data=None, name=None, **kwargs):
+        return tf.Variable(initial_value=data, name=name)
 
 
 class ParameterList(Module):
@@ -1219,10 +1253,10 @@ class ParameterDict(Module):
     def __delitem__(self, key):
         del self._params[key]
 
-    def __setattr__(self, key, value):
-        if not hasattr(self, key) and not isinstance(value, tf.Variable):
-            warnings.warn("Setting attributes on ParameterDict is not supported.")
-        super(ParameterDict, self).__setattr__(key, value)
+    # def __setattr__(self, key, value):
+    #     if not hasattr(self, key) and not isinstance(value, tf.Variable):
+    #         warnings.warn("Setting attributes on ParameterDict is not supported.")
+    #     super(ParameterDict, self).__setattr__(key, value)
 
     def __len__(self) -> int:
         return len(self._params)
