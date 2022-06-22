@@ -55,8 +55,8 @@ class Module(object):
     def __init__(self, name=None, act=None, *args, **kwargs):
         self._params = OrderedDict()
         self._layers = OrderedDict()
-        self._params_list = OrderedDict()
-        self._params_dict = OrderedDict()
+        # self._params_list = OrderedDict()
+        # self._params_dict = OrderedDict()
         self._params_status = OrderedDict()
         self._parameter_layout_dict = {}
         self._create_time = int(time.time() * 1e9)
@@ -148,11 +148,11 @@ class Module(object):
                 raise TypeError("Expected type is Module, but got Parameter.")
             self.insert_param_to_layer(name, value)
 
-        elif isinstance(value, ParameterList):
-            self.set_attr_for_parameter_tuple(name, value)
-
-        elif isinstance(value, ParameterDict):
-            self.set_attr_for_parameter_dict(name, value)
+        # elif isinstance(value, ParameterList):
+        #     self.set_attr_for_parameter_tuple(name, value)
+        #
+        # elif isinstance(value, ParameterDict):
+        #     self.set_attr_for_parameter_dict(name, value)
 
         elif isinstance(value, Module):
             if layers is None:
@@ -255,46 +255,46 @@ class Module(object):
             if isinstance(layer, Module):
                 layer.is_train = is_train
 
-    def set_attr_for_parameter_dict(self, name, value):
-        """Set attr for parameter in ParameterDict."""
-        params = self.__dict__.get('_params')
-        params_dict = self.__dict__.get('_params_dict')
-        if params is None:
-            raise AttributeError("For 'Module', can not assign params before Module.__init__() is called.")
-        exist_names = set("")
-        for item in value:
-            self.insert_param_to_layer(item, value[item], check_name=False)
-            if item in exist_names:
-                raise ValueError("The value {} , its name '{}' already exists.".
-                                 format(value[item], item))
-            exist_names.add(item)
-
-        if name in self.__dict__:
-            del self.__dict__[name]
-        if name in params:
-            del params[name]
-        params_dict[name] = value
-
-    def set_attr_for_parameter_tuple(self, name, value):
-        """Set attr for parameter in ParameterTuple."""
-        params = self.__dict__.get('_params')
-        params_list = self.__dict__.get('_params_list')
-        if params is None:
-            raise AttributeError("For 'Module', can not assign params before Module.__init__() is called.")
-        exist_names = set("")
-
-        for item in value:
-            self.insert_param_to_layer(item.name, item, check_name=False)
-            if item.name in exist_names:
-                raise ValueError("The value {} , its name '{}' already exists.".
-                                 format(value, item.name))
-            exist_names.add(item.name)
-
-        if name in self.__dict__:
-            del self.__dict__[name]
-        if name in params:
-            del params[name]
-        params_list[name] = value
+    # def set_attr_for_parameter_dict(self, name, value):
+    #     """Set attr for parameter in ParameterDict."""
+    #     params = self.__dict__.get('_params')
+    #     params_dict = self.__dict__.get('_params_dict')
+    #     if params is None:
+    #         raise AttributeError("For 'Module', can not assign params before Module.__init__() is called.")
+    #     exist_names = set("")
+    #     for item in value:
+    #         self.insert_param_to_layer(item, value[item], check_name=False)
+    #         if item in exist_names:
+    #             raise ValueError("The value {} , its name '{}' already exists.".
+    #                              format(value[item], item))
+    #         exist_names.add(item)
+    #
+    #     if name in self.__dict__:
+    #         del self.__dict__[name]
+    #     if name in params:
+    #         del params[name]
+    #     params_dict[name] = value
+    #
+    # def set_attr_for_parameter_tuple(self, name, value):
+    #     """Set attr for parameter in ParameterTuple."""
+    #     params = self.__dict__.get('_params')
+    #     params_list = self.__dict__.get('_params_list')
+    #     if params is None:
+    #         raise AttributeError("For 'Module', can not assign params before Module.__init__() is called.")
+    #     exist_names = set("")
+    #
+    #     for item in value:
+    #         self.insert_param_to_layer(item.name, item, check_name=False)
+    #         if item.name in exist_names:
+    #             raise ValueError("The value {} , its name '{}' already exists.".
+    #                              format(value, item.name))
+    #         exist_names.add(item.name)
+    #
+    #     if name in self.__dict__:
+    #         del self.__dict__[name]
+    #     if name in params:
+    #         del params[name]
+    #     params_list[name] = value
 
     def set_train(self):
         """Set this network in training mode. After calling this method,
@@ -354,7 +354,6 @@ class Module(object):
             Determines whether the name input is compatible. Default: True.
 
         """
-
         if not param_name:
             raise KeyError("The name of parameter should not be null.")
         if check_name and '.' in param_name:
@@ -388,15 +387,15 @@ class Module(object):
             params_status = self.__dict__['_params_status']
             if name in params_status:
                 return params_status[name]
-        if '_params_list' in self.__dict__:
-            params_list = self.__dict__['_params_list']
-            if name in params_list:
-                para_list = params_list[name]
-                return para_list
-        if '_params_dict' in self.__dict__:
-            params_dict = self.__dict__['_params_dict']
-            if name in params_dict:
-                return params_dict[name]
+        # if '_params_list' in self.__dict__:
+        #     params_list = self.__dict__['_params_list']
+        #     if name in params_list:
+        #         para_list = params_list[name]
+        #         return para_list
+        # if '_params_dict' in self.__dict__:
+        #     params_dict = self.__dict__['_params_dict']
+        #     if name in params_dict:
+        #         return params_dict[name]
         raise AttributeError("'{}' object has no attribute '{}'.".format(type(self).__name__, name))
 
     def __delattr__(self, name):
@@ -1142,10 +1141,10 @@ class ParameterList(Module):
         idx = self._get_abs_string_index(idx)
         self._params[str(idx)] = parameter
 
-    # def __setattr__(self, key, value):
-    #     if not hasattr(self, key) and not isinstance(value, tf.Variable):
-    #         warnings.warn("Setting attributes on ParameterList is not supported.")
-    #     super(ParameterList, self).__setattr__(key, value)
+    def __setattr__(self, key, value):
+        # if not hasattr(self, key) and not isinstance(value, tf.Variable):
+        #     warnings.warn("Setting attributes on ParameterList is not supported.")
+        super(ParameterList, self).__setattr__(key, value)
 
     def __len__(self):
         return len(self._params)
@@ -1162,7 +1161,7 @@ class ParameterList(Module):
         return keys
 
     def append(self, parameter):
-        self._params[str(len(self))] = parameter
+        self.insert_param_to_layer(str(len(self)), parameter)
         return self
 
     def extend(self, parameters):
@@ -1173,7 +1172,7 @@ class ParameterList(Module):
             )
         offset = len(self)
         for i, para in enumerate(parameters):
-            self._params[str(offset + i)] = para
+            self.insert_param_to_layer(str(offset + i), para)
         return self
 
     def __call__(self, input):
@@ -1248,15 +1247,13 @@ class ParameterDict(Module):
         return self._params[key]
 
     def __setitem__(self, key, parameter):
-        self._params[key] = parameter
+        self.insert_param_to_layer(key, parameter)
 
     def __delitem__(self, key):
         del self._params[key]
 
-    # def __setattr__(self, key, value):
-    #     if not hasattr(self, key) and not isinstance(value, tf.Variable):
-    #         warnings.warn("Setting attributes on ParameterDict is not supported.")
-    #     super(ParameterDict, self).__setattr__(key, value)
+    def __setattr__(self, key, value):
+        super(ParameterDict, self).__setattr__(key, value)
 
     def __len__(self) -> int:
         return len(self._params)
