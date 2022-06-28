@@ -842,8 +842,8 @@ class AvgPool1d(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.ksize = ksize
-        self.strides = strides
+        self.ksize = [ksize, ]
+        self.strides = [strides, ]
         self.padding_value = None
         if not isinstance(self.padding, str):
             self.padding_value = preprocess_padding(self.padding, '1d', self.data_format)

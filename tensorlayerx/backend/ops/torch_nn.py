@@ -776,7 +776,7 @@ class MaxPool1d(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.max_pool1d = MaxPool(ksize, strides, padding, data_format)
+        self.max_pool1d = MaxPool([ksize,], strides, padding, data_format)
 
     def __call__(self, inputs):
         return self.max_pool1d(inputs)
@@ -807,12 +807,12 @@ class MaxPool(object):
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool2d_same_padding(inputs)
             else:
-                out = F.max_pool2d(inputs, self.ksize, (self.strides[1], self.strides[2]), padding=self.padding)
+                out = F.max_pool2d(inputs, self.ksize, self.strides, padding=self.padding)
         if len(inputs.shape) == 5:
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool3d_same_padding(inputs)
             else:
-                out = F.max_pool3d(inputs, self.ksize, (self.strides[1], self.strides[2], self.strides[3]), padding=self.padding)
+                out = F.max_pool3d(inputs, self.ksize, self.strides, padding=self.padding)
 
         if self.data_format == 'channels_last':
             return nchw_to_nhwc(out)
@@ -820,29 +820,27 @@ class MaxPool(object):
             return out
 
     def maxpool1d_same_padding(self, input):
-        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides[0], 1)
+        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides, 1)
         if rows_odd:
             input = F.pad(input, [0, int(rows_odd)], 'constant', float('-inf'))
         return F.max_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2))
 
     def maxpool2d_same_padding(self, input):
-        strides = [self.strides[1], self.strides[2]]
-        rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, strides, (1, 1))
+        rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, self.strides, (1, 1))
         if rows_odd or cols_odd:
             # TODO The fill value for maxpool is -INF.
             input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)], 'constant', float('-inf'))
 
-        return F.max_pool2d(input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2))
+        return F.max_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2))
 
     def maxpool3d_same_padding(self, input):
-        strides = [self.strides[1], self.strides[2], self.strides[3]]
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(
-            input, self.ksize, strides, (1, 1, 1)
+            input, self.ksize, self.strides, (1, 1, 1)
         )
         if rows_odd or cols_odd or depth_odd:
             input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], 'constant', float('-inf'))
         return F.max_pool3d(
-                input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
+                input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
         )
 
 
@@ -880,7 +878,7 @@ class AvgPool1d(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.avg_poo1d = AvgPool(ksize, strides, padding, data_format)
+        self.avg_poo1d = AvgPool([ksize, ], strides, padding, data_format)
 
     def __call__(self, inputs):
         return self.avg_poo1d(inputs)
@@ -911,12 +909,12 @@ class AvgPool(object):
             if self.padding in ['SAME', 'same']:
                 out = self.avgpool2d_same_padding(inputs)
             else:
-                out = F.avg_pool2d(inputs, self.ksize, (self.strides[1], self.strides[2]), padding=self.padding)
+                out = F.avg_pool2d(inputs, self.ksize, self.strides, padding=self.padding)
         if len(inputs.shape) == 5:
             if self.padding in ['SAME', 'same']:
                 out = self.avgpool3d_same_padding(inputs)
             else:
-                out = F.avg_pool3d(inputs, self.ksize, (self.strides[1], self.strides[2], self.strides[3]), padding=self.padding)
+                out = F.avg_pool3d(inputs, self.ksize, self.strides, padding=self.padding)
 
         if self.data_format == 'channels_last':
             return nchw_to_nhwc(out)
@@ -924,29 +922,27 @@ class AvgPool(object):
             return out
 
     def avgpool1d_same_padding(self, input):
-        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides[0], 1)
+        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides, 1)
         if rows_odd:
             input = F.pad(input, [0, int(rows_odd)], 'replicate')
         return F.avg_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2))
 
     def avgpool2d_same_padding(self, input):
-        strides = [self.strides[1], self.strides[2]]
-        rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, strides, (1, 1))
+        rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, self.strides, (1, 1))
         if rows_odd or cols_odd:
             # TODO The fill value for maxpool is -INF.
             input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)], mode='replicate')
 
-        return F.avg_pool2d(input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2))
+        return F.avg_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2))
 
     def avgpool3d_same_padding(self, input):
-        strides = [self.strides[1], self.strides[2], self.strides[3]]
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(
-            input, self.ksize, strides, (1, 1, 1)
+            input, self.ksize, self.strides, (1, 1, 1)
         )
         if rows_odd or cols_odd or depth_odd:
             input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], mode='replicate')
         return F.avg_pool3d(
-                input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
+                input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
         )
 
 

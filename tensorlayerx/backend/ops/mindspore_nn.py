@@ -732,8 +732,8 @@ class MaxPool1d(Cell):
         super(MaxPool1d, self).__init__()
         self.data_format, padding = preprocess_1d_format(data_format=data_format, padding=padding)
         self.expand = P.ExpandDims()
-        _strides = (1, strides[0])
-        _ksize = (1, ksize[0])
+        _strides = (1, strides)
+        _ksize = (1, ksize)
         if self.data_format == 'NWC':
             self.squeeze = P.Squeeze(1)
             _data_format = 'NHWC'
@@ -758,16 +758,6 @@ class MaxPool(Cell):
     def __init__(self, ksize, strides, padding, data_format='NHWC'):
         super(MaxPool, self).__init__()
         data_format, padding = preprocess_2d_format(data_format=data_format, padding=padding)
-
-        if data_format == 'NHWC':
-            strides = (strides[1], strides[2])
-            if len(ksize) == 4:
-                ksize = (ksize[1], ksize[2])
-        if data_format == 'NCHW':
-            strides = (strides[2], strides[3])
-            if len(ksize) == 4:
-                ksize = (ksize[2], ksize[3])
-
         self.maxpool = P.MaxPool(kernel_size=ksize, strides=strides, pad_mode=padding, data_format=data_format)
 
     def construct(self, inputs):
@@ -799,11 +789,7 @@ def max_pool(input, ksize, strides, padding, data_format=None):
         A Tensor of format specified by data_format. The max pooled output tensor.
     """
     data_format, padding = preprocess_2d_format(data_format=data_format, padding=padding)
-    if data_format == 'NHWC':
-        _strides = (strides[1], strides[2])
-    if data_format == 'NCHW':
-        _strides = (strides[2], strides[3])
-    outputs = P.MaxPool(kernel_size=ksize, strides=_strides, pad_mode=padding, data_format=data_format)(input)
+    outputs = P.MaxPool(kernel_size=ksize, strides=strides, pad_mode=padding, data_format=data_format)(input)
     return outputs
 
 
@@ -812,8 +798,8 @@ class AvgPool1d(Cell):
     def __init__(self, ksize, strides, padding, data_format=None):
         super(AvgPool1d, self).__init__()
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.kernel_size = (1, ksize[0])
-        self.stride = (1, strides[0])
+        self.kernel_size = (1, ksize)
+        self.stride = (1, strides)
 
         if self.data_format == 'NWC':
             _data_format = 'NHWC'
@@ -853,10 +839,8 @@ class AvgPool(Cell):
     def __init__(self, ksize, strides, padding, data_format=None):
         super(AvgPool, self).__init__()
         self.data_format, self.padding = preprocess_2d_format(data_format=data_format, padding=padding)
-        ms_ksize = ksize[1]
-        ms_strides = strides[1]
         self.avgpool = P.AvgPool(
-            kernel_size=ms_ksize, strides=ms_strides, pad_mode=padding, data_format=self.data_format
+            kernel_size=ksize, strides=strides, pad_mode=padding, data_format=self.data_format
         )
 
     def construct(self, inputs):
@@ -888,9 +872,7 @@ def avg_pool(input, ksize, strides, padding):
         A Tensor of format specified by data_format. The average pooled output tensor.
     """
     padding = padding_format(padding)
-    ms_ksize = ksize[0]
-    ms_strides = strides[1]
-    outputs = P.AvgPool(ksize=ms_ksize, strides=ms_strides, padding=padding)
+    outputs = P.AvgPool(ksize=ksize, strides=strides, padding=padding)
     return outputs(input)
 
 
@@ -900,10 +882,7 @@ class MaxPool3d(Cell):
         super(MaxPool3d, self).__init__()
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
         if data_format == 'NDHWC':
-            strides = (strides[1], strides[2], strides[3])
             raise NotImplementedError("The optional value for data format. Currently only support ‘NCDHW’.")
-        if data_format == 'NCDHW':
-            strides = (strides[2], strides[3], strides[4])
         self.max_pool3d = P.MaxPool3D(
             kernel_size=ksize, strides=strides, pad_mode=padding, data_format=self.data_format
         )
@@ -949,12 +928,8 @@ class AvgPool3d(Cell):
         super(AvgPool3d, self).__init__()
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
         if data_format == 'NDHWC':
-            strides = (strides[1], strides[2], strides[3])
             raise NotImplementedError('The optional value for data format. Currently only support ‘NCDHW’.')
-        if data_format == 'NCDHW':
-            strides = (strides[2], strides[3], strides[4])
-        print(ksize, strides, padding)
-        self.avg_pool = P.AvgPool3D(kernel_size=ksize, strides=strides, pad_mode=padding, data_format=data_format)
+        self.avg_pool = P.AvgPool3D(kernel_size=ksize, strides=strides, pad_mode=padding, data_format=self.data_format)
 
     def __call__(self, inputs):
         return self.avg_pool(inputs)
