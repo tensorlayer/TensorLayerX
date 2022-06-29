@@ -380,8 +380,31 @@ class Sequential(Module):
 
     def forward(self, input_data):
         for layer in self.layer_list:
+            inputs = input_data
             input_data = layer(input_data)
+            outputs = input_data
+            if not self._nodes_fixed and self._build_graph:
+                self._add_seq_node(inputs, outputs, layer)
+        self._nodes_fixed = True
         return input_data
+
+    def _add_seq_node(self, input_tensors, output_tensors, layer):
+        inputs_list = tolist(input_tensors)
+        outputs_list = tolist(output_tensors)
+        if layer.__class__.__name__ in tlx.layers.inputs.__all__:
+            in_nodes = []
+            in_tensor_idxes = [0]
+        else:
+            in_nodes = [tensor._info[0] for tensor in inputs_list]
+            in_tensor_idxes = [tensor._info[1] for tensor in inputs_list]
+        node_index = len(_global_layer_node)
+
+        new_node = ModuleNode(
+            layer, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes, select_attrs(layer)
+        )
+        _global_layer_node.append(new_node)
+        for idx, tensor in enumerate(outputs_list):
+            tensor._info = (new_node, idx)
 
 
 class ModuleList(Module):
