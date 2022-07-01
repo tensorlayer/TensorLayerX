@@ -540,8 +540,7 @@ def construct_graph(inputs, outputs):
                 if out_node.node_name not in indegrees.keys():
                     indegrees[out_node.node_name] = len(out_node.in_nodes)
                 indegrees[out_node.node_name] -= 1
-                if indegrees[out_node.node_name] == 0 or \
-                        isinstance(out_node.layer, (tlx.nn.RNN, tlx.nn.LSTM, tlx.nn.GRU)):
+                if indegrees[out_node.node_name] == 0:
                     next_depth.append(out_node)
         cur_depth = next_depth
         next_depth = []

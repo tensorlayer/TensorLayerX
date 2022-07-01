@@ -591,7 +591,9 @@ class RNN(RNNBase):
         output, new_states = self.rnn(input, states)
 
         if not self._nodes_fixed and self._build_graph:
-            self._add_node(input, [output, new_states])
+            self.states = states
+            self.new_states = new_states
+            self._add_node(input, output)
             self._nodes_fixed = True
         return output, new_states
 
@@ -671,7 +673,9 @@ class LSTM(RNNBase):
         output, new_states = self.rnn(input, states)
 
         if not self._nodes_fixed and self._build_graph:
-            self._add_node(input, [output, new_states])
+            self.states = states
+            self.new_states = new_states
+            self._add_node(input, output)
             self._nodes_fixed = True
         return output, new_states
 
@@ -750,6 +754,8 @@ class GRU(RNNBase):
         output, new_states = self.rnn(input, states)
 
         if not self._nodes_fixed and self._build_graph:
-            self._add_node(input, [output, new_states])
+            self.states = states
+            self.new_states = new_states
+            self._add_node(input, output)
             self._nodes_fixed = True
         return output, new_states
