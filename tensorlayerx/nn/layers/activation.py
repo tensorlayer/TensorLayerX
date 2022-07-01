@@ -438,6 +438,7 @@ class Softmax(Module):
     def __init__(self, axis = -1):
         super(Softmax, self).__init__()
         self._built = True
+        self.axis = axis
         self._softmax = tlx.ops.Softmax(axis)
 
     def forward(self, x):
