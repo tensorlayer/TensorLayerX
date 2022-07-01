@@ -4,14 +4,16 @@
 # The same set of code can switch the backend with one line
 import os
 # os.environ['TL_BACKEND'] = 'tensorflow'
-os.environ['TL_BACKEND'] = 'mindspore'
-# os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'mindspore'
+os.environ['TL_BACKEND'] = 'paddle'
 # os.environ['TL_BACKEND'] = 'torch'
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
-from tensorlayerx.nn import Linear, LSTM, Embedding
+from tensorlayerx.nn import Linear, LSTM, Embedding, RNN
 from tensorlayerx.dataflow import Dataset
 import numpy as np
+prev_h = np.random.random([1, 200, 64]).astype(np.float32)
+prev_h = tlx.convert_to_tensor(prev_h)
 
 X_train, y_train, X_test, y_test = tlx.files.load_imdb_dataset('data', nb_words=20000, test_split=0.2)
 
@@ -48,7 +50,7 @@ class ImdbNet(Module):
 
     def forward(self, x):
         x = self.embedding(x)
-        x, _ = self.lstm(x)
+        x, _ = self.lstm(x, [prev_h, prev_h])
         x = tlx.reduce_mean(x, axis=1)
         x = self.linear1(x)
         x = self.linear2(x)

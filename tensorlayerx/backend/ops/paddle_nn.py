@@ -1638,10 +1638,16 @@ class rnnbase(LayerList):
         out = pd.tensor.transpose(out, [1, 0, 2]) if not self.time_major else out
         return out, tuple(state) if len(state) > 1 else state[0]
 
+    def check_hidden(self, h, batch_size):
+        expected_hidden_size = [self.num_layers * self.bidirect, batch_size, self.hidden_size]
+        if h.shape != expected_hidden_size:
+            raise ValueError('Expected hidden size {}, got {}.'.format(expected_hidden_size, h.shape))
+
     def forward(self, inputs, initial_states=None):
         batch_index = 1 if self.time_major else 0
         dtype = inputs.dtype
         sequence_length = None
+        batch_size = inputs.shape[batch_index]
         if initial_states is None:
             state_shape = (self.num_layers * self.bidirect, -1, self.hidden_size)
             if self.state_components == 1:
@@ -1655,6 +1661,15 @@ class rnnbase(LayerList):
                         for _ in range(self.state_components)
                     ]
                 )
+        else:
+            if self.mode == 'LSTM':
+                h, c = initial_states
+                self.check_hidden(h, batch_size)
+                self.check_hidden(c, batch_size)
+            else:
+                self.check_hidden(initial_states, batch_size)
+        if not isinstance(initial_states, (tuple, list)):
+            initial_states = [initial_states,]
         if self.could_use_cudnn:
             # Add CPU kernel and dispatch in backend later
             return self._cudnn_impl(inputs, initial_states, sequence_length)

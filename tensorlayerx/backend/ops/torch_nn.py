@@ -1934,7 +1934,7 @@ class rnnbase(Module):
             )
 
     def check_hidden(self, h, batch_size):
-        expected_hidden_size = (self.num_layers * self.bidirect, batch_size, self.hidden_size)
+        expected_hidden_size = (self.num_layers * self.num_directions, batch_size, self.hidden_size)
         if h.shape != expected_hidden_size:
             raise ValueError('Expected hidden size {}, got {}.'.format(expected_hidden_size, h.shape))
 
