@@ -897,22 +897,15 @@ def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_
 
 class DepthwiseConv2d(object):
 
-    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1):
+    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1, in_channels=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        if self.data_format == 'NHWC':
-            self._stride = (strides[1], strides[2])
-        if self.data_format == 'NCHW':
-            self._stride = (strides[2], strides[3])
+        self._stride = strides
         self.dilations = dilations
-        self.channel_multiplier = channel_multiplier
+        self.in_channel = in_channels
 
     def __call__(self, input, filter, point_filter=None):
-        if self.data_format == 'NHWC':
-            channel = input.shape[-1]
-        elif self.data_format == 'NCHW':
-            channel = input.shape[1]
         depthwise_conv = F.conv2d(
-            input, filter, data_format=self.data_format, groups=channel, dilation=self.dilations, stride=self._stride,
+            input, filter, data_format=self.data_format, groups=self.in_channel, dilation=self.dilations, stride=self._stride,
             padding=self.padding
         )
         pointwise_conv = F.conv2d(depthwise_conv, point_filter, data_format=self.data_format, padding=self.padding)

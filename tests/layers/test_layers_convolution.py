@@ -157,7 +157,7 @@ class Layer_Convolution_2D_Test(CustomTestCase):
         self.assertEqual(tlx.get_tensor_shape(self.n4), [self.batch_size, 100, 100, 32])
 
     def test_layer_n5(self):
-        self.assertEqual(len(self.dwconv2dlayer.all_weights), 2)
+        self.assertEqual(len(self.dwconv2dlayer.all_weights), 3)
         self.assertEqual(tlx.get_tensor_shape(self.n5), [self.batch_size, 100, 100, 64])
 
     def test_layer_n6(self):

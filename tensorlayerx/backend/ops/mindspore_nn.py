@@ -1000,21 +1000,25 @@ def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_
 
 class DepthwiseConv2d(Cell):
 
-    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1):
+    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1, in_channels=None):
         super(DepthwiseConv2d, self).__init__()
-        self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        self.ms_stride = strides[1]
-        self.ms_dilation = dilations[1]
-        self.depthwise_conv2d = P.DepthwiseConv2dNative(
-            channel_multiplier=channel_multiplier, kernel_size=ksize, stride=self.ms_stride, dilation=self.ms_dilation
-        )
+        self.data_format, self.pad_mode = preprocess_2d_format(data_format, padding)
+        self.ms_stride = strides
+        self.ms_dilation = dilations
+        self.padding = 0
+
+        if isinstance(self.pad_mode, int) or isinstance(self.pad_mode, tuple):
+            self.padding = preprocess_padding(self.pad_mode, '2d')
+            self.pad_mode = "pad"
+
+        self.depth_conv = P.Conv2D(stride=self.ms_stride, pad_mode=self.pad_mode, pad=self.padding, kernel_size=ksize,
+                                   data_format=self.data_format, dilation=self.ms_dilation, group=in_channels, out_channel=in_channels)
+        self.point_conv = P.Conv2D(pad_mode=self.pad_mode, pad=self.padding, dilation=self.ms_dilation, kernel_size=1,
+                                   out_channel=channel_multiplier*in_channels, data_format=self.data_format)
 
     def construct(self, input, filter, point_filter=None):
-        if self.data_format == 'NHWC':
-            input = nhwc_to_nchw(input)
-        outputs = self.depthwise_conv2d(input, filter)
-        if self.data_format == 'NHWC':
-            outputs = nchw_to_nhwc(outputs)
+        outputs = self.depth_conv(input, filter)
+        outputs = self.point_conv(outputs, point_filter)
         return outputs
 
 
