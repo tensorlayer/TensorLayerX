@@ -1104,25 +1104,22 @@ def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_
 
 class DepthwiseConv2d(object):
 
-    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1):
+    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1, in_channels=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        if self.data_format == 'NHWC':
-            self._stride = (strides[1], strides[2])
-        if self.data_format == 'NCHW':
-            self._stride = (strides[2], strides[3])
-        self.dilations = dilations
+        if self.data_format is 'NHWC':
+            self.strides = (1, strides[0], strides[1], 1)
+            self.dilations = (1, dilations[0], dilations[1], 1)
+        elif self.data_format is 'NCHW':
+            self.strides = (1, 1, strides[0], strides[1])
+            self.dilations = (1, 1, dilations[0], dilations[1])
+        self.depthwise = Conv2D(padding=self.padding, strides=self.strides, data_format=self.data_format,
+                                dilations=self.dilations, groups=in_channels)
+        self.pointwise = Conv2D(strides=(1, 1, 1, 1), padding=self.padding, data_format=self.data_format, dilations=self.dilations, k_size=1)
 
     def __call__(self, input, filter, point_filter=None):
-        if self.data_format == 'NHWC':
-            input = nhwc_to_nchw(input)
-        channel = input.shape[1]
+        depthwise_conv = self.depthwise(input, filter)
+        pointwise_conv = self.pointwise(depthwise_conv, point_filter)
 
-        depthwise_conv = F.conv2d(input, filter, bias=None, stride=self._stride, padding=self.padding,
-                                  dilation=self.dilations, groups=channel)
-        pointwise_conv = F.conv2d(depthwise_conv, point_filter, padding=self.padding)
-
-        if self.data_format == 'NHWC':
-            pointwise_conv = nchw_to_nhwc(pointwise_conv)
         return pointwise_conv
 
 

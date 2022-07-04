@@ -4,7 +4,6 @@
 import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
-from tensorlayerx.backend import BACKEND
 
 __all__ = [
     'DepthwiseConv2d',
@@ -80,9 +79,9 @@ class DepthwiseConv2d(Module):
     ):
         super().__init__(name, act=act)
         self.kernel_size = self.check_param(kernel_size)
-        self.stride = self._strides = self.check_param(stride)
+        self.stride = self.check_param(stride)
         self.padding = padding
-        self.dilation = self._dilation = self.check_param(dilation)
+        self.dilation = self.check_param(dilation)
         self.data_format = data_format
         self.depth_multiplier = depth_multiplier
         self.W_init = self.str_to_init(W_init)
@@ -122,34 +121,21 @@ class DepthwiseConv2d(Module):
         if self.data_format == 'channels_last':
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
-            self._strides = [1, self._strides[0], self._strides[1], 1]
         elif self.data_format == 'channels_first':
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
-            self._strides = [1, 1, self._strides[0], self._strides[1]]
         else:
             raise Exception("data_format should be either channels_last or channels_first")
 
-        self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.depth_multiplier)
+        self.filter_depthwise = (self.kernel_size[0], self.kernel_size[1], 1, self.in_channels)
+        self.filter_pointwise = (1, 1, self.in_channels, self.in_channels * self.depth_multiplier)
 
-        # Set the size of kernel as (K1,K2), then the shape is (K,Cin,K1,K2), K must be 1.
-        if BACKEND == 'mindspore':
-            self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, 1)
-
-        if BACKEND in ['tensorflow', 'mindspore']:
-            self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init, transposed=True)
-            self.point_filter = None
-        # TODO The number of parameters on multiple backends is not equal.
-        # TODO It might be better to use deepwise convolution and pointwise convolution for other backends as well.
-        if BACKEND in ['paddle', 'torch']:
-            self.filter_depthwise = (self.in_channels, 1, self.kernel_size[0], self.kernel_size[1])
-            self.filter_pointwise = (self.in_channels * self.depth_multiplier, self.in_channels, 1, 1)
-            self.filters = self._get_weights("filters", shape=self.filter_depthwise, init=self.W_init, order=True)
-            self.point_filter = self._get_weights("point_filter", shape=self.filter_pointwise, init=self.W_init, order=True)
+        self.filters = self._get_weights("filters", shape=self.filter_depthwise, init=self.W_init)
+        self.point_filter = self._get_weights("point_filter", shape=self.filter_pointwise, init=self.W_init)
 
         self.depthwise_conv2d = tlx.ops.DepthwiseConv2d(
-            strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation,
-            ksize=self.kernel_size, channel_multiplier=self.depth_multiplier
+            strides=self.stride, padding=self.padding, data_format=self.data_format, dilations=self.dilation,
+            ksize=self.kernel_size, channel_multiplier=self.depth_multiplier, in_channels=self.in_channels
         )
 
         self.b_init_flag = False

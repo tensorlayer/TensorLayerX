@@ -1098,21 +1098,27 @@ def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_
 
 class DepthwiseConv2d(object):
 
-    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1):
+    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1, in_channels=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
         self.strides = strides
         self.dilations = dilations
+        self.depthwise_conv = GroupConv2D(strides=self.strides, padding=self.padding, data_format=self.data_format,
+                                          out_channel=None, k_size=None, dilations=self.dilations, groups=in_channels)
 
     def __call__(self, input, filter, point_filter=None):
-        outputs = tf.nn.depthwise_conv2d(
-            input=input,
-            filter=filter,
-            strides=self.strides,
-            padding=self.padding,
-            data_format=self.data_format,
-            dilations=self.dilations,
-        )
+        depthwise = self.depthwise_conv(input, filter)
+        outputs = tf.nn.conv2d(depthwise, point_filter, strides=1, padding=self.padding,
+                                  data_format=self.data_format, dilations=self.dilations)
+        # outputs = tf.nn.depthwise_conv2d(
+        #     input=input,
+        #     filter=filter,
+        #     strides=self.strides,
+        #     padding=self.padding,
+        #     data_format=self.data_format,
+        #     dilations=self.dilations,
+        # )
         return outputs
+
 
 
 def depthwise_conv2d(input, filter, strides, padding, data_format=None, dilations=None, name=None):
