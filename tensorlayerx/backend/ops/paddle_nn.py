@@ -15,6 +15,8 @@ from paddle.nn.layer.rnn import RNNCellBase
 import warnings
 import math
 from paddle import _C_ops
+from paddle.framework import core
+from paddle import in_dynamic_mode
 
 def padding_format(padding):
     """
@@ -1484,23 +1486,24 @@ def concat_states(states, bidirectional=False, state_components=1):
             componnets.append(states[i::state_components])
         return tuple([pd.stack(item) for item in componnets])
 
+
 class rnnbase(LayerList):
 
     def __init__(
-        self,
-        mode,
-        input_size,
-        hidden_size,
-        num_layers,
-        bias,
-        batch_first,
-        dropout,
-        bidirectional,
-        is_train,
-        w_ih,
-        w_hh,
-        b_ih,
-        b_hh,
+            self,
+            mode,
+            input_size,
+            hidden_size,
+            num_layers,
+            bias,
+            batch_first,
+            dropout,
+            bidirectional,
+            is_train,
+            w_ih,
+            w_hh,
+            b_ih,
+            b_hh,
     ):
         super(rnnbase, self).__init__()
         self.mode = mode
@@ -1596,39 +1599,104 @@ class rnnbase(LayerList):
         self.flatten_parameters()
 
     def flatten_parameters(self):
+        """
+        Resets parameter data pointer to address in continuous memory block for
+        cudnn usage.
+        """
         if self.could_use_cudnn:
-            self._all_weights = self.parameters(include_sublayers=False)
-            shape = [np.prod(param.shape) for param in self._all_weights]
+            # layer.parameters() is depth first and ordered
+            # for i in layer: for j in direct: w_ih, w_hh, b_ih, b_hh
+            # need to reorganize to cudnn param layout:
+            # all bias following all weights
+            params = self.parameters(include_sublayers=False)
+            shape = [np.prod(param.shape) for param in params]
+            self._all_weights = [None] * len(params)
+            for i, param in enumerate(params):
+                base = self.num_layers * self.bidirect
+                num = i // base
+                odd = num % 2
+                offset = (2 * base) * (num // 2)
+                new_id = (i - num * base) * 2 + odd + offset
+                self._all_weights[new_id] = param
+            # Wrap using a list to avoid registed into params and saving, maybe
+            # need a better way to handle this later. Use `create_parameter` to
+            # add both to main_program and startup_program for static-graph.
+            # Use Constant initializer to avoid make effect on random generator.
             self._flat_weight = [
                 self.create_parameter(
-                    shape=[np.sum(shape)], dtype=self._all_weights[0].dtype, default_initializer=I.Constant(0.0)
-                )
+                    shape=[np.sum(shape)],
+                    dtype=params[0].dtype,
+                    default_initializer=I.Constant(0.0))
             ]
-            self._dropout_state = self.create_variable(dtype=fluid.core.VarDesc.VarType.UINT8)
-            with fluid.program_guard(fluid.default_startup_program(), fluid.default_startup_program()):
-                with framework.no_grad():
+            # dropout state may also can be hided and avoid saving
+            # should dropout state be persistable for static-graph
+            self._dropout_state = self.create_variable(
+                dtype=core.VarDesc.VarType.UINT8)
+            with fluid.program_guard(fluid.default_startup_program(),
+                                     fluid.default_startup_program()):
+                with paddle.no_grad():
                     self._helper.append_op(
-                        type="coalesce_tensor", inputs={"Input": self._all_weights}, outputs={
+                        type="coalesce_tensor",
+                        inputs={"Input": self._all_weights},
+                        outputs={
                             "Output": self._all_weights,
                             "FusedOutput": self._flat_weight
-                        }, attrs={
+                        },
+                        attrs={
                             "copy_data": True,
                             "use_align": False,
-                            "dtype": self._all_weights[0].dtype
-                        }
-                    )
+                            "dtype": params[0].dtype
+                        })
 
     def _cudnn_impl(self, inputs, initial_states, sequence_length):
         if not self.time_major:
-            inputs = pd.tensor.transpose(inputs, [1, 0, 2])
-        _, _, out, state = _C_ops.rnn(
-            inputs, initial_states, self._all_weights, sequence_length,
-            self._dropout_state, self.state_components, 'dropout_prob',
-            self.dropout, 'is_bidirec', self.bidirect == 2,
-            'input_size', self.input_size, 'hidden_size', self.hidden_size,
-            'num_layers', self.num_layers, 'mode', self.mode, 'is_test',
-            not self.training)
-        out = pd.tensor.transpose(out, [1, 0, 2]) if not self.time_major else out
+            inputs = paddle.tensor.transpose(inputs, [1, 0, 2])
+
+        if in_dynamic_mode():
+            _, _, out, state = _C_ops.rnn(
+                inputs, initial_states, self._all_weights, sequence_length,
+                self._dropout_state, self.state_components, 'dropout_prob',
+                self.dropout, 'is_bidirec', self.bidirect == 2,
+                'input_size', self.input_size, 'hidden_size', self.hidden_size,
+                'num_layers', self.num_layers, 'mode', self.mode, 'is_test',
+                not self.training)
+        else:
+            out = self._helper.create_variable_for_type_inference(inputs.dtype)
+            state = [
+                self._helper.create_variable_for_type_inference(inputs.dtype)
+                for i in range(self.state_components)
+            ]
+            reserve = self._helper.create_variable_for_type_inference(
+                dtype=core.VarDesc.VarType.UINT8, stop_gradient=True)
+
+            inputs = {
+                'Input': inputs,
+                'WeightList': self._all_weights,
+                'PreState': initial_states,
+                'SequenceLength': sequence_length
+            }
+            attrs = {
+                'dropout_prob': self.dropout,
+                'is_bidirec': self.bidirect == 2,
+                'input_size': self.input_size,
+                'hidden_size': self.hidden_size,
+                'num_layers': self.num_layers,
+                'mode': self.mode,
+                'is_test': not self.training
+            }
+
+            outputs = {
+                'Out': out,
+                'State': state,
+                'Reserve': reserve,
+                'DropoutState': self._dropout_state,
+            }
+
+            self._helper.append_op(
+                type="rnn", inputs=inputs, outputs=outputs, attrs=attrs)
+
+        out = paddle.tensor.transpose(out,
+                                      [1, 0, 2]) if not self.time_major else out
         return out, tuple(state) if len(state) > 1 else state[0]
 
     def check_hidden(self, h, batch_size):
@@ -1661,9 +1729,13 @@ class rnnbase(LayerList):
                 self.check_hidden(c, batch_size)
             else:
                 self.check_hidden(initial_states, batch_size)
+
         if not isinstance(initial_states, (tuple, list)):
-            initial_states = [initial_states,]
-        if self.could_use_cudnn:
+            initial_states = [initial_states, ]
+
+        if self.could_use_cudnn and (
+                not paddle.device.is_compiled_with_rocm() or
+                sequence_length is None):
             # Add CPU kernel and dispatch in backend later
             return self._cudnn_impl(inputs, initial_states, sequence_length)
 
@@ -1672,14 +1744,17 @@ class rnnbase(LayerList):
 
         for i, rnn_layer in enumerate(self):
             if i > 0:
-                inputs = F.dropout(inputs, self.dropout, training=self.training, mode="upscale_in_train")
+                inputs = F.dropout(
+                    inputs,
+                    self.dropout,
+                    training=self.training,
+                    mode="upscale_in_train")
             outputs, final_state = rnn_layer(inputs, states[i], sequence_length)
             final_states.append(final_state)
             inputs = outputs
 
         final_states = concat_states(final_states, self.bidirect == 2, self.state_components)
         return outputs, final_states
-
 
 class layernorm(object):
 
