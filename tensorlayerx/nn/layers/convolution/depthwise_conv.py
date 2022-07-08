@@ -103,7 +103,7 @@ class DepthwiseConv2d(Module):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
             '{classname}(in_channels={in_channels}, out_channels={n_filter}, kernel_size={kernel_size}'
-            ', strides={strides}, padding={padding}'
+            ', stride={stride}, padding={padding}'
         )
         if self.dilation != (1, ) * len(self.dilation):
             s += ', dilation={dilation}'
