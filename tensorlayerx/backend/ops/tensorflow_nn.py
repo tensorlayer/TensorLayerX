@@ -2301,7 +2301,7 @@ class rnnbase(object):
             else:
                 for j in range(time_step):
                     input = pre_layer[j, :, :]
-                    cell = self.rnn_cell(weight_hh, weight_ih, bias_ih, bias_hh, self.act_fn)
+                    cell = self.rnn_cell(weight_ih, weight_hh, bias_ih, bias_hh, self.act_fn)
                     step_out, h_i = cell(input, h_i)
                     y.append(step_out)
                 h_out.append(h_i)
