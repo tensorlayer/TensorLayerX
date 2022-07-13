@@ -1163,8 +1163,13 @@ def resize(inputs, output_size, method, antialias):
 
 class ZeroPadding1D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding, (0, 0))
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding)
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding, (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
         self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
@@ -1173,8 +1178,13 @@ class ZeroPadding1D(object):
 
 class ZeroPadding2D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding[0], padding[1], (0, 0))
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding[0], padding[1])
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding[0], padding[1], (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
         self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
@@ -1183,8 +1193,13 @@ class ZeroPadding2D(object):
 
 class ZeroPadding3D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding[0], padding[1], padding[2], (0, 0))
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding[0], padding[1], padding[2])
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding[0], padding[2], padding[1], (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
         self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
