@@ -1316,34 +1316,64 @@ def resize(inputs, output_size, method, antialias):
     return Resize(output_size, method, antialias)(inputs)
 
 
+def channels_switching(data_format, dim='2d', padding=None):
+    if dim == '1d':
+        if data_format == 'channels_first':
+            out = 'NCL'
+        if data_format == 'channels_last':
+            out = 'NLC'
+        pads = padding
+    if dim == '2d':
+        if data_format == 'channels_first':
+            out = 'NCHW'
+        if data_format == 'channels_last':
+            out = 'NHWC'
+        pads = [padding[1][0], padding[1][1], padding[0][0], padding[0][1]]
+    if dim == '3d':
+        if data_format == 'channels_first':
+            out = 'NCDHW'
+        if data_format == 'channels_last':
+            out = 'NDHWC'
+        pads = [padding[2][0], padding[2][1],
+                padding[1][0], padding[1][1],
+                padding[0][0], padding[0][1]]
+    return out, pads
+
+
 class ZeroPadding1D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding, (0, 0))
-        self.pad = Pad(paddings=padding)
+    def __init__(self, padding, data_format):
+        self.padding = padding
+        self.data_format = data_format
 
     def __call__(self, inputs):
-        return self.pad(inputs)
+        data_format, padding = channels_switching(self.data_format, '1d', self.padding)
+        out = pd.nn.functional.pad(inputs, padding, mode='constant', value=0.0, data_format=data_format)
+        return out
 
 
 class ZeroPadding2D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding[0], padding[1], (0, 0))
-        self.pad = Pad(paddings=padding)
+    def __init__(self, padding, data_format):
+        self.padding = padding
+        self.data_format = data_format
 
     def __call__(self, inputs):
-        return self.pad(inputs)
+        data_format, padding = channels_switching(self.data_format, '2d', self.padding)
+        out = pd.nn.functional.pad(inputs, padding, mode='constant', value=0.0, data_format=data_format)
+        return out
 
 
 class ZeroPadding3D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding[0], padding[1], padding[2], (0, 0))
-        self.pad = Pad(paddings=padding)
+    def __init__(self, padding, data_format):
+        self.padding = padding
+        self.data_format = data_format
 
     def __call__(self, inputs):
-        return self.pad(inputs)
+        data_format, padding = channels_switching(self.data_format, '3d', self.padding)
+        out = pd.nn.functional.pad(inputs, padding, mode='constant', value=0.0, data_format=data_format)
+        return out
 
 
 class Sign(object):

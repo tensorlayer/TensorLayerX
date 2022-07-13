@@ -1497,29 +1497,47 @@ def resize(inputs, output_size, method, antialias):
 
 class ZeroPadding1D(object):
 
-    def __init__(self, padding):
-        self.zeropad = tf.keras.layers.ZeroPadding1D(padding=padding)
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding)
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding, (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
+        self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
-        return self.zeropad(inputs)
+        return self.pad(inputs)
 
 
 class ZeroPadding2D(object):
 
-    def __init__(self, padding):
-        self.zeropad = tf.keras.layers.ZeroPadding2D(padding=padding)
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding[0], padding[1])
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding[0], padding[1], (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
+        self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
-        return self.zeropad(inputs)
+        return self.pad(inputs)
 
 
 class ZeroPadding3D(object):
 
-    def __init__(self, padding):
-        self.zeropad = tf.keras.layers.ZeroPadding3D(padding=padding)
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding[0], padding[1], padding[2])
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding[0], padding[1], padding[2], (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
+        self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
-        return self.zeropad(inputs)
+        return self.pad(inputs)
 
 
 class Sign(object):
