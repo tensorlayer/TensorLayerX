@@ -2141,7 +2141,7 @@ class grucell(object):
         h_r, h_z, h_c = tf.split(h_gates, num_or_size_splits=3, axis=-1)
 
         r = self.gate_act_fn(x_r + h_r)
-        z = self.gate_act_fn(x_r + h_z)
+        z = self.gate_act_fn(x_z + h_z)
         c = self.act_fn(x_c + r * h_c)
         h = (h - c) * z + c
 
