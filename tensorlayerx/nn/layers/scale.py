@@ -54,4 +54,8 @@ class Scale(Module):
     # @tf.function
     def forward(self, inputs):
         outputs = inputs * self.scale
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

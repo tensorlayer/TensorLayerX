@@ -5,7 +5,7 @@ __all__ = [
 ]
 
 _excludes = [
-    'tensorlayerx/db.py',
+    'tensorlayer/db.py',
 ]
 
 
@@ -19,7 +19,7 @@ def _list_py_files(root):
 
 
 def list_all_py_files():
-    dirs = ['tensorlayerx', 'tests', 'example']
+    dirs = ['tensorlayer', 'tests', 'example']
     for d in dirs:
         for filename in _list_py_files(d):
             if filename not in _excludes:

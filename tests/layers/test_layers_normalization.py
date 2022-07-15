@@ -193,7 +193,7 @@ class Laye_BatchNorm_Test(CustomTestCase):
 
         try:
             ni = Input([None, 100, 1], name='test_ni1')
-            bn = BatchNorm(decay=1.5)(ni)
+            bn = BatchNorm(momentum=1.5)(ni)
         except Exception as e:
             self.assertIsInstance(e, ValueError)
             print(e)

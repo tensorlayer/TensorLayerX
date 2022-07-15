@@ -4,8 +4,7 @@
 import numpy as np
 import tensorlayerx as tlx
 from tensorlayerx import logging
-from tensorlayerx import BACKEND
-from tensorlayerx.nn.core import Module
+from tensorlayerx.nn.core import Module, ParameterList
 
 __all__ = [
     'RNN',
@@ -141,6 +140,10 @@ class RNNCell(Module):
         states_shape = tlx.get_tensor_shape(states)
         self.check_hidden(input_shape, states_shape, hidden_label='h')
         output, states = self.rnncell(inputs, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, [output, states])
+            self._nodes_fixed = True
         return output, states
 
 
@@ -267,6 +270,10 @@ class LSTMCell(Module):
         self.check_hidden(input_shape, h_shape, hidden_label='h')
         self.check_hidden(input_shape, c_shape, hidden_label='c')
         output, new_h, new_c = self.lstmcell(inputs, h, c)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, [output, new_h, new_c])
+            self._nodes_fixed = True
         return output, (new_h, new_c)
 
 
@@ -387,6 +394,10 @@ class GRUCell(Module):
         states_shape = tlx.get_tensor_shape(states)
         self.check_hidden(input_shape, states_shape, hidden_label='h')
         output, states = self.grucell(inputs, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, [output, states])
+            self._nodes_fixed = True
         return output, states
 
 
@@ -437,10 +448,10 @@ class RNNBase(Module):
 
     def build(self, inputs_shape):
         bidirect = 2 if self.bidirectional else 1
-        self.w_ih = []
-        self.w_hh = []
-        self.b_ih = []
-        self.b_hh = []
+        self.weight_ih = []
+        self.weight_hh = []
+        self.bias_ih = []
+        self.bias_hh = []
         stdv = 1.0 / np.sqrt(self.hidden_size)
         _init = tlx.nn.initializers.RandomUniform(minval=-stdv, maxval=stdv)
         if self.mode == 'LSTM':
@@ -454,39 +465,45 @@ class RNNBase(Module):
                 layer_input_size = self.input_size if layer == 0 else self.hidden_size * bidirect
                 suffix = '_reverse' if direction == 1 else ''
 
-                self.w_ih.append(
+                self.weight_ih.append(
                     self._get_weights(
                         var_name='weight_ih_l{}{}'.format(layer, suffix), shape=(gate_size, layer_input_size),
                         init=_init
                     )
                 )
-                self.w_hh.append(
+                self.weight_hh.append(
                     self._get_weights(
                         var_name='weight_hh_l{}{}'.format(layer, suffix), shape=(gate_size, self.hidden_size),
                         init=_init
                     )
                 )
                 if self.bias:
-                    self.b_ih.append(
+                    self.bias_ih.append(
                         self._get_weights(
                             var_name='bias_ih_l{}{}'.format(layer, suffix), shape=(gate_size, ), init=_init
                         )
                     )
-                    self.b_hh.append(
+                    self.bias_hh.append(
                         self._get_weights(
                             var_name='bias_hh_l{}{}'.format(layer, suffix), shape=(gate_size, ), init=_init
                         )
                     )
-
+        self.weight_ih = ParameterList(self.weight_ih)
+        self.weight_hh = ParameterList(self.weight_hh)
+        self.bias_ih = ParameterList(self.bias_ih)
+        self.bias_hh =ParameterList(self.bias_hh)
         self.rnn = tlx.ops.rnnbase(
             mode=self.mode, input_size=self.input_size, hidden_size=self.hidden_size, num_layers=self.num_layers,
             bias=self.bias, batch_first=self.batch_first, dropout=self.dropout, bidirectional=self.bidirectional,
-            is_train=self.is_train, w_ih=self.w_ih, w_hh=self.w_hh, b_ih=self.b_ih, b_hh=self.b_hh
+            is_train=self.is_train, w_ih=self.weight_ih, w_hh=self.weight_hh, b_ih=self.bias_ih, b_hh=self.bias_hh
         )
 
     def forward(self, input, states=None):
-
         output, new_states = self.rnn(input, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(input, [output, new_states])
+            self._nodes_fixed = True
         return output, new_states
 
 
@@ -572,6 +589,12 @@ class RNN(RNNBase):
         """
 
         output, new_states = self.rnn(input, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self.states = states
+            self.new_states = new_states
+            self._add_node(input, output)
+            self._nodes_fixed = True
         return output, new_states
 
 
@@ -648,6 +671,12 @@ class LSTM(RNNBase):
         """
 
         output, new_states = self.rnn(input, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self.states = states
+            self.new_states = new_states
+            self._add_node(input, output)
+            self._nodes_fixed = True
         return output, new_states
 
 
@@ -723,4 +752,10 @@ class GRU(RNNBase):
         """
 
         output, new_states = self.rnn(input, states)
+
+        if not self._nodes_fixed and self._build_graph:
+            self.states = states
+            self.new_states = new_states
+            self._add_node(input, output)
+            self._nodes_fixed = True
         return output, new_states

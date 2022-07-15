@@ -98,13 +98,13 @@ class QuanLinear(Module):
             raise Exception("TODO. The current version use tf.matmul for inferencing.")
 
         n_in = inputs_shape[-1]
-        self.W = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
-        self.b = None
+        self.weights = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
+        self.biases = None
         if self.b_init is not None:
-            self.b = self._get_weights("biases", shape=int(self.out_features), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=int(self.out_features), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd()
 
-        self.quan_dense = tlx.ops.QuanDense(self.W, self.b, self.bitW, self.bitA)
+        self.quan_dense = tlx.ops.QuanDense(self.weights, self.biases, self.bitW, self.bitA)
 
     def forward(self, inputs):
         if self._forward_state == False:
@@ -115,4 +115,8 @@ class QuanLinear(Module):
         outputs = self.quan_dense(inputs)
         if self.act:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

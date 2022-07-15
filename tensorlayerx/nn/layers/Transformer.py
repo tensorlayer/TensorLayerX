@@ -4,7 +4,7 @@
 import tensorlayerx as tlx
 from tensorlayerx import logging
 from tensorlayerx.nn.core import Module
-from tensorlayerx.nn.core import LayerList
+from tensorlayerx.nn.core import ModuleList
 import numpy as np
 
 __all__ = [
@@ -103,16 +103,16 @@ class MultiheadAttention(Module):
     def build(self, inputs_shape):
         bias_init = tlx.nn.initializers.zeros()
         weight_init = tlx.nn.initializers.XavierNormal()
-        self.q_proj_weight = self._get_weights(
+        self.q_weight = self._get_weights(
             'q_weight', shape=(self.embed_dim, self.embed_dim), init=weight_init, order=True
         )
-        self.k_proj_weight = self._get_weights(
+        self.k_weight = self._get_weights(
             'k_weight', shape=(self.embed_dim, self.kdim), init=weight_init, order=True
         )
-        self.v_proj_weight = self._get_weights(
+        self.v_weight = self._get_weights(
             'v_weight', shape=(self.embed_dim, self.vdim), init=weight_init, order=True
         )
-        self.out_proj_weight = self._get_weights(
+        self.out_weight = self._get_weights(
             'out_weight', shape=(self.embed_dim, self.embed_dim), init=weight_init, order=True
         )
         self.q_bias = None
@@ -127,8 +127,8 @@ class MultiheadAttention(Module):
 
         self.multiheadattention = tlx.ops.multiheadattention(
             embed_dim=self.embed_dim, num_heads=self.num_heads, dropout=self.dropout, batch_first=self.batch_first,
-            need_weights=self.need_weights, q_weight=self.q_proj_weight, k_weight=self.k_proj_weight,
-            v_weight=self.v_proj_weight, out_weight=self.out_proj_weight, q_bias=self.q_bias, k_bias=self.k_bias,
+            need_weights=self.need_weights, q_weight=self.q_weight, k_weight=self.k_weight,
+            v_weight=self.v_weight, out_weight=self.out_weight, q_bias=self.q_bias, k_bias=self.k_bias,
             v_bias=self.v_bias, out_bias=self.out_bias, train=self.is_train
         )
 
@@ -175,6 +175,9 @@ class MultiheadAttention(Module):
 
         attn_output, attn_output_weights = self.multiheadattention(q, k, v, attn_mask, key_padding_mask)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node([q, k, v, attn_mask, key_padding_mask], [attn_output, attn_output_weights])
+            self._nodes_fixed = True
         return attn_output, attn_output_weights
 
 
@@ -308,6 +311,9 @@ class Transformer(Module):
             memory_key_padding_mask=memory_key_padding_mask
         )
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node([src, tgt, src_mask, tgt_mask, memory_mask, src_key_padding_mask, tgt_key_padding_mask, memory_key_padding_mask], output)
+            self._nodes_fixed = True
         return output
 
     def generate_square_subsequent_mask(self, length):
@@ -362,8 +368,8 @@ class TransformerEncoder(Module):
 
     def __init__(self, encoder_layer, num_layers, norm=None):
         super(TransformerEncoder, self).__init__()
-        # self.encoder_layers = LayerList([copy.deepcopy(encoder_layer) for i in range(num_layers)])
-        self.encoder_layers = LayerList(
+        # self.encoder_layers = ModuleList([copy.deepcopy(encoder_layer) for i in range(num_layers)])
+        self.encoder_layers = ModuleList(
             [(encoder_layer if i == 0 else type(encoder_layer)(**encoder_layer._config)) for i in range(num_layers)]
         )
         self.num_layers = num_layers
@@ -389,6 +395,9 @@ class TransformerEncoder(Module):
         if self.norm is not None:
             output = self.norm(output)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node([src, mask, src_key_padding_mask], output)
+            self._nodes_fixed = True
         return output
 
 
@@ -418,7 +427,7 @@ class TransformerDecoder(Module):
 
     def __init__(self, decoder_layer, num_layers, norm=None):
         super(TransformerDecoder, self).__init__()
-        self.decoder_layers = LayerList(
+        self.decoder_layers = ModuleList(
             [(decoder_layer if i == 0 else type(decoder_layer)(**decoder_layer._config)) for i in range(num_layers)]
         )
         self.num_layers = num_layers
@@ -461,6 +470,9 @@ class TransformerDecoder(Module):
         if self.norm is not None:
             output = self.norm(output)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node([tgt, memory, tgt_mask, memory_mask, tgt_key_padding_mask, memory_key_padding_mask], output)
+            self._nodes_fixed = True
         return output
 
 
@@ -549,6 +561,9 @@ class TransformerEncoderLayer(Module):
             the mask for the src keys per batch.
 
         """
+
+        inputs = [src, src_mask, src_key_padding_mask]
+
         src1 = self.self_attn(src, src, src, src_mask, src_key_padding_mask)[0]
         src = src + self.dropout1(src1)
         src = self.norm1(src)
@@ -556,6 +571,9 @@ class TransformerEncoderLayer(Module):
         src = src + self.dropout3(src1)
         src = self.norm2(src)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, src)
+            self._nodes_fixed = True
         return src
 
 
@@ -650,6 +668,8 @@ class TransformerDecoderLayer(Module):
             the mask for the memory keys per batch.
 
         """
+        inputs = [tgt, memory, tgt_mask, memory_mask, tgt_key_padding_mask, memory_key_padding_mask]
+
         tgt1 = self.self_attn(tgt, tgt, tgt, tgt_mask, tgt_key_padding_mask)[0]
         tgt = tgt + self.dropout1(tgt1)
         tgt = self.norm1(tgt)
@@ -659,5 +679,9 @@ class TransformerDecoderLayer(Module):
         tgt1 = self.linear2(self.dropout3(self.act(self.linear1(tgt))))
         tgt = tgt + self.dropout3(tgt1)
         tgt = self.norm3(tgt)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, tgt)
+            self._nodes_fixed = True
         return tgt
 

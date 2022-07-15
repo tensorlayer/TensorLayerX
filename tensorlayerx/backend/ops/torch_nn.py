@@ -27,6 +27,8 @@ def padding_format(padding):
         padding = "valid"
     elif padding == None:
         padding = None
+    elif isinstance(padding, tuple) or isinstance(padding, int):
+        return padding
     else:
         raise Exception("Unsupported padding: " + str(padding))
     return padding
@@ -258,14 +260,14 @@ def relu6(x):
 
 class LeakyReLU(object):
 
-    def __init__(self, alpha=0.2):
-        self.alpha = alpha
+    def __init__(self, negative_slope=0.01):
+        self.negative_slope = negative_slope
 
     def __call__(self, x):
-        return F.leaky_relu(x, negative_slope=self.alpha)
+        return F.leaky_relu(x, negative_slope=self.negative_slope)
 
 
-def leaky_relu(x, alpha=0.2):
+def leaky_relu(x, negative_slope=0.01):
     """
     Compute the Leaky ReLU activation function.
 
@@ -280,7 +282,7 @@ def leaky_relu(x, alpha=0.2):
         The activation value.
     """
 
-    return F.leaky_relu(x, negative_slope=alpha)
+    return F.leaky_relu(x, negative_slope=negative_slope)
 
 
 class Softplus(object):
@@ -573,9 +575,13 @@ def same_padding(input, weight, strides, dilations):
 class Conv2D(object):
 
     def __init__(self, strides, padding, data_format='NHWC', dilations=None, out_channel=None, k_size=None, groups=1):
-        self.strides = (strides[1], strides[2])
-        self.dilations = (dilations[1], dilations[2])
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        if self.data_format is 'NHWC':
+            self.strides = (strides[1], strides[2])
+            self.dilations = (dilations[1], dilations[2])
+        elif self.data_format is 'NCHW':
+            self.strides = (strides[2], strides[3])
+            self.dilations = (dilations[2], dilations[3])
         self.groups = groups
 
     def __call__(self, input, filters):
@@ -644,13 +650,14 @@ def conv2d(input, filters, strides, padding, data_format='NHWC', dilations=None)
 class Conv3D(object):
 
     def __init__(self, strides, padding, data_format='NDHWC', dilations=None, out_channel=None, k_size=None):
-        if data_format is 'NDHWC':
+        self.data_format, self.padding = preprocess_3d_format(data_format, padding)
+        if self.data_format is 'NDHWC':
             self._strides = (strides[1], strides[2], strides[3])
             self._dilations = (dilations[1], dilations[2], dilations[3])
-        elif data_format is 'NCDHW':
+        elif self.data_format is 'NCDHW':
             self._strides = (strides[2], strides[3], strides[4])
             self._dilations = (dilations[2], dilations[3], dilations[4])
-        self.data_format, self.padding = preprocess_3d_format(data_format, padding)
+
 
     def __call__(self, input, filters):
         if self.data_format == 'NDHWC':
@@ -769,7 +776,7 @@ class MaxPool1d(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.max_pool1d = MaxPool(ksize, strides, padding, data_format)
+        self.max_pool1d = MaxPool([ksize,], strides, padding, data_format)
 
     def __call__(self, inputs):
         return self.max_pool1d(inputs)
@@ -785,6 +792,8 @@ class MaxPool(object):
         elif data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
             self.data_format = 'channels_first'
         self.padding = padding
+        if self.padding in ['VALID', 'valid']:
+            self.padding = 0
 
     def __call__(self, inputs):
         if self.data_format == 'channels_last':
@@ -793,17 +802,17 @@ class MaxPool(object):
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool1d_same_padding(inputs)
             else:
-                out = F.max_pool1d(inputs, self.ksize, self.strides)
+                out = F.max_pool1d(inputs, self.ksize, self.strides, padding=self.padding)
         if len(inputs.shape) == 4:
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool2d_same_padding(inputs)
             else:
-                out = F.max_pool2d(inputs, self.ksize, (self.strides[1], self.strides[2]))
+                out = F.max_pool2d(inputs, self.ksize, self.strides, padding=self.padding)
         if len(inputs.shape) == 5:
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool3d_same_padding(inputs)
             else:
-                out = F.max_pool3d(inputs, self.ksize, (self.strides[1], self.strides[2], self.strides[3]))
+                out = F.max_pool3d(inputs, self.ksize, self.strides, padding=self.padding)
 
         if self.data_format == 'channels_last':
             return nchw_to_nhwc(out)
@@ -817,23 +826,21 @@ class MaxPool(object):
         return F.max_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2))
 
     def maxpool2d_same_padding(self, input):
-        strides = [self.strides[1], self.strides[2]]
-        rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, strides, (1, 1))
+        rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, self.strides, (1, 1))
         if rows_odd or cols_odd:
             # TODO The fill value for maxpool is -INF.
             input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)], 'constant', float('-inf'))
 
-        return F.max_pool2d(input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2))
+        return F.max_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2))
 
     def maxpool3d_same_padding(self, input):
-        strides = [self.strides[1], self.strides[2], self.strides[3]]
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(
-            input, self.ksize, strides, (1, 1, 1)
+            input, self.ksize, self.strides, (1, 1, 1)
         )
         if rows_odd or cols_odd or depth_odd:
             input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], 'constant', float('-inf'))
         return F.max_pool3d(
-                input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
+                input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
         )
 
 
@@ -871,7 +878,7 @@ class AvgPool1d(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.avg_poo1d = AvgPool(ksize, strides, padding, data_format)
+        self.avg_poo1d = AvgPool([ksize, ], strides, padding, data_format)
 
     def __call__(self, inputs):
         return self.avg_poo1d(inputs)
@@ -887,6 +894,8 @@ class AvgPool(object):
         elif data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
             self.data_format = 'channels_first'
         self.padding = padding
+        if self.padding in ['VALID', 'valid']:
+            self.padding = 0
 
     def __call__(self, inputs):
         if self.data_format == 'channels_last':
@@ -895,17 +904,17 @@ class AvgPool(object):
             if self.padding in ['SAME', 'same']:
                 out = self.avgpool1d_same_padding(inputs)
             else:
-                out = F.avg_pool1d(inputs, self.ksize, self.strides)
+                out = F.avg_pool1d(inputs, self.ksize, self.strides, padding=self.padding)
         if len(inputs.shape) == 4:
             if self.padding in ['SAME', 'same']:
                 out = self.avgpool2d_same_padding(inputs)
             else:
-                out = F.avg_pool2d(inputs, self.ksize, (self.strides[1], self.strides[2]))
+                out = F.avg_pool2d(inputs, self.ksize, self.strides, padding=self.padding)
         if len(inputs.shape) == 5:
             if self.padding in ['SAME', 'same']:
                 out = self.avgpool3d_same_padding(inputs)
             else:
-                out = F.avg_pool3d(inputs, self.ksize, (self.strides[1], self.strides[2], self.strides[3]))
+                out = F.avg_pool3d(inputs, self.ksize, self.strides, padding=self.padding)
 
         if self.data_format == 'channels_last':
             return nchw_to_nhwc(out)
@@ -919,23 +928,21 @@ class AvgPool(object):
         return F.avg_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2))
 
     def avgpool2d_same_padding(self, input):
-        strides = [self.strides[1], self.strides[2]]
-        rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, strides, (1, 1))
+        rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, self.strides, (1, 1))
         if rows_odd or cols_odd:
             # TODO The fill value for maxpool is -INF.
             input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)], mode='replicate')
 
-        return F.avg_pool2d(input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2))
+        return F.avg_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2))
 
     def avgpool3d_same_padding(self, input):
-        strides = [self.strides[1], self.strides[2], self.strides[3]]
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(
-            input, self.ksize, strides, (1, 1, 1)
+            input, self.ksize, self.strides, (1, 1, 1)
         )
         if rows_odd or cols_odd or depth_odd:
             input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], mode='replicate')
         return F.avg_pool3d(
-                input, self.ksize, strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
+                input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
         )
 
 
@@ -1097,25 +1104,22 @@ def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_
 
 class DepthwiseConv2d(object):
 
-    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1):
+    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1, in_channels=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        if self.data_format == 'NHWC':
-            self._stride = (strides[1], strides[2])
-        if self.data_format == 'NCHW':
-            self._stride = (strides[2], strides[3])
-        self.dilations = dilations
+        if self.data_format is 'NHWC':
+            self.strides = (1, strides[0], strides[1], 1)
+            self.dilations = (1, dilations[0], dilations[1], 1)
+        elif self.data_format is 'NCHW':
+            self.strides = (1, 1, strides[0], strides[1])
+            self.dilations = (1, 1, dilations[0], dilations[1])
+        self.depthwise = Conv2D(padding=self.padding, strides=self.strides, data_format=self.data_format,
+                                dilations=self.dilations, groups=in_channels)
+        self.pointwise = Conv2D(strides=(1, 1, 1, 1), padding=self.padding, data_format=self.data_format, dilations=self.dilations, k_size=1)
 
     def __call__(self, input, filter, point_filter=None):
-        if self.data_format == 'NHWC':
-            input = nhwc_to_nchw(input)
-        channel = input.shape[1]
+        depthwise_conv = self.depthwise(input, filter)
+        pointwise_conv = self.pointwise(depthwise_conv, point_filter)
 
-        depthwise_conv = F.conv2d(input, filter, bias=None, stride=self._stride, padding=self.padding,
-                                  dilation=self.dilations, groups=channel)
-        pointwise_conv = F.conv2d(depthwise_conv, point_filter, padding=self.padding)
-
-        if self.data_format == 'NHWC':
-            pointwise_conv = nchw_to_nhwc(pointwise_conv)
         return pointwise_conv
 
 
@@ -1233,7 +1237,7 @@ class Conv1d_transpose(object):
             out = F.conv_transpose1d(
                 input,
                 weight=filters,
-                padding=0,
+                padding=(0 if isinstance(self.padding, str) else self.padding),
                 stride=self.stride,
                 dilation=self.dilations
             )
@@ -1312,7 +1316,7 @@ class Conv2d_transpose(object):
             out = F.conv_transpose2d(
                 input,
                 weight=filters,
-                padding=0,
+                padding=(0 if isinstance(self.padding, str) else self.padding),
                 stride=self.strides,
                 dilation=self.dilations
             )
@@ -1392,7 +1396,7 @@ class Conv3d_transpose(object):
             out = F.conv_transpose3d(
                 input,
                 weight=filters,
-                padding=0,
+                padding=(0 if isinstance(self.padding, str) else self.padding),
                 stride=self.strides,
                 dilation=self.dilations
             )
@@ -1530,7 +1534,7 @@ class BatchNorm(object):
         self, decay=0.9, epsilon=0.00001, beta=None, gamma=None, moving_mean=None, moving_var=None, num_features=None,
         data_format='channels_last', is_train=False
     ):
-        self.decay = decay
+        self.decay =  1-decay
         self.epsilon = epsilon
         self.data_format = data_format
         self.beta = beta
@@ -1927,7 +1931,7 @@ class rnnbase(Module):
             )
 
     def check_hidden(self, h, batch_size):
-        expected_hidden_size = (self.num_layers * self.bidirect, batch_size, self.hidden_size)
+        expected_hidden_size = (self.num_layers * self.num_directions, batch_size, self.hidden_size)
         if h.shape != expected_hidden_size:
             raise ValueError('Expected hidden size {}, got {}.'.format(expected_hidden_size, h.shape))
 
@@ -2166,3 +2170,19 @@ class QuanConvBn(object):
 
     def __call__(self, inputs):
         raise NotImplementedError
+
+
+class PReLU(object):
+
+    def __init__(self, data_format):
+
+        self.data_format = data_format
+
+    def __call__(self, input, weight):
+        # weight = weight.to(input.device)
+        return torch.prelu(input, weight)
+
+
+def prelu(input, weight, data_format):
+    weight = weight.to(input.device)
+    return torch.prelu(input, weight)

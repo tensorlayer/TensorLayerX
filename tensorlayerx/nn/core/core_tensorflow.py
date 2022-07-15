@@ -1,18 +1,19 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from .common import str2act, str2init
+from .common import check_parameter, processing_act, str2init, tolist, construct_graph, ModuleNode, select_attrs
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
-from collections import OrderedDict
+from collections import OrderedDict, abc as container_abcs
+import warnings
 import time
 import tensorlayerx as tlx
 import tensorflow as tf
 from tensorlayerx.nn.layers.utils import (get_variable_with_initializer, random_normal)
 
-__all__ = ['Module', 'SequentialLayer', 'LayerList']
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict']
 
 _global_layer_name_dict = {}
-Parameter_ = tf.Variable
+_global_layer_node = []
 
 
 class Module(object):
@@ -54,6 +55,8 @@ class Module(object):
     def __init__(self, name=None, act=None, *args, **kwargs):
         self._params = OrderedDict()
         self._layers = OrderedDict()
+        # self._params_list = OrderedDict()
+        # self._params_dict = OrderedDict()
         self._params_status = OrderedDict()
         self._parameter_layout_dict = {}
         self._create_time = int(time.time() * 1e9)
@@ -81,26 +84,14 @@ class Module(object):
 
         self.name = name
 
-        if isinstance(act, str):
-            str_act = str2act(act)
-
-        if act:
-            if isinstance(act, str) and (len(act) > 5 and act[0:5] == "lrelu" or
-                                         len(act) > 10 and act[0:10] == "leaky_relu"):
-                self.act = str_act
-            elif isinstance(act, str):
-                self.act = str_act()
-            else:
-                self.act = act()
-        else:
-            self.act = act
+        self.act = processing_act(act)
 
         # Layer building state
         self._built = False
 
         # Layer nodes state
-        self._nodes = []
         self._nodes_fixed = False
+        self._build_graph = False
 
         # Layer weight state
         self._all_weights = None
@@ -112,6 +103,10 @@ class Module(object):
 
         # Layer training state
         self.is_train = True
+
+        # weights check state
+        self._check = False
+        self.trainable = True
 
     def extend_repr(self):
         """
@@ -142,7 +137,7 @@ class Module(object):
         layers = self.__dict__.get('_layers')
         params = self.__dict__.get('_params')
 
-        if isinstance(value, Parameter_):
+        if isinstance(value, tf.Variable):
             if params is None:
                 raise AttributeError("Can not assign params before Module.__init__() call.")
             if name in self.__dict__:
@@ -153,6 +148,12 @@ class Module(object):
                 raise TypeError("Expected type is Module, but got Parameter.")
             self.insert_param_to_layer(name, value)
 
+        # elif isinstance(value, ParameterList):
+        #     self.set_attr_for_parameter_tuple(name, value)
+        #
+        # elif isinstance(value, ParameterDict):
+        #     self.set_attr_for_parameter_dict(name, value)
+
         elif isinstance(value, Module):
             if layers is None:
                 raise AttributeError("Can not assign layers before Module.__init__() call.")
@@ -160,21 +161,27 @@ class Module(object):
                 del self.__dict__[name]
             if params and name in params:
                 raise TypeError("Expected type is Parameter, but got Module.")
-            # TODO Automatic shape inference when the user does not enter inchannels.
-            # if value._built is False:
-            #     raise AttributeError(
-            #         "The registered layer `{}` should be built in advance. "
-            #         "Do you forget to pass the keyword argument 'in_channels'? ".format(value.name)
-            #     )
             layers[name] = value
         else:
             object.__setattr__(self, name, value)
 
     def __call__(self, inputs, *args, **kwargs):
+        if self._check == False:
+            self.train_weights_check()
+            self._check = True
 
         output = self.forward(inputs, *args, **kwargs)
-
         return output
+
+    def train_weights_check(self):
+        _param_name = []
+        for w in self.trainable_weights:
+            if w.name not in _param_name:
+                _param_name.append(w.name)
+            else:
+                raise Exception("parameter name [{}] have be been used. "
+                "In training, the name of layer can't be same."
+                "Please check the layers name".format(w.name))
 
     def forward(self, *inputs, **kwargs):
         raise Exception("The forward method must be implemented by inherited class")
@@ -248,6 +255,47 @@ class Module(object):
             if isinstance(layer, Module):
                 layer.is_train = is_train
 
+    # def set_attr_for_parameter_dict(self, name, value):
+    #     """Set attr for parameter in ParameterDict."""
+    #     params = self.__dict__.get('_params')
+    #     params_dict = self.__dict__.get('_params_dict')
+    #     if params is None:
+    #         raise AttributeError("For 'Module', can not assign params before Module.__init__() is called.")
+    #     exist_names = set("")
+    #     for item in value:
+    #         self.insert_param_to_layer(item, value[item], check_name=False)
+    #         if item in exist_names:
+    #             raise ValueError("The value {} , its name '{}' already exists.".
+    #                              format(value[item], item))
+    #         exist_names.add(item)
+    #
+    #     if name in self.__dict__:
+    #         del self.__dict__[name]
+    #     if name in params:
+    #         del params[name]
+    #     params_dict[name] = value
+    #
+    # def set_attr_for_parameter_tuple(self, name, value):
+    #     """Set attr for parameter in ParameterTuple."""
+    #     params = self.__dict__.get('_params')
+    #     params_list = self.__dict__.get('_params_list')
+    #     if params is None:
+    #         raise AttributeError("For 'Module', can not assign params before Module.__init__() is called.")
+    #     exist_names = set("")
+    #
+    #     for item in value:
+    #         self.insert_param_to_layer(item.name, item, check_name=False)
+    #         if item.name in exist_names:
+    #             raise ValueError("The value {} , its name '{}' already exists.".
+    #                              format(value, item.name))
+    #         exist_names.add(item.name)
+    #
+    #     if name in self.__dict__:
+    #         del self.__dict__[name]
+    #     if name in params:
+    #         del params[name]
+    #     params_list[name] = value
+
     def set_train(self):
         """Set this network in training mode. After calling this method,
         all layers in network are in training mode, in particular, BatchNorm, Dropout, etc.
@@ -306,7 +354,6 @@ class Module(object):
             Determines whether the name input is compatible. Default: True.
 
         """
-
         if not param_name:
             raise KeyError("The name of parameter should not be null.")
         if check_name and '.' in param_name:
@@ -315,30 +362,13 @@ class Module(object):
             raise AttributeError("You need call init() first.")
         if hasattr(self, param_name) and param_name not in self._params:
             raise KeyError("Duplicated parameter name '{}'.".format(param_name))
-        if not isinstance(param, Parameter_) and param is not None:
+        if not isinstance(param, tf.Variable) and param is not None:
             raise TypeError("The type of parameter should be 'Parameter' if not None.")
         self._params[param_name] = param
         try:
             self._params_status[param_name] = self.trainable
         except:
             pass
-
-    def _add_node(self, input_tensors, output_tensors):
-        """Add a LayerNode for this layer given input_tensors, output_tensors.
-
-        WARINING: This function should not be called from outside, it should only be called
-        in layer.__call__ when building static model.
-
-        Parameters
-        ----------
-        input_tensors : Tensor or a list of tensors
-            Input tensors to this layer.
-        output_tensors : Tensor or a list of tensors
-            Output tensors to this layer.
-
-        """
-
-        raise NotImplementedError
 
     @property
     def create_time(self):
@@ -357,6 +387,15 @@ class Module(object):
             params_status = self.__dict__['_params_status']
             if name in params_status:
                 return params_status[name]
+        # if '_params_list' in self.__dict__:
+        #     params_list = self.__dict__['_params_list']
+        #     if name in params_list:
+        #         para_list = params_list[name]
+        #         return para_list
+        # if '_params_dict' in self.__dict__:
+        #     params_dict = self.__dict__['_params_dict']
+        #     if name in params_dict:
+        #         return params_dict[name]
         raise AttributeError("'{}' object has no attribute '{}'.".format(type(self).__name__, name))
 
     def __delattr__(self, name):
@@ -598,11 +637,59 @@ class Module(object):
     def str_to_init(self, initializer):
         return str2init(initializer)
 
+    def check_param(self, param, dim='2d'):
+        return check_parameter(param, dim)
 
-class SequentialLayer(Module):
+    def build_graph(self, *inputs, **kwargs):
+        # Add nodes only when the composition is needed.
+        for layer_name, layer in self._layers.items():
+            if isinstance(layer, Module):
+                layer._build_graph = True
+        self.set_eval()
+
+        outputs = self.forward(*inputs, **kwargs)
+        self.inputs = inputs
+        self.outputs = outputs
+        self._node_by_depth, self._all_layers = construct_graph(self.inputs, self.outputs)
+        return self._node_by_depth, self._all_layers
+
+    def _add_node(self, input_tensors, output_tensors):
+        """Add a ModuleNode for this layer given input_tensors, output_tensors.
+
+        This function should not be called from outside, it should only be called
+        in __call__ when building static model.
+
+        Parameters
+        ----------
+        input_tensors : Tensor or a list of tensors
+            Input tensors to this layer.
+        output_tensors : Tensor or a list of tensors
+            Output tensors to this layer.
+
+        """
+        inputs_list = tolist(input_tensors)
+        outputs_list = tolist(output_tensors)
+        if self.__class__.__name__ in tlx.layers.inputs.__all__:
+            # for InputLayer, there should be no in_nodes
+            in_nodes = []
+            in_tensor_idxes = [0]
+        else:
+            in_nodes = [tensor._info[0] for tensor in inputs_list]
+            in_tensor_idxes = [tensor._info[1] for tensor in inputs_list]
+        node_index = len(_global_layer_node)
+
+        new_node = ModuleNode(
+            self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes, select_attrs(self)
+        )
+        _global_layer_node.append(new_node)
+        for idx, tensor in enumerate(outputs_list):
+            tensor._info = (new_node, idx)
+
+
+class Sequential(Module):
     """
-    The class :class:`SequentialLayer` is a linear stack of layers.
-    The :class:`SequentialLayer` can be created by passing a list of layer instances.
+    The class :class:`Sequential` is a linear stack of layers.
+    The :class:`Sequential` can be created by passing a list of layer instances.
     The given layer instances will be automatically connected one by one.
     Parameters
     ----------
@@ -613,11 +700,11 @@ class SequentialLayer(Module):
     Methods
     ---------
     __init__()
-        Initializing the LayerList.
+        Initializing the ModuleList.
     weights()
         A collection of weights of all the layer instances.
     build()
-        Build the LayerList. The layer instances will be connected automatically one by one.
+        Build the ModuleList. The layer instances will be connected automatically one by one.
     forward()
         Forward the computation. The computation will go through all layer instances.
 
@@ -625,13 +712,13 @@ class SequentialLayer(Module):
     ---------
     >>> conv = tlx.layers.Conv2d(3, 2, 3, pad_mode='valid')
     >>> bn = tlx.layers.BatchNorm2d(2)
-    >>> seq = tlx.nn.SequentialLayer([conv, bn])
+    >>> seq = tlx.nn.Sequential([conv, bn])
     >>> x = tlx.layers.Input((1, 3, 4, 4))
     >>> seq(x)
     """
 
     def __init__(self, *args):
-        super(SequentialLayer, self).__init__()
+        super(Sequential, self).__init__()
         self._built = True
         if len(args) == 1:
             layers = args[0]
@@ -688,15 +775,38 @@ class SequentialLayer(Module):
 
     def forward(self, input_data):
         for layer in self.layer_list:
+            inputs = input_data
             input_data = layer(input_data)
+            outputs = input_data
+            if not self._nodes_fixed and self._build_graph:
+                self._add_seq_node(inputs, outputs, layer)
+        self._nodes_fixed = True
         return input_data
 
+    def _add_seq_node(self, input_tensors, output_tensors, layer):
+        inputs_list = tolist(input_tensors)
+        outputs_list = tolist(output_tensors)
+        if layer.__class__.__name__ in tlx.layers.inputs.__all__:
+            in_nodes = []
+            in_tensor_idxes = [0]
+        else:
+            in_nodes = [tensor._info[0] for tensor in inputs_list]
+            in_tensor_idxes = [tensor._info[1] for tensor in inputs_list]
+        node_index = len(_global_layer_node)
 
-class LayerList(Module):
+        new_node = ModuleNode(
+            layer, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes, select_attrs(layer)
+        )
+        _global_layer_node.append(new_node)
+        for idx, tensor in enumerate(outputs_list):
+            tensor._info = (new_node, idx)
+
+
+class ModuleList(Module):
     """
-    Holds Modules in a list.
+    Holds submodules in a list.
 
-    LayerList can be used like a regular Python list, support
+    ModuleList can be used like a regular Python list, support
     '__getitem__', '__setitem__', '__delitem__', '__len__', '__iter__' and '__iadd__',
     but module it contains are properly registered, and will be visible by all Modules methods.
 
@@ -707,7 +817,7 @@ class LayerList(Module):
     Methods
     ---------
     __init__()
-        Initializing the Layer.
+        Initializing the ModuleList.
     insert()
         Inserts a given layer before a given index in the list.
     extend()
@@ -717,12 +827,12 @@ class LayerList(Module):
 
     Examples
     ---------
-    >>> from tensorlayerx.nn import Module, LayerList, Linear
+    >>> from tensorlayerx.nn import Module, ModuleList, Linear
     >>> import tensorlayerx as tlx
     >>> d1 = Linear(out_features=800, act=tlx.ReLU, in_features=784, name='linear1')
     >>> d2 = Linear(out_features=800, act=tlx.ReLU, in_features=800, name='linear2')
     >>> d3 = Linear(out_features=10, act=tlx.ReLU, in_features=800, name='linear3')
-    >>> layer_list = LayerList([d1, d2])
+    >>> layer_list = ModuleList([d1, d2])
     >>> # Inserts a given d2 before a given index in the list
     >>> layer_list.insert(1, d2)
     >>> layer_list.insert(2, d2)
@@ -732,9 +842,10 @@ class LayerList(Module):
     >>> layer_list.append(d3)
     """
 
-    def __init__(self, args):
-        super(LayerList, self).__init__()
-        self.extend(args)
+    def __init__(self, modules=None):
+        super(ModuleList, self).__init__()
+        if modules is not None:
+            self.extend(modules)
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -813,6 +924,437 @@ class LayerList(Module):
     def forward(self, *inputs):
         raise NotImplementedError
 
+
+class ModuleDict(Module):
+    """
+    Holds submodules in a dictionary.
+
+    ModuleDict can be used like a regular Python dictionary, support
+    '__getitem__', '__setitem__', '__delitem__', '__len__', '__iter__' and '__contains__',
+    but module it contains are properly registered, and will be visible by all Modules methods.
+
+    Parameters
+    ----------
+        args : dict
+            a mapping (dictionary) of (string: module)
+            or an iterable of key-value pairs of type (string, module)
+
+    Methods
+    ---------
+    __init__()
+        Initializing the ModuleDict.
+    clear()
+        Remove all items from the ModuleDict.
+    pop()
+        Remove key from the ModuleDict and return its module.
+    keys()
+        Return an iterable of the ModuleDict keys.
+    items()
+        Return an iterable of the ModuleDict key/value pairs.
+    values()
+        Return an iterable of the ModuleDict values.
+    update()
+        Update the ModuleDict with the key-value pairs from a
+        mapping or an iterable, overwriting existing keys.
+
+    Examples
+    ---------
+    >>> from tensorlayerx.nn import Module, ModuleDict, Linear
+    >>> import tensorlayerx as tlx
+    >>> class MyModule(Module):
+    >>>     def __init__(self):
+    >>>         super(MyModule, self).__init__()
+    >>>         self.dict = ModuleDict({
+    >>>                 'linear1':Linear(out_features=800, act=tlx.ReLU, in_features=784, name='linear1'),
+    >>>                 'linear2':Linear(out_features=800, act=tlx.ReLU, in_features=800, name='linear2')
+    >>>                 })
+    >>>     def forward(self, x, linear):
+    >>>         x = self.dict[linear](x)
+    >>>         return x
+
+    """
+
+    def __init__(self, modules=None):
+        super(ModuleDict, self).__init__()
+        if modules is not None:
+            self.update(modules)
+
+    def __getitem__(self, key):
+
+        return self._layers[key]
+
+    def __setitem__(self, key, module):
+        if not isinstance(key, str):
+            raise TypeError("module name should be a string, but got {}".format(type(key)))
+        elif '.' in key:
+            raise KeyError("module name can't contain \".\", got: {}".format(key))
+        elif key == '':
+            raise KeyError("module name can't be empty string \"\"")
+        if _valid_module(module):
+            self._layers[key] = module
+
+    def __delitem__(self, key):
+
+        del self._layers[key]
+
+    def __len__(self):
+
+        return len(self._layers)
+
+    def __iter__(self):
+
+        return iter(self._layers)
+
+    def __contains__(self, key):
+
+        return key in self._layers
+
+    def clear(self):
+
+        self._layers.clear()
+
+    def pop(self, key):
+
+        temp = self[key]
+        del self[key]
+        return temp
+
+    def keys(self):
+
+        return self._layers.keys()
+
+    def items(self):
+
+        return self._layers.items()
+
+    def values(self):
+
+        return self._layers.values()
+
+    def update(self, modules):
+
+        if not isinstance(modules, container_abcs.Iterable):
+            raise TypeError(
+                "ModuleDict.update should be called with an "
+                "iterable of key/value pairs, but got " + type(modules).__name__
+            )
+        if isinstance(modules, (OrderedDict, ModuleDict, container_abcs.Mapping)):
+            for key, module in modules.items():
+                self[key] = module
+
+        else:
+            for j, m in enumerate(modules):
+                if not isinstance(m, container_abcs.Iterable):
+                    raise TypeError(
+                        "ModuleDict update sequence element "
+                        "#" + str(j) + " should be Iterable; is" + type(m).__name__
+                    )
+                if not len(m) == 2:
+                    raise ValueError(
+                        "ModuleDict update sequence element "
+                        "#" + str(j) + " has length " + str(len(m)) + "; 2 is required"
+                    )
+                self[m[0]] = m[1]
+
+
+class Parameter(Module):
+    """This function creates a parameter. The parameter is a learnable variable, which can have gradient, and can be optimized.
+
+    Parameters
+    ----------
+    data : Tensor
+        parameter tensor
+    requires_grad : bool
+        if the parameter requires gradient. Default: True
+
+    Returns
+    -------
+        Parameter
+
+    Examples
+    ----------
+    >>> import tensorlayerx as tlx
+    >>> para = tlx.nn.Parameter(data=tlx.ones((5,5)), requires_grad=True)
+
+    """
+
+    def __new__(self, data=None, name=None):
+        instance = super().__new__(self)
+        if name is None:
+            prefix = 'parameter'
+
+            if _global_layer_name_dict.get(prefix) is not None:
+                _global_layer_name_dict[prefix] += 1
+                name = prefix + '_' + str(_global_layer_name_dict[prefix])
+            else:
+                _global_layer_name_dict[prefix] = 0
+                name = prefix
+            while True:
+                if _global_layer_name_dict.get(name) is None:
+                    break
+                _global_layer_name_dict[prefix] += 1
+                name = prefix + '_' + str(_global_layer_name_dict[prefix])
+        else:
+            if _global_layer_name_dict.get(name) is not None:
+                pass
+            else:
+                _global_layer_name_dict[name] = 0
+        if data is None:
+            return instance
+        else:
+            return instance(data, name)
+
+    def __call__(self, data=None, name=None, **kwargs):
+        return tf.Variable(initial_value=data, name=name)
+
+
+class ParameterList(Module):
+    """Holds parameters in a list.
+
+    ParameterList can be indexed like a regular Python list. Support
+    '__getitem__', '__setitem__', '__delitem__', '__len__', '__iter__' and '__iadd__'.
+
+    Parameters
+    ----------
+        Parameters : list
+            List of Parameter.
+    Methods
+    ---------
+    __init__()
+        Initializing the ParameterList.
+    extend(parameter)
+        Appends parameters from a Python iterable to the end of the list.
+    append(parameters)
+        Appends a given parameter to the end of the list.
+
+    Examples
+    ---------
+    >>> from tensorlayerx.nn import Module, ModuleList, Linear
+    >>> import tensorlayerx as tlx
+    >>> class MyModule(Module):
+    >>>     def __init__(self):
+    >>>         super(MyModule, self).__init__()
+    >>>         self.params2 = ParameterList([Parameter(tlx.ones((10,5))), Parameter(tlx.ones((5,10)))])
+    >>>     def forward(self, x):
+    >>>         x = tlx.matmul(x, self.params2[0])
+    >>>         x = tlx.matmul(x, self.params2[1])
+    >>>         return x
+    """
+
+    def __init__(self, parameters=None):
+        super(ParameterList, self).__init__()
+        if parameters is not None:
+            self += parameters
+
+    def _get_abs_string_index(self, idx):
+        if not (-len(self) <= idx < len(self)):
+            raise IndexError('index {} is out of range'.format(idx))
+        if idx < 0:
+            idx += len(self)
+        return str(idx)
+
+    def __getitem__(self, idx):
+        if isinstance(idx, slice):
+            return self.__class__(list(self._params.values())[idx])
+        else:
+            idx = self._get_abs_string_index(idx)
+            return self._params[str(idx)]
+
+    def __setitem__(self, idx, parameter):
+        idx = self._get_abs_string_index(idx)
+        self._params[str(idx)] = parameter
+
+    def __setattr__(self, key, value):
+        # if not hasattr(self, key) and not isinstance(value, tf.Variable):
+        #     warnings.warn("Setting attributes on ParameterList is not supported.")
+        super(ParameterList, self).__setattr__(key, value)
+
+    def __len__(self):
+        return len(self._params)
+
+    def __iter__(self):
+        return iter(self._params.values())
+
+    def __iadd__(self, parameters):
+        return self.extend(parameters)
+
+    def __dir__(self):
+        keys = super(ParameterList, self).__dir__()
+        keys = [key for key in keys if not key.isdigit()]
+        return keys
+
+    def append(self, parameter):
+        self.insert_param_to_layer(str(len(self)), parameter)
+        return self
+
+    def extend(self, parameters):
+        if not isinstance(parameters, container_abcs.Iterable):
+            raise TypeError(
+                "ParameterList.extend should be called with an "
+                "iterable, but got " + type(parameters).__name__
+            )
+        offset = len(self)
+        for i, para in enumerate(parameters):
+            self.insert_param_to_layer(str(offset + i), para)
+        return self
+
+    def __call__(self, input):
+        raise RuntimeError('ParameterList should not be called.')
+
+
+class ParameterDict(Module):
+    """
+    Holds parameters in a dictionary.
+
+    ParameterDict can be used like a regular Python dictionary, support
+    '__getitem__', '__setitem__', '__delitem__', '__len__', '__iter__' and '__contains__',
+
+
+    Parameters
+    ----------
+        parameters : dict
+            a mapping (dictionary) of (string: parameter)
+            or an iterable of key-value pairs of type (string, parameter)
+
+    Methods
+    ---------
+    __init__()
+        Initializing the ParameterDict.
+    clear()
+        Remove all items from the ParameterDict.
+    setdefault(key, default=None)
+        If key is in the ParameterDict, return its parameter.
+        If not, insert `key` with a parameter `default` and return `default`.
+        `default` defaults to `None`.
+    popitem()
+        Remove and return the last inserted `(key, parameter)` pair from the ParameterDict
+    pop(key)
+        Remove key from the ParameterDict and return its parameter.
+    get(key, default = None):
+        Return the parameter associated with key if present. Otherwise return default if provided, None if not.
+    fromkeys(keys, default = None)
+        Return a new ParameterDict with the keys provided
+    keys()
+        Return an iterable of the ParameterDict keys.
+    items()
+        Return an iterable of the ParameterDict key/value pairs.
+    values()
+        Return an iterable of the ParameterDict values.
+    update()
+        Update the ParameterDict with the key-value pairs from a
+        mapping or an iterable, overwriting existing keys.
+
+    Examples
+    ---------
+    >>> from tensorlayerx.nn import Module, ParameterDict, Parameter
+    >>> import tensorlayerx as tlx
+    >>> class MyModule(Module):
+    >>>     def __init__(self):
+    >>>         super(MyModule, self).__init__()
+    >>>         self.dict = ParameterDict({
+    >>>                 'left': Parameter(tlx.ones((5, 10))),
+    >>>                 'right': Parameter(tlx.zeros((5, 10)))
+    >>>                 })
+    >>>     def forward(self, x, choice):
+    >>>         x = tlx.matmul(x, self.dict[choice])
+    >>>         return x
+
+    """
+
+    def __init__(self, parameters=None):
+        super(ParameterDict, self).__init__()
+        if parameters is not None:
+            self.update(parameters)
+
+    def __getitem__(self, key):
+        return self._params[key]
+
+    def __setitem__(self, key, parameter):
+        self.insert_param_to_layer(key, parameter)
+
+    def __delitem__(self, key):
+        del self._params[key]
+
+    def __setattr__(self, key, value):
+        super(ParameterDict, self).__setattr__(key, value)
+
+    def __len__(self) -> int:
+        return len(self._params)
+
+    def __reversed__(self):
+        return reversed(list(self._params.keys()))
+
+    def __iter__(self):
+        return iter(self._params.keys())
+
+    def copy(self):
+        return ParameterDict(self._params.copy())
+
+    def __contains__(self, key):
+        return key in self._params
+
+    def setdefault(self, key, default=None):
+        if key in self._params:
+            return self._params[key]
+        self[key] = default
+        return self._params[key]
+
+    def clear(self):
+        return self._params.clear()
+
+    def pop(self, key):
+        v = self[key]
+        del self[key]
+        return v
+
+    def popitem(self):
+        return self._params.popitem()
+
+    def get(self, key, default=None):
+        return self._params.get(key, default)
+
+    def fromkeys(self, keys, default=None):
+        return ParameterDict(self._params.fromkeys(keys, default))
+
+    def keys(self):
+        return self._params.keys()
+
+    def items(self):
+        return self._params.items()
+
+    def values(self):
+        return self._params.values()
+
+    def update(self, parameters):
+        if not isinstance(parameters, container_abcs.Iterable):
+            raise TypeError(
+                "ParametersDict.update should be called with an "
+                "iterable of key/value pairs, but got " + type(parameters).__name__
+            )
+
+        if isinstance(parameters, (OrderedDict, ParameterDict)):
+            for key, parameter in parameters.items():
+                self[key] = parameter
+        elif isinstance(parameters, container_abcs.Mapping):
+            for key, parameter in sorted(parameters.items()):
+                self[key] = parameter
+        else:
+            for j, p in enumerate(parameters):
+                if not isinstance(p, container_abcs.Iterable):
+                    raise TypeError(
+                        "ParameterDict update sequence element "
+                        "#" + str(j) + " should be Iterable; is" + type(p).__name__
+                    )
+                if not len(p) == 2:
+                    raise ValueError(
+                        "ParameterDict update sequence element "
+                        "#" + str(j) + " has length " + str(len(p)) + "; 2 is required"
+                    )
+                # parameters as length-2 list too cumbersome to type, see ModuleDict.update comment
+                self[p[0]] = p[1]  # type: ignore[assignment]
+
+    def __call__(self, input):
+        raise RuntimeError('ParameterDict should not be called.')
 
 def _valid_index(layer_num, index):
     if not isinstance(index, int):

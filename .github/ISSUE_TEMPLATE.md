@@ -22,12 +22,11 @@
 import tensorflow as tf
 import tensorlayerx as tl
 
-x = tf.placeholder(tf.float32, [None, 64])
-net_in = tensorlayerx.layers.InputLayer(x)
+net_in = tl.layers.Input((3, 64))
 
-net = tensorlayerx.layers.DenseLayer(net_in, n_units=25, act=tf.nn.relu, name='relu1')
+net = tl.nn.Linear(out_features=25, in_features=64, act='relu')
 
-print("Output Shape:", net.outputs.get_shape().as_list()) ### Output Shape: [None, 25]
+print("Output Shape:", net(net_in).shape) ### Output Shape: [None, 25]
 
 # ======================================================== #
 ###### THIS CODE IS AN EXAMPLE, REPLACE WITH YOUR OWN ######

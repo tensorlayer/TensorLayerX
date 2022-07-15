@@ -71,6 +71,10 @@ class PadLayer(Module):
 
     def forward(self, inputs):
         outputs = self.pad(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -80,8 +84,7 @@ class ZeroPad1d(Module):
 
     Parameters
     ----------
-    padding : int, or tuple of 2 ints
-            - If int, zeros to add at the beginning and end of the padding dimension (axis 1).
+    padding : tuple of 2 ints
             - If tuple of 2 ints, zeros to add at the beginning and at the end of the padding dimension.
     name : None or str
         A unique layer name.
@@ -100,10 +103,12 @@ class ZeroPad1d(Module):
     def __init__(
         self,
         padding,
-        name=None,  # 'zeropad1d',
+        name=None,
+        data_format='channels_last',
     ):
         super().__init__(name)
         self.padding = padding
+        self.data_format = data_format
         logging.info("ZeroPad1d   %s: padding: %s" % (self.name, str(padding)))
 
         if not isinstance(self.padding, (int, tuple, dict)):
@@ -120,10 +125,14 @@ class ZeroPad1d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.layer = tlx.ops.ZeroPadding1D(padding=self.padding)
+        self.layer = tlx.ops.ZeroPadding1D(padding=self.padding, data_format=self.data_format)
 
     def forward(self, inputs):
         outputs = self.layer(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -133,9 +142,7 @@ class ZeroPad2d(Module):
 
     Parameters
     ----------
-    padding : tuple of 2 ints or int, or tuple of 2 tuples of 2 ints.
-            - If int, the same symmetric padding is applied to width and height.
-            - If tuple of 2 ints, interpreted as two different symmetric padding values for height and width as ``(symmetric_height_pad, symmetric_width_pad)``.
+    padding : tuple of 2 tuples of 2 ints.
             - If tuple of 2 tuples of 2 ints, interpreted as ``((top_pad, bottom_pad), (left_pad, right_pad))``.
     name : None or str
         A unique layer name.
@@ -154,11 +161,12 @@ class ZeroPad2d(Module):
     def __init__(
         self,
         padding,
-        name=None,  # 'zeropad2d',
+        name=None,
+        data_format='channels_last',
     ):
         super().__init__(name)
-
         self.padding = padding
+        self.data_format = data_format
         logging.info("ZeroPad2d   %s: padding: %s" % (self.name, str(self.padding)))
 
         if not isinstance(self.padding, (int, tuple)):
@@ -175,10 +183,14 @@ class ZeroPad2d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.layer = tlx.ops.ZeroPadding2D(padding=self.padding)
+        self.layer = tlx.ops.ZeroPadding2D(padding=self.padding, data_format=self.data_format)
 
     def forward(self, inputs):
         outputs = self.layer(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -188,9 +200,7 @@ class ZeroPad3d(Module):
 
     Parameters
     ----------
-    padding : int, or tuple of 2 ints, or tuple of 2 tuples of 2 ints.
-            - If int, the same symmetric padding is applied to width and height.
-            - If tuple of 2 ints, interpreted as two different symmetric padding values for height and width as ``(symmetric_dim1_pad, symmetric_dim2_pad, symmetric_dim3_pad)``.
+    padding : tuple of 2 tuples of 2 ints.
             - If tuple of 2 tuples of 2 ints, interpreted as ``((left_dim1_pad, right_dim1_pad), (left_dim2_pad, right_dim2_pad), (left_dim3_pad, right_dim3_pad))``.
     name : None or str
         A unique layer name.
@@ -209,11 +219,12 @@ class ZeroPad3d(Module):
     def __init__(
         self,
         padding,
-        name=None,  # 'zeropad3d',
+        name=None,
+        data_format='channels_last',
     ):
         super().__init__(name)
         self.padding = padding
-
+        self.data_format = data_format
         logging.info("ZeroPad3d   %s: padding: %s" % (self.name, str(self.padding)))
 
         if not isinstance(self.padding, (int, tuple)):
@@ -230,8 +241,12 @@ class ZeroPad3d(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, inputs_shape=None):
-        self.layer = tlx.ops.ZeroPadding3D(padding=self.padding)
+        self.layer = tlx.ops.ZeroPadding3D(padding=self.padding, data_format=self.data_format)
 
     def forward(self, inputs):
         outputs = self.layer(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

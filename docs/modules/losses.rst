@@ -2,7 +2,7 @@ API - Losses
 ==================
 
 To make TensorLayerX simple, we minimize the number of cost functions as much as we can.
-For more complex activation, TensorFlow(MindSpore, PaddlePaddle, PyTorch) API will be required.
+For more complex loss function, TensorFlow(MindSpore, PaddlePaddle, PyTorch) API will be required.
 
 .. note::
     Please refer to `Getting Started <https://github.com/tensorlayer/TensorLayerX/tree/master/docs/user>`_ for getting specific weights for weight regularization.

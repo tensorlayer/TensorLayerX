@@ -59,7 +59,6 @@ class Concat(Module):
     def build(self, inputs_shape):
         self.concat = tlx.ops.Concat(self.concat_dim)
 
-    # @tf.function
     def forward(self, inputs):
         """
 
@@ -67,6 +66,10 @@ class Concat(Module):
             List of layers to concatenate.
         """
         outputs = self.concat(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -133,11 +136,14 @@ class Elementwise(Module):
     def build(self, inputs_shape):
         pass
 
-    # @tf.function
     def forward(self, inputs):
         outputs = inputs[0]
         for input in inputs[1:]:
             outputs = self.combine_fn(outputs, input)
         if self.act:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

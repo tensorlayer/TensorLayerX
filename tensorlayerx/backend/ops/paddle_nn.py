@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import paddle as pd
+import paddle.nn
 from paddle import framework
 import paddle.nn.functional as F
 import numpy as np
@@ -13,7 +14,9 @@ from paddle.fluid.dygraph import Layer, LayerList
 from paddle.nn.layer.rnn import RNNCellBase
 import warnings
 import math
-
+from paddle import _C_ops
+from paddle.framework import core
+from paddle import in_dynamic_mode
 
 def padding_format(padding):
     """
@@ -35,6 +38,8 @@ def padding_format(padding):
         padding = "VALID"
     elif padding == None:
         padding = None
+    elif isinstance(padding, tuple) or isinstance(padding, int):
+        return padding
     else:
         raise Exception("Unsupported padding: " + str(padding))
     return padding
@@ -257,14 +262,14 @@ def relu6(x):
 
 class LeakyReLU(object):
 
-    def __init__(self, alpha=0.2):
-        self.alpha = alpha
+    def __init__(self, negative_slope=0.2):
+        self.negative_slope = negative_slope
 
     def __call__(self, x):
-        return F.leaky_relu(x, negative_slope=self.alpha)
+        return F.leaky_relu(x, negative_slope=self.negative_slope)
 
 
-def leaky_relu(x):
+def leaky_relu(x, negative_slope=0.01):
     """
     Compute the Leaky ReLU activation function.
 
@@ -279,7 +284,7 @@ def leaky_relu(x):
         The activation value.
     """
 
-    return F.leaky_relu(x)
+    return F.leaky_relu(x, negative_slope)
 
 
 class Softplus(object):
@@ -327,11 +332,11 @@ def sigmoid(x):
 
 class Softmax(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, axis = -1):
+        self.axis = axis
 
     def __call__(self, x):
-        return F.softmax(x)
+        return F.softmax(x, axis=self.axis)
 
 
 def softmax(logits, axis=-1):
@@ -548,10 +553,10 @@ class Conv3D(object):
 
     def __init__(self, strides, padding, data_format='NDHWC', dilations=None, out_channel=None, k_size=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
-        if data_format is 'NDHWC':
+        if self.data_format is 'NDHWC':
             self._strides = (strides[1], strides[2], strides[3])
             self._dilations = (dilations[1], dilations[2], dilations[3])
-        elif data_format is 'NCDHW':
+        elif self.data_format is 'NCDHW':
             self._strides = (strides[2], strides[3], strides[4])
             self._dilations = (dilations[2], dilations[3], dilations[4])
 
@@ -679,14 +684,11 @@ class MaxPool(object):
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
         self.ksize = ksize
-        if self.data_format is 'NHWC':
-            self._stride = (strides[1], strides[2])
-        elif self.data_format is 'NCHW':
-            self._stride = (strides[2], strides[3])
+        self.strides = strides
 
     def __call__(self, inputs):
         outputs = F.max_pool2d(
-            x=inputs, kernel_size=self.ksize, stride=self._stride, padding=self.padding, data_format=self.data_format
+            x=inputs, kernel_size=self.ksize, stride=self.strides, padding=self.padding, data_format=self.data_format
         )
         return outputs
 
@@ -738,10 +740,7 @@ class AvgPool(object):
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
         self.filter_size = ksize
-        if self.data_format is 'NHWC':
-            self._stride = (strides[1], strides[2])
-        elif self.data_format is 'NCHW':
-            self._stride = (strides[2], strides[3])
+        self._stride = strides
 
     def __call__(self, inputs):
         outputs = F.avg_pool2d(
@@ -782,10 +781,7 @@ class MaxPool3d(object):
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
         self.ksize = ksize
-        if self.data_format == 'NCDHW':
-            self.strides = (strides[2], strides[3], strides[4])
-        if self.data_format == 'NDHWC':
-            self.strides = (strides[1], strides[2], strides[3])
+        self.strides = strides
 
     def __call__(self, inputs):
         outputs = F.max_pool3d(
@@ -829,10 +825,7 @@ class AvgPool3d(object):
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
         self.ksize = ksize
-        if self.data_format == 'NCDHW':
-            self.strides = (strides[2], strides[3], strides[4])
-        if self.data_format == 'NDHWC':
-            self.strides = (strides[1], strides[2], strides[3])
+        self.strides = strides
 
     def __call__(self, inputs):
         outputs = F.avg_pool3d(
@@ -906,22 +899,15 @@ def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_
 
 class DepthwiseConv2d(object):
 
-    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1):
+    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1, in_channels=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        if self.data_format == 'NHWC':
-            self._stride = (strides[1], strides[2])
-        if self.data_format == 'NCHW':
-            self._stride = (strides[2], strides[3])
+        self._stride = strides
         self.dilations = dilations
-        self.channel_multiplier = channel_multiplier
+        self.in_channel = in_channels
 
     def __call__(self, input, filter, point_filter=None):
-        if self.data_format == 'NHWC':
-            channel = input.shape[-1]
-        elif self.data_format == 'NCHW':
-            channel = input.shape[1]
         depthwise_conv = F.conv2d(
-            input, filter, data_format=self.data_format, groups=channel, dilation=self.dilations, stride=self._stride,
+            input, filter, data_format=self.data_format, groups=self.in_channel, dilation=self.dilations, stride=self._stride,
             padding=self.padding
         )
         pointwise_conv = F.conv2d(depthwise_conv, point_filter, data_format=self.data_format, padding=self.padding)
@@ -1504,20 +1490,20 @@ def concat_states(states, bidirectional=False, state_components=1):
 class rnnbase(LayerList):
 
     def __init__(
-        self,
-        mode,
-        input_size,
-        hidden_size,
-        num_layers,
-        bias,
-        batch_first,
-        dropout,
-        bidirectional,
-        is_train,
-        w_ih,
-        w_hh,
-        b_ih,
-        b_hh,
+            self,
+            mode,
+            input_size,
+            hidden_size,
+            num_layers,
+            bias,
+            batch_first,
+            dropout,
+            bidirectional,
+            is_train,
+            w_ih,
+            w_hh,
+            b_ih,
+            b_hh,
     ):
         super(rnnbase, self).__init__()
         self.mode = mode
@@ -1536,7 +1522,6 @@ class rnnbase(LayerList):
         self.bias = bias
         RNN = pd.nn.RNN
         BiRNN = pd.nn.BiRNN
-
         kwargs = {"weight_ih_attr": None, "weight_hh_attr": None, "bias_ih_attr": self.bias, "bias_hh_attr": self.bias}
         act = None
         rnn_cls = None
@@ -1614,72 +1599,116 @@ class rnnbase(LayerList):
         self.flatten_parameters()
 
     def flatten_parameters(self):
+        """
+        Resets parameter data pointer to address in continuous memory block for
+        cudnn usage.
+        """
         if self.could_use_cudnn:
+            # layer.parameters() is depth first and ordered
+            # for i in layer: for j in direct: w_ih, w_hh, b_ih, b_hh
+            # need to reorganize to cudnn param layout:
+            # all bias following all weights
             params = self.parameters(include_sublayers=False)
             shape = [np.prod(param.shape) for param in params]
             self._all_weights = [None] * len(params)
             for i, param in enumerate(params):
-                offset = 0 if i % 4 < 2 else (2 * self.num_layers * self.bidirect)
-                layer_idx = i // 4
-                self._all_weights[offset + layer_idx * 2 + i % 2] = param
+                base = self.num_layers * self.bidirect
+                num = i // base
+                odd = num % 2
+                offset = (2 * base) * (num // 2)
+                new_id = (i - num * base) * 2 + odd + offset
+                self._all_weights[new_id] = param
+            # Wrap using a list to avoid registed into params and saving, maybe
+            # need a better way to handle this later. Use `create_parameter` to
+            # add both to main_program and startup_program for static-graph.
+            # Use Constant initializer to avoid make effect on random generator.
             self._flat_weight = [
                 self.create_parameter(
-                    shape=[np.sum(shape)], dtype=params[0].dtype, default_initializer=I.Constant(0.0)
-                )
+                    shape=[np.sum(shape)],
+                    dtype=params[0].dtype,
+                    default_initializer=I.Constant(0.0))
             ]
-            self._dropout_state = self.create_variable(dtype=fluid.core.VarDesc.VarType.UINT8)
-            with fluid.program_guard(fluid.default_startup_program(), fluid.default_startup_program()):
-                with framework.no_grad():
+            # dropout state may also can be hided and avoid saving
+            # should dropout state be persistable for static-graph
+            self._dropout_state = self.create_variable(
+                dtype=core.VarDesc.VarType.UINT8)
+            with fluid.program_guard(fluid.default_startup_program(),
+                                     fluid.default_startup_program()):
+                with paddle.no_grad():
                     self._helper.append_op(
-                        type="coalesce_tensor", inputs={"Input": self._all_weights}, outputs={
+                        type="coalesce_tensor",
+                        inputs={"Input": self._all_weights},
+                        outputs={
                             "Output": self._all_weights,
                             "FusedOutput": self._flat_weight
-                        }, attrs={
+                        },
+                        attrs={
                             "copy_data": True,
                             "use_align": False,
                             "dtype": params[0].dtype
-                        }
-                    )
+                        })
 
     def _cudnn_impl(self, inputs, initial_states, sequence_length):
         if not self.time_major:
-            inputs = pd.tensor.transpose(inputs, [1, 0, 2])
-        out = self._helper.create_variable_for_type_inference(inputs.dtype)
-        state = [self._helper.create_variable_for_type_inference(inputs.dtype) for i in range(self.state_components)]
-        reserve = self._helper.create_variable_for_type_inference(
-            dtype=fluid.core.VarDesc.VarType.UINT8, stop_gradient=True
-        )
+            inputs = paddle.tensor.transpose(inputs, [1, 0, 2])
 
-        inputs = {
-            'Input': inputs,
-            'WeightList': self._all_weights,
-            'PreState': initial_states,
-            'SequenceLength': sequence_length
-        }
-        attrs = {
-            'dropout_prob': self.dropout,
-            'is_bidirec': self.bidirect == 2,
-            'input_size': self.input_size,
-            'hidden_size': self.hidden_size,
-            'num_layers': self.num_layers,
-            'mode': self.mode,
-            'is_test': not self.training
-        }
+        if in_dynamic_mode():
+            _, _, out, state = _C_ops.rnn(
+                inputs, initial_states, self._all_weights, sequence_length,
+                self._dropout_state, self.state_components, 'dropout_prob',
+                self.dropout, 'is_bidirec', self.bidirect == 2,
+                'input_size', self.input_size, 'hidden_size', self.hidden_size,
+                'num_layers', self.num_layers, 'mode', self.mode, 'is_test',
+                not self.training)
+        else:
+            out = self._helper.create_variable_for_type_inference(inputs.dtype)
+            state = [
+                self._helper.create_variable_for_type_inference(inputs.dtype)
+                for i in range(self.state_components)
+            ]
+            reserve = self._helper.create_variable_for_type_inference(
+                dtype=core.VarDesc.VarType.UINT8, stop_gradient=True)
 
-        outputs = {
-            'Out': out,
-            'State': state,
-            'Reserve': reserve,
-            'DropoutState': self._dropout_state,
-        }
-        self._helper.append_op(type="rnn", inputs=inputs, outputs=outputs, attrs=attrs)
-        out = pd.tensor.transpose(out, [1, 0, 2]) if not self.time_major else out
+            inputs = {
+                'Input': inputs,
+                'WeightList': self._all_weights,
+                'PreState': initial_states,
+                'SequenceLength': sequence_length
+            }
+            attrs = {
+                'dropout_prob': self.dropout,
+                'is_bidirec': self.bidirect == 2,
+                'input_size': self.input_size,
+                'hidden_size': self.hidden_size,
+                'num_layers': self.num_layers,
+                'mode': self.mode,
+                'is_test': not self.training
+            }
+
+            outputs = {
+                'Out': out,
+                'State': state,
+                'Reserve': reserve,
+                'DropoutState': self._dropout_state,
+            }
+
+            self._helper.append_op(
+                type="rnn", inputs=inputs, outputs=outputs, attrs=attrs)
+
+        out = paddle.tensor.transpose(out,
+                                      [1, 0, 2]) if not self.time_major else out
         return out, tuple(state) if len(state) > 1 else state[0]
+
+    def check_hidden(self, h, batch_size):
+        expected_hidden_size = [self.num_layers * self.bidirect, batch_size, self.hidden_size]
+        if h.shape != expected_hidden_size:
+            raise ValueError('Expected hidden size {}, got {}.'.format(expected_hidden_size, h.shape))
 
     def forward(self, inputs, initial_states=None):
         batch_index = 1 if self.time_major else 0
         dtype = inputs.dtype
         sequence_length = None
+        batch_size = inputs.shape[batch_index]
         if initial_states is None:
             state_shape = (self.num_layers * self.bidirect, -1, self.hidden_size)
             if self.state_components == 1:
@@ -1693,7 +1722,20 @@ class rnnbase(LayerList):
                         for _ in range(self.state_components)
                     ]
                 )
-        if self.could_use_cudnn:
+        else:
+            if self.mode == 'LSTM':
+                h, c = initial_states
+                self.check_hidden(h, batch_size)
+                self.check_hidden(c, batch_size)
+            else:
+                self.check_hidden(initial_states, batch_size)
+
+        if not isinstance(initial_states, (tuple, list)):
+            initial_states = [initial_states, ]
+
+        if self.could_use_cudnn and (
+                not paddle.device.is_compiled_with_rocm() or
+                sequence_length is None):
             # Add CPU kernel and dispatch in backend later
             return self._cudnn_impl(inputs, initial_states, sequence_length)
 
@@ -1702,14 +1744,17 @@ class rnnbase(LayerList):
 
         for i, rnn_layer in enumerate(self):
             if i > 0:
-                inputs = F.dropout(inputs, self.dropout, training=self.training, mode="upscale_in_train")
+                inputs = F.dropout(
+                    inputs,
+                    self.dropout,
+                    training=self.training,
+                    mode="upscale_in_train")
             outputs, final_state = rnn_layer(inputs, states[i], sequence_length)
             final_states.append(final_state)
             inputs = outputs
 
         final_states = concat_states(final_states, self.bidirect == 2, self.state_components)
         return outputs, final_states
-
 
 class layernorm(object):
 
@@ -2011,3 +2056,19 @@ class QuanConvBn(object):
 
     def __call__(self, inputs):
         raise NotImplementedError
+
+
+class PReLU(object):
+
+    def __init__(self, data_format):
+        self.data_format, _ = preprocess_2d_format(data_format, None)
+
+    def __call__(self, input, weight):
+
+        return F.prelu(input, weight, data_format=self.data_format)
+
+
+def prelu(input, weight, data_format):
+
+    data_format, _ = preprocess_2d_format(data_format, None)
+    return F.prelu(input, weight, data_format=data_format)

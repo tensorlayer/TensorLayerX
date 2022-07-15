@@ -1,9 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-import tensorflow as tf
 from tensorlayerx import logging
-from tensorlayerx.files import utils
 from tensorlayerx.nn.core import Module
 
 __all__ = [
@@ -69,7 +67,7 @@ class Lambda(Module):
     >>>     tlx.nn.Linear(5, act=tlx.ReLU),
     >>>     tlx.nn.Linear(1)
     >>> ]
-    >>> perceptron = tlx.nn.SequentialLayer(layers)
+    >>> perceptron = tlx.nn.Sequential(layers)
     >>> # in order to compile keras model and get trainable_variables of the keras model
     >>> _ = perceptron(np.random.random([100, 5]).astype(np.float32))
     >>>
@@ -145,21 +143,11 @@ class Lambda(Module):
         else:
             outputs = self.fn(inputs, **kwargs)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
-    def get_args(self):
-        init_args = {}
-        if isinstance(self.fn, tf.keras.layers.Layer) or isinstance(self.fn, tf.keras.Model):
-            init_args.update({"layer_type": "keraslayer"})
-            init_args["fn"] = utils.save_keras_model(self.fn)
-            init_args["fn_weights"] = None
-            if len(self._nodes) == 0:
-                init_args["keras_input_shape"] = []
-            else:
-                init_args["keras_input_shape"] = self._nodes[0].in_tensors[0].get_shape().as_list()
-        else:
-            init_args = {"layer_type": "normal"}
-        return init_args
 
 
 class ElementwiseLambda(Module):
@@ -261,7 +249,6 @@ class ElementwiseLambda(Module):
         # the weights of the function are provided when the Lambda layer is constructed
         pass
 
-    # @tf.function
     def forward(self, inputs, **kwargs):
 
         if not isinstance(inputs, list):
@@ -274,4 +261,7 @@ class ElementwiseLambda(Module):
         else:
             outputs = self.fn(*inputs, **kwargs)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

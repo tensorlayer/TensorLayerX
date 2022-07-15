@@ -3,9 +3,9 @@
 
 import os
 # os.environ['TL_BACKEND'] = 'paddle'
-os.environ['TL_BACKEND'] = 'tensorflow'
+# os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
-# os.environ['TL_BACKEND'] = 'torch'
+os.environ['TL_BACKEND'] = 'torch'
 
 import time
 from tensorlayerx.dataflow import Dataset, DataLoader
@@ -33,17 +33,17 @@ class CNN(Module):
         b_init2 = tlx.nn.initializers.constant(value=0.1)
 
         self.conv1 = Conv2d(64, (5, 5), (1, 1), padding='SAME', W_init=W_init, b_init=None, name='conv1', in_channels=3)
-        self.bn = BatchNorm2d(num_features=64, act=tlx.ReLU)
+        self.bn = BatchNorm2d(num_features=64, act=tlx.nn.ReLU)
         self.maxpool1 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool1')
 
         self.conv2 = Conv2d(
-            64, (5, 5), (1, 1), padding='SAME', act=tlx.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
+            64, (5, 5), (1, 1), padding='SAME', act=tlx.nn.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
         )
         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 
         self.flatten = Flatten(name='flatten')
-        self.linear1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_features=2304)
-        self.linear2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_features=384)
+        self.linear1 = Linear(384, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_features=2304)
+        self.linear2 = Linear(192, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_features=384)
         self.linear3 = Linear(10, act=None, W_init=W_init2, name='output', in_features=192)
 
     def forward(self, x):
@@ -179,17 +179,17 @@ for epoch in range(n_epoch):
 #         b_init2 = tlx.nn.initializers.constant(value=0.1)
 #
 #         self.conv1 = Conv2d(64, (5, 5), (1, 1), padding='SAME', W_init=W_init, b_init=None, name='conv1', in_channels=3)
-#         self.bn = BatchNorm2d(num_features=64, act=tlx.ReLU)
+#         self.bn = BatchNorm2d(num_features=64, act=tlx.nn.ReLU)
 #         self.maxpool1 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool1')
 #
 #         self.conv2 = Conv2d(
-#             64, (5, 5), (1, 1), padding='SAME', act=tlx.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
+#             64, (5, 5), (1, 1), padding='SAME', act=tlx.nn.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
 #         )
 #         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 #
 #         self.flatten = Flatten(name='flatten')
-#         self.linear1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_channels=2304)
-#         self.linear2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_channels=384)
+#         self.linear1 = Linear(384, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_channels=2304)
+#         self.linear2 = Linear(192, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_channels=384)
 #         self.linear3 = Linear(10, act=None, W_init=W_init2, name='output', in_channels=192)
 #
 #     def forward(self, x):
@@ -364,18 +364,18 @@ for epoch in range(n_epoch):
 #     def __init__(self):
 #         super(CNN, self).__init__()
 #         self.conv1 = Conv2d(
-#             64, (5, 5), (2, 2), b_init=None, name='conv1', in_channels=3, act=tlx.ReLU, data_format='channels_first'
+#             64, (5, 5), (2, 2), b_init=None, name='conv1', in_channels=3, act=tlx.nn.ReLU, data_format='channels_first'
 #         )
-#         self.bn = BatchNorm2d(num_features=64, act=tlx.ReLU, data_format='channels_first')
+#         self.bn = BatchNorm2d(num_features=64, act=tlx.nn.ReLU, data_format='channels_first')
 #         self.maxpool1 = MaxPool2d((3, 3), (2, 2), name='pool1', data_format='channels_first')
 #         self.conv2 = Conv2d(
-#             128, (5, 5), (2, 2), act=tlx.ReLU, b_init=None, name='conv2', in_channels=64, data_format='channels_first'
+#             128, (5, 5), (2, 2), act=tlx.nn.ReLU, b_init=None, name='conv2', in_channels=64, data_format='channels_first'
 #         )
 #         self.maxpool2 = MaxPool2d((3, 3), (2, 2), name='pool2', data_format='channels_first')
 #
 #         self.flatten = Flatten(name='flatten')
-#         self.linear1 = Linear(120, act=tlx.ReLU, name='linear1relu', in_channels=512)
-#         self.linear2 = Linear(84, act=tlx.ReLU, name='linear2relu', in_channels=120)
+#         self.linear1 = Linear(120, act=tlx.nn.ReLU, name='linear1relu', in_channels=512)
+#         self.linear2 = Linear(84, act=tlx.nn.ReLU, name='linear2relu', in_channels=120)
 #         self.linear3 = Linear(10, act=None, name='output', in_channels=84)
 #
 #     def forward(self, x):
@@ -509,18 +509,18 @@ for epoch in range(n_epoch):
 #         b_init2 = tlx.nn.initializers.constant(value=0.1)
 #
 #         self.conv1 = Conv2d(64, (5, 5), (1, 1), padding='SAME', W_init=W_init, b_init=None, name='conv1', in_channels=3)
-#         self.bn1 = BatchNorm2d(num_features=64, act=tlx.ReLU)
+#         self.bn1 = BatchNorm2d(num_features=64, act=tlx.nn.ReLU)
 #         self.maxpool1 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool1')
 #
 #         self.conv2 = Conv2d(
 #             64, (5, 5), (1, 1), padding='SAME', W_init=W_init, b_init=None, name='conv2', in_channels=64
 #         )
-#         self.bn2 = BatchNorm2d(num_features=64, act=tlx.ReLU)
+#         self.bn2 = BatchNorm2d(num_features=64, act=tlx.nn.ReLU)
 #         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 #
 #         self.flatten = Flatten(name='flatten')
-#         self.linear1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_channels=2304)
-#         self.linear2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_channels=384)
+#         self.linear1 = Linear(384, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_channels=2304)
+#         self.linear2 = Linear(192, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_channels=384)
 #         self.linear3 = Linear(10, act=None, W_init=W_init2, name='output', in_channels=192)
 #
 #     def forward(self, x):

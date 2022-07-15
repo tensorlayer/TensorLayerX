@@ -17,9 +17,9 @@ class GroupConv2d(Module):
       --------------
       out_channels : int
           The number of filters.
-      kernel_size : tuple of int
+      kernel_size : tuple or int
           The filter size.
-      stride : tuple of int
+      stride : tuple or int
           The stride step.
       n_group : int
           The number of groups.
@@ -29,7 +29,7 @@ class GroupConv2d(Module):
           The padding algorithm type: "SAME" or "VALID".
       data_format : str
           "channels_last" (NHWC, default) or "channels_first" (NCHW).
-      dilation : tuple of int
+      dilation : tuple or int
           Specifying the dilation rate to use for dilated convolution.
       W_init : initializer or str
           The initializer for the weight matrix.
@@ -70,12 +70,12 @@ class GroupConv2d(Module):
     ):
         super().__init__(name, act=act)
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self._stride = self.stride = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self._stride = self.stride = self.check_param(stride)
         self.n_group = n_group
         self.padding = padding
         self.data_format = data_format
-        self._dilation_rate = self.dilation = dilation
+        self._dilation_rate = self.dilation = self.check_param(dilation)
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -109,13 +109,11 @@ class GroupConv2d(Module):
 
     def build(self, inputs_shape):
         if self.data_format == 'channels_last':
-            self.data_format = 'NHWC'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
             self._stride = [1, self._stride[0], self._stride[1], 1]
             self._dilation_rate = [1, self._dilation_rate[0], self._dilation_rate[1], 1]
         elif self.data_format == 'channels_first':
-            self.data_format = 'NCHW'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
             self._stride = [1, 1, self._stride[0], self._stride[1]]
@@ -145,11 +143,11 @@ class GroupConv2d(Module):
             self.kernel_size[0], self.kernel_size[1], int(self.in_channels / self.n_group), self.out_channels
         )
 
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -169,9 +167,13 @@ class GroupConv2d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.group_conv2d(inputs, self.W)
+        outputs = self.group_conv2d(inputs, self.filters)
         if self.b_init_flag:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.biases)
         if self.act_init_flag:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

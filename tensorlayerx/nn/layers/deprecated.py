@@ -15,7 +15,7 @@ __all__ += [
     'PTRelu6Layer',
 ]
 
-__log__ = '\n Hint: 1) downgrade TL from version 3.x to 2.x. 2) check the documentation of TF version 2.x and TL version 3.x'
+__log__ = '\n Hint: 1) downgrade TL from version TensorLayerX to TensorLayer2.x. 2) check the documentation of TF version 2.x and TL version X'
 
 
 def PReluLayer(*args, **kwargs):
@@ -48,7 +48,7 @@ def AtrousConv2dLayer(*args, **kwargs):
 
 def AtrousDeConv2dLayer(*args, **kwargs):
     # raise NonExistingLayerError("AtrousDeConv2dLayer(net, name='a') --> AtrousDeConv2d(name='a')(net)")
-    raise NonExistingLayerError("use `tl.layers.DeConv2d` with dilation instead" + __log__)
+    raise NonExistingLayerError("use `tl.layers.ConvTranspose2d` with dilation instead" + __log__)
 
 
 # linear/base_linear.py
@@ -58,7 +58,7 @@ __all__ += [
 
 
 def DenseLayer(*args, **kwargs):
-    raise NonExistingLayerError("DenseLayer(net, name='a') --> Dense(name='a')(net)" + __log__)
+    raise NonExistingLayerError("DenseLayer(net, name='a') --> Linear(name='a')(net)" + __log__)
 
 
 # linear/binary_linear.py
@@ -437,3 +437,74 @@ def cross_entropy(*args, **kwargs):
     raise NonExistingLayerError(
         "cross_entropy(output, target) --> softmax_cross_entropy_with_logits(output, target)" + __log__
     )
+
+__all__ += ['Dense']
+
+
+def Dense(*args, **kwargs):
+    raise NonExistingLayerError("Dense(net, name='a') --> Linear(name='a')(net)" + __log__)
+
+__all__ += ['SequentialLayer']
+
+
+def SequentialLayer(*args, **kwargs):
+    raise NonExistingLayerError("SequentialLayer(layer) --> Sequential(layer)(in)" + __log__)
+
+
+__all__ += ['LayerList']
+
+
+def LayerList(*args, **kwargs):
+    raise NonExistingLayerError("LayerList(layer_list) --> ModuleList(layer_list)" + __log__)
+
+
+__all__ += ['DeConv1d']
+
+
+def DeConv1d(*args, **kwargs):
+    raise NonExistingLayerError("DeConv1d --> ConvTranspose1d" + __log__)
+
+
+__all__ += ['DeConv2d']
+
+
+def DeConv2d(*args, **kwargs):
+    raise NonExistingLayerError("DeConv2d --> ConvTranspose2d" + __log__)
+
+
+__all__ += ['DeConv3d']
+
+
+def DeConv3d(*args, **kwargs):
+    raise NonExistingLayerError("DeConv3d --> ConvTranspose3d" + __log__)
+
+
+def MeanPool1d(*args, **kwargs):
+    raise NonExistingLayerError("MeanPool1d --> AvgPool1d" + __log__)
+
+def MeanPool2d(*args, **kwargs):
+    raise NonExistingLayerError("MeanPool2d --> AvgPool2d" + __log__)
+
+def MeanPool3d(*args, **kwargs):
+    raise NonExistingLayerError("MeanPool3d --> AvgPool3d" + __log__)
+
+def GlobalMeanPool1d(*args, **kwargs):
+    raise NonExistingLayerError("GlobalMeanPool1d --> GlobalAvgPool1d" + __log__)
+
+def GlobalMeanPool2d(*args, **kwargs):
+    raise NonExistingLayerError("GlobalMeanPool2d --> GlobalAvgPool2d" + __log__)
+
+def GlobalMeanPool3d(*args, **kwargs):
+    raise NonExistingLayerError("GlobalMeanPool3d --> GlobalAvgPool3d" + __log__)
+
+def AdaptiveMeanPool1d(*args, **kwargs):
+    raise NonExistingLayerError("AdaptiveMeanPool1d --> AdaptiveAvgPool1d" + __log__)
+
+def AdaptiveMeanPool2d(*args, **kwargs):
+    raise NonExistingLayerError("AdaptiveMeanPool2d --> AdaptiveAvgPool2d" + __log__)
+
+def AdaptiveMeanPool3d(*args, **kwargs):
+    raise NonExistingLayerError("AdaptiveMeanPool3d --> AdaptiveAvgPool3d" + __log__)
+
+__all__ += ['MeanPool1d', 'MeanPool2d', 'MeanPool3d', 'GlobalMeanPool1d', 'GlobalMeanPool2d', 'GlobalMeanPool3d',
+            'AdaptiveMeanPool1d', 'AdaptiveMeanPool2d', 'AdaptiveMeanPool3d']

@@ -16,6 +16,7 @@ For more complex activation, TensorFlow(MindSpore, PaddlePaddle, PyTorch) API wi
    RandomNormal
    TruncatedNormal
    HeNormal
+   HeUniform
    deconv2d_bilinear_upsampling_initializer
    XavierNormal
    XavierUniform
@@ -51,6 +52,10 @@ TruncatedNormal
 HeNormal
 ------------
 .. autoclass:: HeNormal
+
+HeUniform
+------------
+.. autoclass:: HeUniform
 
 deconv2d_bilinear_upsampling_initializer
 ------------------------------------------

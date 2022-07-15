@@ -2,33 +2,75 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division, print_function
+
+import paddle
 import paddle as pd
 import paddle.nn as nn
 import numpy as np
 import paddle.nn.functional as F
 from .paddle_nn import nchw_to_nhwc, nhwc_to_nchw, preprocess_2d_format, preprocess_1d_format, preprocess_3d_format
 import random
+from paddle.fluid.framework import in_dygraph_mode, default_main_program
+from paddle.fluid import framework, core, unique_name
+from paddle.fluid.core import VarDesc
+from paddle.fluid.data_feeder import check_variable_and_dtype, check_type, check_dtype
+import math
 
-_dtypeDict = [
-    "float16", "float32", "float64", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "bool",
-    "complex64", "complex128"
-]
-# TODO NotImplemented
-DType = None
-float16 = "float16"
-float32 = "float32"
-float64 = "float64"
-int8 = "int8"
-int16 = "int16"
-int32 = "int32"
-int64 = "int64"
-uint8 = "uint8"
-uint16 = "uint16"
-uint32 = "uint32"
-uint64 = "uint64"
-bool = "bool"
-complex64 = "complex64"
-complex128 = "complex128"
+if paddle.__version__ < '2.2.2':
+    _dtypeDict = [
+        "float16", "float32", "float64", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "bool",
+        "complex64", "complex128"
+    ]
+    # TODO NotImplemented
+    DType = None
+    float16 = "float16"
+    float32 = "float32"
+    float64 = "float64"
+    int8 = "int8"
+    int16 = "int16"
+    int32 = "int32"
+    int64 = "int64"
+    uint8 = "uint8"
+    uint16 = "uint16"
+    uint32 = "uint32"
+    uint64 = "uint64"
+    bool = "bool"
+    complex64 = "complex64"
+    complex128 = "complex128"
+else:
+    _dtypeDict = {
+        'DType': paddle.dtype ,
+        'float16': paddle.float16,
+        'float32': paddle.float32,
+        'float64': paddle.float64,
+        'int8': paddle.int8,
+        'int16': paddle.int16,
+        'int32': paddle.int32,
+        'int64': paddle.int64,
+        'uint8': paddle.uint8,
+        'uint16': None,
+        'uint32': None,
+        'uint64': None,
+        'bool': paddle.bool,
+        'complex64': paddle.complex64,
+        'complex128': paddle.complex128
+    }
+    # TODO NotImplemented
+    DType = paddle.dtype
+    float16 = paddle.float16
+    float32 = paddle.float32
+    float64 = paddle.float64
+    int8 = paddle.int8
+    int16 = paddle.int16
+    int32 = paddle.int32
+    int64 = paddle.int64
+    uint8 = paddle.uint8
+    uint16 = None
+    uint32 = None
+    uint64 = None
+    bool = paddle.bool
+    complex64 = paddle.complex64
+    complex128 = paddle.complex128
 
 
 def _getter(init_fn, **kwargs):
@@ -41,7 +83,7 @@ def set_context(**kwargs):
 
 
 def get_tensor_shape(x):
-    return pd.shape(x)
+    return list(x.shape)
 
 
 # initializers
@@ -177,8 +219,50 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype="float32", seed=None):
     """
     raise NotImplementedError
 
+def _compute_fans(var):
+    shape = var.shape
+    if not shape or len(shape) == 0:
+        fan_in = fan_out = 1
+    elif len(shape) == 1:
+        fan_in = fan_out = shape[0]
+    elif len(shape) == 2:
+        # This is the case for simple matrix multiply
+        fan_in = shape[0]
+        fan_out = shape[1]
+    else:
+        receptive_field_size = np.prod(shape[2:])
+        fan_in = shape[1] * receptive_field_size
+        fan_out = shape[0] * receptive_field_size
 
-def he_normal(shape, dtype, seed=None):
+    return fan_in, fan_out
+
+def _check_block(block):
+    if block is None:
+        block = default_main_program().global_block()
+    return block
+
+def calculate_gain(nonlinearity, param=None):
+    linear_fns = ['linear', 'conv1d', 'conv2d', 'conv3d', 'conv_transpose1d', 'conv_transpose2d', 'conv_transpose3d']
+    if nonlinearity in linear_fns or nonlinearity == 'sigmoid':
+        return 1
+    elif nonlinearity == 'tanh':
+        return 5.0 / 3
+    elif nonlinearity == 'relu':
+        return math.sqrt(2.0)
+    elif nonlinearity == 'leaky_relu':
+        if param is None:
+            negative_slope = 0.01
+        elif isinstance(param, int) or isinstance(param, float):
+            negative_slope = param
+        else:
+            raise ValueError("negative_slope {} not a valid number".format(param))
+        return math.sqrt(2.0 / (1 + negative_slope ** 2))
+    elif nonlinearity == 'selu':
+        return 3.0 / 4
+    else:
+        raise ValueError("Unsupported nonlinearity {}".format(nonlinearity))
+
+def he_normal(var, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype='float32', seed=None, block = None):
     """
     He normal initializer.
 
@@ -195,11 +279,110 @@ def he_normal(shape, dtype, seed=None):
     -------
         A tensor of the specified shape filled with he normal values.
     """
-    # shape = shape[::-1]
-    raise NotImplementedError
+    _uniform = False
+    block = _check_block(block)
+    assert isinstance(var, framework.Variable)
+    assert isinstance(block, framework.Block)
+    f_in, f_out = _compute_fans(var)
+    correct_fan = f_in if mode == 'fan_in' else f_out
+    if seed is None:
+        seed = block.program.random_seed
 
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        out_dtype = VarDesc.VarType.FP32
+        out_var = block.create_var(
+            name=unique_name.generate(".".join(
+                ['masra_init', var.name, 'tmp'])),
+            shape=var.shape,
+            dtype=out_dtype,
+            type=VarDesc.VarType.LOD_TENSOR,
+            persistable=False)
+    else:
+        out_dtype = var.dtype
+        out_var = var
 
-def xavier_normal(shape, dtype, seed=None):
+    gain = calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(correct_fan)
+    op = block.append_op(
+        type="gaussian_random",
+        outputs={"Out": out_var},
+        attrs={
+            "shape": out_var.shape,
+            "dtype": int(out_dtype),
+            "mean": 0.0,
+            "std": std,
+            "seed": seed
+        },
+        stop_gradient=True)
+
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        block.append_op(
+            type="cast",
+            inputs={"X": out_var},
+            outputs={"Out": var},
+            attrs={"in_dtype": out_var.dtype,
+                   "out_dtype": var.dtype})
+
+    if not framework.in_dygraph_mode():
+        var.op = op
+    return op
+
+def he_uniform(var, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype='float32', seed=None, block = None):
+    _uniform = True
+    block = _check_block(block)
+    assert isinstance(var, framework.Variable)
+    assert isinstance(block, framework.Block)
+    f_in, f_out = _compute_fans(var)
+    correct_fan = f_in if mode == 'fan_in' else f_out
+    if seed is None:
+        seed = block.program.random_seed
+
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        out_dtype = VarDesc.VarType.FP32
+        out_var = block.create_var(
+            name=unique_name.generate(".".join(
+                ['masra_init', var.name, 'tmp'])),
+            shape=var.shape,
+            dtype=out_dtype,
+            type=VarDesc.VarType.LOD_TENSOR,
+            persistable=False)
+    else:
+        out_dtype = var.dtype
+        out_var = var
+
+    gain = calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(correct_fan)
+    limit = math.sqrt(3.0) * std
+    op = block.append_op(
+        type="uniform_random",
+        inputs={},
+        outputs={"Out": out_var},
+        attrs={
+            "shape": out_var.shape,
+            "dtype": int(out_dtype),
+            "min": -limit,
+            "max": limit,
+            "seed": seed
+        },
+        stop_gradient=True)
+
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        block.append_op(
+            type="cast",
+            inputs={"X": out_var},
+            outputs={"Out": var},
+            attrs={"in_dtype": out_var.dtype,
+                   "out_dtype": var.dtype})
+
+    if not framework.in_dygraph_mode():
+        var.op = op
+    return op
+
+def xavier_normal(var, gain = 1.0, dtype='float32', seed=None, block = None):
     """
     xavier normal initializer.
 
@@ -217,10 +400,57 @@ def xavier_normal(shape, dtype, seed=None):
         A tensor of the specified shape filled with xavier normal values.
     """
 
-    raise NotImplementedError
+    block = _check_block(block)
+    _uniform = False
+    assert isinstance(block, framework.Block)
+    check_variable_and_dtype(var, "Out",
+                             ["uint16", "float16", "float32", "float64"],
+                             "xavier_init")
 
+    fan_in, fan_out = _compute_fans(var)
+    if seed is None:
+        seed = block.program.random_seed
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        out_dtype = VarDesc.VarType.FP32
+        out_var = block.create_var(
+            name=unique_name.generate(".".join(
+                ['xavier_init', var.name, 'tmp'])),
+            shape=var.shape,
+            dtype=out_dtype,
+            type=VarDesc.VarType.LOD_TENSOR,
+            persistable=False)
+    else:
+        out_dtype = var.dtype
+        out_var = var
 
-def xavier_uniform(shape, dtype, seed=None):
+    std = gain * math.sqrt(2.0 / float(fan_in + fan_out))
+    op = block.append_op(
+        type="gaussian_random",
+        outputs={"Out": out_var},
+        attrs={
+            "shape": out_var.shape,
+            "dtype": out_dtype,
+            "mean": 0.0,
+            "std": std,
+            "seed": seed
+        },
+        stop_gradient=True)
+
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        block.append_op(
+            type="cast",
+            inputs={"X": out_var},
+            outputs={"Out": var},
+            attrs={"in_dtype": out_var.dtype,
+                   "out_dtype": var.dtype})
+
+    if not framework.in_dygraph_mode():
+        var.op = op
+    return op
+
+def xavier_uniform(var, gain = 1.0, dtype='float32', seed=None, block = None):
     """
     xavier uniform initializer.
 
@@ -238,7 +468,57 @@ def xavier_uniform(shape, dtype, seed=None):
         A tensor of the specified shape filled with xavier uniform values.
     """
 
-    raise NotImplementedError
+    block = _check_block(block)
+    _uniform = True
+    assert isinstance(block, framework.Block)
+    check_variable_and_dtype(var, "Out",
+                             ["uint16", "float16", "float32", "float64"],
+                             "xavier_init")
+
+    fan_in, fan_out = _compute_fans(var)
+    if seed is None:
+        seed = block.program.random_seed
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        out_dtype = VarDesc.VarType.FP32
+        out_var = block.create_var(
+            name=unique_name.generate(".".join(
+                ['xavier_init', var.name, 'tmp'])),
+            shape=var.shape,
+            dtype=out_dtype,
+            type=VarDesc.VarType.LOD_TENSOR,
+            persistable=False)
+    else:
+        out_dtype = var.dtype
+        out_var = var
+
+    std = gain * math.sqrt(2.0 / float(fan_in + fan_out))
+    limit = math.sqrt(3.0) * std
+    op = block.append_op(
+        type="uniform_random",
+        inputs={},
+        outputs={"Out": out_var},
+        attrs={
+            "shape": out_var.shape,
+            "dtype": out_dtype,
+            "min": -limit,
+            "max": limit,
+            "seed": seed
+        },
+        stop_gradient=True)
+
+    if var.dtype == VarDesc.VarType.FP16 or (
+            var.dtype == VarDesc.VarType.BF16 and not _uniform):
+        block.append_op(
+            type="cast",
+            inputs={"X": out_var},
+            outputs={"Out": var},
+            attrs={"in_dtype": out_var.dtype,
+                   "out_dtype": var.dtype})
+
+    if not framework.in_dygraph_mode():
+        var.op = op
+    return op
 
 
 def Variable(initial_value, name, trainable=None, device = None):
@@ -824,7 +1104,15 @@ def transpose(a, perm=None, conjugate=False):
     -------
         A transposed Tensor.
     """
-
+    if perm == None:
+        if len(a.shape) <= 2:
+            return pd.t(a)
+        if len(a.shape) == 3:
+            perm = [2, 1, 0]
+        if len(a.shape) == 4:
+            perm = [3, 2, 1, 0]
+        if len(a.shape) == 5:
+            perm = [4, 3, 2, 1, 0]
     return pd.transpose(a, perm)
 
 
@@ -923,7 +1211,10 @@ def floor(x):
 
 
 def gather(params, indices, axis=None):
-
+    if axis is None:
+        axis = 0
+    if axis < 0:
+        axis = len(params.shape) + axis
     return pd.gather(params, indices, axis)
 
 
@@ -1025,34 +1316,64 @@ def resize(inputs, output_size, method, antialias):
     return Resize(output_size, method, antialias)(inputs)
 
 
+def channels_switching(data_format, dim='2d', padding=None):
+    if dim == '1d':
+        if data_format == 'channels_first':
+            out = 'NCL'
+        if data_format == 'channels_last':
+            out = 'NLC'
+        pads = padding
+    if dim == '2d':
+        if data_format == 'channels_first':
+            out = 'NCHW'
+        if data_format == 'channels_last':
+            out = 'NHWC'
+        pads = [padding[1][0], padding[1][1], padding[0][0], padding[0][1]]
+    if dim == '3d':
+        if data_format == 'channels_first':
+            out = 'NCDHW'
+        if data_format == 'channels_last':
+            out = 'NDHWC'
+        pads = [padding[2][0], padding[2][1],
+                padding[1][0], padding[1][1],
+                padding[0][0], padding[0][1]]
+    return out, pads
+
+
 class ZeroPadding1D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding, (0, 0))
-        self.pad = Pad(paddings=padding)
+    def __init__(self, padding, data_format):
+        self.padding = padding
+        self.data_format = data_format
 
     def __call__(self, inputs):
-        return self.pad(inputs)
+        data_format, padding = channels_switching(self.data_format, '1d', self.padding)
+        out = pd.nn.functional.pad(inputs, padding, mode='constant', value=0.0, data_format=data_format)
+        return out
 
 
 class ZeroPadding2D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding[0], padding[1], (0, 0))
-        self.pad = Pad(paddings=padding)
+    def __init__(self, padding, data_format):
+        self.padding = padding
+        self.data_format = data_format
 
     def __call__(self, inputs):
-        return self.pad(inputs)
+        data_format, padding = channels_switching(self.data_format, '2d', self.padding)
+        out = pd.nn.functional.pad(inputs, padding, mode='constant', value=0.0, data_format=data_format)
+        return out
 
 
 class ZeroPadding3D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding[0], padding[1], padding[2], (0, 0))
-        self.pad = Pad(paddings=padding)
+    def __init__(self, padding, data_format):
+        self.padding = padding
+        self.data_format = data_format
 
     def __call__(self, inputs):
-        return self.pad(inputs)
+        data_format, padding = channels_switching(self.data_format, '3d', self.padding)
+        out = pd.nn.functional.pad(inputs, padding, mode='constant', value=0.0, data_format=data_format)
+        return out
 
 
 class Sign(object):
@@ -1222,7 +1543,8 @@ def is_nan(x):
 
 
 def l2_normalize(x, axis=None, eps=1e-12):
-    return pd.divide(x, pd.sqrt(pd.max(pd.sum(pd.pow(x, 2), axis=axis))))
+    axis = 0 if axis is None else axis
+    return F.normalize(x, p=2.0, axis=axis, epsilon=eps)
 
 
 def less(x, y):
@@ -1504,3 +1826,87 @@ def set_seed(seed):
 def is_tensor(x):
 
     return pd.is_tensor(x)
+
+
+def tensor_scatter_nd_update(tensor, indices, updates):
+    tensor = paddle.to_tensor(tensor)
+    indices = paddle.to_tensor(indices)
+    updates = paddle.to_tensor(updates)
+    a = pd.scatter_nd(indices, pd.ones_like(updates), tensor.shape)
+    a = pd.multiply(tensor, -a)
+    tensor = tensor + a
+    x = pd.scatter_nd_add(tensor, indices, updates)
+    return x
+
+def diag(input, diagonal=0):
+
+    return paddle.diag(input, diagonal)
+
+def mask_select(x, mask, axis = 0):
+    def _apply_mask_1d(reshaped_tensor, mask, axis=None):
+        indices = paddle.nonzero(paddle.cast(mask, paddle.int32), as_tuple=True)
+        return paddle.gather(reshaped_tensor, indices, axis=axis)
+    shape_mask = mask.shape
+    ndims_mask = len(shape_mask)
+    if ndims_mask == 0:
+        raise ValueError("mask cannot be scalar.")
+    if ndims_mask is None:
+        raise ValueError(
+                "Number of mask dimensions must be specified, even if some dimensions"
+                " are None.  E.g. shape=[None] is ok, but shape=None is not.")
+    axis = 0 if axis is None else axis
+    leading_size = np.prod(x.shape[axis:axis + ndims_mask], 0)
+    tensor = paddle.reshape(
+            x,
+            list(np.concatenate([
+                x.shape[:axis], [leading_size],
+                x.shape[axis + ndims_mask:]
+            ], 0)))
+    mask = paddle.reshape(mask, [-1])
+    return _apply_mask_1d(tensor, mask, axis)
+
+def eye(n, m=None, dtype=None):
+    return paddle.eye(n, m, dtype)
+
+
+def einsum(equation, *operands):
+    try:
+        from paddlenlp.ops import einsum
+    except:
+        raise Exception("Paddlenlp needs to be installed.")
+    return einsum(equation, *operands)
+
+
+class Einsum(object):
+    def __init__(self, equation):
+        super(Einsum, self).__init__()
+        try:
+            from paddlenlp.ops import einsum
+        except:
+            raise Exception("Paddlenlp needs to be installed.")
+        self.equation = equation
+
+    def __call__(self, *args):
+        return einsum(self.equation, *args)
+
+
+def set_device(device = 'GPU', id = 0):
+    device = device.lower()
+    if device == 'gpu':
+        device = device + ':' + str(id)
+    paddle.device.set_device(device)
+
+def scatter_update(tensor, indices, updates):
+
+    return pd.scatter(tensor, indices, updates)
+
+def get_device():
+
+    return paddle.device.get_device()
+
+def to_device(tensor, device = 'GPU', id = 0):
+    device = device.upper()
+    if device == 'GPU':
+        return paddle.to_tensor(tensor, place=paddle.CUDAPlace(id))
+    if device == 'CPU':
+        return paddle.to_tensor(tensor, place=paddle.CPUPlace())

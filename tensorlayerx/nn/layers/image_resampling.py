@@ -82,6 +82,10 @@ class UpSampling2d(Module):
             Inputs tensors with 4-D Tensor of the shape (batch, height, width, channels)
         """
         outputs = self.resize(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -158,4 +162,8 @@ class DownSampling2d(Module):
         """
 
         outputs = self.resize(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

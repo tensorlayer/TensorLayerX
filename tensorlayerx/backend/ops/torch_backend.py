@@ -215,7 +215,7 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
     return out
 
 
-def he_normal(shape, dtype=None, seed=None):
+def he_normal(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype=None, seed=None):
     """
     He normal initializer.
 
@@ -234,18 +234,23 @@ def he_normal(shape, dtype=None, seed=None):
     """
 
     tensor = torch.empty(size=shape, dtype=dtype)
-    out = torch.nn.init.kaiming_normal_(tensor)
+    out = torch.nn.init.kaiming_normal_(tensor, a=a, mode = mode, nonlinearity = nonlinearity)
     return out
 
+def he_uniform(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype=None, seed=None):
 
-def xavier_normal(shape, dtype=None, seed=None):
+    tensor = torch.empty(size=shape, dtype=dtype)
+    out = torch.nn.init.kaiming_uniform_(tensor, a=a, mode = mode, nonlinearity = nonlinearity)
+    return out
+
+def xavier_normal(shape, gain = 1.0, dtype=None, seed=None):
     _tensor = torch.empty(size=shape, dtype=dtype)
-    return torch.nn.init.xavier_normal_(_tensor)
+    return torch.nn.init.xavier_normal_(_tensor, gain)
 
 
-def xavier_uniform(shape, dtype=None, seed=None):
+def xavier_uniform(shape, gain = 1.0, dtype=None, seed=None):
     _tensor = torch.empty(size=shape, dtype=dtype)
-    return torch.nn.init.xavier_uniform_(_tensor)
+    return torch.nn.init.xavier_uniform_(_tensor, gain)
 
 
 def Variable(initial_value, name=None, trainable=True):
@@ -542,11 +547,13 @@ class ReduceMax(object):
 
     def __call__(self, inputs):
         if self.axis is not None:
-            out = inputs
-            for dim in self.axis[-1]:
-                print(dim)
-                out = torch.max(out, dim=dim, keepdim=self.keepdims).values
-            return out
+            if isinstance(self.axis, (list, tuple)):
+                out = inputs
+                for dim in self.axis[::-1]:
+                    out = torch.max(out, dim=dim, keepdim=self.keepdims).values
+                return out
+            else:
+                return torch.max(inputs, dim=self.axis, keepdim=self.keepdims).values
         else:
             return torch.max(inputs)
 
@@ -1012,7 +1019,9 @@ def floor(x):
     return torch.floor(x)
 
 
-def gather(params, indices, axis = 0):
+def gather(params, indices, axis = None):
+    if axis is None:
+        axis = 0
     if axis < 0:
         axis = len(params.shape) + axis
     if axis == 0:
@@ -1154,8 +1163,13 @@ def resize(inputs, output_size, method, antialias):
 
 class ZeroPadding1D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding, (0, 0))
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding)
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding, (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
         self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
@@ -1164,8 +1178,13 @@ class ZeroPadding1D(object):
 
 class ZeroPadding2D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding[0], padding[1], (0, 0))
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding[0], padding[1])
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding[0], padding[1], (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
         self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
@@ -1174,8 +1193,13 @@ class ZeroPadding2D(object):
 
 class ZeroPadding3D(object):
 
-    def __init__(self, padding):
-        padding = ((0, 0), padding[0], padding[1], padding[2], (0, 0))
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding[0], padding[1], padding[2])
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding[0], padding[2], padding[1], (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
         self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
@@ -1233,13 +1257,7 @@ class DepthToSpace(object):
     def __call__(self, input):
         if self.data_format == 'NHWC':
             input = nhwc_to_nchw(input)
-        bH = self.block_size
-        bW = self.block_size
-        N, C, H, W = input.shape
-        oC, oH, oW = C // (self.block_size * self.block_size), bH * H, bW * W
-        output = input.reshape(N, C, bH, bW, H, W)
-        output = output.permute(0, 1, 4, 2, 5, 3)
-        output = output.reshape(N, oC, oH, oW)
+        output = torch.nn.functional.pixel_shuffle(input, upscale_factor=self.block_size)
         if  self.data_format == 'NHWC':
             output = nchw_to_nhwc(output)
         return output
@@ -1347,9 +1365,8 @@ def is_nan(x):
 
 
 def l2_normalize(x, axis=None, eps=1e-12):
-    if axis == None:
-        return torch.divide(x, torch.sqrt(torch.max(torch.sum(torch.pow(x, 2)))))
-    return torch.divide(x, torch.sqrt(torch.max(torch.sum(torch.pow(x, 2), dim=axis))))
+    axis = 0 if axis is None else axis
+    return F.normalize(x, p=2.0, dim=axis, eps=eps)
 
 
 def less(x, y):
@@ -1522,11 +1539,16 @@ def tanh(x):
 
 
 def any(x, axis=None, keepdims=False):
-    return torch.any(x, dim=axis, keepdim=keepdims)
-
+    if axis is not None:
+        return torch.any(x, dim=axis, keepdim=keepdims)
+    else:
+        return torch.any(x)
 
 def all(x, axis=None, keepdims=False):
-    return  torch.all(x, dim=axis, keepdim=keepdims)
+    if axis is not None:
+        return torch.all(x, dim=axis, keepdim=keepdims)
+    else:
+        return torch.all(x)
 
 
 def logical_and(x, y):
@@ -1631,3 +1653,77 @@ def set_seed(seed):
 def is_tensor(x):
 
     return isinstance(x, torch.Tensor)
+
+def tensor_scatter_nd_update(tensor, indices, updates):
+    tensor = torch.tensor(tensor)
+    indices = torch.tensor(indices, dtype=torch.long)
+    updates = torch.tensor(updates)
+    indices = torch.flatten(indices)
+    tensor[indices] = updates
+    return tensor
+
+def diag(input, diagonal=0):
+
+    return torch.diag(input, diagonal)
+
+def mask_select(x, mask, axis = 0):
+    if axis is None:
+        axis = 0
+    if axis < 0:
+        axis = len(x.shape) + axis
+    if x.shape == mask.shape:
+        return torch.masked_select(x, mask)
+    if axis == 0:
+        return x[mask]
+    elif axis == 1:
+        return x[:, mask]
+    elif axis == 2:
+        return x[:, :, mask]
+    elif axis == 3:
+        return x[:,:,:, mask]
+
+def eye(n, m=None, dtype=None):
+    if m is None:
+        m = n
+    return torch.eye(n = n, m = m, dtype =dtype)
+
+
+def einsum(equation, *operands):
+    return torch.einsum(equation, *operands)
+
+
+class Einsum(object):
+    def __init__(self, equation):
+        super(Einsum, self).__init__()
+        self.equation = equation
+
+    def __call__(self, *args):
+        return torch.einsum(self.equation, *args)
+
+def set_device(device = 'GPU', id = 0):
+    if device == 'GPU':
+        torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        torch.cuda.set_device(id)
+
+def scatter_update(tensor, indices, updates):
+    tensor = torch.tensor(tensor)
+    indices = torch.tensor(indices, dtype=torch.long)
+    updates = torch.tensor(updates)
+    tensor[indices] = updates
+    return tensor
+
+def get_device():
+    try:
+        id = torch.cuda.current_device()
+        device = 'GPU:' + str(id)
+        return device
+    except:
+        device = 'CPU'
+        return device
+
+def to_device(tensor, device='GPU', id=0):
+    device = device.lower()
+    if device == 'gpu':
+        device = 'cuda' + ':' + str(id)
+    tensor = tensor.detach().to(device)
+    return tensor

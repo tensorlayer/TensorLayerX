@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import copy, six
-from .common import str2act, str2init
+
+import paddle
+
+from .common import check_parameter, processing_act, str2init
 from .common import _save_weights, _load_weights, _save_standard_weights_dict, _load_standard_weights_dict
 from paddle.fluid import framework
 from paddle.fluid.dygraph import Layer
@@ -10,11 +13,12 @@ from paddle.fluid.framework import in_dygraph_mode
 from paddle.fluid.dygraph.base import program_desc_tracing_guard, param_guard
 from paddle.fluid.dygraph import parallel_helper
 import paddle as pd
-from collections import OrderedDict
+from collections import OrderedDict, abc as container_abcs
 
 _global_layer_name_dict = {}
+_global_layer_node = []
 
-__all__ = ['Module', 'SequentialLayer', 'LayerList']
+__all__ = ['Module', 'Sequential', 'ModuleList', 'ModuleDict', 'Parameter', 'ParameterList', 'ParameterDict']
 
 
 class Module(Layer):
@@ -45,19 +49,7 @@ class Module(Layer):
 
         self.name = name
 
-        if isinstance(act, str):
-            str_act = str2act(act)
-
-        if act:
-            if isinstance(act, str) and (len(act) > 5 and act[0:5] == "lrelu" or
-                                         len(act) > 10 and act[0:10] == "leaky_relu"):
-                self.act = str_act
-            elif isinstance(act, str):
-                self.act = str_act()
-            else:
-                self.act = act()
-        else:
-            self.act = act
+        self.act = processing_act(act)
 
         # Layer building state
         self._built = False
@@ -65,8 +57,8 @@ class Module(Layer):
         self._paddle_built = False
 
         # Layer nodes state
-        self._nodes = []
         self._nodes_fixed = False
+        self._build_graph = False
 
         # Layer weight state
         self._all_weights = None
@@ -284,6 +276,9 @@ class Module(Layer):
     def str_to_init(self, initializer):
         return str2init(initializer)
 
+    def check_param(self, param, dim='2d'):
+        return check_parameter(param, dim)
+
     def insert_child_to_layer(self, child_name, child):
         """
         Adds a child layer to the current layer.
@@ -305,11 +300,55 @@ class Module(Layer):
             raise TypeError("Child layer type is incorrect.")
         self._sub_layers[child_name] = child
 
+    def build_graph(self, *inputs, **kwargs):
+        # Add nodes only when the composition is needed.
+        # for layer in self.sublayers():
+        #     if isinstance(layer, Module):
+        #         layer._build_graph = True
+        #
+        # outputs = self.forward(*inputs, **kwargs)
+        # self.inputs = inputs
+        # self.outputs = outputs
+        # self._node_by_depth, self._all_layers = construct_graph(self.inputs, self.outputs)
+        # return self._node_by_depth, self._all_layers
+        raise NotImplementedError
 
-class SequentialLayer(Module):
+    def _add_node(self, input_tensors, output_tensors):
+        """Add a ModuleNode for this layer given input_tensors, output_tensors.
+
+        This function should not be called from outside, it should only be called
+        in __call__ when building static model.
+
+        Parameters
+        ----------
+        input_tensors : Tensor or a list of tensors
+            Input tensors to this layer.
+        output_tensors : Tensor or a list of tensors
+            Output tensors to this layer.
+
+        """
+        pass
+        # inputs_list = tolist(input_tensors)
+        # outputs_list = tolist(output_tensors)
+        # if self.__class__.__name__ in tlx.layers.inputs.__all__:
+        #     # for InputLayer, there should be no in_nodes
+        #     in_nodes = []
+        #     in_tensor_idxes = [0]
+        # else:
+        #     in_nodes = [tensor[0] for tensor in inputs_list]
+        #     in_tensor_idxes = [tensor[1] for tensor in inputs_list]
+        # node_index = len(_global_layer_node)
+        #
+        # new_node = ModuleNode(self, node_index, in_nodes, inputs_list, outputs_list, in_tensor_idxes)
+        # _global_layer_node.append(new_node)
+        # for idx, tensor in enumerate(outputs_list):
+        #     tensor._info = (new_node, idx)
+
+
+class Sequential(Module):
 
     def __init__(self, *args):
-        super(SequentialLayer, self).__init__()
+        super(Sequential, self).__init__()
         if len(args) == 1:
             layers = args[0]
             if isinstance(layers, list):
@@ -366,12 +405,12 @@ class SequentialLayer(Module):
         return input_data
 
 
-class LayerList(Module):
+class ModuleList(Module):
 
-    def __init__(self, args):
-        super(LayerList, self).__init__()
-        if args is not None:
-            self.extend(args)
+    def __init__(self, modules=None):
+        super(ModuleList, self).__init__()
+        if modules is not None:
+            self.extend(modules)
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -450,6 +489,258 @@ class LayerList(Module):
     def forward(self, *inputs):
         raise NotImplementedError
 
+
+class ModuleDict(Module):
+
+    def __init__(self, modules=None):
+        super(ModuleDict, self).__init__()
+        if modules is not None:
+            self.update(modules)
+
+    def __getitem__(self, key):
+
+        return self._sub_layers[key]
+
+    def __setitem__(self, key, module):
+        if not isinstance(key, str):
+            raise TypeError("module name should be a string, but got {}".format(type(key)))
+        elif '.' in key:
+            raise KeyError("module name can't contain \".\", got: {}".format(key))
+        elif key == '':
+            raise KeyError("module name can't be empty string \"\"")
+        if _valid_module(module):
+            self._sub_layers[key] = module
+
+    def __delitem__(self, key):
+
+        del self._sub_layers[key]
+
+    def __len__(self):
+
+        return len(self._sub_layers)
+
+    def __iter__(self):
+
+        return iter(self._sub_layers)
+
+    def __contains__(self, key):
+
+        return key in self._sub_layers
+
+    def clear(self):
+
+        self._sub_layers.clear()
+
+    def pop(self, key):
+
+        temp = self[key]
+        del self[key]
+        return temp
+
+    def keys(self):
+
+        return self._sub_layers.keys()
+
+    def items(self):
+
+        return self._sub_layers.items()
+
+    def values(self):
+
+        return self._sub_layers.values()
+
+    def update(self, modules):
+
+        if not isinstance(modules, container_abcs.Iterable):
+            raise TypeError(
+                "ModuleDict.update should be called with an "
+                "iterable of key/value pairs, but got " + type(modules)
+            )
+        if isinstance(modules, (OrderedDict, ModuleDict, container_abcs.Mapping)):
+            for key, module in modules.items():
+                self[key] = module
+        else:
+            for j, m in enumerate(modules):
+                if not isinstance(m, container_abcs.Iterable):
+                    raise TypeError(
+                        "ModuleDict update sequence element "
+                        "#" + str(j) + " should be Iterable; is" + type(m)
+                    )
+                if not len(m) == 2:
+                    raise ValueError(
+                        "ModuleDict update sequence element "
+                        "#" + str(j) + " has length " + str(len(m)) + "; 2 is required"
+                    )
+                self[m[0]] = m[1]
+
+
+def Parameter(data=None, requires_grad=True, name=None):
+    if data is None:
+        data = paddle.empty(0)
+    shape = data.shape
+    dtype = data.dtype
+    parameter = paddle.create_parameter(shape=shape, dtype=dtype)
+    parameter.set_value(data)
+    return parameter
+
+
+class ParameterList(Module):
+
+    def __init__(self, parameters=None):
+        super(ParameterList, self).__init__()
+        if parameters is not None:
+            for idx, param in enumerate(parameters):
+                self.add_parameter(str(idx), param)
+
+    def _get_abs_string_index(self, idx):
+        if not (-len(self) <= idx < len(self)):
+            raise IndexError('index {} is out of range'.format(idx))
+        if idx < 0:
+            idx += len(self)
+        return str(idx)
+
+    def __getitem__(self, idx):
+        with param_guard(self._parameters):
+            return self._parameters[str(idx)]
+
+    def __setitem__(self, idx, param):
+        setattr(self, str(idx), param)
+
+    def __setattr__(self, key, value):
+        super(ParameterList, self).__setattr__(key, value)
+
+    def __len__(self):
+        return len(self._parameters)
+
+    def __iter__(self):
+        with param_guard(self._parameters):
+            return iter(self._parameters.values())
+
+    def __iadd__(self, parameters):
+        return self.extend(parameters)
+
+    def __dir__(self):
+        keys = super(ParameterList, self).__dir__()
+        keys = [key for key in keys if not key.isdigit()]
+        return keys
+
+    def append(self, parameter):
+        idx = len(self._parameters)
+        self.add_parameter(str(idx), parameter)
+        return self
+
+    def extend(self, parameters):
+        if not isinstance(parameters, container_abcs.Iterable):
+            raise TypeError(
+                "ParameterList.extend should be called with an "
+                "iterable, but got " + type(parameters).__name__
+            )
+        offset = len(self)
+        for i, para in enumerate(parameters):
+            self.add_parameter(str(offset + i), para)
+        return self
+
+    def __call__(self, input):
+        raise RuntimeError('ParameterList should not be called.')
+
+
+class ParameterDict(Module):
+
+    def __init__(self, parameters=None):
+        super(ParameterDict, self).__init__()
+        if parameters is not None:
+            self.update(parameters)
+
+    def __getitem__(self, key):
+        return self._parameters[key]
+
+    def __setitem__(self, key, parameter):
+        self._parameters[key] = parameter
+
+    def __delitem__(self, key):
+        del self._parameters[key]
+
+    def __setattr__(self, key, value):
+        super(ParameterDict, self).__setattr__(key, value)
+
+    def __len__(self) -> int:
+        return len(self._parameters)
+
+    def __reversed__(self):
+        return reversed(list(self._parameters.keys()))
+
+    def __iter__(self):
+        return iter(self._parameters.keys())
+
+    def copy(self):
+        return ParameterDict(self._parameters.copy())
+
+    def __contains__(self, key):
+        return key in self._parameters
+
+    def setdefault(self, key, default=None):
+        if key in self._parameters:
+            return self._parameters[key]
+        self[key] = default
+        return self._parameters[key]
+
+    def clear(self):
+        return self._parameters.clear()
+
+    def pop(self, key):
+        v = self[key]
+        del self[key]
+        return v
+
+    def popitem(self):
+        return self._parameters.popitem()
+
+    def get(self, key, default=None):
+        return self._parameters.get(key, default)
+
+    def fromkeys(self, keys, default=None):
+        return ParameterDict(self._parameters.fromkeys(keys, default))
+
+    def keys(self):
+        return self._parameters.keys()
+
+    def items(self):
+        return self._parameters.items()
+
+    def values(self):
+        return self._parameters.values()
+
+    def update(self, parameters):
+        if not isinstance(parameters, container_abcs.Iterable):
+            raise TypeError(
+                "ParametersDict.update should be called with an "
+                "iterable of key/value pairs, but got " + type(parameters).__name__
+            )
+
+        if isinstance(parameters, (OrderedDict, ParameterDict)):
+            for key, parameter in parameters.items():
+                self[key] = parameter
+        elif isinstance(parameters, container_abcs.Mapping):
+            for key, parameter in sorted(parameters.items()):
+                self[key] = parameter
+        else:
+            for j, p in enumerate(parameters):
+                if not isinstance(p, container_abcs.Iterable):
+                    raise TypeError(
+                        "ParameterDict update sequence element "
+                        "#" + str(j) + " should be Iterable; is" + type(p).__name__
+                    )
+                print(p)
+                if not len(p) == 2:
+                    raise ValueError(
+                        "ParameterDict update sequence element "
+                        "#" + str(j) + " has length " + str(len(p)) + "; 2 is required"
+                    )
+                # parameters as length-2 list too cumbersome to type, see ModuleDict.update comment
+                self[p[0]] = p[1]  # type: ignore[assignment]
+
+    def __call__(self, input):
+        raise RuntimeError('ParameterDict should not be called.')
 
 def _valid_index(layer_num, index):
     if not isinstance(index, int):

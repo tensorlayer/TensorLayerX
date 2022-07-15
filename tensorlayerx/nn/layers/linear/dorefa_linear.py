@@ -100,13 +100,15 @@ class DorefaLinear(Module):
             raise Exception("TODO. The current version use tf.matmul for inferencing.")
 
         n_in = inputs_shape[-1]
-        self.b = None
-        self.W = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
+
+        self.weights = self._get_weights("weights", shape=(n_in, self.out_features), init=self.W_init)
+        self.biases = None
+
         if self.b_init is not None:
-            self.b = self._get_weights("biases", shape=(self.out_features), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_features), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd()
 
-        self.dorefa_dense = tlx.ops.DorefaDense(self.W, self.b, self.bitW, self.bitA)
+        self.dorefa_dense = tlx.ops.DorefaDense(self.weights, self.biases, self.bitW, self.bitA)
 
     def forward(self, inputs):
         if self._forward_state == False:
@@ -116,7 +118,12 @@ class DorefaLinear(Module):
             self._forward_state = True
 
         outputs = self.dorefa_dense(inputs)
-
+        if self.b_init:
+            outputs = self.bias_add(outputs, self.biases)
         if self.act:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

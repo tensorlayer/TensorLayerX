@@ -3,6 +3,7 @@
 
 import torch
 import tensorlayerx as tlx
+import numpy as np
 
 __all__ = [
     'Initializer',
@@ -14,6 +15,7 @@ __all__ = [
     'TruncatedNormal',
     'deconv2d_bilinear_upsampling_initializer',
     'HeNormal',
+    'HeUniform',
     'XavierNormal',
     'XavierUniform',
 ]
@@ -122,7 +124,11 @@ class Constant(Initializer):
 
     def __call__(self, shape, dtype=tlx.float32):
         _tensor = torch.empty(size=shape, dtype=dtype)
-        return torch.nn.init.constant_(_tensor, val=self.value)
+        if isinstance(self.value, (int, float)):
+            return torch.nn.init.constant_(_tensor, val=self.value)
+        elif isinstance(self.value, (torch.Tensor, list, np.ndarray)):
+            _tensor.data = torch.as_tensor(self.value)
+            return _tensor
 
     def get_config(self):
         return {"value": self.value}
@@ -265,15 +271,49 @@ class HeNormal(Initializer):
 
     """
 
-    def __init__(self, seed=None):
+    def __init__(self, a=0, mode='fan_in', nonlinearity='leaky_relu', seed=None):
+        self.a = a
+        self.mode = mode
+        self.nonlinearity = nonlinearity
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = torch.empty(size=shape)
-        return torch.nn.init.kaiming_normal_(_tensor)
+        return tlx.ops.he_normal(shape=shape, a=self.a, mode=self.mode, nonlinearity=self.nonlinearity, dtype=dtype)
 
     def get_config(self):
-        return {"seed", self.seed}
+        return {"a": self.a, "mode ": self.mode, "nonlinearity": self.nonlinearity}
+
+
+class HeUniform(Initializer):
+    """He uniform initializer.
+
+    Parameters
+    ----------
+    seed : A Python integer.
+        Used to seed the random generator.
+
+    Examples
+    --------
+
+    >>> import tensorlayerx as tlx
+    >>> init = tlx.initializers.he_normal()
+    >>> print(init(shape=(5, 10), dtype=tlx.float32))
+
+    """
+
+    def __init__(self, a=0, mode='fan_in', nonlinearity='leaky_relu', seed=None):
+        self.a = a
+        self.mode = mode
+        self.nonlinearity = nonlinearity
+        self.seed = seed
+
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.ops.he_uniform(
+            shape=shape, a=self.a, mode=self.mode, nonlinearity=self.nonlinearity, dtype=dtype, seed=self.seed
+        )
+
+    def get_config(self):
+        return {"a": self.a, "mode ": self.mode, "nonlinearity": self.nonlinearity}
 
 
 def deconv2d_bilinear_upsampling_initializer(shape):
@@ -308,15 +348,15 @@ class XavierNormal(Initializer):
 
     """
 
-    def __init__(self, seed=None):
+    def __init__(self, gain=1.0, seed=None):
+        self.gain = gain
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = torch.empty(size=shape)
-        return torch.nn.init.xavier_normal_(_tensor)
+        return tlx.ops.xavier_normal(shape=shape, gain=self.gain, dtype=dtype, seed=self.seed)
 
     def get_config(self):
-        return {"seed", self.seed}
+        return {"gain": self.gain}
 
 
 class XavierUniform(Initializer):
@@ -330,12 +370,12 @@ class XavierUniform(Initializer):
 
     """
 
-    def __init__(self, seed=None):
+    def __init__(self, gain=1.0, seed=None):
+        self.gain = gain
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = torch.empty(size=shape)
-        return torch.nn.init.xavier_uniform_(_tensor)
+        return tlx.ops.xavier_uniform(shape=shape, gain=self.gain, dtype=dtype, seed=self.seed)
 
     def get_config(self):
-        return {"seed", self.seed}
+        return {"gain": self.gain}

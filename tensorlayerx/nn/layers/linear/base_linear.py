@@ -11,7 +11,7 @@ __all__ = [
 
 
 class Linear(Module):
-    """The :class:`Linear` class is a fully connected layer.
+    """Applies a linear transformation to the incoming data: :math:`y = xA^T + b`
 
     Parameters
     ----------
@@ -88,13 +88,13 @@ class Linear(Module):
             self.in_features = inputs_shape[-1]
             shape = [self.in_features, self.out_features]
 
-        self.W = self._get_weights("weights", shape=tuple(shape), init=self.W_init)
+        self.weights = self._get_weights("weights", shape=tuple(shape), init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_features, ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_features, ), init=self.b_init)
             self.b_init_flag = True
-            self.bias_add = tlx.ops.BiasAdd(data_format='NHWC')
+            self.bias_add = tlx.ops.BiasAdd(data_format='NWC')
 
         self.act_init_flag = False
         if self.act:
@@ -109,10 +109,14 @@ class Linear(Module):
                 self._built = True
             self._forward_state = True
 
-        z = self.matmul(inputs, self.W)
+        z = self.matmul(inputs, self.weights)
         if self.b_init_flag:
-            z = self.bias_add(z, self.b)
+            z = self.bias_add(z, self.biases)
         if self.act_init_flag:
             z = self.act(z)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, z)
+            self._nodes_fixed = True
         return z
 

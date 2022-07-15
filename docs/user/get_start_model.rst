@@ -12,16 +12,16 @@ Sequential model
 
 .. code-block:: python
 
-  from tensorlayerx.nn import SequentialLayer
+  from tensorlayerx.nn import Sequential
   from tensorlayerx.nn import Linear
   import tensorlayerx as tlx
 
   def get_model():
       layer_list = []
-      layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=784, name='Linear1'))
-      layer_list.append(Linear(out_features=800, act=tlx.ReLU, in_features=800, name='Linear2'))
-      layer_list.append(Linear(out_features=10, act=tlx.ReLU, in_features=800, name='Linear3'))
-      MLP = SequentialLayer(layer_list)
+      layer_list.append(Linear(out_features=800, act=tlx.nn.ReLU, in_features=784, name='Linear1'))
+      layer_list.append(Linear(out_features=800, act=tlx.nn.ReLU, in_features=800, name='Linear2'))
+      layer_list.append(Linear(out_features=10, act=tlx.nn.ReLU, in_features=800, name='Linear3'))
+      MLP = Sequential(layer_list)
       return MLP
 
 
@@ -43,9 +43,9 @@ In this case, you need to manually input the output shape of the previous layer 
           super(CustomModel, self).__init__()
 
           self.dropout1 = Dropout(p=0.2)
-          self.linear1 = Linear(out_features=800, act=tlx.ReLU, in_features=784)
+          self.linear1 = Linear(out_features=800, act=tlx.nn.ReLU, in_features=784)
           self.dropout2 = Dropout(p=0.2)
-          self.linear2 = Linear(out_features=800, act=tlx.ReLU, in_features=800)
+          self.linear2 = Linear(out_features=800, act=tlx.nn.ReLU, in_features=800)
           self.dropout3 = Dropout(p=0.2)
           self.linear3 = Linear(out_features=10, act=None, in_features=800)
 
@@ -83,9 +83,9 @@ In this case, you do not manually input the output shape of the previous layer t
           super(CustomModel, self).__init__()
 
           self.dropout1 = Dropout(p=0.2)
-          self.linear1 = Linear(out_features=800, act=tlx.ReLU)
+          self.linear1 = Linear(out_features=800, act=tlx.nn.ReLU)
           self.dropout2 = Dropout(p=0.2)
-          self.linear2 = Linear(out_features=800, act=tlx.ReLU)
+          self.linear2 = Linear(out_features=800, act=tlx.nn.ReLU)
           self.dropout3 = Dropout(p=0.2)
           self.linear3 = Linear(out_features=10, act=None)
 
@@ -135,9 +135,9 @@ For dynamic model, call the layer multiple time in forward function
   class MyModel(Module):
       def __init__(self):
           super(MyModel, self).__init__()
-          self.linear_shared = Linear(out_features=800, act=tlx.ReLU, in_features=784)
-          self.linear1 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
-          self.linear2 = Linear(out_features=10, act=tlx.ReLU, in_features=800)
+          self.linear_shared = Linear(out_features=800, act=tlx.nn.ReLU, in_features=784)
+          self.linear1 = Linear(out_features=10, act=tlx.nn.ReLU, in_features=800)
+          self.linear2 = Linear(out_features=10, act=tlx.nn.ReLU, in_features=800)
           self.cat = Concat()
 
       def forward(self, x):

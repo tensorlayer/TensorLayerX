@@ -76,4 +76,8 @@ class GaussianNoise(Module):
             shapes = tlx.get_tensor_shape(inputs)
             noise = tlx.ops.random_normal(shape=shapes, mean=self.mean, stddev=self.stddev, seed=self.seed)
             outputs = inputs + noise
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

@@ -51,8 +51,8 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
+    'sphinx-mathjax-offline',
 ]
-
 autodoc_mock_imports = [
     'cv2',
     'gridfs',

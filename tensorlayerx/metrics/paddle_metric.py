@@ -3,14 +3,35 @@
 
 import paddle
 from paddle.metric.metrics import Metric
+import six
+import abc
 
 __all__ = [
+    'Metric',
     'Accuracy',
     'Auc',
     'Precision',
     'Recall',
     'acc',
 ]
+
+@six.add_metaclass(abc.ABCMeta)
+class Metric(object):
+
+    def __init__(self):
+        pass
+
+    @abc.abstractmethod
+    def update(self, *args):
+        raise NotImplementedError("function 'update' not implemented in {}.".format(self.__class__.__name__))
+
+    @abc.abstractmethod
+    def result(self):
+        raise NotImplementedError("function 'reset' not implemented in {}.".format(self.__class__.__name__))
+
+    @abc.abstractmethod
+    def reset(self):
+        raise NotImplementedError("function 'reset' not implemented in {}.".format(self.__class__.__name__))
 
 
 class Accuracy(object):

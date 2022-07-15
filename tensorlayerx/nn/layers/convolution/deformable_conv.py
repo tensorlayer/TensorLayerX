@@ -22,7 +22,7 @@ class DeformableConv2d(Module):
         e.g. if apply a 3*3 kernel, the number of the last dimension should be 18 (2*3*3)
     out_channels : int
         The number of filters.
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         The filter size (height, width).
     act : activation function
         The activation function of this layer.
@@ -82,7 +82,7 @@ class DeformableConv2d(Module):
 
         self.offset_layer = offset_layer
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
+        self.kernel_size = self.check_param(kernel_size)
         self.padding = padding
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
@@ -146,10 +146,10 @@ class DeformableConv2d(Module):
 
         self.filter_shape = (1, 1, self.kernel_n, self.in_channels, self.out_channels)
 
-        self.W = self._get_weights("W_deformableconv2d", shape=self.filter_shape, init=self.W_init)
+        self.W_deformableconv2d = self._get_weights("W_deformableconv2d", shape=self.filter_shape, init=self.W_init)
 
         if self.b_init:
-            self.b = self._get_weights("b_deformableconv2d", shape=(self.out_channels, ), init=self.b_init)
+            self.b_deformableconv2d = self._get_weights("b_deformableconv2d", shape=(self.out_channels, ), init=self.b_init)
 
         self.conv3d = tlx.ops.Conv3D(strides=[1, 1, 1, 1, 1], padding='VALID')
         self.bias_add = tlx.ops.BiasAdd()
@@ -166,12 +166,12 @@ class DeformableConv2d(Module):
         grid_offset = self.grid_offset
 
         input_deform = self._tf_batch_map_offsets(inputs, offset, grid_offset)
-        outputs = self.conv3d(input=input_deform, filters=self.W)
+        outputs = self.conv3d(input=input_deform, filters=self.W_deformableconv2d)
         outputs = tlx.ops.reshape(
             tensor=outputs, shape=[outputs.get_shape()[0], self.input_h, self.input_w, self.out_channels]
         )
         if self.b_init:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.b_deformableconv2d)
         if self.act:
             outputs = self.act(outputs)
         return outputs
@@ -298,5 +298,9 @@ class DeformableConv2d(Module):
         mapped_vals = self._tf_batch_map_coordinates(inputs, coords)
         # (b*c, h, w, n) --> (b, h, w, n, c)
         mapped_vals = self._to_b_h_w_n_c(mapped_vals, [batch_size, input_h, input_w, kernel_n, channel])
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, mapped_vals)
+            self._nodes_fixed = True
 
         return mapped_vals

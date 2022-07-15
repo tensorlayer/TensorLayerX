@@ -5,6 +5,12 @@ from .tensorflow_nn import nchw_to_nhwc, nhwc_to_nchw, preprocess_1d_format, pre
 import tensorflow as tf
 import random
 import numpy as np
+import math
+from tensorflow.python.framework import dtypes
+from tensorflow.python.keras import backend
+from tensorflow.python.ops import random_ops
+from tensorflow.python.ops import stateless_random_ops
+
 
 _dtypeDict = {
     'DType': tf.DType,
@@ -267,7 +273,87 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype='float32', seed=None):
     return outputs
 
 
-def he_normal(shape, dtype='float32', seed=None):
+def _get_dtype(dtype):
+    if dtype is None:
+        dtype = backend.floatx()
+    return dtype
+
+def _assert_float_dtype(dtype):
+    if not dtype.is_floating:
+        raise ValueError('Expected floating point type, got %s.' % dtype)
+    return dtype
+
+class _RandomGenerator(object):
+
+    def __init__(self, seed=None):
+        super(_RandomGenerator, self).__init__()
+        if seed is not None:
+            self.seed = [seed, 0]
+        else:
+            self.seed = None
+
+    def random_normal(self, shape, mean=0.0, stddev=1, dtype=dtypes.float32):
+        if self.seed:
+            op = stateless_random_ops.stateless_random_normal
+        else:
+            op = random_ops.random_normal
+        return op(
+        shape=shape, mean=mean, stddev=stddev, dtype=dtype, seed=self.seed)
+
+    def random_uniform(self, shape, minval, maxval, dtype):
+        if self.seed:
+            op = stateless_random_ops.stateless_random_uniform
+        else:
+            op = random_ops.random_uniform
+        return op(
+        shape=shape, minval=minval, maxval=maxval, dtype=dtype, seed=self.seed)
+
+    def truncated_normal(self, shape, mean, stddev, dtype):
+        if self.seed:
+            op = stateless_random_ops.stateless_truncated_normal
+        else:
+            op = random_ops.truncated_normal
+        return op(
+        shape=shape, mean=mean, stddev=stddev, dtype=dtype, seed=self.seed)
+
+def _compute_fans(shape):
+    if len(shape) < 1:  # Just to avoid errors for constants.
+        fan_in = fan_out = 1
+    elif len(shape) == 1:
+        fan_in = fan_out = shape[0]
+    elif len(shape) == 2:
+        fan_in = shape[0]
+        fan_out = shape[1]
+    else:
+        receptive_field_size = 1
+        for dim in shape[:-2]:
+            receptive_field_size *= dim
+        fan_in = shape[-2] * receptive_field_size
+        fan_out = shape[-1] * receptive_field_size
+    return int(fan_in), int(fan_out)
+
+def calculate_gain(nonlinearity, param=None):
+    linear_fns = ['linear', 'conv1d', 'conv2d', 'conv3d', 'conv_transpose1d', 'conv_transpose2d', 'conv_transpose3d']
+    if nonlinearity in linear_fns or nonlinearity == 'sigmoid':
+        return 1
+    elif nonlinearity == 'tanh':
+        return 5.0 / 3
+    elif nonlinearity == 'relu':
+        return math.sqrt(2.0)
+    elif nonlinearity == 'leaky_relu':
+        if param is None:
+            negative_slope = 0.01
+        elif isinstance(param, int) or isinstance(param, float):
+            negative_slope = param
+        else:
+            raise ValueError("negative_slope {} not a valid number".format(param))
+        return math.sqrt(2.0 / (1 + negative_slope ** 2))
+    elif nonlinearity == 'selu':
+        return 3.0 / 4
+    else:
+        raise ValueError("Unsupported nonlinearity {}".format(nonlinearity))
+
+def he_normal(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu',dtype='float32', seed=None):
     """
     He normal initializer.
 
@@ -291,11 +377,38 @@ def he_normal(shape, dtype='float32', seed=None):
     >>> y = tlx.ops.he_normal((10, 25, 25, 10), dtype='float32')
 
     """
+    fan_in, fan_out = _compute_fans(shape)
+    correct_fan = fan_in if mode == 'fan_in' else fan_out
+    gain = calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(correct_fan)
+    dtype = _assert_float_dtype(_get_dtype(dtype))
+    return _RandomGenerator(seed).random_normal(shape, 0.0, std, dtype)
 
-    return tf.initializers.he_normal(seed)(shape=shape, dtype=dtype_str(dtype))
+def he_uniform(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu',dtype='float32', seed=None):
+    """
 
+    Parameters
+    ----------
+    shape
+    a
+    mode
+    nonlinearity
+    dtype
+    seed
 
-def xavier_normal(shape, dtype='float32', seed=None):
+    Returns
+    -------
+
+    """
+    fan_in, fan_out = _compute_fans(shape)
+    correct_fan = fan_in if mode == 'fan_in' else fan_out
+    gain = calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(correct_fan)
+    bound = math.sqrt(3.0) * std
+    dtype = _assert_float_dtype(_get_dtype(dtype))
+    return _RandomGenerator(seed).random_uniform(shape, -bound, bound, dtype)
+
+def xavier_normal(shape, gain = 1.0, dtype='float32', seed=None):
     """
     Xavier normal.
 
@@ -319,11 +432,13 @@ def xavier_normal(shape, dtype='float32', seed=None):
     >>> y = tlx.ops.xavier_normal((10, 25, 25, 10), dtype='float32')
 
     """
+    fan_in, fan_out = _compute_fans(shape)
+    std = gain * math.sqrt(2.0 / float(fan_in + fan_out))
+    dtype = _assert_float_dtype(_get_dtype(dtype))
+    return _RandomGenerator(seed).random_normal(shape, 0.0, std, dtype)
 
-    return tf.initializers.glorot_normal(seed)(shape=shape, dtype=dtype_str(dtype))
 
-
-def xavier_uniform(shape, dtype='float32', seed=None):
+def xavier_uniform(shape, gain = 1.0, dtype='float32', seed=None):
     """
     Xavier uniform.
 
@@ -347,8 +462,11 @@ def xavier_uniform(shape, dtype='float32', seed=None):
     >>> y = tlx.ops.xavier_uniform((10, 25, 25, 10), dtype='float32')
 
     """
-
-    return tf.initializers.glorot_uniform(seed)(shape=shape, dtype=dtype_str(dtype))
+    fan_in, fan_out = _compute_fans(shape)
+    std = gain * math.sqrt(2.0 / float(fan_in + fan_out))
+    bound = math.sqrt(3.0) * std
+    dtype = _assert_float_dtype(_get_dtype(dtype))
+    return _RandomGenerator(seed).random_uniform(shape, -bound, bound, dtype)
 
 
 def Variable(initial_value, name, trainable=True, device = None):
@@ -1249,7 +1367,7 @@ def gather(params, indices, axis=None):
     indices : indices
         The index Tensor. Must be one of the following types: int32, int64. The values must be in range [0, params.shape[axis]).
     axis : tensor.
-        Must be one of the following types: int32, int64. The axis in params to gather indices from.
+        Must be one of the following types: int32, int64. The axis in params to gather indices from. The default value is None, if None, the axis is 0.
 
     Returns
     -------
@@ -1379,29 +1497,47 @@ def resize(inputs, output_size, method, antialias):
 
 class ZeroPadding1D(object):
 
-    def __init__(self, padding):
-        self.zeropad = tf.keras.layers.ZeroPadding1D(padding=padding)
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding)
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding, (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
+        self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
-        return self.zeropad(inputs)
+        return self.pad(inputs)
 
 
 class ZeroPadding2D(object):
 
-    def __init__(self, padding):
-        self.zeropad = tf.keras.layers.ZeroPadding2D(padding=padding)
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding[0], padding[1])
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding[0], padding[1], (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
+        self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
-        return self.zeropad(inputs)
+        return self.pad(inputs)
 
 
 class ZeroPadding3D(object):
 
-    def __init__(self, padding):
-        self.zeropad = tf.keras.layers.ZeroPadding3D(padding=padding)
+    def __init__(self, padding, data_format):
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding[0], padding[1], padding[2])
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding[0], padding[1], padding[2], (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
+        self.pad = Pad(paddings=padding)
 
     def __call__(self, inputs):
-        return self.zeropad(inputs)
+        return self.pad(inputs)
 
 
 class Sign(object):
@@ -3598,3 +3734,249 @@ def is_tensor(x):
     """
 
     return tf.is_tensor(x)
+
+
+def tensor_scatter_nd_update(tensor, indices, updates):
+    """
+
+    Parameters
+    ----------
+    tensor : Tensor
+        tensor to update.
+    indices : list
+        indices to update.
+    updates : Tensor
+        value to apply at the indices
+
+    Returns
+    -------
+        updated Tensor.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> tensor = tlx.ops.ones(shape=(5,3))
+    >>> indices = [[0],[ 4],[ 2]]
+    >>> updates = tlx.ops.convert_to_tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    >>> new_tensor = tlx.ops.tensor_scatter_nd_update(tensor, indices, updates)
+    >>>  [[1. 2. 3.]
+    >>>  [1. 1. 1.]
+    >>>  [7. 8. 9.]
+    >>>  [1. 1. 1.]
+    >>>  [4. 5. 6.]]
+    """
+
+    return tf.tensor_scatter_nd_update(tensor, indices, updates)
+
+def diag(input, diagonal=0):
+    """
+
+    Parameters
+    ----------
+    input : Tensor
+        the input tensor.
+    diagonal : int
+         the diagonal to consider. Defualt is 0.
+
+    Returns
+    -------
+        the output tensor.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> tensor = tlx.ops.convert_to_tensor([[1,2,3],[4,5,6],[7,8,9]]))
+    >>> new_tensor = tlx.ops.diag(tensor)
+    >>> [1, 5, 9]
+    """
+    return tf.experimental.numpy.diag(input, diagonal)
+
+def mask_select(x, mask, axis = 0):
+    """
+
+    Parameters
+    ----------
+    x : Tensor
+        N-D Tensor.
+    mask : Tensor
+        N-D boolean Tensor or 1-D boolean Tensor
+    axis :
+        the axis in tensor to mask from. By default, axis is 0.
+
+    Returns
+    -------
+        the output tensor.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> tensor = tlx.ops.convert_to_tensor([[1,2,3],[4,5,6],[7,8,9]]))
+    >>> mask = tlx.ops.convert_to_tensor(np.array([True, False, True]), dtype=tlx.bool)
+    >>> new_tensor = tlx.ops.mask_select(tensor, mask)
+    >>> [[1, 2, 3],[7, 8, 9]]
+    """
+
+    return tf.boolean_mask(x, mask, axis = axis)
+
+def eye(n, m = None, dtype = None):
+    """
+
+    Parameters
+    ----------
+    n : int
+        the number of rows
+    m : int or None
+        the number of columns with default being n
+    dtype : str or None
+        the desired data type of returned tensor. Default: if None, use float32
+
+    Returns
+    -------
+        A 2-D tensor with ones on the diagonal and zeros elsewhere
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> tlx.ops.eye(2)
+    >>> [[1,0],
+    >>> [0,1]]
+    """
+    if dtype is None:
+        dtype = tf.dtypes.float32
+    return tf.eye(n, m, dtype = dtype)
+
+
+def einsum(equation, *operands):
+    """
+    Sums the product of the elements of the input operands along dimensions specified
+    using a notation based on the Einstein summation convention.
+
+    Parameters
+    ----------
+    equation : An attribute
+        represent the operation you want to do.
+        the value can contain only letters([a-z][A-Z]), commas(,), ellipsis(…), and arrow(->).
+        the letters represent inputs’s tensor dimension, commas(,)represent separate tensors, ellipsis(…) indicates
+        the tensor dimension that you do not care about, the left of the arrow(->) indicates the input tensors,
+        and the right of it indicates the desired output dimension.
+
+    operands : list
+        input tensor used for calculation. the data type of the tensor must be the same.
+
+    Returns
+    -------
+        Tensor, the shape of it can be obtained from the equation, and the data type is the same as input tensors.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.nn.Input((5,))
+    >>> y = tlx.nn.Input((4,))
+    >>> out = tlx.ops.einsum('i,j->ij', x, y)
+    >>> cal_enisum = tlx.ops.Einsum('i,j->ij')
+    >>> out = cal_enisum(x, y)
+    """
+    return tf.einsum(equation, *operands)
+
+
+class Einsum(object):
+    def __init__(self, equation):
+        super(Einsum, self).__init__()
+        self.equation = equation
+
+    def __call__(self, *args):
+        return tf.einsum(self.equation, *args)
+
+def set_device(device = 'GPU', id = 0):
+    """This function can specify the global device which the OP will run.
+
+    Parameters
+    ----------
+    device : str
+        Specific running device. It can be 'CPU', 'GPU' and 'Ascend'(In mindspore backend).
+    id : int
+        Device id.
+
+    """
+    if device not in ['GPU', 'CPU']:
+        raise ValueError ("Only support 'CPU', 'GPU'.")
+    if device == 'GPU':
+        gpus = tf.config.experimental.list_physical_devices('GPU')
+        if gpus:
+            try:
+                for gpu in gpus:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+                tf.config.experimental.set_visible_devices(gpus[id], 'GPU')
+            except RuntimeError as e:
+                print(e)
+
+def scatter_update(tensor, indices, updates):
+    """Applies sparse updates to a variable
+
+    Parameters
+    ----------
+    tensor : Tensor
+        A Tensor. The dim of tensor must be 1.
+    indices : Tensor
+        Indices into the tensor.
+    updates : Tensor
+        Updated values
+
+    Returns
+    -------
+        Tensor after updated.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.ones((5,))
+    >>> indices = tlx.ops.convert_to_tensor([0,  4,  2])
+    >>> updates = tlx.ops.convert_to_tensor([1., 4., 7.])
+    >>> res = tlx.ops.scatter_update(x, indices, updates)
+    >>> [1. 1. 7. 1. 4.]
+    """
+    shape = indices.shape
+    indices = tf.reshape(indices, shape = (shape[0], 1))
+    return tf.tensor_scatter_nd_update(tensor, indices, updates)
+
+def get_device():
+    """This function can get the specified global device.
+
+    Returns
+    -------
+        The global device.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.get_device()
+    >>> "CPU"
+    """
+    device = tf.config.experimental.get_visible_devices('GPU')
+    if len(device) == 0:
+        device = tf.config.experimental.get_visible_devices('CPU')
+    return device
+
+def to_device(tensor, device = 'GPU', id = 0):
+    """Returns a copy of Tensor in specified device.
+
+    Parameters
+    ----------
+    tensor : Tensor
+        A tensor.
+    device : str
+        The specified device. Support 'GPU' and 'CPU'. Default is 'GPU'.
+    id : int
+        The id of specified device. Default is 0.
+
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.ones((5,))
+    >>> x = tlx.ops.to_device(x, device="GPU", id=0)
+    """
+    if device is None:
+        return tensor
+    with tf.device("/" + device.upper()+':'+str(id)):
+        return tf.identity(tensor)

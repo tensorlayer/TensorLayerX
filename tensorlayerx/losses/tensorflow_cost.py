@@ -498,7 +498,7 @@ def cross_entropy_seq_with_mask(logits, target_seqs, input_mask, return_details=
     ...         return_seq_2d = True,
     ...         name = 'dynamicrnn'))
     >>> net_list.append(tlx.nn.Dense(n_units=vocab_size, name="output"))
-    >>> model = tlx.nn.SequentialLayer(net_list)
+    >>> model = tlx.nn.Sequential(net_list)
     >>> input_seqs = np.random.randint(0, 10, size=(batch_size, 10), dtype=np.int64)
     >>> target_seqs = np.random.randint(0, 10, size=(batch_size, 10), dtype=np.int64)
     >>> input_mask = np.random.randint(0, 2, size=(batch_size, 10), dtype=np.int64)

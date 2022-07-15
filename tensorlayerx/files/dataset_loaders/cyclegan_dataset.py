@@ -6,7 +6,7 @@ import os
 import numpy as np
 
 from tensorlayerx import logging
-from tensorlayerx.utils import visualize
+from tensorlayerx.vision import load_images
 from tensorlayerx.files.utils import (del_file, folder_exists, load_file_list, maybe_download_and_extract)
 
 __all__ = ['load_cyclegan_dataset']
@@ -36,8 +36,7 @@ def load_cyclegan_dataset(filename='summer2winter_yosemite', path='data'):
         del_file(os.path.join(path, filename + '.zip'))
 
     def load_image_from_folder(path):
-        path_imgs = load_file_list(path=path, regx='\\.jpg', printable=False)
-        return visualize.read_images(path_imgs, path=path, n_threads=10, printable=False)
+        return load_images(path=path, n_threads=10)
 
     im_train_A = load_image_from_folder(os.path.join(path, filename, "trainA"))
     im_train_B = load_image_from_folder(os.path.join(path, filename, "trainB"))

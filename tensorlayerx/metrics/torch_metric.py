@@ -54,8 +54,8 @@ class Accuracy(Metric):
         correct = correct.cpu().numpy()
         num_samples = np.prod(np.array(correct.shape[:-1]))
         num_corrects = correct[..., :self.topk].sum()
-        self.total = num_corrects
-        self.count = num_samples
+        self.total += num_corrects
+        self.count += num_samples
 
     def result(self):
         return float(self.total) / self.count if self.count > 0 else 0.

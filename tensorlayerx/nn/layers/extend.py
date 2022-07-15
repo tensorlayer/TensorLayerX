@@ -53,9 +53,12 @@ class ExpandDims(Module):
     def build(self, inputs_shape):
         self.expand_dims = tlx.ops.ExpandDims(axis=self.axis)
 
-    # @tf.function
     def forward(self, inputs):
         outputs = self.expand_dims(inputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -102,4 +105,8 @@ class Tile(Module):
     # @tf.function
     def forward(self, inputs):
         outputs = self.tile(inputs, multiples=self.multiples)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

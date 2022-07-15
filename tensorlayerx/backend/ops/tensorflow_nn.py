@@ -34,9 +34,89 @@ def padding_format(padding):
         padding = "VALID"
     elif padding == None:
         padding = None
+    elif isinstance(padding, tuple) or isinstance(padding, int):
+        return padding
     else:
         raise Exception("Unsupported padding: " + str(padding))
     return padding
+
+def channel_format(data_format, dim='2d'):
+    if dim == '1d':
+        if data_format in ["channels_last", "NWC", 'NLC']:
+            data_format = "NWC"
+        elif data_format in ["channels_first", "NCW", 'NCL']:
+            data_format = "NCW"
+        elif data_format == None:
+            data_format = None
+        else:
+            raise Exception("Unsupported data format: " + str(data_format))
+    elif dim == '2d':
+        if data_format in ["channels_last", "NHWC"]:
+            data_format = "NHWC"
+        elif data_format in ["channels_first", "NCHW"]:
+            data_format = "NCHW"
+        elif data_format == None:
+            data_format = None
+        else:
+            raise Exception("Unsupported data format: " + str(data_format))
+    elif dim == '3d':
+        if data_format in ['channels_last', 'NDHWC']:
+            data_format = 'NDHWC'
+        elif data_format in ['channels_first', 'NCDHW']:
+            data_format = 'NCDHW'
+        elif data_format == None:
+            data_format = None
+        else:
+            raise Exception("Unsupported data format: " + str(data_format))
+    else:
+        raise Exception("dim must be '1d', '2d', '3d'.")
+    return data_format
+
+def preprocess_padding(padding, dim='2d', data_format='NHWC'):
+    # When explicit padding is used and data_format is "NHWC",
+    # this should be in the form [[0, 0], [pad_top, pad_bottom],[pad_left, pad_right], [0, 0]].
+    # When explicit padding used and data_format is "NCHW",
+    # this should be in the form [[0, 0], [0, 0],[pad_top, pad_bottom], [pad_left, pad_right]].
+    check_padding(padding, dim)
+    if dim == '1d':
+        if data_format == 'NWC':
+            out_padding = [[0, 0], [padding, padding], [0, 0]]
+        else:
+            out_padding = [[0, 0], [0, 0], [padding, padding]]
+    elif dim == '2d':
+        if isinstance(padding, int):
+            if data_format == 'NHWC':
+                out_padding = [[0, 0], [padding, padding], [padding, padding], [0, 0]]
+            else:
+                out_padding = [[0, 0], [0, 0],[padding, padding], [padding, padding]]
+        elif isinstance(padding, tuple):
+            if data_format == 'NHWC':
+                out_padding = [[0, 0], [padding[0], padding[0]], [padding[1], padding[1]], [0, 0]]
+            else:
+                out_padding = [[0, 0], [0, 0],[padding[0], padding[0]], [padding[1], padding[1]]]
+    elif dim == '3d':
+        if isinstance(padding, int):
+            if data_format == 'NDHWC':
+                out_padding = [[0, 0], [padding, padding], [padding, padding], [padding, padding], [0, 0]]
+            else:
+                out_padding = [[0, 0], [0, 0], [padding, padding], [padding, padding], [padding, padding]]
+        elif isinstance(padding, tuple):
+            if data_format == 'NDHWC':
+                out_padding = [[0, 0], [padding[0], padding[0]], [padding[1], padding[1]], [padding[2], padding[2]], [0, 0]]
+            else:
+                out_padding = [[0, 0], [0, 0], [padding[0], padding[0]], [padding[1], padding[1]], [padding[2], padding[2]]]
+    else:
+        raise RuntimeError("Unsupported input dimensions.")
+    return out_padding
+
+
+def check_padding(padding, dim='2d'):
+    if dim == '1d' and isinstance(object, tuple):
+        raise RuntimeError("expected padding to be a single integer value or a list of 1 values to match the convolution dimensions.")
+    if dim == '2d' and isinstance(object, tuple) and len(padding) > 2:
+        raise RuntimeError("expected padding to be a single integer value or a list of 2 values to match the convolution dimensions.")
+    if dim == '3d' and isinstance(object, tuple) and len(padding) > 3:
+        raise RuntimeError("expected padding to be a single integer value or a list of 3 values to match the convolution dimensions.")
 
 
 def preprocess_1d_format(data_format, padding):
@@ -54,14 +134,7 @@ def preprocess_1d_format(data_format, padding):
     -------
         str "NWC" or "NCW" and "SAME" or "VALID"
     """
-    if data_format in ["channels_last", "NWC"]:
-        data_format = "NWC"
-    elif data_format in ["channels_first", "NCW"]:
-        data_format = "NCW"
-    elif data_format == None:
-        data_format = None
-    else:
-        raise Exception("Unsupported data format: " + str(data_format))
+    data_format = channel_format(data_format, dim='1d')
     padding = padding_format(padding)
     return data_format, padding
 
@@ -82,14 +155,7 @@ def preprocess_2d_format(data_format, padding):
         str "NHWC" or "NCHW" and "SAME" or "VALID"
     """
 
-    if data_format in ["channels_last", "NHWC"]:
-        data_format = "NHWC"
-    elif data_format in ["channels_first", "NCHW"]:
-        data_format = "NCHW"
-    elif data_format == None:
-        data_format = None
-    else:
-        raise Exception("Unsupported data format: " + str(data_format))
+    data_format = channel_format(data_format, dim='2d')
     padding = padding_format(padding)
     return data_format, padding
 
@@ -110,14 +176,7 @@ def preprocess_3d_format(data_format, padding):
         str "NDHWC" or "NCDHW" and "SAME" or "VALID"
     """
 
-    if data_format in ['channels_last', 'NDHWC']:
-        data_format = 'NDHWC'
-    elif data_format in ['channels_first', 'NCDHW']:
-        data_format = 'NCDHW'
-    elif data_format == None:
-        data_format = None
-    else:
-        raise Exception("Unsupported data format: " + str(data_format))
+    data_format = channel_format(data_format, dim='3d')
     padding = padding_format(padding)
     return data_format, padding
 
@@ -261,14 +320,14 @@ def relu6(x):
 
 class LeakyReLU(object):
 
-    def __init__(self, alpha=0.2):
-        self.alpha = alpha
+    def __init__(self, negative_slope=0.2):
+        self.negative_slope = negative_slope
 
     def __call__(self, x):
-        return tf.nn.leaky_relu(x, alpha=self.alpha)
+        return tf.nn.leaky_relu(x, alpha=self.negative_slope)
 
 
-def leaky_relu(x, alpha=0.2):
+def leaky_relu(x, negative_slope=0.2):
     """
     Compute the Leaky ReLU activation function.
 
@@ -283,7 +342,7 @@ def leaky_relu(x, alpha=0.2):
         The activation value.
     """
 
-    return tf.nn.leaky_relu(x, alpha=alpha)
+    return tf.nn.leaky_relu(x, alpha=negative_slope)
 
 
 class Softplus(object):
@@ -332,14 +391,14 @@ def sigmoid(x):
 
 class Softmax(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, axis = -1):
+        self.axis = axis
 
     def __call__(self, x):
-        return tf.nn.softmax(x)
+        return tf.nn.softmax(x, axis = self.axis)
 
 
-def softmax(logits, axis=None):
+def softmax(logits, axis=-1):
     """
     Computes softmax activations.
 
@@ -399,9 +458,11 @@ class BiasAdd(object):
         A Tensor with the same type as value.
     """
 
-    def __init__(self, data_format=None):
-        self.data_format = data_format
-
+    def __init__(self, data_format='channels_last'):
+        if data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
+            self.data_format = "NCHW"
+        elif data_format in ['channels_last', 'NLC', 'NWC', 'NHWC', 'NDHWC']:
+            self.data_format = "NHWC"
     def __call__(self, x, bias):
         return tf.nn.bias_add(x, bias, data_format=self.data_format)
 
@@ -425,7 +486,7 @@ def bias_add(x, bias, data_format=None, name=None):
     -------
         A Tensor with the same type as value.
     """
-
+    data_format , _ = preprocess_2d_format(data_format, None)
     x = tf.nn.bias_add(x, bias, data_format=data_format, name=name)
     return x
 
@@ -436,8 +497,16 @@ class Conv1D(object):
         self.stride = stride
         self.dilations = dilations
         self.data_format, self.padding = preprocess_1d_format(data_format, padding)
+        self.pad_value = None
+
+        if isinstance(padding, int):
+            self.pad_value = preprocess_padding(self.padding, '1d', self.data_format)
+            self.padding = 'VALID'
+
 
     def __call__(self, input, filters):
+        if self.pad_value is not None:
+            input = tf.pad(input, paddings=self.pad_value)
         outputs = tf.nn.conv1d(
             input=input,
             filters=filters,
@@ -499,6 +568,9 @@ class Conv2D(object):
         self.dilations = dilations
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
 
+        if isinstance(padding, int) or isinstance(padding, tuple):
+            self.padding = preprocess_padding(self.padding, '2d', self.data_format)
+
     def __call__(self, input, filters):
         outputs = tf.nn.conv2d(
             input=input,
@@ -557,8 +629,15 @@ class Conv3D(object):
         self.strides = strides
         self.dilations = dilations
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
+        self.pad_value = None
+
+        if isinstance(padding, int) or isinstance(padding, tuple):
+            self.pad_value = preprocess_padding(self.padding, '3d', self.data_format)
+            self.padding = 'VALID'
 
     def __call__(self, input, filters):
+        if self.pad_value is not None:
+            input = tf.pad(input, paddings=self.pad_value)
         outputs = tf.nn.conv3d(
             input=input,
             filters=filters,
@@ -674,8 +753,14 @@ class MaxPool1d(object):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
         self.ksize = ksize
         self.strides = strides
+        self.padding_value = None
+        if not isinstance(self.padding, str):
+            self.padding_value = preprocess_padding(self.padding, '1d', self.data_format)
+            self.padding = "VALID"
 
     def __call__(self, inputs):
+        if self.padding_value is not None:
+            inputs = tf.pad(inputs, self.padding_value)
         outputs = tf.nn.max_pool(
             input=inputs, ksize=self.ksize, strides=self.strides, padding=self.padding, data_format=self.data_format
         )
@@ -693,10 +778,22 @@ class MaxPool(object):
     def __call__(self, inputs):
         if len(inputs.shape) == 3:
             self.data_format, self.padding = preprocess_1d_format(data_format=self.data_format, padding=self.padding)
+            if not isinstance(self.padding, str):
+                self.padding_value = preprocess_padding(self.padding, '1d', self.data_format)
+                self.padding = "VALID"
+                inputs = tf.pad(inputs, self.padding_value)
         elif len(inputs.shape) == 4:
             self.data_format, self.padding = preprocess_2d_format(data_format=self.data_format, padding=self.padding)
+            if not isinstance(self.padding, str):
+                self.padding_value = preprocess_padding(self.padding, '2d', self.data_format)
+                self.padding = "VALID"
+                inputs = tf.pad(inputs, self.padding_value)
         elif len(inputs.shape) == 5:
             self.data_format, self.padding = preprocess_3d_format(data_format=self.data_format, padding=self.padding)
+            if not isinstance(self.padding, str):
+                self.padding_value = preprocess_padding(self.padding, '3d', self.data_format)
+                self.padding = "VALID"
+                inputs = tf.pad(inputs, self.padding_value)
 
         outputs = tf.nn.max_pool(
             input=inputs, ksize=self.ksize, strides=self.strides, padding=self.padding, data_format=self.data_format
@@ -745,10 +842,16 @@ class AvgPool1d(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.ksize = ksize
-        self.strides = strides
+        self.ksize = [ksize, ]
+        self.strides = [strides, ]
+        self.padding_value = None
+        if not isinstance(self.padding, str):
+            self.padding_value = preprocess_padding(self.padding, '1d', self.data_format)
+            self.padding = "VALID"
 
     def __call__(self, inputs):
+        if self.padding_value is not None:
+            inputs = tf.pad(inputs, self.padding_value)
         outputs = tf.nn.pool(
             input=inputs,
             window_shape=self.ksize,
@@ -765,12 +868,18 @@ class AvgPool(object):
     def __init__(self, ksize, strides, padding, data_format=None):
         self.ksize = ksize
         self.strides = strides
-        self.data_format = data_format
-        self.padding = padding_format(padding)
+        self.data_format, self.padding = preprocess_2d_format(data_format=data_format, padding=padding)
+        self.padding_value = None
+        if not isinstance(self.padding, str):
+            self.padding_value = preprocess_padding(self.padding, '2d', self.data_format)
+            self.padding = "VALID"
 
     def __call__(self, inputs):
+        data_format = channel_format(self.data_format, str(len(inputs.shape) - 2) + 'd')
+        if self.padding_value is not None:
+            inputs = tf.pad(inputs, self.padding_value)
         outputs = tf.nn.avg_pool(
-            input=inputs, ksize=self.ksize, strides=self.strides, padding=self.padding, data_format=self.data_format
+            input=inputs, ksize=self.ksize, strides=self.strides, padding=self.padding, data_format=data_format
         )
         return outputs
 
@@ -817,8 +926,14 @@ class MaxPool3d(object):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
         self.ksize = ksize
         self.strides = strides
+        self.padding_value = None
+        if not isinstance(self.padding, str):
+            self.padding_value = preprocess_padding(self.padding, '3d', self.data_format)
+            self.padding = "VALID"
 
     def __call__(self, inputs):
+        if self.padding_value is not None:
+            inputs = tf.pad(inputs, self.padding_value)
         outputs = tf.nn.max_pool3d(
             input=inputs,
             ksize=self.ksize,
@@ -874,8 +989,14 @@ class AvgPool3d(object):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
         self.ksize = ksize
         self.strides = strides
+        self.padding_value = None
+        if not isinstance(self.padding, str):
+            self.padding_value = preprocess_padding(self.padding, '3d', self.data_format)
+            self.padding = "VALID"
 
     def __call__(self, inputs):
+        if self.padding_value is not None:
+            inputs = tf.pad(inputs, self.padding_value)
         outputs = tf.nn.avg_pool3d(
             input=inputs,
             ksize=self.ksize,
@@ -977,21 +1098,27 @@ def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_
 
 class DepthwiseConv2d(object):
 
-    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1):
+    def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1, in_channels=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
         self.strides = strides
         self.dilations = dilations
+        self.depthwise_conv = GroupConv2D(strides=self.strides, padding=self.padding, data_format=self.data_format,
+                                          out_channel=None, k_size=None, dilations=self.dilations, groups=in_channels)
 
     def __call__(self, input, filter, point_filter=None):
-        outputs = tf.nn.depthwise_conv2d(
-            input=input,
-            filter=filter,
-            strides=self.strides,
-            padding=self.padding,
-            data_format=self.data_format,
-            dilations=self.dilations,
-        )
+        depthwise = self.depthwise_conv(input, filter)
+        outputs = tf.nn.conv2d(depthwise, point_filter, strides=1, padding=self.padding,
+                                  data_format=self.data_format, dilations=self.dilations)
+        # outputs = tf.nn.depthwise_conv2d(
+        #     input=input,
+        #     filter=filter,
+        #     strides=self.strides,
+        #     padding=self.padding,
+        #     data_format=self.data_format,
+        #     dilations=self.dilations,
+        # )
         return outputs
+
 
 
 def depthwise_conv2d(input, filter, strides, padding, data_format=None, dilations=None, name=None):
@@ -1154,6 +1281,7 @@ class Conv2d_transpose(object):
         self.dilations = dilations
         self.name = name
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        self._padding = padding
 
     def __call__(self, input, filters):
         if self.data_format == 'NHWC':
@@ -1197,13 +1325,23 @@ class Conv2d_transpose(object):
         kernel_h = kernel_h + (kernel_h - 1) * (dilations_h - 1)
         kernel_w = kernel_w + (kernel_w - 1) * (dilations_w - 1)
 
-        assert self.padding in {'SAME', 'VALID'}
+        if tf.__version__ < '2.4.0' and not isinstance(self.padding, str):
+            assert self.padding in {'SAME', 'VALID'}
         if self.padding == 'VALID':
             output_h = input_h * strides_h + max(kernel_h - strides_h, 0)
             output_w = input_w * strides_w + max(kernel_w - strides_w, 0)
         elif self.padding == 'SAME':
             output_h = input_h * strides_h
             output_w = input_w * strides_w
+        else:
+            if isinstance(self.padding, int):
+                output_h = input_h * strides_h + max(kernel_h - strides_h, 0) - 2 * self._padding
+                output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2 * self._padding
+                self.padding = [[0, 0], [self._padding, self._padding],[self._padding, self._padding], [0, 0]]
+            else:
+                output_h = input_h * strides_h + max(kernel_h - strides_h, 0) - 2 * self._padding[0]
+                output_w = input_w * strides_w + max(kernel_w - strides_w, 0) - 2* self._padding[1]
+                self.padding = [[0, 0], [self._padding[0], self._padding[0]],[self._padding[1], self._padding[1]], [0, 0]]
 
         if self.data_format == 'NCHW':
             out_shape = (batch_size, output_channels, output_h, output_w)
@@ -2003,7 +2141,7 @@ class grucell(object):
         h_r, h_z, h_c = tf.split(h_gates, num_or_size_splits=3, axis=-1)
 
         r = self.gate_act_fn(x_r + h_r)
-        z = self.gate_act_fn(x_r + h_z)
+        z = self.gate_act_fn(x_z + h_z)
         c = self.act_fn(x_c + r * h_c)
         h = (h - c) * z + c
 
@@ -2051,7 +2189,6 @@ class rnnbase(object):
         self.w_hh = w_hh
         self.b_ih = b_ih
         self.b_hh = b_hh
-
         self.act_fn = None
         if mode == 'LSTM':
             # gate_size = 4 * hidden_size
@@ -2164,7 +2301,7 @@ class rnnbase(object):
             else:
                 for j in range(time_step):
                     input = pre_layer[j, :, :]
-                    cell = self.rnn_cell(weight_hh, weight_ih, bias_ih, bias_hh, self.act_fn)
+                    cell = self.rnn_cell(weight_ih, weight_hh, bias_ih, bias_hh, self.act_fn)
                     step_out, h_i = cell(input, h_i)
                     y.append(step_out)
                 h_out.append(h_i)
@@ -2755,3 +2892,22 @@ class QuanConvBn(object):
             conv_fold = tf.nn.bias_add(conv_fold, _bias_fold, name='bn_bias_add')
 
         return conv_fold
+
+class PReLU(object):
+
+    def __init__(self, data_format):
+
+        self.data_format = data_format
+
+    def __call__(self, input, weight):
+
+        pos = tf.nn.relu(input)
+        neg = -tf.nn.sigmoid(weight) * tf.nn.relu(-input)
+        return pos + neg
+
+
+def prelu(input, weight, data_format):
+
+    pos = tf.nn.relu(input)
+    neg = -tf.nn.sigmoid(weight) * tf.nn.relu(-input)
+    return pos + neg

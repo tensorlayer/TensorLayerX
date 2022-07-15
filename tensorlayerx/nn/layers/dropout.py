@@ -12,8 +12,8 @@ __all__ = [
 
 class Dropout(Module):
     """
-    The :class:`Dropout` class is a noise layer which randomly set some
-    activations to zero according to a probability.
+    During training, randomly zeroes some of the elements of the input tensor with probability p using samples from a Bernoulli distribution.
+    Each channel will be zeroed out independently on every forward call.
 
     Parameters
     ----------
@@ -57,4 +57,8 @@ class Dropout(Module):
             outputs = self.dropout(inputs)
         else:
             outputs = inputs
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs

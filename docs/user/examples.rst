@@ -25,8 +25,8 @@ Basics
  - Convolutional Network (CIFAR-10), simple usage and supports multiple backends. Classification task, see `cifar10_cnn.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn.py>`__.
  - Recurrent Neural Network (IMDB), simple usage and supports multiple backends. Text classification task, see `imdb_LSTM_simple.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/imdb_LSTM_simple.py>`__.
  - Using tensorlayerx to automatic inference input shape. See `automatic_inference_input _shape.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/automatic_inference_input%20_shape.py>`__.
- - Using Layerlist in tensorlayerx. See `tutorial_LayerList.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tutorial_LayerList.py>`__.
- - Using SequentialLayer in tensorlayerx. See `mnist_SequentialLayer.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_SequentialLayer.py>`__.
+ - Using ModuleList in tensorlayerx. See `tutorial_ModuleList.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tutorial_ModuleList.py>`__.
+ - Using Sequential in tensorlayerx. See `mnist_Sequential.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_Sequential.py>`__.
  - Using Dataflow in tensorlayerx. See `mnist_dataflow.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_dataflow.py>`__.
  - Using nested layer in tensorlayerx. See `nested_usage_of_layer.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/nested_usage_of_layer.py>`__.
  - Using tensorlayerx to save tensorflow model to pb. See `tensorflow_model_save_to_pb.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tensorflow_model_save_to_pb.py>`__.

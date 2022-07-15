@@ -14,17 +14,18 @@ __all__ = [
     'TruncatedNormal',
     'deconv2d_bilinear_upsampling_initializer',
     'HeNormal',
+    'HeUniform',
     'XavierNormal',
     'XavierUniform',
 ]
 
 
 class Initializer(object):
-    """Initializer base class: all initializers inherit from this class.
+    r"""Initializer base class: all initializers inherit from this class.
     """
 
     def __call__(self, shape, dtype=None):
-        """Returns a tensor object initialized as specified by the initializer.
+        r"""Returns a tensor object initialized as specified by the initializer.
 
         Parameters
         ----------
@@ -40,7 +41,7 @@ class Initializer(object):
         raise NotImplementedError
 
     def get_config(self):
-        """Returns the configuration of the initializer as a JSON-serializable dict.
+        r"""Returns the configuration of the initializer as a JSON-serializable dict.
 
         Returns
         -------
@@ -50,7 +51,7 @@ class Initializer(object):
 
     @classmethod
     def from_config(cls, config):
-        """Instantiates an initializer from a configuration dictionary.
+        r"""Instantiates an initializer from a configuration dictionary.
 
         Parameters
         ----------
@@ -67,14 +68,12 @@ class Initializer(object):
 
 
 class Zeros(Initializer):
-    """Initializer that generates tensors initialized to 0.
+    r"""Initializer that generates tensors initialized to 0.
 
-    Examples
-    --------
-
-    >>> import tensorlayerx as tlx
-    >>> init = tlx.initializers.zeros()
-    >>> print(init(shape=(5, 10), dtype=tlx.float32))
+    Examples:
+        >>> import tensorlayerx as tlx
+        >>> init = tlx.initializers.zeros()
+        >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -83,14 +82,12 @@ class Zeros(Initializer):
 
 
 class Ones(Initializer):
-    """Initializer that generates tensors initialized to 1.
+    r"""Initializer that generates tensors initialized to 1.
 
-    Examples
-    --------
-
-    >>> import tensorlayerx as tlx
-    >>> init = tlx.initializers.ones()
-    >>> print(init(shape=(5, 10), dtype=tlx.float32))
+    Examples:
+        >>> import tensorlayerx as tlx
+        >>> init = tlx.initializers.ones()
+        >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -99,19 +96,16 @@ class Ones(Initializer):
 
 
 class Constant(Initializer):
-    """Initializer that generates tensors initialized to a constant value.
+    r"""Initializer that generates tensors initialized to a constant value.
 
-    Parameters
-    ----------
-    value : A python scalar or a numpy array.
-        The assigned value.
+    Args:
+        value : A python scalar or a numpy array.
+            The assigned value.
 
-    Examples
-    --------
-
-    >>> import tensorlayerx as tlx
-    >>> init = tlx.initializers.constant(value=10)
-    >>> print(init(shape=(5, 10), dtype=tlx.float32))
+    Examples:
+        >>> import tensorlayerx as tlx
+        >>> init = tlx.initializers.constant(value=10)
+        >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -126,23 +120,20 @@ class Constant(Initializer):
 
 
 class RandomUniform(Initializer):
-    """Initializer that generates tensors with a uniform distribution.
+    r"""Initializer that generates tensors with a uniform distribution.
 
-    Parameters
-    ----------
-    minval : A python scalar or a scalar tensor.
-        Lower bound of the range of random values to generate.
-    maxval : A python scalar or a scalar tensor.
-        Upper bound of the range of random values to generate.
-    seed : A Python integer.
-        Used to seed the random generator.
+    Args:
+        minval : A python scalar or a scalar tensor.
+            Lower bound of the range of random values to generate.
+        maxval : A python scalar or a scalar tensor.
+            Upper bound of the range of random values to generate.
+        seed : A Python integer.
+            Used to seed the random generator.
 
-    Examples
-    --------
-
-    >>> import tensorlayerx as tlx
-    >>> init = tlx.initializers.random_uniform(minval=-0.05, maxval=0.05)
-    >>> print(init(shape=(5, 10), dtype=tlx.float32))
+    Examples :
+        >>> import tensorlayerx as tlx
+        >>> init = tlx.initializers.random_uniform(minval=-0.05, maxval=0.05)
+        >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -159,25 +150,21 @@ class RandomUniform(Initializer):
 
 
 class RandomNormal(Initializer):
-    """Initializer that generates tensors with a normal distribution.
+    r"""Initializer that generates tensors with a normal distribution.
 
-    Parameters
-    ----------
-    mean : A python scalar or a scalar tensor.
-        Mean of the random values to generate.
-    stddev : A python scalar or a scalar tensor.
-        Standard deviation of the random values to generate.
-    seed : A Python integer.
-        Used to seed the random generator.
+    Args:
+        mean : A python scalar or a scalar tensor.
+            Mean of the random values to generate.
+        stddev : A python scalar or a scalar tensor.
+            Standard deviation of the random values to generate.
+        seed : A Python integer.
+            Used to seed the random generator.
 
-    minval=-0.05, maxval=0.05
 
-    Examples
-    --------
-
-    >>> import tensorlayerx as tlx
-    >>> init = tlx.initializers.random_normal(mean=0.0, stddev=0.05)
-    >>> print(init(shape=(5, 10), dtype=tlx.float32))
+    Examples :
+        >>> import tensorlayerx as tlx
+        >>> init = tlx.initializers.random_normal(mean=0.0, stddev=0.05)
+        >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -194,7 +181,7 @@ class RandomNormal(Initializer):
 
 
 class TruncatedNormal(Initializer):
-    """Initializer that generates a truncated normal distribution.
+    r"""Initializer that generates a truncated normal distribution.
 
     These values are similar to values from a `RandomNormal`
     except that values more than two standard deviations from the mean
@@ -202,21 +189,19 @@ class TruncatedNormal(Initializer):
     neural network weights and filters.
 
 
-    Parameters
-    ----------
-    mean : A python scalar or a scalar tensor.
-        Mean of the random values to generate.
-    stddev : A python scalar or a scalar tensor.
-        Standard deviation of the andom values to generate.
-    seed : A Python integer.
-        Used to seed the random generator.
+    Args:
+        mean : A python scalar or a scalar tensor.
+            Mean of the random values to generate.
+        stddev : A python scalar or a scalar tensor.
+            Standard deviation of the andom values to generate.
+        seed : A Python integer.
+            Used to seed the random generator.
 
-    Examples
-    --------
+    Examples:
 
-    >>> import tensorlayerx as tlx
-    >>> init = tlx.initializers.truncated_normal(mean=0.0, stddev=0.05)
-    >>> print(init(shape=(5, 10), dtype=tlx.float32))
+        >>> import tensorlayerx as tlx
+        >>> init = tlx.initializers.truncated_normal(mean=0.0, stddev=0.05)
+        >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
@@ -233,34 +218,92 @@ class TruncatedNormal(Initializer):
 
 
 class HeNormal(Initializer):
-    """He normal initializer.
+    r"""He normal initializer.
 
-    Parameters
-    ----------
-    seed : A Python integer.
-        Used to seed the random generator.
+    The resulting tensor will have values sampled from :math:`\mathcal{N}(0, \text{std}^2)` where
 
-    Examples
-    --------
+    .. math::
+        \text{std} = \frac{\text{gain}}{\sqrt{fan\_mode}}
 
-    >>> import tensorlayerx as tlx
-    >>> init = tlx.initializers.he_normal()
-    >>> print(init(shape=(5, 10), dtype=tlx.float32))
+    Args:
+        a : int or float
+            the negative slope of the rectifier used after this layer (only used with ``'leaky_relu'``)
+        mode : str
+            either ``'fan_in'`` (default) or ``'fan_out'``. Choosing ``'fan_in'``
+            preserves the magnitude of the variance of the weights in the
+            forward pass. Choosing ``'fan_out'`` preserves the magnitudes in the
+            backwards pass.
+        nonlinearity : str
+            the non-linear function name, recommended to use only with ``'relu'`` or ``'leaky_relu'`` (default).
+        seed : int
+            Used to seed the random generator.
+
+    Examples:
+
+        >>> import tensorlayerx as tlx
+        >>> init = tlx.initializers.HeNormal(a=0, mode='fan_out', nonlinearity='relu')
+        >>> print(init(shape=(5, 10), dtype=tlx.float32))
 
     """
 
-    def __init__(self, seed=None):
+    def __init__(self, a=0, mode='fan_in', nonlinearity='leaky_relu', seed=None):
+        self.a = a
+        self.mode = mode
+        self.nonlinearity = nonlinearity
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        return tlx.ops.he_normal(seed=self.seed, shape=shape, dtype=dtype)
+        return tlx.ops.he_normal(
+            shape=shape, a=self.a, mode=self.mode, nonlinearity=self.nonlinearity, dtype=dtype, seed=self.seed
+        )
 
     def get_config(self):
-        return {"seed", self.seed}
+        return {"a": self.a, "mode ": self.mode, "nonlinearity": self.nonlinearity}
+
+
+class HeUniform(Initializer):
+    r"""He uniform initializer.
+    The resulting tensor will have values sampled from :math:`\mathcal{U}(-\text{bound},\text{bound})` where
+
+    .. math::
+        \text{bound} = \text{gain} \times \sqrt{\frac{3}{fan\_mode}}
+
+    Args:
+        a : int or float
+            the negative slope of the rectifier used after this layer (only used with ``'leaky_relu'``)
+        mode : str
+            either ``'fan_in'`` (default) or ``'fan_out'``. Choosing ``'fan_in'``
+            preserves the magnitude of the variance of the weights in the
+            forward pass. Choosing ``'fan_out'`` preserves the magnitudes in the
+            backwards pass.
+        nonlinearity : str
+            the non-linear function name, recommended to use only with ``'relu'`` or ``'leaky_relu'`` (default).
+        seed : int
+            Used to seed the random generator.
+
+    Examples:
+        >>> import tensorlayerx as tlx
+        >>> init = tlx.initializers.HeUniform(a=0, mode='fan_in', nonlinearity='relu')
+        >>> print(init(shape=(5, 10), dtype=tlx.float32))
+    """
+
+    def __init__(self, a=0, mode='fan_in', nonlinearity='leaky_relu', seed=None):
+        self.a = a
+        self.mode = mode
+        self.nonlinearity = nonlinearity
+        self.seed = seed
+
+    def __call__(self, shape, dtype=tlx.float32):
+        return tlx.ops.he_uniform(
+            shape=shape, a=self.a, mode=self.mode, nonlinearity=self.nonlinearity, dtype=dtype, seed=self.seed
+        )
+
+    def get_config(self):
+        return {"a": self.a, "mode ": self.mode, "nonlinearity": self.nonlinearity}
 
 
 def deconv2d_bilinear_upsampling_initializer(shape):
-    """Returns the initializer that can be passed to DeConv2dLayer for initializing the
+    r"""Returns the initializer that can be passed to DeConv2dLayer for initializing the
     weights in correspondence to channel-wise bilinear up-sampling.
     Used in segmentation approaches such as [FCN](https://arxiv.org/abs/1605.06211)
 
@@ -308,42 +351,59 @@ def deconv2d_bilinear_upsampling_initializer(shape):
 
 
 class XavierNormal(Initializer):
-    """This class implements the Xavier weight initializer from the paper
+    r"""This class implements the Xavier weight initializer from the paper
     by Xavier Glorot and Yoshua Bengio.using a normal distribution.
 
-    Parameters
-    ----------
-    seed : A Python integer.
-        Used to seed the random generator.
+    The resulting tensor will have values sampled from
+    :math:`\mathcal{N}(0, \text{std}^2)` where
+
+    .. math::
+        \text{std} = \text{gain} \times \sqrt{\frac{2}{fan\_in + fan\_out}}
+
+
+    Args:
+        gain : float
+            an optional scaling factor
+        seed : int
+            Used to seed the random generator.
 
     """
 
-    def __init__(self, seed=None):
+    def __init__(self, gain=1.0, seed=None):
+        self.gain = gain
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        return tlx.ops.xavier_normal(seed=self.seed, shape=shape, dtype=dtype)
+        return tlx.ops.xavier_normal(shape=shape, gain=self.gain, dtype=dtype, seed=self.seed)
 
     def get_config(self):
-        return {"seed", self.seed}
+        return {"gain": self.gain}
 
 
 class XavierUniform(Initializer):
-    """This class implements the Xavier weight initializer from the paper
+    r"""This class implements the Xavier weight initializer from the paper
     by Xavier Glorot and Yoshua Bengio.using a uniform distribution.
 
-    Parameters
-    ----------
-    seed : A Python integer.
-        Used to seed the random generator.
+    The resulting tensor will have values sampled from
+    :math:`\mathcal{U}(-a, a)` where
+
+    .. math::
+        \text{bound} = \text{gain} \times \sqrt{\frac{3}{fan\_mode}}
+
+    Args:
+        gain : float
+            an optional scaling factor
+        seed : int
+            Used to seed the random generator.
 
     """
 
-    def __init__(self, seed=None):
+    def __init__(self, gain=1.0, seed=None):
+        self.gain = gain
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        return tlx.ops.xavier_uniform(seed=self.seed, shape=shape, dtype=dtype)
+        return tlx.ops.xavier_uniform(shape=shape, gain=self.gain, dtype=dtype, seed=self.seed)
 
     def get_config(self):
-        return {"seed", self.seed}
+        return {"gain": self.gain}

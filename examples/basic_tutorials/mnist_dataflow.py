@@ -61,8 +61,8 @@ class MLP(Module):
 
     def __init__(self):
         super(MLP, self).__init__()
-        self.linear1 = Linear(out_features=120, in_features=784, act=tlx.ReLU)
-        self.linear2 = Linear(out_features=84, in_features=120, act=tlx.ReLU)
+        self.linear1 = Linear(out_features=120, in_features=784, act=tlx.nn.ReLU)
+        self.linear2 = Linear(out_features=84, in_features=120, act=tlx.nn.ReLU)
         self.linear3 = Linear(out_features=10, in_features=84)
         self.flatten = Flatten()
 

@@ -112,6 +112,15 @@ API - Operations
    unsorted_segment_max
    set_seed
    is_tensor
+   tensor_scatter_nd_update
+   scatter_update
+   diag
+   mask_select
+   eye
+   einsum
+   set_device
+   get_device
+   to_device
 
 TensorLayerX Tensor Operations
 --------------------------------
@@ -539,3 +548,39 @@ set_seed
 is_tensor
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: is_tensor
+
+tensor_scatter_nd_update
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: tensor_scatter_nd_update
+
+scatter_update
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: scatter_update
+
+diag
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: diag
+
+mask_select
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: mask_select
+
+eye
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: eye
+
+einsum
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: einsum
+
+set_device
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: set_device
+
+get_device
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: get_device
+
+to_device
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: to_device

@@ -143,6 +143,15 @@ from .ops import unsorted_segment_mean
 from .ops import unsorted_segment_max
 from .ops import set_seed
 from .ops import is_tensor
+from .ops import tensor_scatter_nd_update
+from .ops import diag
+from .ops import mask_select
+from .ops import eye
+from .ops import einsum
+from .ops import set_device
+from .ops import get_device
+from .ops import scatter_update
+from .ops import to_device
 # dtype
 from .ops import (
     DType, float16, float32, float64, int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, complex64,
@@ -150,7 +159,7 @@ from .ops import (
 )
 # initlizers
 from .ops import (
-    zeros, ones, constant, random_uniform, random_normal, truncated_normal, he_normal, xavier_normal, xavier_uniform
+    zeros, ones, constant, random_uniform, random_normal, truncated_normal, he_normal, he_uniform, xavier_normal, xavier_uniform
 )
 # backend
 from .ops import Reshape

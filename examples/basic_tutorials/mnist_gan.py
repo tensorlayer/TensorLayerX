@@ -41,9 +41,9 @@ class generator(Module):
 
     def __init__(self):
         super(generator, self).__init__()
-        self.g_fc1 = Linear(out_features=256, in_features=100, act=tlx.ReLU)
-        self.g_fc2 = Linear(out_features=256, in_features=256, act=tlx.ReLU)
-        self.g_fc3 = Linear(out_features=784, in_features=256, act=tlx.Tanh)
+        self.g_fc1 = Linear(out_features=256, in_features=100, act=tlx.nn.ReLU)
+        self.g_fc2 = Linear(out_features=256, in_features=256, act=tlx.nn.ReLU)
+        self.g_fc3 = Linear(out_features=784, in_features=256, act=tlx.nn.Tanh)
 
     def forward(self, x):
         out = self.g_fc1(x)
@@ -109,8 +109,8 @@ class WithLossD(Module):
 # loss_fn = tlx.losses.sigmoid_cross_entropy
 # optimizer = tlx.optimizers.Momentum(learning_rate=5e-4, momentum=0.5)
 loss_fn = tlx.losses.mean_squared_error
-optimizer_g = tlx.optimizers.Adam(learning_rate=3e-4, beta_1=0.5, beta_2=0.999)
-optimizer_d = tlx.optimizers.Adam(learning_rate=3e-4)
+optimizer_g = tlx.optimizers.Adam(lr=3e-4, beta_1=0.5, beta_2=0.999)
+optimizer_d = tlx.optimizers.Adam(lr=3e-4)
 
 g_weights = G.trainable_weights
 d_weights = D.trainable_weights

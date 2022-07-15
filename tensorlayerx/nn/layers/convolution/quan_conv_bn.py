@@ -19,9 +19,9 @@ class QuanConv2dWithBN(Module):
     ----------
     out_channels : int
         The number of filters.
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         The filter size (height, width).
-    stride : tuple of int
+    stride : tuple or int
         The sliding window stride of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
     padding : str
@@ -52,7 +52,7 @@ class QuanConv2dWithBN(Module):
         The arguments for the weight matrix initializer.
     data_format : str
         "NHWC" or "NCHW", default is "NHWC".
-    dilation : tuple of int
+    dilation : tuple or int
         Specifying the dilation rate to use for dilated convolution.
     in_channels : int
         The number of in channels.
@@ -93,8 +93,8 @@ class QuanConv2dWithBN(Module):
     ):
         super(QuanConv2dWithBN, self).__init__(act=act, name=name)
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self.stride = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self.stride = self.check_param(stride)
         self.padding = padding
         self.decay = decay
         self.epsilon = epsilon
@@ -107,7 +107,7 @@ class QuanConv2dWithBN(Module):
         self.W_init = self.str_to_init(W_init)
         self.W_init_args = W_init_args
         self.data_format = data_format
-        self.dilation = dilation
+        self.dilation = self.check_param(dilation)
         self.in_channels = in_channels
         logging.info(
             "QuanConv2dWithBN %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s " % (
@@ -159,7 +159,7 @@ class QuanConv2dWithBN(Module):
             raise Exception("data_format should be either channels_last or channels_first")
 
         self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.out_channels)
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         para_bn_shape = (self.out_channels, )
         if self.gamma_init:
@@ -184,7 +184,7 @@ class QuanConv2dWithBN(Module):
         )
 
         self.quan_conv_bn = tlx.ops.QuanConvBn(
-            weights=self.W, scale_para=self.scale_para, offset_para=self.offset_para, moving_mean=self.moving_mean,
+            weights=self.filters, scale_para=self.scale_para, offset_para=self.offset_para, moving_mean=self.moving_mean,
             moving_variance=self.moving_variance, strides=self._strides, padding=self.padding,
             data_format=self.data_format, dilations=self._dilation_rate, bitW=self.bitW, bitA=self.bitA,
             decay=self.decay, epsilon=self.epsilon, is_train=self.is_train
@@ -202,4 +202,7 @@ class QuanConv2dWithBN(Module):
         if self.act:
             conv_fold = self.act(conv_fold)
 
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, conv_fold)
+            self._nodes_fixed = True
         return conv_fold

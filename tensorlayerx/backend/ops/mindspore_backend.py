@@ -9,8 +9,8 @@ from mindspore.common import dtype as mstype
 
 from mindspore.common.parameter import Parameter
 from mindspore.common.initializer import (
-    initializer, Constant, Normal, TruncatedNormal, Initializer, _assignment, _calculate_in_and_out, One, Zero,
-    _calculate_fan_in_and_fan_out
+    initializer, Constant, Normal, TruncatedNormal, Initializer, _assignment, _calculate_gain, One, Zero,
+    _calculate_fan_in_and_fan_out, _calculate_correct_fan
 )
 from mindspore.common.tensor import Tensor
 from mindspore.ops import operations as P
@@ -68,7 +68,7 @@ def set_context(**kwargs):
 
 
 def get_tensor_shape(x):
-    return list(P.Shape()(x))
+    return list(x.shape)
 
 
 # initializers
@@ -321,31 +321,7 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype=mstype.float32, seed=Non
     return Tensor(arr, dtype=dtype)
 
 
-class HeNormal(Initializer):
-    r"""
-    he_normal: It draws samples from a truncated normal distribution centered on 0 with
-    stddev = sqrt(2 / fan_in) where fan_in is the number of input units in the weight tensor.
-
-    Args:
-        arr (Array): The array to be assigned.
-
-    Returns:
-        Array, assigned array.
-    """
-
-    def __init__(self, seed=None):
-        super(HeNormal, self).__init__(seed=seed)
-        self.seed = seed
-
-    def _initialize(self, arr):
-        n_in, _ = _calculate_in_and_out(arr)
-        boundary = np.sqrt(2.0 / n_in)
-        random.seed(self.seed)
-        data = np.random.normal(-boundary, boundary, arr.shape)
-        _assignment(arr, data)
-
-
-def he_normal(shape, dtype, seed=None):
+def he_normal(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype=mstype.float32, seed=None):
     """
     He normal initializer.
 
@@ -362,54 +338,43 @@ def he_normal(shape, dtype, seed=None):
     -------
         A tensor of the specified shape filled with he normal values.
     """
-    # shape = shape[::-1]
     arr = np.ndarray(shape)
-    init_obj = HeNormal(seed)
-    init_obj(arr)
+    fan = _calculate_correct_fan(shape, mode)
+    gain = _calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(fan)
+    data = np.random.normal(0, std, shape)
+    _assignment(arr, data)
+    return Tensor(arr, dtype=dtype)
+
+def he_uniform(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu',dtype=mstype.float32, seed=None):
+
+    arr = np.ndarray(shape)
+    fan = _calculate_correct_fan(shape, mode)
+    gain = _calculate_gain(nonlinearity, a)
+    std = gain / math.sqrt(fan)
+    boundary = math.sqrt(3.0) * std
+    data = np.random.uniform(-boundary, boundary, shape)
+    _assignment(arr, data)
     return Tensor(arr, dtype=dtype)
 
 
-class XavierUniform(Initializer):
-
-    def __init__(self, seed=None):
-        super(XavierUniform, self).__init__(seed=seed)
-        self.seed = seed
-
-    def _initialize(self, arr):
-        n_in, n_out = _calculate_fan_in_and_fan_out(arr.shape)
-        boundary = math.sqrt(6.0 / (n_in + n_out))
-        random.seed(self.seed)
-        data = np.random.uniform(-boundary, boundary, arr.shape)
-        _assignment(arr, data)
-
-
-def xavier_uniform(shape, dtype, seed=None):
+def xavier_uniform(shape, gain = 1.0, dtype=mstype.float32, seed=None):
 
     arr = np.ndarray(shape)
-    init_obj = XavierUniform(seed)
-    init_obj(arr)
+    fan_in, fan_out = _calculate_fan_in_and_fan_out(shape)
+    bound = gain * math.sqrt(6.0 / (fan_in + fan_out))
+    data = np.random.uniform(-bound, bound, shape)
+    _assignment(arr, data)
     return Tensor(arr, dtype=dtype)
 
 
-class XavierNormal(Initializer):
-
-    def __init__(self, seed=None):
-        super(XavierNormal, self).__init__(seed=seed)
-        self.seed = seed
-
-    def _initialize(self, arr):
-        n_in, n_out = _calculate_fan_in_and_fan_out(arr.shape)
-        boundary = math.sqrt(2.0 / (n_in + n_out))
-        random.seed(self.seed)
-        data = np.random.normal(0, boundary, arr.shape)
-        _assignment(arr, data)
-
-
-def xavier_normal(shape, dtype, seed=None):
+def xavier_normal(shape, gain = 1.0, dtype=mstype.float32, seed=None):
 
     arr = np.ndarray(shape)
-    init_obj = XavierNormal(seed)
-    init_obj(arr)
+    fan_in, fan_out = _calculate_fan_in_and_fan_out(shape)
+    std = gain * math.sqrt(2.0 / float(fan_in + fan_out))
+    data = np.random.normal(0, std, shape)
+    _assignment(arr, data)
     return Tensor(arr, dtype=dtype)
 
 
@@ -607,7 +572,7 @@ def concat(values, axis):
     Concatenates tensors along one dimension.
 
     Parameters
-    ----------
+    ----------nonzero
     values : list
          A list of Tensor objects or a single Tensor
     axis : int
@@ -1054,8 +1019,7 @@ def transpose(a, perm=None, conjugate=False):
         A transposed Tensor.
     """
     # TODO conjugate
-    trans_obj = P.Transpose()
-    outputs = trans_obj(a, perm)
+    outputs = msnp.transpose(a, perm)
     print(outputs)
 
 
@@ -1171,6 +1135,8 @@ def floor(x):
 
 def gather(params, indices, axis=None):
     op = P.Gather()
+    if axis is None:
+        axis = 0
     return op(params, indices, axis)
 
 
@@ -1321,9 +1287,14 @@ def resize(inputs, output_size, method, antialias):
 
 class ZeroPadding1D(Cell):
 
-    def __init__(self, padding):
+    def __init__(self, padding, data_format):
         super(ZeroPadding1D, self).__init__()
-        padding = ((0, 0), padding, (0, 0))
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding)
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding, (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
         self.pad = P.Pad(paddings=padding)
 
     def construct(self, inputs):
@@ -1334,9 +1305,14 @@ class ZeroPadding1D(Cell):
 
 class ZeroPadding2D(Cell):
 
-    def __init__(self, padding):
+    def __init__(self, padding, data_format):
         super(ZeroPadding2D, self).__init__()
-        padding = ((0, 0), padding[0], padding[1], (0, 0))
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding[0], padding[1])
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding[0], padding[1], (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
         self.pad = P.Pad(paddings=padding)
 
     def construct(self, inputs):
@@ -1345,9 +1321,14 @@ class ZeroPadding2D(Cell):
 
 class ZeroPadding3D(Cell):
 
-    def __init__(self, padding):
+    def __init__(self, padding, data_format):
         super(ZeroPadding3D, self).__init__()
-        padding = ((0, 0), padding[0], padding[1], padding[2], (0, 0))
+        if data_format == 'channels_first':
+            padding = ((0, 0), (0, 0), padding[0], padding[1], padding[2])
+        elif data_format == 'channels_last':
+            padding = ((0, 0), padding[0], padding[1], padding[2], (0, 0))
+        else:
+            raise ValueError('data_format must be channels_first or channels_last.')
         self.pad = P.Pad(paddings=padding)
 
     def construct(self, inputs):
@@ -1591,10 +1572,7 @@ def reduce_std(x, axis=None, keepdims=False):
 
 
 def reduce_sum(x, axis=None, keepdims=False):
-    op = P.ReduceSum(keep_dims=keepdims)
-    if axis is None:
-        return op(x)
-    return op(x, axis=axis)
+    return msnp.sum(x, axis=axis, keepdims=keepdims)
 
 
 def reduce_variance(x, axis=None, keepdims=False):
@@ -1730,11 +1708,15 @@ def tanh(x):
 
 def any(x, axis=None, keepdims=False):
     op = P.ReduceAny(keep_dims=keepdims)
+    if axis is None:
+        return op(x)
     return op(x, axis)
 
 
 def all(x, axis=None, keepdims=False):
     op = P.ReduceAll(keep_dims=keepdims)
+    if axis is None:
+        return op(x)
     return op(x, axis)
 
 
@@ -1780,8 +1762,7 @@ def zeros_like(x, dtype=None):
 
 
 def squeeze(x, axis=None):
-    op = P.Squeeze(axis)
-    return op(x)
+    return msnp.squeeze(x, axis)
 
 
 def unsorted_segment_sum(x, segment_ids, num_segments):
@@ -1793,7 +1774,7 @@ def unsorted_segment_sum(x, segment_ids, num_segments):
 def unsorted_segment_mean(x, segment_ids, num_segments):
     segment_ids = ms.Tensor(segment_ids)
     op = P.UnsortedSegmentSum()
-    x_one =  msnp.ones_like(x, dtype=x.dtype)
+    x_one = msnp.ones_like(x, dtype=x.dtype)
     sum = op(x, segment_ids, num_segments)
     one = op(x_one, segment_ids, num_segments)
     return sum/one
@@ -1817,3 +1798,85 @@ def set_seed(seed):
 def is_tensor(x):
 
     return isinstance(x, ms.Tensor)
+
+def tensor_scatter_nd_update(tensor, indices, updates):
+    if not isinstance(tensor,  ms.Tensor) or not isinstance(updates, ms.Tensor):
+        raise TypeError("tensor, updates should be Tensor, but got tensor type is {}, "
+                        "and updates type is {}.".format(type(tensor), type(updates)))
+    indices = ms.Tensor(indices)
+    op = ms.ops.TensorScatterUpdate()
+    return op(tensor, indices, updates)
+
+def diag(input, diagonal=0):
+
+    return ms.numpy.diag(input, diagonal)
+
+def mask_select(x, mask, axis = 0):
+    if axis is None:
+        axis = 0
+    if axis < 0:
+        axis = len(x.shape) + axis
+    if x.shape == mask.shape:
+        return ms.ops.MaskedSelect()(x, mask)
+    if isinstance(mask, ms.Tensor):
+        mask = mask.asnumpy()
+    mask = np.nonzero(mask)[0].tolist()
+    if axis < 0:
+        axis = len(x.shape) + axis
+    if axis == 0:
+        return x[mask]
+    elif axis == 1:
+        return x[:, mask]
+    elif axis == 2:
+        return x[:, :, mask]
+    elif axis == 3:
+        return x[:,:,:, mask]
+
+def eye(n, m = None, dtype = None):
+    if dtype is None:
+        dtype = mstype.float32
+    return ms.numpy.eye(n, m, dtype = dtype)
+
+
+def einsum(equation, *operands):
+    if ms.__version__ < '1.7.0':
+        raise NotImplementedError("Only MindSpore versions later than 1.7.0 are supported.")
+    einsum_obj = ms.ops.Einsum(equation)
+    return einsum_obj(tuple(operands))
+
+
+class Einsum(Cell):
+    def __init__(self, equation):
+        super(Einsum, self).__init__()
+        if ms.__version__ < '1.7.0':
+            raise NotImplementedError("Only MindSpore versions later than 1.7.0 are supported.")
+        self.einsum = ms.ops.Einsum(equation)
+
+    def __call__(self, *args):
+        return self.einsum(tuple(args))
+
+def set_device(device = 'GPU', id = 0):
+    if device not in ['GPU', 'CPU', 'Ascend']:
+        raise ValueError ("In mindspore, only support 'CPU', 'GPU' and 'Ascend'.")
+    ms.context.set_context(device_target=device)
+    ms.context.set_context(device_id = id)
+
+def scatter_update(tensor, indices, updates):
+    if not isinstance(tensor,  ms.Tensor) or not isinstance(updates, ms.Tensor):
+        raise TypeError("tensor, updates should be Tensor, but got tensor type is {}, "
+                        "and updates type is {}.".format(type(tensor), type(updates)))
+    indices = ms.Tensor(indices)
+    shape = indices.shape
+    indices = ms.ops.reshape(indices, (shape[0], 1))
+    op = ms.ops.TensorScatterUpdate()
+    return op(tensor, indices, updates)
+
+def get_device():
+    device = ms.context.get_context("device_target")
+    id = ms.context.get_context("device_id")
+    device = device + ":" +str(id)
+    return device
+
+def to_device(tensor, device = 'GPU', id = 0):
+
+    return tensor

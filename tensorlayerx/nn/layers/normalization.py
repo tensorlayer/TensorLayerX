@@ -24,17 +24,53 @@ __all__ = [
 
 
 class BatchNorm(Module):
-    """
-    The :class:`BatchNorm` is a batch normalization layer for both fully-connected and convolution outputs.
-    See ``tf.nn.batch_normalization`` and ``tf.nn.moments``.
+    r"""
+    This interface is used to construct a callable object of the BatchNorm class. For more details, refer to code examples.
+    It implements the function of the Batch Normalization Layer and can be used as a normalizer function for conv2d and fully connected operations.
+    The data is normalized by the mean and variance of the channel based on the current batch data.
+
+    the :math:`\mu_{\beta}`
+    and :math:`\sigma_{\beta}^{2}` are the statistics of one mini-batch.
+    Calculated as follows:
+
+    ..  math::
+
+        \mu_{\beta} &\gets \frac{1}{m} \sum_{i=1}^{m} x_i \qquad &
+        //\ mini-batch\ mean \\
+        \sigma_{\beta}^{2} &\gets \frac{1}{m} \sum_{i=1}^{m}(x_i - \mu_{\beta})^2 \qquad &
+        //\ mini-batch\ variance \\
+
+    - :math:`x` : mini-batch data
+    - :math:`m` : the size of the mini-batch data
+
+    the :math:`\mu_{\beta}`
+    and :math:`\sigma_{\beta}^{2}` are not the statistics of one mini-batch.
+    They are global or running statistics (moving_mean and moving_variance). It usually got from the
+    pre-trained model. Calculated as follows:
+
+    .. math::
+        moving\_mean = moving\_mean * momentum + \mu_{\beta} * (1. - momentum) \quad &// global mean \\
+        moving\_variance = moving\_variance * momentum + \sigma_{\beta}^{2} * (1. - momentum) \quad &// global variance \\
+
+    The normalization function formula is as follows:
+
+    ..  math::
+
+        \hat{x_i} &\gets \frac{x_i - \mu_\beta} {\sqrt{\
+        \sigma_{\beta}^{2} + \epsilon}} \qquad &//\ normalize \\
+        y_i &\gets \gamma \hat{x_i} + \beta \qquad &//\ scale\ and\ shift
+
+
+    - :math:`\epsilon` : add a smaller value to the variance to prevent division by zero
+    - :math:`\gamma` : trainable proportional parameter
+    - :math:`\beta` : trainable deviation parameter
 
     Parameters
     ----------
-    decay : float
-        A decay factor for `ExponentialMovingAverage`.
-        Suggest to use a large value for large dataset.
+    momentum : float
+        The value used for the moving_mean and moving_var computation. Default: 0.9.
     epsilon : float
-        Eplison.
+         a value added to the denominator for numerical stability. Default: 1e-5
     act : activation function
         The activation function of this layer.
     is_train : boolean
@@ -60,7 +96,7 @@ class BatchNorm(Module):
 
     Examples
     ---------
-    With TensorLayer
+    With TensorLayerX
 
     >>> net = tlx.nn.Input([10, 50, 50, 32], name='input')
     >>> net = tlx.nn.BatchNorm()(net)
@@ -81,7 +117,7 @@ class BatchNorm(Module):
 
     def __init__(
         self,
-        decay=0.9,
+        momentum=0.9,
         epsilon=0.00001,
         act=None,
         is_train=True,
@@ -94,7 +130,7 @@ class BatchNorm(Module):
         name=None,
     ):
         super(BatchNorm, self).__init__(name=name, act=act)
-        self.decay = decay
+        self.momentum = momentum
         self.epsilon = epsilon
         self.data_format = data_format
         self.beta_init = self.str_to_init(beta_init)
@@ -116,19 +152,19 @@ class BatchNorm(Module):
             self.build(None)
             self._built = True
 
-        if self.decay < 0.0 or 1.0 < self.decay:
-            raise ValueError("decay should be between 0 to 1")
+        if self.momentum < 0.0 or 1.0 < self.momentum:
+            raise ValueError("momentum should be between 0 to 1")
 
         logging.info(
-            "BatchNorm %s: decay: %f epsilon: %f act: %s is_train: %s" % (
-                self.name, decay, epsilon, self.act.__class__.__name__ if self.act is not None else 'No Activation',
+            "BatchNorm %s: momentum: %f epsilon: %f act: %s is_train: %s" % (
+                self.name, momentum, epsilon, self.act.__class__.__name__ if self.act is not None else 'No Activation',
                 is_train
             )
         )
 
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
-        s = ('{classname}(num_features={num_features}, decay={decay}' ', epsilon={epsilon}')
+        s = ('{classname}(num_features={num_features}, momentum={momentum}' ', epsilon={epsilon}')
         s += (', ' + actstr)
         if self.name is not None:
             s += ', name="{name}"'
@@ -171,7 +207,7 @@ class BatchNorm(Module):
         )
 
         self.batchnorm = tlx.ops.BatchNorm(
-            decay=self.decay, epsilon=self.epsilon, beta=self.beta, gamma=self.gamma, moving_mean=self.moving_mean,
+            decay=self.momentum, epsilon=self.epsilon, beta=self.beta, gamma=self.gamma, moving_mean=self.moving_mean,
             moving_var=self.moving_var, num_features=self.num_features, data_format=self.data_format,
             is_train=self.is_train
         )
@@ -190,12 +226,16 @@ class BatchNorm(Module):
 
         if not self.is_train:
             self.batchnorm = tlx.ops.BatchNorm(
-                decay=self.decay, epsilon=self.epsilon, beta=self.beta, gamma=self.gamma, moving_mean=self.moving_mean,
+                decay=self.momentum, epsilon=self.epsilon, beta=self.beta, gamma=self.gamma, moving_mean=self.moving_mean,
                 moving_var=self.moving_var, num_features=self.num_features, data_format=self.data_format, is_train=False
             )
         outputs = self.batchnorm(inputs=inputs)
         if self.act_init_flag:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
 
 
@@ -206,7 +246,7 @@ class BatchNorm1d(BatchNorm):
 
     Examples
     ---------
-    With TensorLayer
+    With TensorLayerX
 
     >>> # in static model, no need to specify num_features
     >>> net = tlx.nn.Input([10, 50, 32], name='input')
@@ -358,5 +398,9 @@ class LayerNorm(Module):
 
         if self.act_init_flag:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
 
         return outputs

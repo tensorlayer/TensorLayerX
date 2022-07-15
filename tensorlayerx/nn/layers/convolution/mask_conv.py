@@ -22,12 +22,12 @@ class MaskedConv3d(Module):
             The mask type('A', 'B')
         out_channels : int
             The number of filters.
-        filter_size : tuple of int
+        filter_size : tuple or int
             The filter size (height, width).
-        stride : tuple of int
+        stride : tuple or int
             The sliding window stride of corresponding input dimensions.
             It must be in the same order as the ``shape`` parameter.
-        dilation : tuple of int
+        dilation : tuple or int
             Specifying the dilation rate to use for dilated convolution.
         act : activation function
             The activation function of this layer.
@@ -77,9 +77,9 @@ class MaskedConv3d(Module):
         self.mask_type = mask_type
 
         self.out_channels = out_channels
-        self.filter_size = filter_size
-        self.stride = stride
-        self.dilation = dilation
+        self.filter_size = self.check_param(filter_size, '3d')
+        self.stride = self.check_param(stride, '3d')
+        self.dilation = self.check_param(dilation, '3d')
         self.padding = padding
         self.kernel_initializer = self.str_to_init(kernel_initializer)
         self.bias_initializer = self.str_to_init(bias_initializer)
@@ -113,13 +113,11 @@ class MaskedConv3d(Module):
 
     def build(self, inputs_shape):
         if self.data_format == 'channels_last':
-            self._data_format = 'NDHWC'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[-1]
             self._strides = [1, self.stride[0], self.stride[1], self.stride[2], 1]
             self._dilation_rate = [1, self.dilation[0], self.dilation[1], self.dilation[2], 1]
         elif self.data_format == 'channels_first':
-            self._data_format = 'NCDHW'
             if self.in_channels is None:
                 self.in_channels = inputs_shape[1]
             self._strides = [1, 1, self.stride[0], self.stride[1], self.stride[2]]
@@ -174,4 +172,8 @@ class MaskedConv3d(Module):
             x = self.bias_add(x, self.bias)
         if self.act_init_flag:
             x = self.act(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, x)
+            self._nodes_fixed = True
         return x

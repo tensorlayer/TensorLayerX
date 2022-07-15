@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-os.environ['TL_BACKEND'] = 'tensorflow'
-# os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'tensorflow'
+os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'torch'
 
 import tensorlayerx as tlx
@@ -34,11 +35,11 @@ class CustomModel(Module):
     def __init__(self):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(p=0.2)
-        self.linear1 = Linear(out_features=800, act=tlx.ReLU, in_features=784, name='linear1')
+        self.linear1 = Linear(out_features=800, act=tlx.nn.ReLU, in_features=784, name='linear1')
         self.dropout2 = Dropout(p=0.8)
-        self.linear2 = Linear(out_features=800, act=tlx.ReLU, in_features=800, name='linear2')
+        self.linear2 = Linear(out_features=800, act=tlx.nn.ReLU, in_features=800, name='linear2')
         self.dropout3 = Dropout(p=0.8)
-        self.linear3 = Linear(out_features=10, act=tlx.ReLU, in_features=800, name='linear3')
+        self.linear3 = Linear(out_features=10, act=tlx.nn.ReLU, in_features=800, name='linear3')
 
     def forward(self, x, foo=None):
         z = self.dropout1(x)
@@ -62,17 +63,17 @@ class CNN(Module):
         b_init2 = tlx.nn.initializers.constant(value=0.1)
 
         self.conv1 = Conv2d(64, (5, 5), (2, 2), padding='SAME', W_init=W_init, name='conv1', in_channels=3)
-        # self.bn = BatchNorm2d(num_features=64, act=tlx.ReLU)
+        # self.bn = BatchNorm2d(num_features=64, act=tlx.nn.ReLU)
         self.maxpool1 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool1')
 
         self.conv2 = Conv2d(
-            64, (5, 5), (2, 2), padding='SAME', act=tlx.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
+            64, (5, 5), (2, 2), padding='SAME', act=tlx.nn.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
         )
         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 
         self.flatten = Flatten(name='flatten')
-        self.linear1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear1', in_features=256)
-        self.linear2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear2', in_features=384)
+        self.linear1 = Linear(384, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear1', in_features=256)
+        self.linear2 = Linear(192, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear2', in_features=384)
         self.linear3 = Linear(10, act=None, W_init=W_init2, name='linear3', in_features=192)
 
     def forward(self, x):
@@ -105,7 +106,7 @@ class CNN(Module):
 cnn = CNN()
 # cnn.save_standard_weights('./model.npz')
 # TODO Tensorflow trained parameters are imported to the TensorFlow backend.
-cnn.load_standard_weights('./model.npz', skip=False)
+cnn.load_standard_weights('./model.npz', skip=False, reshape=True)
 
 # TODO Tensorflow backend trained parameters imported to PaddlePaddle/PyTorch/MindSpore to
 #  set reshape to True parameter to convert convolution shape.

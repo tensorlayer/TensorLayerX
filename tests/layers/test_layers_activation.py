@@ -23,7 +23,7 @@ class Activation_Layer_Test(CustomTestCase):
         pass
 
     def test_prelu_1(self):
-        prelulayer = tlx.layers.PRelu(channel_shared=True)
+        prelulayer = tlx.layers.PRelu()
 
         class prelu_model(tensorlayerx.nn.Module):
 
@@ -39,7 +39,7 @@ class Activation_Layer_Test(CustomTestCase):
         self.assertTrue(tlx.get_tensor_shape(net(self.inputs)), [10, 5])
 
     def test_prelu_2(self):
-        prelulayer = tensorlayerx.layers.PRelu(in_channels=5)
+        prelulayer = tensorlayerx.layers.PRelu(num_parameters=5)
         prelu = prelulayer(self.inputs)
 
         self.assertTrue(tlx.get_tensor_shape(prelu), [10, 5])
@@ -89,7 +89,7 @@ class Activation_Layer_Test(CustomTestCase):
         self.assertTrue(tlx.get_tensor_shape(net(self.inputs)), [10, 5])
 
     def test_lrelu(self):
-        lrelulayer = tensorlayerx.layers.LeakyReLU(alpha=0.5)
+        lrelulayer = tensorlayerx.layers.LeakyReLU(negative_slope=0.5)
         lrelu = lrelulayer(self.inputs)
 
         self.assertTrue(tlx.get_tensor_shape(lrelu), [5, 10])

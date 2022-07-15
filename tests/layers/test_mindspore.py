@@ -18,12 +18,12 @@ def test_conv1d():
     print("Conv1D channels first: ", n2.shape)
 
     input_layer = tlx.nn.Input([1, 3, 50])
-    dconv1dlayer1 = tlx.nn.DeConv1d(out_channels=64, in_channels=3, kernel_size=4, data_format='channels_first')
+    dconv1dlayer1 = tlx.nn.ConvTranspose1d(out_channels=64, in_channels=3, kernel_size=4, data_format='channels_first')
     n3 = dconv1dlayer1(input_layer)
     print("DConv1D channels first: ", n3.shape)
 
     # input_layer = tlx.nn.Input([8, 50, 3])
-    # dconv1dlayer2 = tlx.nn.DeConv1d(out_channels=64, in_channels=3, kernel_size=4, data_format='channels_last')
+    # dconv1dlayer2 = tlx.nn.ConvTranspose1d(out_channels=64, in_channels=3, kernel_size=4, data_format='channels_last')
     # n4 = dconv1dlayer2(input_layer)
     # print("Deconv1D channels last", n4.shape)
 
@@ -68,11 +68,11 @@ def test_conv2d():
     print("Conv2d", n3.shape)
 
     input_layer = tlx.nn.Input([5, 32, 400, 400])
-    dconv2dlayer = tlx.nn.DeConv2d(
+    dconv2dlayer = tlx.nn.ConvTranspose2d(
         out_channels=32, in_channels=32, kernel_size=(5, 5), stride=(2, 2), name='deconv2dlayer', data_format='channels_first'
     )
     n4 = dconv2dlayer(input_layer)
-    print("Deconv2d", n4.shape)
+    print("ConvTranspose2d", n4.shape)
 
     # input_layer = tlx.nn.Input([5, 400, 400, 3])
     # dwconv2dlayer = tlx.nn.DepthwiseConv2d(
@@ -102,7 +102,7 @@ def test_conv3d():
     print("Conv3d", n1.shape)
 
     input_layer = tlx.nn.Input([8, 3, 20, 20, 20])
-    deconv3dlayer = tlx.nn.DeConv3d(
+    deconv3dlayer = tlx.nn.ConvTranspose3d(
         out_channels=128, in_channels=3, kernel_size=(2, 2, 2), stride=(2, 2, 2), data_format='channels_first'
     )
     n2 = deconv3dlayer(input_layer)

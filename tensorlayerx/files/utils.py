@@ -2003,9 +2003,14 @@ def save_npz(save_list=None, name='model.npz'):
         save_list_var = th_variables_to_numpy(save_list)
     else:
         raise NotImplementedError("This backend is not supported")
-    np.savez(name, params=save_list_var)
+    # Number by length
+    save_list_names = [str(i) for i in range(len(save_list_var))]
+    save_var_dict = {save_list_names[idx]: val for idx, val in enumerate(save_list_var)}
+    np.savez(name, **save_var_dict)
     save_list_var = None
+    save_var_dict = None
     del save_list_var
+    del save_var_dict
     logging.info("[*] Saved")
 
 
@@ -2034,7 +2039,7 @@ def load_npz(path='', name='model.npz'):
 
     """
     d = np.load(os.path.join(path, name), allow_pickle=True)
-    return d['params']
+    return [d[str(i)] for i in range(len(d))]
 
 
 def assign_params(**kwargs):
@@ -2155,7 +2160,7 @@ def save_npz_dict(save_list=None, name='model.npz'):
         save_list_var = []
         for named, values in save_list:
             save_list_names.append(named)
-            save_list_var.append(values.detach().numpy())
+            save_list_var.append(values.cpu().detach().numpy())
     else:
         raise NotImplementedError('Not implemented')
     save_var_dict = {save_list_names[idx]: val for idx, val in enumerate(save_list_var)}
@@ -2678,7 +2683,7 @@ def th_variables_to_numpy(variables):
         var_list = [variables]
     else:
         var_list = variables
-    results = [v.detach().numpy() for v in var_list]
+    results = [v.cpu().detach().numpy() for v in var_list]
     return results
 
 
@@ -2704,7 +2709,7 @@ def assign_ms_variable(variable, value):
 
 
 def assign_pd_variable(variable, value):
-    pd.assign(value, variable)
+    variable.set_value(value)
 
 
 def assign_th_variable(variable, value):
@@ -2731,7 +2736,7 @@ def _save_weights_to_hdf5_group(f, layers):
             _save_weights_to_hdf5_group(g, layer.all_layers)
         elif isinstance(layer, tlx.nn.ModelLayer):
             _save_weights_to_hdf5_group(g, layer.model.all_layers)
-        elif isinstance(layer, tlx.nn.LayerList):
+        elif isinstance(layer, tlx.nn.ModuleList):
             _save_weights_to_hdf5_group(g, layer.layers)
         elif isinstance(layer, tlx.nn.Layer):
             if layer.all_weights is not None:
@@ -2773,7 +2778,7 @@ def _load_weights_from_hdf5_group_in_order(f, layers):
             _load_weights_from_hdf5_group_in_order(g, layer.all_layers)
         elif isinstance(layer, tlx.nn.ModelLayer):
             _load_weights_from_hdf5_group_in_order(g, layer.model.all_layers)
-        elif isinstance(layer, tlx.nn.layers.LayerList):
+        elif isinstance(layer, tlx.nn.layers.ModuleList):
             _load_weights_from_hdf5_group_in_order(g, layer.layers)
         elif isinstance(layer, tlx.nn.Layer):
             weight_names = [n.decode('utf8') for n in g.attrs['weight_names']]
@@ -2819,7 +2824,7 @@ def _load_weights_from_hdf5_group(f, layers, skip=False):
                 _load_weights_from_hdf5_group(g, layer.all_layers, skip)
             elif isinstance(layer, tlx.nn.ModelLayer):
                 _load_weights_from_hdf5_group(g, layer.model.all_layers, skip)
-            elif isinstance(layer, tlx.nn.LayerList):
+            elif isinstance(layer, tlx.nn.ModuleList):
                 _load_weights_from_hdf5_group(g, layer.layers, skip)
             elif isinstance(layer, tlx.nn.Layer):
                 weight_names = [n.decode('utf8') for n in g.attrs['weight_names']]

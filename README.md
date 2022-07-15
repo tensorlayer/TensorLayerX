@@ -14,10 +14,18 @@
 [![Downloads](https://pepy.tech/badge/tensorlayerx/week)](https://pepy.tech/project/tensorlayerx/week)
 [![Docker Pulls](https://img.shields.io/docker/pulls/tensorlayer/tensorlayer.svg)](https://hub.docker.com/r/tensorlayer/tensorlayer/)
 
-🇬🇧 TensorLayerX is a multi-backend AI framework, which supports TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow and Jittor as the backends, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend. [supported layers](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z). 
+🇬🇧 TensorLayerX is a multi-backend AI framework, which supports TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow and Jittor as the backends, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend. 
+This project is maintained by researchers from Peking University, Imperial College London, Princeton, Stanford, Tsinghua, Edinburgh and Peng Cheng Lab.
+[supported layers](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z). 
 
-🇨🇳 TensorLayerX 是一个跨平台开发框架，支持TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow和Jittor，用户不需要修改任何代码即可以运行在各类操作系统和AI硬件上（如Nvidia-GPU 和 Huawei-Ascend），并支持混合框架的开发。[支持列表](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)。
+🇨🇳 TensorLayerX 是一个跨平台开发框架，支持TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow和Jittor，用户不需要修改任何代码即可以运行在各类操作系统和AI硬件上（如Nvidia-GPU 和 Huawei-Ascend），并支持混合框架的开发。这个项目由北京大学、鹏城实验室、爱丁堡大学、帝国理工、清华、普林斯顿、斯坦福等机构的研究人员维护。
+[支持列表](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)。
 
+
+# Document
+TensorLayerX has extensive documentation for both beginners and professionals. 
+
+[![English Documentation](https://img.shields.io/badge/documentation-english-blue.svg)](https://tensorlayerx.readthedocs.io/en/latest/)
 
 
 # Design Features
@@ -39,6 +47,7 @@ Compare to TensorLayer version:
 # Resources
 
 - [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials✅
+- [GammaGL](https://github.com/BUPT-GAMMA/GammaGL) is a multi-backend graph learning library based on TensorLayerX.✅
 - OpenIVA an easy-to-use product-level deployment framework✅
 - [TLXZoo](https://github.com/tensorlayer/TLXZoo) pretrained models/backbones🚧
 - TLXCV a bunch of Computer Vision applications🚧
@@ -98,17 +107,11 @@ MLP = CustomModel()
 MLP.set_eval()
 ```
 
-# Document
-TensorLayerX has extensive documentation for both beginners and professionals. 
-
-[![English Documentation](https://img.shields.io/badge/documentation-english-blue.svg)](https://tensorlayerx.readthedocs.io/en/latest/)
-
-
 # Contributing
-Join our community as a code contributor, find out more in our [Contributing](https://tensorlayerx.readthedocs.io/en/latest/user/contributing.html) guide!
+Join our community as a code contributor, find out more in our [Help wanted list](https://github.com/tensorlayer/TensorLayerX/issues/5) and [Contributing](https://tensorlayerx.readthedocs.io/en/latest/user/contributing.html) guide!
+
 
 # Contact
- - hao.dong@pku.edu.cn
  - tensorlayer@gmail.com
 
 # Citation

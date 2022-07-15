@@ -20,11 +20,11 @@ class CustomModel(Module):
         super(CustomModel, self).__init__()
         self.dropout1 = Dropout(p=0.2)
         self.linear1 = Linear(out_features=800)
-        self.batchnorm = BatchNorm1d(act=tlx.ReLU)
+        self.batchnorm = BatchNorm1d(act=tlx.nn.ReLU)
         self.dropout2 = Dropout(p=0.2)
-        self.linear2 = Linear(out_features=800, act=tlx.ReLU)
+        self.linear2 = Linear(out_features=800, act=tlx.nn.ReLU)
         self.dropout3 = Dropout(p=0.2)
-        self.linear3 = Linear(out_features=10, act=tlx.ReLU)
+        self.linear3 = Linear(out_features=10, act=tlx.nn.ReLU)
 
     def forward(self, x, foo=None):
         z = self.dropout1(x)
@@ -62,7 +62,7 @@ n_epoch = 50
 batch_size = 500
 print_freq = 5
 train_weights = MLP.trainable_weights
-optimizer = tlx.optimizers.Adam(learning_rate=0.0001)
+optimizer = tlx.optimizers.Adam(0.0001)
 train_dataset = mnistdataset(data=X_train, label=y_train)
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_dataset = mnistdataset(data=X_val, label=y_val)

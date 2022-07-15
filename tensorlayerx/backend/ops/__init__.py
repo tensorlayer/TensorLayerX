@@ -11,6 +11,7 @@ from .load_backend import nhwc_to_nchw
 from .load_backend import relu
 from .load_backend import elu
 from .load_backend import relu6
+from .load_backend import prelu
 from .load_backend import leaky_relu
 from .load_backend import sigmoid
 from .load_backend import softmax
@@ -43,6 +44,7 @@ from .load_backend import multiheadattention
 from .load_backend import ReLU
 from .load_backend import ELU
 from .load_backend import ReLU6
+from .load_backend import PReLU
 from .load_backend import LeakyReLU
 from .load_backend import Softplus
 from .load_backend import Tanh
@@ -193,6 +195,15 @@ from .load_backend import unsorted_segment_mean
 from .load_backend import unsorted_segment_max
 from .load_backend import set_seed
 from .load_backend import is_tensor
+from .load_backend import tensor_scatter_nd_update
+from .load_backend import diag
+from .load_backend import mask_select
+from .load_backend import eye
+from .load_backend import einsum
+from .load_backend import set_device
+from .load_backend import get_device
+from .load_backend import scatter_update
+from .load_backend import to_device
 # dtype
 from .load_backend import (
     DType, float16, float32, float64, int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, complex64,
@@ -200,7 +211,7 @@ from .load_backend import (
 )
 # initlizers
 from .load_backend import (
-    zeros, ones, constant, random_uniform, random_normal, truncated_normal, he_normal, xavier_normal, xavier_uniform
+    zeros, ones, constant, random_uniform, random_normal, truncated_normal, he_normal, he_uniform, xavier_normal, xavier_uniform
 )
 # backend
 from .load_backend import BACKEND
@@ -239,3 +250,4 @@ from .load_backend import DepthToSpace
 from .load_backend import ClipGradByValue
 from .load_backend import ClipGradByNorm
 from .load_backend import ClipByGlobalNorm
+from .load_backend import Einsum

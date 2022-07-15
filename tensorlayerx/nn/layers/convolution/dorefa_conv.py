@@ -24,9 +24,9 @@ class DorefaConv2d(Module):
         The bits of the output of previous layer
     out_channels : int
         The number of filters.
-    kernel_size : tuple of int
+    kernel_size : tuple or int
         The filter size (height, width).
-    stride : tuple of int
+    stride : tuple or int
         The sliding window strides of corresponding input dimensions.
         It must be in the same order as the ``shape`` parameter.
     act : activation function
@@ -35,7 +35,7 @@ class DorefaConv2d(Module):
         The padding algorithm type: "SAME" or "VALID".
     data_format : str
         "channels_last" (NHWC, default) or "channels_first" (NCHW).
-    dilation : tuple of int
+    dilation : tuple or int
         Specifying the dilation rate to use for dilated convolution.
     W_init : initializer or str
         The initializer for the the weight matrix.
@@ -79,11 +79,11 @@ class DorefaConv2d(Module):
         self.bitW = bitW
         self.bitA = bitA
         self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self.stride = self._stride = stride
+        self.kernel_size = self.check_param(kernel_size)
+        self.stride = self._stride = self.check_param(stride)
         self.padding = padding
         self.data_format = data_format
-        self.dilation = self._dilation_rate = dilation
+        self.dilation = self._dilation_rate = self.check_param(dilation)
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
         self.in_channels = in_channels
@@ -133,11 +133,11 @@ class DorefaConv2d(Module):
 
         self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.in_channels, self.out_channels)
 
-        self.W = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
+        self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)
 
         self.b_init_flag = False
         if self.b_init:
-            self.b = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_channels, ), init=self.b_init)
             self.bias_add = tlx.ops.BiasAdd(self.data_format)
             self.b_init_flag = True
 
@@ -159,10 +159,14 @@ class DorefaConv2d(Module):
                 self._built = True
             self._forward_state = True
 
-        outputs = self.dorefaconv2d(inputs, self.W)
+        outputs = self.dorefaconv2d(inputs, self.filters)
 
         if self.b_init_flag:
-            outputs = self.bias_add(outputs, self.b)
+            outputs = self.bias_add(outputs, self.biases)
         if self.act_init_flag:
             outputs = self.act(outputs)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(inputs, outputs)
+            self._nodes_fixed = True
         return outputs
