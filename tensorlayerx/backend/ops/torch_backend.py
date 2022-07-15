@@ -1250,15 +1250,15 @@ class BatchToSpace(object):
 
 class DepthToSpace(object):
 
-    def __init__(self, block_size, data_format='NHWC'):
+    def __init__(self, block_size, data_format):
         self.block_size = block_size
         self.data_format = data_format
 
     def __call__(self, input):
-        if self.data_format == 'NHWC':
+        if self.data_format == 'channels_last':
             input = nhwc_to_nchw(input)
         output = torch.nn.functional.pixel_shuffle(input, upscale_factor=self.block_size)
-        if  self.data_format == 'NHWC':
+        if self.data_format == 'channels_last':
             output = nchw_to_nhwc(output)
         return output
 
