@@ -26,9 +26,9 @@ class Stack(Module):
     ---------
     >>> import tensorlayerx as tlx
     >>> ni = tlx.nn.Input([10, 784], name='input')
-    >>> net1 = tlx.nn.Dense(10, name='dense1')(ni)
-    >>> net2 = tlx.nn.Dense(10, name='dense2')(ni)
-    >>> net3 = tlx.nn.Dense(10, name='dense3')(ni)
+    >>> net1 = tlx.nn.Linear(10, name='linear1')(ni)
+    >>> net2 = tlx.nn.Linear(10, name='linear2')(ni)
+    >>> net3 = tlx.nn.Linear(10, name='linear3')(ni)
     >>> net = tlx.nn.Stack(axis=1, name='stack')([net1, net2, net3])
     (10, 3, 10)
 
@@ -86,7 +86,7 @@ class UnStack(Module):
     Examples
     --------
     >>> ni = tlx.nn.Input([4, 10], name='input')
-    >>> nn = tlx.nn.Dense(n_units=5)(ni)
+    >>> nn = tlx.nn.Linear(n_units=5)(ni)
     >>> nn = tlx.nn.UnStack(axis=1)(nn)  # unstack in channel axis
     >>> len(nn)  # 5
     >>> nn[0].shape  # (4,)
