@@ -22,7 +22,7 @@ class MaskedConv3d(Module):
             The mask type('A', 'B')
         out_channels : int
             The number of filters.
-        filter_size : tuple or int
+        kernel_size : tuple or int
             The filter size (height, width).
         stride : tuple or int
             The sliding window stride of corresponding input dimensions.
@@ -49,9 +49,9 @@ class MaskedConv3d(Module):
         With TensorLayer
 
         >>> net = tlx.nn.Input([8, 20, 20, 20, 3], name='input')
-        >>> conv3d = tlx.nn.MaskedConv3d(mask_type='A', out_channels=32, filter_size=(3, 3, 3), stride=(2, 2, 2), bias_initializer=None, in_channels=3, name='conv3d_1')
+        >>> conv3d = tlx.nn.MaskedConv3d(mask_type='A', out_channels=32, kernel_size=(3, 3, 3), stride=(2, 2, 2), bias_initializer=None, in_channels=3, name='conv3d_1')
         >>> print(conv3d)
-        >>> tensor = tlx.nn.MaskedConv3d(mask_type='B', out_channels=32, filter_size=(3, 3, 3), stride=(2, 2, 2), act=tlx.ReLU, name='conv3d_2')(net)
+        >>> tensor = tlx.nn.MaskedConv3d(mask_type='B', out_channels=32, kernel_size=(3, 3, 3), stride=(2, 2, 2), act=tlx.ReLU, name='conv3d_2')(net)
         >>> print(tensor)
 
         """
@@ -60,7 +60,7 @@ class MaskedConv3d(Module):
         self,
         mask_type,
         out_channels,
-        filter_size=(3, 3, 3),
+        kernel_size=(3, 3, 3),
         stride=(1, 1, 1),
         dilation=(1, 1, 1),
         padding='SAME',
@@ -77,7 +77,7 @@ class MaskedConv3d(Module):
         self.mask_type = mask_type
 
         self.out_channels = out_channels
-        self.filter_size = self.check_param(filter_size, '3d')
+        self.kernel_size = self.check_param(kernel_size, '3d')
         self.stride = self.check_param(stride, '3d')
         self.dilation = self.check_param(dilation, '3d')
         self.padding = padding
@@ -91,8 +91,8 @@ class MaskedConv3d(Module):
             self._built = True
 
         logging.info(
-            "MaskedConv3D  %s: out_channels: %d filter_size: %s stride: %s mask_type: %s act: %s" % (
-                self.name, out_channels, str(filter_size), str(stride), mask_type,
+            "MaskedConv3D  %s: out_channels: %d kernel_size: %s stride: %s mask_type: %s act: %s" % (
+                self.name, out_channels, str(kernel_size), str(stride), mask_type,
                 self.act.__class__.__name__ if self.act is not None else 'No Activation'
             )
         )
@@ -100,7 +100,7 @@ class MaskedConv3d(Module):
     def __repr__(self):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
-            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={filter_size}'
+            '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
             ', stride={stride}, padding={padding}'
         )
         if self.bias_initializer is None:
@@ -126,18 +126,18 @@ class MaskedConv3d(Module):
             raise Exception("data_format should be either channels_last or channels_first")
 
         self.filter_shape = (
-            self.filter_size[0], self.filter_size[1], self.filter_size[2], self.in_channels, self.out_channels
+            self.kernel_size[0], self.kernel_size[1], self.kernel_size[2], self.in_channels, self.out_channels
         )
 
         self.kernel = self._get_weights('kernel', shape=self.filter_shape, init=self.kernel_initializer)
 
-        self.b_init_flag = False
+        self.b_init = False
         if self.bias_initializer:
             self.bias = self._get_weights('bias', shape=(self.out_channels, ), init=self.bias_initializer)
-            self.bias_add = tlx.ops.BiasAdd(data_format=self._data_format)
-            self.b_init_flag = True
+            self.bias_add = tlx.ops.BiasAdd(data_format=self.data_format)
+            self.b_init = True
 
-        center = self.filter_size[0] // 2
+        center = self.kernel_size[0] // 2
 
         mask = np.ones(self.kernel.shape, dtype=np.float32)
         if tlx.BACKEND == 'tensorflow':
@@ -152,8 +152,8 @@ class MaskedConv3d(Module):
         self.mask = tlx.ops.convert_to_tensor(mask, tlx.float32)
 
         self.conv3d = tlx.ops.Conv3D(
-            strides=self._strides, padding=self.padding, data_format=self._data_format, dilations=self._dilation_rate,
-            out_channel=self.out_channels, k_size=self.filter_size
+            strides=self._strides, padding=self.padding, data_format=self.data_format, dilations=self._dilation_rate,
+            out_channel=self.out_channels, k_size=self.kernel_size
         )
         self.act_init_flag = False
         if self.act:
@@ -166,9 +166,9 @@ class MaskedConv3d(Module):
                 self._built = True
             self._forward_state = True
 
-        masked_kernel = tlx.ops.multiply(self.mask, self.kernel)
-        x = self.conv3d(inputs, masked_kernel)
-        if self.b_init_flag:
+        self.masked_kernel = tlx.ops.multiply(self.mask, self.kernel)
+        x = self.conv3d(inputs, self.masked_kernel)
+        if self.b_init:
             x = self.bias_add(x, self.bias)
         if self.act_init_flag:
             x = self.act(x)
