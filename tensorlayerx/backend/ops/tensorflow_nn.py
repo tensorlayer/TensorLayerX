@@ -1100,6 +1100,8 @@ class DepthwiseConv2d(object):
 
     def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1, in_channels=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        if isinstance(padding, int) or isinstance(padding, tuple):
+            self.padding = preprocess_padding(self.padding, '2d', self.data_format)
         self.strides = strides
         self.dilations = dilations
         self.depthwise_conv = GroupConv2D(strides=self.strides, padding=self.padding, data_format=self.data_format,
@@ -1749,6 +1751,8 @@ class GroupConv2D(object):
         self.strides = strides
         self.dilations = dilations
         self.groups = groups
+        if isinstance(padding, int) or isinstance(padding, tuple):
+            self.padding = preprocess_padding(self.padding, '2d', self.data_format)
         if self.data_format == 'NHWC':
             self.channels_axis = 3
         else:
@@ -1789,7 +1793,6 @@ class SeparableConv1D(object):
 
     def __init__(self, stride, padding, data_format, dilations, out_channel, k_size, in_channel, depth_multiplier):
         self.data_format, self.padding = preprocess_1d_format(data_format, padding)
-
         if self.data_format == 'NWC':
             self.spatial_start_dim = 1
             self.strides = (1, stride, stride, 1)
@@ -1819,6 +1822,8 @@ class SeparableConv2D(object):
 
     def __init__(self, strides, padding, data_format, dilations, out_channel, k_size, in_channel, depth_multiplier):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        if isinstance(padding, int) or isinstance(padding, tuple):
+            self.padding = preprocess_padding(self.padding, '2d', self.data_format)
         self.strides = strides
         self.dilations = (dilations[2], dilations[2])
 
