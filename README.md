@@ -46,6 +46,7 @@ Compare to TensorLayer version:
 
 # Resources
 
+- [TLX2ONNX](https://github.com/tensorlayer/TLX2ONNX/) ONNX Model Exporter for TensorLayerX. ✅
 - [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials✅
 - [GammaGL](https://github.com/BUPT-GAMMA/GammaGL) is a multi-backend graph learning library based on TensorLayerX.✅
 - OpenIVA an easy-to-use product-level deployment framework✅
