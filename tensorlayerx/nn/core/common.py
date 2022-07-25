@@ -268,38 +268,20 @@ def _save_standard_weights_dict(net, file_path):
 
 def encode_list_name(list_name):
     # TensorFlow weights format: conv1.weight:0, conv1.bias:0
-    # Paddle weights format: conv1.weight, conv1.bias
-    # PyTorch weights format: conv1.W, conv1.W
+    # Paddle weights format: conv1.weights, conv1.bias
+    # PyTorch weights format: conv1.weights, conv1.bias
     # MindSpore weights format: conv1.weights, conv1.bias
     # standard weights format: conv1.weights, conv1.bias
 
     for i in range(len(list_name)):
         if tlx.BACKEND == 'tensorflow':
             list_name[i] = list_name[i][:-2]
-        if tlx.BACKEND == 'torch':
-            if list_name[i][-1] == 'W' and 'conv' not in list_name[i]:
-                list_name[i] = list_name[i][:-2] + str('/weights')
-            elif list_name[i][-1] == 'W' and 'conv' in list_name[i]:
-                list_name[i] = list_name[i][:-2] + str('/filters')
-            elif list_name[i][-1] == 'b':
-                list_name[i] = list_name[i][:-2] + str('/biases')
-            elif list_name[i].split('.')[-1] in ['beta', 'gamma', 'moving_mean', 'moving_var']:
-                pass
-            else:
-                raise NotImplementedError('This weights cannot be converted.')
     return list_name
 
 
 def decode_key_name(key_name):
     if tlx.BACKEND == 'tensorflow':
         key_name = key_name + str(':0')
-    if tlx.BACKEND == 'torch':
-        if key_name.split('/')[-1] in ['weights', 'filters']:
-            key_name = key_name[:-8] + str('.W')
-        elif key_name.split('/')[-1] == 'biases':
-            key_name = key_name[:-7] + str('.b')
-        else:
-            raise NotImplementedError('This weights cannot be converted.')
     return key_name
 
 
@@ -347,11 +329,30 @@ def save_standard_npz_dict(save_list=None, name='model.npz'):
     logging.info("[*] Model saved in npz_dict %s" % name)
 
 
-def _load_standard_weights_dict(net, file_path, skip=False, reshape=False, format='npz_dict'):
-    if format == 'npz_dict':
-        load_and_assign_standard_npz_dict(net, file_path, skip, reshape)
-    elif format == 'npz':
-        load_and_assign_standard_npz(file_path, net, reshape)
+def _load_standard_weights_dict(net, file_path, skip=False, weights_from='tensorflow', weights_to='tensorflow'):
+    """
+
+    Parameters
+    ----------
+    file_path : str
+        Name of the saved file.
+    skip : boolean
+        If 'skip' == True, loaded layer whose name is not found in 'layers' will be skipped. If 'skip' is False,
+        error will be raised when mismatch is found. Default False.
+    weights_from : string
+        The weights file is saved by which framework training. It has to be one of tensorflow,mindspore,paddle or torch.
+    weights_to : string
+        Which framework the weights file imports.It has to be one of tensorflow,mindspore,paddle or torch.
+    """
+    if weights_from == weights_to:
+        reshape = False
+    if weights_from == 'tensorflow' and weights_to != 'tensorflow':
+        reshape = True
+    if weights_from != 'tensorflow' and weights_to == 'tensorflow':
+        reshape = True
+    if weights_from !='tensorflow' and weights_to != 'tensorflow':
+        reshape = False
+    load_and_assign_standard_npz_dict(net, file_path, skip, reshape)
 
 
 def load_and_assign_standard_npz_dict(net, file_path, skip=False, reshape=False):
@@ -382,21 +383,20 @@ def load_and_assign_standard_npz_dict(net, file_path, skip=False, reshape=False)
         else:
             if tlx.BACKEND == 'tensorflow':
                 reshape_weights = weight_reshape(weights[key], reshape)
-                check_reshape(reshape_weights, net.all_weights[net_weights_name.index(de_key)])
+                # check_reshape(reshape_weights, net.all_weights[net_weights_name.index(de_key)])
                 utils.assign_tf_variable(net.all_weights[net_weights_name.index(de_key)], reshape_weights)
             elif tlx.BACKEND == 'mindspore':
                 reshape_weights = weight_reshape(weights[key], reshape)
-                import mindspore as ms
                 assign_param = ms.Tensor(reshape_weights, dtype=ms.float32)
-                check_reshape(assign_param, net.all_weights[net_weights_name.index(de_key)])
+                # check_reshape(assign_param, net.all_weights[net_weights_name.index(de_key)])
                 utils.assign_ms_variable(net.all_weights[net_weights_name.index(de_key)], assign_param)
             elif tlx.BACKEND == 'paddle':
                 reshape_weights = weight_reshape(weights[key], reshape)
-                check_reshape(reshape_weights, net.all_weights[net_weights_name.index(de_key)])
+                # check_reshape(reshape_weights, net.all_weights[net_weights_name.index(de_key)])
                 utils.assign_pd_variable(net.all_weights[net_weights_name.index(de_key)], reshape_weights)
             elif tlx.BACKEND == 'torch':
                 reshape_weights = weight_reshape(weights[key], reshape)
-                check_reshape(reshape_weights, net.all_weights[net_weights_name.index(de_key)])
+                # check_reshape(reshape_weights, net.all_weights[net_weights_name.index(de_key)])
                 utils.assign_th_variable(torch_weights_dict[de_key], reshape_weights)
             else:
                 raise NotImplementedError('Not implemented')
@@ -404,79 +404,75 @@ def load_and_assign_standard_npz_dict(net, file_path, skip=False, reshape=False)
     logging.info("[*] Model restored from npz_dict %s" % file_path)
 
 
-def load_and_assign_standard_npz(file_path=None, network=None, reshape=False):
-    if network is None:
-        raise ValueError("network is None.")
-
-    if not os.path.exists(file_path):
-        logging.error("file {} doesn't exist.".format(file_path))
-        return False
-    else:
-        weights = utils.load_npz(name=file_path)
-        ops = []
-        if tlx.BACKEND == 'tensorflow':
-            for idx, param in enumerate(weights):
-                param = weight_reshape(param, reshape)
-                check_reshape(param, network.all_weights[idx])
-                ops.append(network.all_weights[idx].assign(param))
-
-        elif tlx.BACKEND == 'mindspore':
-
-            class Assign_net(Cell):
-
-                def __init__(self, y):
-                    super(Assign_net, self).__init__()
-                    self.y = y
-
-                def construct(self, x):
-                    Assign()(self.y, x)
-
-            for idx, param in enumerate(weights):
-                assign_param = Tensor(param, dtype=ms.float32)
-                assign_param = weight_reshape(assign_param, reshape)
-                check_reshape(assign_param, network.all_weights[idx])
-                Assign()(network.all_weights[idx], assign_param)
-
-        elif tlx.BACKEND == 'paddle':
-            for idx, param in enumerate(weights):
-                param = weight_reshape(param, reshape)
-                check_reshape(param, network.all_weights[idx])
-                utils.assign_pd_variable(network.all_weights[idx], param)
-
-        elif tlx.BACKEND == 'torch':
-            for idx, param in enumerate(weights):
-                param = weight_reshape(param, reshape)
-                check_reshape(param, network.all_weights[idx])
-                utils.assign_th_variable(network.all_weights[idx], param)
-        else:
-            raise NotImplementedError("This backend is not supported")
-        return ops
-
-    logging.info("[*] Load {} SUCCESS!".format(file_path))
+# def load_and_assign_standard_npz(file_path=None, network=None, reshape=False):
+#     if network is None:
+#         raise ValueError("network is None.")
+#
+#     if not os.path.exists(file_path):
+#         logging.error("file {} doesn't exist.".format(file_path))
+#         return False
+#     else:
+#         weights = utils.load_npz(name=file_path)
+#         ops = []
+#         if tlx.BACKEND == 'tensorflow':
+#             for idx, param in enumerate(weights):
+#                 param = weight_reshape(param, reshape)
+#                 check_reshape(param, network.all_weights[idx])
+#                 ops.append(network.all_weights[idx].assign(param))
+#
+#         elif tlx.BACKEND == 'mindspore':
+#             for idx, param in enumerate(weights):
+#                 assign_param = Tensor(param, dtype=ms.float32)
+#                 assign_param = weight_reshape(assign_param, reshape)
+#                 check_reshape(assign_param, network.all_weights[idx])
+#                 utils.assign_ms_variable(network.all_weights[idx], assign_param)
+#
+#         elif tlx.BACKEND == 'paddle':
+#             for idx, param in enumerate(weights):
+#                 param = weight_reshape(param, reshape)
+#                 check_reshape(param, network.all_weights[idx])
+#                 utils.assign_pd_variable(network.all_weights[idx], param)
+#
+#         elif tlx.BACKEND == 'torch':
+#             for idx, param in enumerate(weights):
+#                 param = weight_reshape(param, reshape)
+#                 check_reshape(param, network.all_weights[idx])
+#                 utils.assign_th_variable(network.all_weights[idx], param)
+#         else:
+#             raise NotImplementedError("This backend is not supported")
+#         return ops
+#
+#     logging.info("[*] Load {} SUCCESS!".format(file_path))
 
 
-def check_reshape(weight, shape_weights):
-    if len(weight.shape) >= 4 and weight.shape[::-1] == tuple(shape_weights.shape):
-        if tlx.BACKEND == 'tensorflow':
-
-            raise Warning(
-                'Set reshape to True only when importing weights from MindSpore/PyTorch/PaddlePaddle to TensorFlow.'
-            )
-        if tlx.BACKEND == 'torch':
-            raise Warning('Set reshape to True only when importing weights from TensorFlow to PyTorch.')
-        if tlx.BACKEND == 'paddle':
-            raise Warning('Set reshape to True only when importing weights from TensorFlow to PaddlePaddle.')
-        if tlx.BACKEND == 'mindspore':
-            raise Warning('Set reshape to True only when importing weights from TensorFlow to MindSpore.')
+# def check_reshape(weight, shape_weights):
+#     if len(weight.shape) >= 4 and weight.shape[::-1] == tuple(shape_weights.shape):
+#         if tlx.BACKEND == 'tensorflow':
+#
+#             raise Warning(
+#                 'Set reshape to True only when importing weights from MindSpore/PyTorch/PaddlePaddle to TensorFlow.'
+#             )
+#         if tlx.BACKEND == 'torch':
+#             raise Warning('Set reshape to True only when importing weights from TensorFlow to PyTorch.')
+#         if tlx.BACKEND == 'paddle':
+#             raise Warning('Set reshape to True only when importing weights from TensorFlow to PaddlePaddle.')
+#         if tlx.BACKEND == 'mindspore':
+#             raise Warning('Set reshape to True only when importing weights from TensorFlow to MindSpore.')
 
 
 def weight_reshape(weight, reshape=False):
     # TODO In this case only 2D convolution is considered. 3D convolution tests need to be supplemented.
     if reshape:
         if len(weight.shape) == 4:
-            weight = np.moveaxis(weight, (2, 3), (1, 0))
+            if tlx.BACKEND == 'tensorflow':
+                weight = np.moveaxis(weight, (1, 0), (2, 3))
+            else:
+                weight = np.moveaxis(weight, (2, 3), (1, 0))
         if len(weight.shape) == 5:
-            weight = np.moveaxis(weight, (3, 4), (1, 0))
+            if tlx.BACKEND == 'tensorflow':
+                weight = np.moveaxis(weight, (1, 0), (3, 4))
+            else:
+                weight = np.moveaxis(weight, (3, 4), (1, 0))
     return weight
 
 def tolist(tensors):

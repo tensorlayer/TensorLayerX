@@ -221,7 +221,7 @@ class Module(object):
 
         _save_standard_weights_dict(self, file_path)
 
-    def load_standard_weights(self, file_path, skip=False, reshape=False, format='npz_dict'):
+    def load_standard_weights(self, file_path, weights_from, weights_to, skip=False):
         """
 
         Parameters
@@ -231,14 +231,13 @@ class Module(object):
         skip : boolean
             If 'skip' == True, loaded layer whose name is not found in 'layers' will be skipped. If 'skip' is False,
             error will be raised when mismatch is found. Default False.
-        reshape : boolean
-            This parameter needs to be set to True when importing parameters from tensorflow training to paddle/mindspore/pytorch,
-            and similarly when importing parameters from paddle/mindspore/pytorch training to tensorflow.
-            This parameter does not need to be set between paddle/mindspore/pytorch.
-
+        weights_from : string
+            The weights file is saved by which framework training. It has to be one of tensorflow,mindspore,paddle or torch.
+        weights_to : string
+            Which framework the weights file imports.It has to be one of tensorflow,mindspore,paddle or torch.
         """
 
-        _load_standard_weights_dict(self, file_path, skip, reshape, format)
+        _load_standard_weights_dict(self, file_path, skip=skip, weights_from=weights_from, weights_to=weights_to)
 
     def _set_mode_for_layers(self, is_train):
         """Set all layers of this network to a given mode.

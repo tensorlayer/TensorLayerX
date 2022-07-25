@@ -117,8 +117,8 @@ class Module(Cell):
     def save_standard_weights(self, file_path):
         _save_standard_weights_dict(self, file_path)
 
-    def load_standard_weights(self, file_path, skip=False, reshape=False, format='npz_dict'):
-        _load_standard_weights_dict(self, file_path, skip, reshape, format)
+    def load_standard_weights(self, file_path, weights_from, weights_to, skip=False):
+        _load_standard_weights_dict(self, file_path, skip=skip, weights_from=weights_from, weights_to=weights_to)
 
     @staticmethod
     def _compute_shape(tensors):
@@ -158,6 +158,8 @@ class Module(Cell):
         """
         self._phase = 'predict'
         self.add_flags_recursive(training=False)
+        for layer in self.cells():
+            layer.is_train = False
         return self
 
     def test(self):
@@ -760,7 +762,6 @@ class ParameterDict(Module):
                         "ParameterDict update sequence element "
                         "#" + str(j) + " should be Iterable; is" + type(p).__name__
                     )
-                print(p)
                 if not len(p) == 2:
                     raise ValueError(
                         "ParameterDict update sequence element "
