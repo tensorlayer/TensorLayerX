@@ -2,33 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import os
-# os.environ['TL_BACKEND'] = 'tensorflow'
-os.environ['TL_BACKEND'] = 'paddle'
+os.environ['TL_BACKEND'] = 'tensorflow'
+# os.environ['TL_BACKEND'] = 'paddle'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'torch'
 
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 from tensorlayerx.nn import Linear, Dropout, Conv2d, MaxPool2d, Flatten
-from tensorlayerx.dataflow import Dataset
-
-X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
-
-
-class mnistdataset(Dataset):
-
-    def __init__(self, data=X_train, label=y_train):
-        self.data = data
-        self.label = label
-
-    def __getitem__(self, index):
-        data = self.data[index].astype('float32')
-        label = self.label[index].astype('int64')
-        return data, label
-
-    def __len__(self):
-        return len(self.data)
-
 
 class CustomModel(Module):
 
@@ -92,26 +73,23 @@ class CNN(Module):
         return z
 
 
-# TODO The MLP model was saved to the standard npz_dict format after training at the TensorFlow backend
-#  and imported into TensorFlow/PyTorch/PaddlePaddle/MindSpore.
+# # TODO The MLP model was saved to the standard npz_dict format after training at the TensorFlow backend
+# #  and imported into TensorFlow/PyTorch/PaddlePaddle/MindSpore.
 # MLP = CustomModel()
-# MLP.save_standard_weights('./model.npz')
-# # MLP.load_standard_weights('./model.npz', skip=True)
+# # MLP.save_standard_weights('./model.npz')
+# MLP.load_standard_weights('./model.npz', weights_from='tensorflow', weights_to='mindspore')
 # MLP.set_eval()
 # inputs = tlx.layers.Input(shape=(10, 784))
-# print(MLP(inputs))
+# output = MLP(inputs)
+# print(output)
 
 # TODO The CNN model was saved to the standard npz_dict format after training at the TensorFlow backend
 #  and imported into TensorFlow/PyTorch/PaddlePaddle/MindSpore.
 cnn = CNN()
-# cnn.save_standard_weights('./model.npz')
-# TODO Tensorflow trained parameters are imported to the TensorFlow backend.
-cnn.load_standard_weights('./model.npz', skip=False, reshape=True)
-
-# TODO Tensorflow backend trained parameters imported to PaddlePaddle/PyTorch/MindSpore to
-#  set reshape to True parameter to convert convolution shape.
-# cnn.load_standard_weights('./model.npz', skip=True, reshape=True)
+# cnn.save_standard_weights('./cnn.npz')
+cnn.load_standard_weights('./cnn.npz', weights_from='torch', weights_to='tensorflow')
 cnn.set_eval()
+
 inputs = tlx.nn.Input(shape=(10, 28, 28, 3), dtype=tlx.float32)
 outputs = cnn(inputs)
-print(outputs)
+# print(outputs)
