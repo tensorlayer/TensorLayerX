@@ -300,6 +300,10 @@ class Module(Layer):
             raise TypeError("Child layer type is incorrect.")
         self._sub_layers[child_name] = child
 
+    def set_build_graph(self):
+
+        raise NotImplementedError
+
     def build_graph(self, *inputs, **kwargs):
         # Add nodes only when the composition is needed.
         # for layer in self.sublayers():
