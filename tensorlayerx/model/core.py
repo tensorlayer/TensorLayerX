@@ -560,8 +560,8 @@ class TrainOneStep(object):
         else:
             raise NotImplementedError("This backend is not supported")
 
-    def __call__(self, data, label):
-        loss = self.net_with_train(data, label)
+    def __call__(self, data, label, *args, **kwargs):
+        loss = self.net_with_train(data, label, *args, **kwargs)
         return loss
 
 

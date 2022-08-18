@@ -135,9 +135,9 @@ class TrainOneStepWithTF(object):
         self.optimizer = optimizer
         self.train_weights = train_weights
 
-    def __call__(self, data, label):
+    def __call__(self, data, label, *args, **kwargs):
         with tf.GradientTape() as tape:
-            loss = self.net_with_loss(data, label)
+            loss = self.net_with_loss(data, label, *args, **kwargs)
         grad = tape.gradient(loss, self.train_weights)
         self.optimizer.apply_gradients(zip(grad, self.train_weights))
         return loss.numpy()
@@ -152,8 +152,8 @@ class TrainOneStepWithMS(object):
         self.net_with_loss = net_with_loss
         self.train_network = GradWrap(net_with_loss, train_weights)
 
-    def __call__(self, data, label):
-        loss = self.net_with_loss(data, label)
+    def __call__(self, data, label, *args, **kwargs):
+        loss = self.net_with_loss(data, label, *args, **kwargs)
         grads = self.train_network(data, label)
         self.optimizer.apply_gradients(zip(grads, self.train_weights))
         loss = loss.asnumpy()
@@ -167,8 +167,8 @@ class TrainOneStepWithPD(object):
         self.optimizer = optimizer
         self.train_weights = train_weights
 
-    def __call__(self, data, label):
-        loss = self.net_with_loss(data, label)
+    def __call__(self, data, label, *args, **kwargs):
+        loss = self.net_with_loss(data, label, *args, **kwargs)
         grads = self.optimizer.gradient(loss, self.train_weights)
         self.optimizer.apply_gradients(zip(grads, self.train_weights))
         return loss.numpy()
@@ -183,7 +183,7 @@ class TrainOneStepWithTH(object):
         self.optimizer = optimizer
         self.train_weights = train_weights
 
-    def __call__(self, data, label):
+    def __call__(self, data, label, *args, **kwargs):
         # if isinstance(data, dict):
         #     for k, v in data.items():
         #         if isinstance(v, torch.Tensor):
@@ -191,7 +191,7 @@ class TrainOneStepWithTH(object):
         # elif isinstance(data, torch.Tensor):
         #     data = data.to(self.device)
         # label = label.to(self.device)
-        loss = self.net_with_loss(data, label)
+        loss = self.net_with_loss(data, label, *args, **kwargs)
         grads = self.optimizer.gradient(loss, self.train_weights)
         self.optimizer.apply_gradients(zip(grads, self.train_weights))
         return loss.cpu().detach().numpy()
