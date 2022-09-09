@@ -448,7 +448,7 @@ class Model:
                     train_acc += metrics.result()
                     metrics.reset()
                 else:
-                    train_acc += (output.argmax(1) == y_batch).type(torch.float).sum().item()
+                    train_acc += (output.argmax(1) == y_batch).type(torch.float).mean().item()
                 n_iter += 1
 
                 if print_train_batch:
@@ -474,7 +474,7 @@ class Model:
                             val_acc += metrics.result()
                             metrics.reset()
                         else:
-                            val_acc += (_logits.argmax(1) == y_batch).type(torch.float).sum().item()
+                            val_acc += (_logits.argmax(1) == y_batch).type(torch.float).mean().item()
                         n_iter += 1
                     print("   val loss: {}".format(val_loss / n_iter))
                     print("   val acc:  {}".format(val_acc / n_iter))
