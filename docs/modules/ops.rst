@@ -121,6 +121,8 @@ API - Operations
    set_device
    get_device
    to_device
+   roll
+   logsoftmax
 
 TensorLayerX Tensor Operations
 --------------------------------
@@ -584,3 +586,11 @@ get_device
 to_device
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: to_device
+
+roll
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: roll
+
+logsoftmax
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: logsoftmax

@@ -1880,3 +1880,13 @@ def get_device():
 def to_device(tensor, device = 'GPU', id = 0):
 
     return tensor
+
+def roll(input, shifts, dims=None):
+
+    return msnp.roll(input, shifts, dims)
+
+def logsoftmax(input, dim = None):
+    if dim is None:
+        dim = -1
+    log_softmax = P.LogSoftmax(dim)
+    return log_softmax(input)

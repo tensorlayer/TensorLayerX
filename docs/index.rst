@@ -25,7 +25,7 @@ User Guide
 ------------
 
 The TensorLayerX user guide explains how to install TensorFlow, CUDA and cuDNN,
-how to build and train neural networks using TensorLayer3, and how to contribute
+how to build and train neural networks using TensorLayerX, and how to contribute
 to the library as a developer.
 
 .. toctree::

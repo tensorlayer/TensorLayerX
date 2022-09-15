@@ -7,7 +7,7 @@ from tensorlayerx.nn.core import Module
 
 __all__ = [
     'ELU', 'PRelu', 'PRelu6', 'PTRelu6', 'ReLU', 'ReLU6', 'Softplus', 'LeakyReLU', 'LeakyReLU6', 'LeakyTwiceRelu6',
-    'Ramp', 'Swish', 'HardTanh', 'Mish', 'Tanh', 'Sigmoid', 'Softmax'
+    'Ramp', 'Swish', 'HardTanh', 'Mish', 'Tanh', 'Sigmoid', 'Softmax', 'LogSoftmax'
 ]
 
 
@@ -909,6 +909,45 @@ class Mish(Module):
 
     def forward(self, x):
         outputs = x * self._tanh(self._softplus(x))
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
+
+class LogSoftmax(Module):
+    r"""Applies a softmax followed by a logarithm.
+
+        .. math::
+        \text{LogSoftmax}(x_{i}) = \log\left(\frac{\exp(x_i) }{ \sum_j \exp(x_j)} \right)
+
+
+        Parameters
+        ----------
+        x : Tensor
+            input.
+        dim : int
+            A dimension along which LogSoftmax will be computed.
+
+        Examples
+        --------
+        >>> net = tlx.nn.Input([10, 200])
+        >>> net = tlx.nn.LogSoftmax()(net)
+
+        Returns
+        -------
+        Tensor
+            A ``Tensor`` in the same type as ``x``.
+
+    """
+
+    def __init__(self, dim = None):
+        super(LogSoftmax, self).__init__()
+        self.dim = dim
+        self._built = True
+
+    def forward(self, x):
+        outputs = tlx.ops.logsoftmax(x, self.dim)
 
         if not self._nodes_fixed and self._build_graph:
             self._add_node(x, outputs)

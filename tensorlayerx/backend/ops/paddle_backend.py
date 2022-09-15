@@ -1910,3 +1910,12 @@ def to_device(tensor, device = 'GPU', id = 0):
         return paddle.to_tensor(tensor, place=paddle.CUDAPlace(id))
     if device == 'CPU':
         return paddle.to_tensor(tensor, place=paddle.CPUPlace())
+
+def roll(input, shifts, dims=None):
+
+    return paddle.roll(input, shifts, dims)
+
+def logsoftmax(input, dim = None):
+    if dim is None:
+        dim = -1
+    return F.log_softmax(input, dim)

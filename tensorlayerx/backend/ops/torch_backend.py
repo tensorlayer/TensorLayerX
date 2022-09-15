@@ -1727,3 +1727,12 @@ def to_device(tensor, device='GPU', id=0):
         device = 'cuda' + ':' + str(id)
     tensor = tensor.detach().to(device)
     return tensor
+
+def roll(input, shifts, dims=None):
+
+    return torch.roll(input, shifts, dims)
+
+
+def logsoftmax(input, dim=None):
+
+    return F.log_softmax(input, dim)

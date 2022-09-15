@@ -3980,3 +3980,58 @@ def to_device(tensor, device = 'GPU', id = 0):
         return tensor
     with tf.device("/" + device.upper()+':'+str(id)):
         return tf.identity(tensor)
+
+def roll(input, shifts, dims=None):
+    """Roll the tensor input along the given dimension(s).
+    Elements that are shifted beyond the last position are re-introduced at the first position.
+    If dims is None, the tensor will be flattened before rolling and then restored to the original shape.
+
+    Parameters
+    ----------
+    input : tensor
+        the input tensor.
+    shifts : int or tuple
+        The number of places by which the elements of the tensor are shifted.
+        If shifts is a tuple, dims must be a tuple of the same size, and each dimension will be rolled by the corresponding value
+    dims : int or tuple
+        Axis along which to roll
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> x = tlx.ops.ones((5,6))
+    >>> x = tlx.ops.roll(x, shifts=2)
+
+    """
+    if dims is None:
+        raw_shape = input.shape
+        shape = 1
+        for d in input.shape:
+            shape *= d
+        input = tf.reshape(input, [1, shape])
+        output = tf.roll(input, shifts, 1)
+        output = tf.reshape(output, raw_shape)
+        return output
+    return tf.roll(input, shifts, dims)
+
+def logsoftmax(input, dim = None):
+    """Applies a softmax followed by a logarithm.
+
+    Parameters
+    ----------
+    input : Tensor
+        the input tensor.
+    dim : int
+        A dimension along which LogSoftmax will be computed.
+
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> import numpy as np
+    >>> x = tlx.ops.convert_to_tensor(np.random.random((3,4)))
+    >>> x = tlx.ops.logsoftmax(x, dim=1)
+
+    """
+
+    return tf.nn.log_softmax(input, dim)

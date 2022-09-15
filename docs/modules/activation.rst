@@ -47,6 +47,7 @@ activation list
    Sigmoid
    Softmax
    Mish
+   LogSoftmax
 
 TensorLayerX Activations
 --------------------------------
@@ -119,6 +120,9 @@ Softmax
 ---------
 .. autoclass:: Softmax
 
+LogSoftmax
+---------
+.. autoclass:: LogSoftmax
 
 Parametric activation
 ------------------------------
