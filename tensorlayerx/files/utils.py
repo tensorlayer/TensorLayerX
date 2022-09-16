@@ -117,10 +117,6 @@ __all__ = [
     'load_hdf5_to_weights',
     'save_hdf5_graph',
     'load_hdf5_graph',
-    # 'net2static_graph',
-    'static_graph2net',
-    # 'save_pkl_graph',
-    # 'load_pkl_graph',
     'load_and_assign_ckpt',
     'ckpt_to_npz_dict'
 ]
@@ -136,62 +132,6 @@ def str2func(s):
     b = base64.b64decode(s)
     expr = cloudpickle.loads(b)
     return expr
-
-
-# def net2static_graph(network):
-#     saved_file = dict()
-#     # if network._NameNone is True:
-#     #     saved_file.update({"name": None})
-#     # else:
-#     #     saved_file.update({"name": network.name})
-#     # if not isinstance(network.inputs, list):
-#     #     saved_file.update({"inputs": network.inputs._info[0].name})
-#     # else:
-#     #     saved_inputs = []
-#     #     for saved_input in network.inputs:
-#     #         saved_inputs.append(saved_input._info[0].name)
-#     #     saved_file.update({"inputs": saved_inputs})
-#     # if not isinstance(network.outputs, list):
-#     #     saved_file.update({"outputs": network.outputs._info[0].name})
-#     # else:
-#     #     saved_outputs = []
-#     #     for saved_output in network.outputs:
-#     #         saved_outputs.append(saved_output._info[0].name)
-#     #     saved_file.update({"outputs": saved_outputs})
-#     saved_file.update({"config": network.config})
-#
-#     return saved_file
-
-# @keras_export('keras.model.save_model')
-# def save_keras_model(model):
-#     # f.attrs['keras_model_config'] = json.dumps(
-#     #     {
-#     #         'class_name': model.__class__.__name__,
-#     #         'config': model.get_config()
-#     #     },
-#     #     default=serialization.get_json_type).encode('utf8')
-#     #
-#     # f.flush()
-#
-#     return json.dumps(
-#         {
-#             'class_name': model.__class__.__name__,
-#             'config': model.get_config()
-#         }, default=serialization.get_json_type
-#     ).encode('utf8')
-#
-#
-# @keras_export('keras.model.load_model')
-# def load_keras_model(model_config):
-#
-#     custom_objects = {}
-#
-#     if model_config is None:
-#         raise ValueError('No model found in config.')
-#     model_config = json.loads(model_config.decode('utf-8'))
-#     model = model_config_lib.model_from_config(model_config, custom_objects=custom_objects)
-#
-#     return model
 
 
 def save_hdf5_graph(network, filepath='model.hdf5', save_weights=False, customized_data=None):
@@ -229,19 +169,10 @@ def save_hdf5_graph(network, filepath='model.hdf5', save_weights=False, customiz
                                                                                   ).isoformat()
     model_config_str = str(model_config)
     customized_data_str = str(customized_data)
-    # version_info = {
-    #     "tensorlayerx_version": tlx.__version__,
-    #     "backend": "tensorflow",
-    #     "backend_version": tf.__version__,
-    #     "training_device": "gpu",
-    #     "save_date": datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
-    # }
-    # version_info_str = str(version_info)
 
     with h5py.File(filepath, 'w') as f:
         f.attrs["model_config"] = model_config_str.encode('utf8')
         f.attrs["customized_data"] = customized_data_str.encode('utf8')
-        # f.attrs["version_info"] = version_info_str.encode('utf8')
         if save_weights:
             _save_weights_to_hdf5_group(f, network.all_layers)
         f.flush()
@@ -266,78 +197,6 @@ def generate_func(args):
         # elif key in ['fn']:
         #     fn = str2func(args[key])
         #     args[key] = fn
-
-
-def eval_layer(layer_kwargs):
-    layer_class = layer_kwargs.pop('class')
-    args = layer_kwargs['args']
-    layer_type = args.pop('layer_type')
-    if layer_type == "normal":
-        generate_func(args)
-        return eval('tlx.layers.' + layer_class)(**args)
-    elif layer_type == "layerlist":
-        ret_layer = []
-        layers = args["layers"]
-        for layer_graph in layers:
-            ret_layer.append(eval_layer(layer_graph))
-        args['layers'] = ret_layer
-        return eval('tlx.layers.' + layer_class)(**args)
-    elif layer_type == "modellayer":
-        M = static_graph2net(args['model'])
-        args['model'] = M
-        return eval('tlx.layers.' + layer_class)(**args)
-    elif layer_type == "keraslayer":
-        M = load_keras_model(args['fn'])
-        input_shape = args.pop('keras_input_shape')
-        _ = M(np.random.random(input_shape).astype(np.float32))
-        args['fn'] = M
-        args['fn_weights'] = M.trainable_variables
-        return eval('tlx.layers.' + layer_class)(**args)
-    else:
-        raise RuntimeError("Unknown layer type.")
-
-
-def static_graph2net(model_config):
-    layer_dict = {}
-    model_name = model_config["name"]
-    inputs_tensors = model_config["inputs"]
-    outputs_tensors = model_config["outputs"]
-    all_args = model_config["model_architecture"]
-    for idx, layer_kwargs in enumerate(all_args):
-        layer_class = layer_kwargs["class"]  # class of current layer
-        prev_layers = layer_kwargs.pop("prev_layer")  # name of previous layers
-        net = eval_layer(layer_kwargs)
-        if layer_class in tlx.nn.inputs.__all__:
-            net = net._nodes[0].out_tensors[0]
-        if prev_layers is not None:
-            for prev_layer in prev_layers:
-                if not isinstance(prev_layer, list):
-                    output = net(layer_dict[prev_layer])
-                    layer_dict[output._info[0].name] = output
-                else:
-                    list_layers = [layer_dict[layer] for layer in prev_layer]
-                    output = net(list_layers)
-                    layer_dict[output._info[0].name] = output
-        else:
-            layer_dict[net._info[0].name] = net
-
-    if not isinstance(inputs_tensors, list):
-        model_inputs = layer_dict[inputs_tensors]
-    else:
-        model_inputs = []
-        for inputs_tensor in inputs_tensors:
-            model_inputs.append(layer_dict[inputs_tensor])
-    if not isinstance(outputs_tensors, list):
-        model_outputs = layer_dict[outputs_tensors]
-    else:
-        model_outputs = []
-        for outputs_tensor in outputs_tensors:
-            model_outputs.append(layer_dict[outputs_tensor])
-    from tensorlayerx.model import Model
-    M = Model(inputs=model_inputs, outputs=model_outputs, name=model_name)
-    logging.info("[*] Load graph finished")
-    return M
-
 
 def load_hdf5_graph(filepath='model.hdf5', load_weights=False):
     """Restore TL model archtecture from a a pickle file. Support loading model weights.
@@ -395,58 +254,6 @@ def load_hdf5_graph(filepath='model.hdf5', load_weights=False):
     return M
 
 
-# def load_pkl_graph(name='model.pkl'):
-#     """Restore TL model archtecture from a a pickle file. No parameters be restored.
-#
-#     Parameters
-#     -----------
-#     name : str
-#         The name of graph file.
-#
-#     Returns
-#     --------
-#     network : TensorLayer Model.
-#
-#     Examples
-#     --------
-#     >>> # It is better to use load_hdf5_graph
-#     """
-#     logging.info("[*] Loading TL graph from {}".format(name))
-#     with open(name, 'rb') as file:
-#         saved_file = pickle.load(file)
-#
-#     M = static_graph2net(saved_file)
-#
-#     return M
-#
-#
-# def save_pkl_graph(network, name='model.pkl'):
-#     """Save the architecture of TL model into a pickle file. No parameters be saved.
-#
-#     Parameters
-#     -----------
-#     network : TensorLayer layer
-#         The network to save.
-#     name : str
-#         The name of graph file.
-#
-#     Example
-#     --------
-#     >>> # It is better to use save_hdf5_graph
-#     """
-#     if network.outputs is None:
-#         raise AssertionError("save_graph not support dynamic mode yet")
-#
-#     logging.info("[*] Saving TL graph into {}".format(name))
-#
-#     saved_file = net2static_graph(network)
-#
-#     with open(name, 'wb') as file:
-#         pickle.dump(saved_file, file, protocol=pickle.HIGHEST_PROTOCOL)
-#     logging.info("[*] Saved graph")
-
-
-# Load dataset functions
 def load_mnist_dataset(shape=(-1, 784), path='data'):
     """Load the original mnist.
 
@@ -2716,7 +2523,7 @@ def assign_th_variable(variable, value):
     variable.data = torch.as_tensor(value)
 
 
-def _save_weights_to_hdf5_group(f, layers):
+def _save_weights_to_hdf5_group(f, save_list):
     """
     Save layer/model weights into hdf5 group recursively.
 
@@ -2728,33 +2535,37 @@ def _save_weights_to_hdf5_group(f, layers):
         A list of layers to save weights.
 
     """
-    f.attrs['layer_names'] = [layer.name.encode('utf8') for layer in layers]
 
-    for layer in layers:
-        g = f.create_group(layer.name)
-        if isinstance(layer, tlx.model.Model):
-            _save_weights_to_hdf5_group(g, layer.all_layers)
-        elif isinstance(layer, tlx.nn.ModelLayer):
-            _save_weights_to_hdf5_group(g, layer.model.all_layers)
-        elif isinstance(layer, tlx.nn.ModuleList):
-            _save_weights_to_hdf5_group(g, layer.layers)
-        elif isinstance(layer, tlx.nn.Layer):
-            if layer.all_weights is not None:
-                weight_values = tf_variables_to_numpy(layer.all_weights)
-                weight_names = [w.name.encode('utf8') for w in layer.all_weights]
-            else:
-                weight_values = []
-                weight_names = []
-            g.attrs['weight_names'] = weight_names
-            for name, val in zip(weight_names, weight_values):
-                val_dataset = g.create_dataset(name, val.shape, dtype=val.dtype)
-                if not val.shape:
-                    # scalar
-                    val_dataset[()] = val
-                else:
-                    val_dataset[:] = val
-        else:
-            raise Exception("Only layer or model can be saved into hdf5.")
+    if save_list is None:
+        save_list = []
+    if tlx.BACKEND != 'torch':
+        save_list_names = [tensor.name for tensor in save_list]
+
+    if tlx.BACKEND == 'tensorflow':
+        save_list_var = tf_variables_to_numpy(save_list)
+    elif tlx.BACKEND == 'mindspore':
+        save_list_var = ms_variables_to_numpy(save_list)
+    elif tlx.BACKEND == 'paddle':
+        save_list_var = pd_variables_to_numpy(save_list)
+    elif tlx.BACKEND == 'torch':
+        save_list_names = []
+        save_list_var = []
+        for named, values in save_list:
+            save_list_names.append(named)
+            save_list_var.append(values.cpu().detach().numpy())
+    else:
+        raise NotImplementedError('Not implemented')
+    save_var_dict = {save_list_names[idx]: val for idx, val in enumerate(save_list_var)}
+
+    g = f.create_group('model_parameters')
+    for k in save_var_dict.keys():
+        val_dataset = g.create_dataset('.'.join(k.split('/')), data=save_var_dict[k])
+
+    save_list_var = None
+    save_var_dict = None
+    del save_list_var
+    del save_var_dict
+    logging.info("[*] Model saved in hdf5.")
 
 
 def _load_weights_from_hdf5_group_in_order(f, layers):
@@ -2838,7 +2649,7 @@ def _load_weights_from_hdf5_group(f, layers, skip=False):
                 raise Exception("Only layer or model can be saved into hdf5.")
 
 
-def save_weights_to_hdf5(filepath, network):
+def save_weights_to_hdf5(save_list, filepath):
     """Input filepath and save weights in hdf5 format.
 
     Parameters
@@ -2855,12 +2666,12 @@ def save_weights_to_hdf5(filepath, network):
     logging.info("[*] Saving TL weights into %s" % filepath)
 
     with h5py.File(filepath, 'w') as f:
-        _save_weights_to_hdf5_group(f, network.all_layers)
+        _save_weights_to_hdf5_group(f, save_list)
 
     logging.info("[*] Saved")
 
 
-def load_hdf5_to_weights_in_order(filepath, network):
+def load_hdf5_to_weights_in_order(filepath, network, skip=False):
     """Load weights sequentially from a given file of hdf5 format
 
     Parameters
@@ -2879,23 +2690,39 @@ def load_hdf5_to_weights_in_order(filepath, network):
 
     """
     f = h5py.File(filepath, 'r')
-    try:
-        layer_names = [n.decode('utf8') for n in f.attrs["layer_names"]]
-    except Exception:
-        raise NameError(
-            "The loaded hdf5 file needs to have 'layer_names' as attributes. "
-            "Please check whether this hdf5 file is saved from TL."
-        )
+    weights = f['model_parameters']
+    print(weights.keys())
+    if len(weights.keys()) != len(set(weights.keys())):
+        raise Exception("Duplication in model npz_dict %s" % name)
 
-    if len(network.all_layers) != len(layer_names):
-        logging.warning(
-            "Number of weights mismatch."
-            "Trying to load a saved file with " + str(len(layer_names)) + " layers into a model with " +
-            str(len(network.all_layers)) + " layers."
-        )
+    if tlx.BACKEND == 'torch':
+        net_weights_name = [n for n, v in network.named_parameters()]
+        torch_weights_dict = {n: v for n, v in network.named_parameters()}
+    else:
+        net_weights_name = [w.name for w in network.all_weights]
 
-    _load_weights_from_hdf5_group_in_order(f, network.all_layers)
-
+    for key in weights.keys():
+        key_t = '/'.join(key.split('.'))
+        if key_t not in net_weights_name:
+            if skip:
+                logging.warning("Weights named '%s' not found in network. Skip it." % key)
+            else:
+                raise RuntimeError(
+                    "Weights named '%s' not found in network. Hint: set argument skip=Ture "
+                    "if you want to skip redundant or mismatch weights." % key
+                )
+        else:
+            if tlx.BACKEND == 'tensorflow':
+                assign_tf_variable(network.all_weights[net_weights_name.index(key_t)], weights[key])
+            elif tlx.BACKEND == 'mindspore':
+                assign_param = Tensor(weights[key], dtype=ms.float32)
+                assign_ms_variable(network.all_weights[net_weights_name.index(key_t)], assign_param)
+            elif tlx.BACKEND == 'paddle':
+                assign_pd_variable(network.all_weights[net_weights_name.index(key_t)], weights[key])
+            elif tlx.BACKEND == 'torch':
+                assign_th_variable(torch_weights_dict[key_t], weights[key])
+            else:
+                raise NotImplementedError('Not implemented')
     f.close()
     logging.info("[*] Load %s SUCCESS!" % filepath)
 

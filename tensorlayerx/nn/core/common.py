@@ -161,8 +161,12 @@ def _save_weights(net, file_path, format=None):
             format = 'hdf5'
 
     if format == 'hdf5' or format == 'h5':
-        raise NotImplementedError("hdf5 load/save is not supported now.")
+        if tlx.BACKEND == 'torch':
+            utils.save_weights_to_hdf5(net.named_parameters(), file_path)
+        else:
+            utils.save_weights_to_hdf5(net.all_weights, file_path)
         # utils.save_weights_to_hdf5(file_path, net)
+        # raise NotImplementedError("hdf5 load/save is not supported now.")
     elif format == 'npz':
         utils.save_npz(net.all_weights, file_path)
     elif format == 'npz_dict':
@@ -170,12 +174,12 @@ def _save_weights(net, file_path, format=None):
             utils.save_npz_dict(net.named_parameters(), file_path)
         else:
             utils.save_npz_dict(net.all_weights, file_path)
-    elif format == 'ckpt':
-        # TODO: enable this when tf save ckpt is enabled
-        raise NotImplementedError("ckpt load/save is not supported now.")
+    # elif format == 'ckpt':
+    #     # TODO: enable this when tf save ckpt is enabled
+    #     raise NotImplementedError("ckpt load/save is not supported now.")
     else:
         raise ValueError(
-            "Save format must be 'hdf5', 'npz', 'npz_dict' or 'ckpt'."
+            "Save format must be 'hdf5', 'npz', or 'npz_dict'."
             "Other format is not supported now."
         )
 
@@ -237,23 +241,14 @@ def _load_weights(net, file_path, format=None, in_order=True, skip=False):
         format = file_path.split('.')[-1]
 
     if format == 'hdf5' or format == 'h5':
-        raise NotImplementedError("hdf5 load/save is not supported now.")
-        # if skip ==True or in_order == False:
-        #     # load by weights name
-        #     utils.load_hdf5_to_weights(file_path, net, skip)
-        # else:
-        #     # load in order
-        #     utils.load_hdf5_to_weights_in_order(file_path, net)
+        utils.load_hdf5_to_weights_in_order(file_path, net, skip)
     elif format == 'npz':
         utils.load_and_assign_npz(file_path, net)
     elif format == 'npz_dict':
         utils.load_and_assign_npz_dict(file_path, net, skip)
-    elif format == 'ckpt':
-        # TODO: enable this when tf save ckpt is enabled
-        raise NotImplementedError("ckpt load/save is not supported now.")
     else:
         raise ValueError(
-            "File format must be 'hdf5', 'npz', 'npz_dict' or 'ckpt'. "
+            "File format must be 'hdf5', 'npz' or 'npz_dict'. "
             "Other format is not supported now."
         )
 
