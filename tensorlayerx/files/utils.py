@@ -575,7 +575,6 @@ def load_cropped_svhn(path='data', include_extra=True):
             v = np.load(np_file, allow_pickle=True)
             X_extra = v['X']
             y_extra = v['y']
-        # print(X_train.shape, X_extra.shape)
         logging.info("  adding n_extra {} to n_train {}".format(len(y_extra), len(y_train)))
         t = time.time()
         X_train = np.concatenate((X_train, X_extra), 0)
@@ -2691,7 +2690,6 @@ def load_hdf5_to_weights_in_order(filepath, network, skip=False):
     """
     f = h5py.File(filepath, 'r')
     weights = f['model_parameters']
-    print(weights.keys())
     if len(weights.keys()) != len(set(weights.keys())):
         raise Exception("Duplication in model npz_dict %s" % name)
 
