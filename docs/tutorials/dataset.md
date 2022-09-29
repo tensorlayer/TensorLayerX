@@ -12,11 +12,12 @@
 ## 一、定义数据集
 ### 1.1 直接加载内置数据集
 tensorlayerx框架在 `tensorlayerx.files.dataset_loaders` 目录下内置了一些经典数据集可直接调用，通过以下代码可查看tensorlayerx框架中的内置数据集。
-```
+```{.python}
 import tensorlayerx
 print('计算机视觉（CV）和自然语言处理（NLP）相关数据集：', tensorlayerx.files.dataset_loaders.__all__)
 ```
-```
+
+```{.python}
 计算机视觉（CV）和自然语言处理（NLP）相关数据集： ['load_celebA_dataset',
  'load_cifar10_dataset',
  'load_cyclegan_dataset',
@@ -33,7 +34,7 @@ print('计算机视觉（CV）和自然语言处理（NLP）相关数据集：',
 从打印结果可以看到tensorlayerx内置了 CV 领域的 MNIST、FashionMNIST、Cifar10、flickr1M、flickr25k 等数据集，以及 NLP 领域的 Imdb、nietzsche等数据集。
 
 以 MNIST 数据集为例，加载内置数据集的代码示例如下所示。
-```
+```{.python}
 import tensorlayerx as tlx
 
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 28, 28, 1))
@@ -49,7 +50,7 @@ X_train = X_train * 255
 
 3. `__len__`：返回数据集的样本总数。
 
-```
+```{.python}
 
 from tensorlayerx.dataflow import Dataset
 from tensorlayerx.vision.transforms import Normalize, Compose
@@ -103,7 +104,7 @@ train_dataset = MNISTDataset(data=X_train, label=y_train, transform=transform)
 另外，在 `__init__` 函数和 `__getitem__` 函数中还可实现一些数据预处理操作，如对图像的翻转、裁剪、归一化等操作，最终返回处理好的单条数据（样本数据、对应的标签），该操作可增加图像数据多样性，对增强模型的泛化能力带来帮助。tensorlayerx框架在 `tensorlayerx.vision.transforms` 下内置了几十种图像数据处理方法，详细使用方法可参考 [数据预处理](data_processing.md) 章节。
 
 和内置数据集类似，可以使用下面的代码直接对自定义数据集进行迭代读取。
-```
+```{.python}
 from matplotlib import pyplot as plt
 
 for data in train_dataset:
@@ -121,7 +122,7 @@ shape of image:  (28, 28, 1)
 ## 二、迭代读取数据集
 ### 2.1 使用 tensorlayerx.dataflow.DataLoader 定义数据读取器
 通过前面介绍的直接迭代读取 Dataset 的方式虽然可实现对数据集的访问，但是这种访问方式只能单线程进行并且还需要手动分批次（batch）。在飞桨框架中，推荐使用 tensorlayerx.dataflow.DataLoader API 对数据集进行多进程的读取，并且可自动完成划分 batch 的工作。
-```
+```{.python}
 # 定义并初始化数据读取器
 train_loader = tlx.dataflow.DataLoader(train_dataset, batch_size=64, shuffle=True)
 

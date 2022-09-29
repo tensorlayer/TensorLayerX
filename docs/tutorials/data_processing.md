@@ -5,11 +5,12 @@
 
 ## 一、tensorlayerx.vision.transforms 介绍
 TensorLayerX框架在 [`tensorlayerx.vision.transforms`](https://github.com/tensorlayer/TensorLayerX/blob/main/tensorlayerx/vision/transforms.py) 下内置了数十种图像数据处理方法，可以通过以下代码查看：
-```
+```{.python}
 import tensorlayerx
 print('图像数据处理方法：', tensorlayerx.vision.transforms.__all__)
 ```
-```
+
+```{.python}
 图像数据处理方法： ['Crop', 'CentralCrop', 'HsvToRgb', 'AdjustBrightness', 'AdjustContrast', 'AdjustHue', 'AdjustSaturation', 'FlipHorizontal', 'FlipVertical', 'RgbToGray', 'PadToBoundingbox', 'Pad', 'Normalize', 'StandardizePerImage', 'RandomBrightness', 'RandomContrast', 'RandomHue', 'RandomSaturation', 'RandomCrop', 'Resize', 'RgbToHsv', 'Transpose', 'Rotation', 'RandomRotation', 'RandomShift', 'RandomShear', 'RandomZoom', 'RandomFlipVertical', 'RandomFlipHorizontal', 'HWC2CHW', 'CHW2HWC', 'ToTensor', 'Compose', 'RandomResizedCrop', 'RandomAffine', 'ColorJitter', 'Rotation']
 ```
 包括图像随机裁剪、图像旋转变换、改变图像亮度、改变图像对比度等常见操作，各个操作方法的简介可参考 API 文档。  
@@ -18,7 +19,7 @@ print('图像数据处理方法：', tensorlayerx.vision.transforms.__all__)
 
 * 单个使用  
 
-```
+```{.python}
 from tensorlayerx.vision.transforms import Resize
 
 transform = Resize(size = (100,100), interpolation='bilinear')
@@ -27,7 +28,7 @@ transform = Resize(size = (100,100), interpolation='bilinear')
 * 多个组合使用
 
 这种使用模式下，需要先定义好每个数据处理方法，然后用`Compose` 进行组合。
-```
+```{.python}
 from tensorlayerx.vision.transforms import (
     Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop
 )
@@ -47,7 +48,7 @@ transforms = Compose(
 
 对于自定义的数据集，可以在数据集中将定义好的数据处理方法传入 `__init__` 函数，将其定义为自定义数据集类的一个属性，然后在 `__getitem__` 中将其应用到图像上，如下述代码所示：
 
-```
+```{.python}
 # TensorLayerX自动下载并加载 MNIST 数据集
 print('download training data and load training data')
 
@@ -106,7 +107,7 @@ wget https://paddle-imagenet-models-name.bj.bcebos.com/data/demo_images/flower_d
 ### `CentralCrop`
 对输入图像进行裁剪，保持图片中心点不变。
 
-```
+```{.python}
 import cv2
 import numpy as np
 from PIL import Image
@@ -131,7 +132,7 @@ plt.imshow(image_after_transform[:,:,::-1])
 ### `RandomFlipHorizontal`
 基于概率来执行图片的水平翻转。
 
-```
+```{.python}
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
@@ -154,7 +155,7 @@ plt.imshow(image_after_transform[:,:,::-1])
 
 ### `ColorJitter`
 随机调整图像的亮度、对比度、饱和度和色调。
-```
+```{.python}
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
