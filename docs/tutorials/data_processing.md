@@ -116,7 +116,7 @@ from tensorlayerx.vision.transforms import CentralCrop
 
 transform = CentralCrop(size = (224, 224))
 
-image = cv2.imread('flower_demo.png')
+image = cv2.imread('images/flower_demo.png')
 
 image_after_transform = transform(image)
 plt.subplot(1,2,1)
@@ -126,7 +126,7 @@ plt.subplot(1,2,2)
 plt.title('CenterCrop image')
 plt.imshow(image_after_transform[:,:,::-1])
 ```
-![](flower_centercrop.png)
+![](images/flower_centercrop.png)
 
 
 ### `RandomFlipHorizontal`
@@ -140,7 +140,7 @@ from tensorlayerx.vision.transforms import RandomFlipHorizontal
 
 transform = RandomFlipHorizontal(0.5)
 
-image = cv2.imread('flower_demo.png')
+image = cv2.imread('images/flower_demo.png')
 
 image_after_transform = transform(image)
 plt.subplot(1,2,1)
@@ -151,7 +151,7 @@ plt.title('RandomFlipHorizontal image')
 plt.imshow(image_after_transform[:,:,::-1])
 ```
 
-![](flower_flip.png)
+![](images/flower_flip.png)
 
 ### `ColorJitter`
 随机调整图像的亮度、对比度、饱和度和色调。
@@ -163,7 +163,7 @@ from tensorlayerx.vision.transforms import ColorJitter
 
 transform = ColorJitter(brightness=(1,5), contrast=(1,5), saturation=(1,5), hue=(-0.2,0.2))
 
-image = cv2.imread('flower_demo.png')
+image = cv2.imread('images/flower_demo.png')
 
 image_after_transform = transform(image)
 plt.subplot(1,2,1)
@@ -173,6 +173,6 @@ plt.subplot(1,2,2)
 plt.title('ColorJitter image')
 plt.imshow(image_after_transform[:,:,::-1])
 ```
-![](flower_color.png)
+![](images/flower_color.png)
 
 更多数据处理方法介绍可以参考 [tensorlayerx.vision.transforms](https://tensorlayerx.readthedocs.io/en/latest/modules/vision.html#vision-transforms) API 文档。

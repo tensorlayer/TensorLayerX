@@ -117,7 +117,7 @@ for data in train_dataset:
 ```
 shape of image:  (28, 28, 1)
 ```
-![](dataset_mnist.png)
+![](images/dataset_mnist.png)
 
 ## 二、迭代读取数据集
 ### 2.1 使用 tensorlayerx.dataflow.DataLoader 定义数据读取器

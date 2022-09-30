@@ -9,7 +9,7 @@ os.environ['TL_BACKEND'] = 'paddle'
 # os.environ['TL_BACKEND'] = 'torch'
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
-from tensorlayerx.nn import Linear, LSTM, Embedding, RNN
+from tensorlayerx.nn import Linear, LSTM, Embedding
 from tensorlayerx.dataflow import Dataset
 import numpy as np
 prev_h = np.random.random([1, 200, 64]).astype(np.float32)
@@ -17,11 +17,11 @@ prev_h = tlx.convert_to_tensor(prev_h)
 
 X_train, y_train, X_test, y_test = tlx.files.load_imdb_dataset('data', nb_words=20000, test_split=0.2)
 
-Seq_Len = 200
+seq_Len = 200
 vocab_size = len(X_train) + 1
 
 
-class imdbdataset(Dataset):
+class ImdbDataset(Dataset):
 
     def __init__(self, X, y):
         self.X = X
@@ -30,7 +30,7 @@ class imdbdataset(Dataset):
     def __getitem__(self, index):
 
         data = self.X[index]
-        data = np.concatenate([data[:Seq_Len], [0] * (Seq_Len - len(data))]).astype('int64')  # set
+        data = np.concatenate([data[:seq_Len], [0] * (seq_Len - len(data))]).astype('int64')  # set
         label = self.y[index].astype('int64')
         return data, label
 
@@ -61,11 +61,11 @@ n_epoch = 5
 batch_size = 64
 print_freq = 2
 
-train_dataset = imdbdataset(X=X_train, y=y_train)
+train_dataset = ImdbDataset(X=X_train, y=y_train)
 train_loader = tlx.dataflow.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
 net = ImdbNet()
-train_weights = net.trainable_weights
+print(net)
 optimizer = tlx.optimizers.Adam(1e-3)
 metric = tlx.metrics.Accuracy()
 loss_fn = tlx.losses.softmax_cross_entropy_with_logits

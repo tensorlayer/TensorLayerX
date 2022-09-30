@@ -1,5 +1,5 @@
 # 使用卷积神经网络进行图像分类
-**摘要:** 本示例教程将会演示如何使用飞桨的卷积神经网络来完成图像分类任务。这是一个较为简单的示例，将会使用一个由三个卷积层组成的网络完成cifar10数据集的图像分类任务。
+**摘要:** 本示例教程将会演示如何使用TensorLayerX的卷积神经网络来完成图像分类任务。这是一个较为简单的示例，将会使用一个由三个卷积层组成的网络完成cifar10数据集的图像分类任务。
 
 ## 一、环境配置
 本教程基于TensorLayerX 0.5.6 编写，如果你的环境不是本版本，请先参考官网[安装](https://tensorlayerx.readthedocs.io/en/latest/user/installation.html)。  
@@ -69,7 +69,7 @@ test_dataset = CIFAR10Dataset(data=X_test, label=y_test, transforms=test_transfo
 ```
 
 # 三、组建网络
-接下来使用飞桨定义一个使用了三个二维卷积（ `Conv2D` ) 且每次卷积之后使用 `relu` 激活函数，两个二维池化层（ `MaxPool2D` ），和两个线性变换层组成的分类网络，来把一个`(32, 32, 3)`形状的图片通过卷积神经网络映射为10个输出，这对应着10个分类的类别。
+接下来使用TensorLayerX定义一个使用了三个二维卷积（ `Conv2D` ) 且每次卷积之后使用 `relu` 激活函数，两个二维池化层（ `MaxPool2D` ），和两个线性变换层组成的分类网络，来把一个`(32, 32, 3)`形状的图片通过卷积神经网络映射为10个输出，这对应着10个分类的类别。
 
 ```{.python}
 class CNN(Module):
@@ -125,13 +125,15 @@ net = CNN()
 ```
 
 ## 四、模型训练&预测  
-接下来，用一个循环来进行模型的训练，将会:
+接下来，用Model高级接口来快速开始模型的训练，将会:
 
 * 使用 `tlx.optimizers.Adam` 优化器来进行优化。
 
 * 使用 `tlx.losses.softmax_cross_entropy_with_logits` 来计算损失值。
 
 * 使用 `tensorlayerx.dataflow.DataLoader` 来加载数据并组建batch。
+
+* 使用 `tlx.model.Model` 高级模型接口构建用于训练的模型
 
 ```
 #构建batch数据加载器
