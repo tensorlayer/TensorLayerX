@@ -1,4 +1,4 @@
-定义一个模型 {#getstartmodel}
+定义一个模型 
 ============
 
 TensorLayerX 提供了两种定义模型的方式。
