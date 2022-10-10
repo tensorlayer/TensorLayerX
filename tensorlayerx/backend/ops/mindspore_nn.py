@@ -2498,3 +2498,8 @@ def prelu(input, weight, data_format):
     prelu = P.PReLU()
     v = prelu(input, F.cast(weight, input.dtype))
     return v
+
+def hardsigmoid(input):
+
+    ops = ms.ops.HSigmoid()
+    return ops(input)

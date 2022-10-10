@@ -2916,3 +2916,13 @@ def prelu(input, weight, data_format):
     pos = tf.nn.relu(input)
     neg = -tf.nn.sigmoid(weight) * tf.nn.relu(-input)
     return pos + neg
+
+
+def hardsigmoid(input):
+
+    point_two = tf.convert_to_tensor(1/6, input.dtype.base_dtype)
+    point_five = tf.convert_to_tensor(0.5, input.dtype.base_dtype)
+    x = math_ops.multiply(input, point_two)
+    x = math_ops.add(x, point_five)
+    x = tf.clip_by_value(x, 0., 1.)
+    return x

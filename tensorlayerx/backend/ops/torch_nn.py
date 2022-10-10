@@ -2186,3 +2186,7 @@ class PReLU(object):
 def prelu(input, weight, data_format):
     weight = weight.to(input.device)
     return torch.prelu(input, weight)
+
+def hardsigmoid(input):
+
+    return torch.nn.functional.hardsigmoid(input)
