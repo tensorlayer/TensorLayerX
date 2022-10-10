@@ -7,7 +7,7 @@ from tensorlayerx.nn.core import Module
 
 __all__ = [
     'ELU', 'PRelu', 'PRelu6', 'PTRelu6', 'ReLU', 'ReLU6', 'Softplus', 'LeakyReLU', 'LeakyReLU6', 'LeakyTwiceRelu6',
-    'Ramp', 'Swish', 'HardTanh', 'Mish', 'Tanh', 'Sigmoid', 'Softmax', 'LogSoftmax'
+    'Ramp', 'Swish', 'HardTanh', 'Mish', 'Tanh', 'Sigmoid', 'Softmax', 'LogSoftmax', 'HardSigmoid'
 ]
 
 
@@ -879,25 +879,25 @@ class HardTanh(Module):
 class Mish(Module):
     r"""Applies the Mish function, element-wise. Mish: A Self Regularized Non-Monotonic Neural Activation Function.
 
-        .. math::
+    .. math::
         \text{Mish}(x) = x * \text{Tanh}(\text{Softplus}(x))
 
-        Reference: [Mish: A Self Regularized Non-Monotonic Neural Activation Function .Diganta Misra, 2019]<https://arxiv.org/abs/1908.08681>
+    Reference: [Mish: A Self Regularized Non-Monotonic Neural Activation Function .Diganta Misra, 2019]<https://arxiv.org/abs/1908.08681>
 
-        Parameters
-        ----------
-        x : Tensor
-            input.
+    Parameters
+    ----------
+    x : Tensor
+        input.
 
-        Examples
-        --------
-        >>> net = tlx.nn.Input([10, 200])
-        >>> net = tlx.nn.Mish()(net)
+    Examples
+    --------
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.Mish()(net)
 
-        Returns
-        -------
-        Tensor
-            A ``Tensor`` in the same type as ``x``.
+    Returns
+    -------
+    Tensor
+        A ``Tensor`` in the same type as ``x``.
 
     """
 
@@ -918,26 +918,26 @@ class Mish(Module):
 class LogSoftmax(Module):
     r"""Applies a softmax followed by a logarithm.
 
-        .. math::
+    .. math::
         \text{LogSoftmax}(x_{i}) = \log\left(\frac{\exp(x_i) }{ \sum_j \exp(x_j)} \right)
 
 
-        Parameters
-        ----------
-        x : Tensor
-            input.
-        dim : int
-            A dimension along which LogSoftmax will be computed.
+    Parameters
+    ----------
+    x : Tensor
+        input.
+    dim : int
+        A dimension along which LogSoftmax will be computed.
 
-        Examples
-        --------
-        >>> net = tlx.nn.Input([10, 200])
-        >>> net = tlx.nn.LogSoftmax()(net)
+    Examples
+    --------
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.LogSoftmax()(net)
 
-        Returns
-        -------
-        Tensor
-            A ``Tensor`` in the same type as ``x``.
+    Returns
+    -------
+    Tensor
+        A ``Tensor`` in the same type as ``x``.
 
     """
 
@@ -948,6 +948,47 @@ class LogSoftmax(Module):
 
     def forward(self, x):
         outputs = tlx.ops.logsoftmax(x, self.dim)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
+
+class HardSigmoid(Module):
+    r"""Applies the element-wise function:
+
+    .. math::
+        \text{Hardsigmoid}(x) = \begin{cases}
+            0 & \text{if~} x \le -3, \\
+            1 & \text{if~} x \ge +3, \\
+            x / 6 + 1 / 2 & \text{otherwise}
+        \end{cases}
+
+
+    Parameters
+    ----------
+    x : Tensor
+        input.
+
+    Examples
+    --------
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.HardSigmoid()(net)
+
+    Returns
+    -------
+    Tensor
+        A ``Tensor`` in the same type as ``x``.
+
+    """
+
+    def __init__(self, dim = None):
+        super(HardSigmoid, self).__init__()
+        self.dim = dim
+        self._built = True
+
+    def forward(self, x):
+        outputs = tlx.ops.hardsigmoid(x)
 
         if not self._nodes_fixed and self._build_graph:
             self._add_node(x, outputs)
