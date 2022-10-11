@@ -8,4 +8,5 @@ scipy>=1.2.1
 wrapt>=1.11.1
 h5py>=2.9
 cloudpickle>=0.8.1
+tensorboardX>=2.5
 
