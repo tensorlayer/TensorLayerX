@@ -4035,3 +4035,56 @@ def logsoftmax(input, dim = None):
     """
 
     return tf.nn.log_softmax(input, dim)
+
+
+def topk(input, k, dim=None, largest=True, sorted=True):
+    """
+    Returns the k largest elements of the given input tensor along a given dimension.
+
+    A namedtuple of (values, indices) is returned, where the indices are the indices of the elements in the original input tensor.
+
+    Parameters
+    ----------
+    input : Tensor
+        the input tensor.
+    k : int
+        the k in “top-k”
+    dim : int
+        the dimension to sort along. If dim is not given, the last dimension of the input is chosen.
+    largest : bool
+        controls whether to return largest or smallest elements
+    sorted : bool
+        controls whether to return the elements in sorted order
+
+    Returns
+    -------
+    out : tuple
+        return the values and indices.
+
+    Examples
+    ---------
+    >>> import tensorlayerx as tlx
+    >>> import numpy as np
+    >>> x = tlx.ops.convert_to_tensor(np.random.random((3,4)))
+    >>> x = tlx.ops.topk(x, 2)
+
+    """
+
+
+    dims = len(input.shape) - 1
+    if dim is not None:
+        if dim < 0:
+            dim = len(input.shape) + dim
+        input = tf.experimental.numpy.swapaxes(input, dim, dims)
+    if not largest:
+        input = tf.negative(input)
+
+    values, indices = tf.math.top_k(input, k=k, sorted=sorted)
+
+    if dim is not None:
+        values = tf.experimental.numpy.swapaxes(values, dim, dims)
+
+    if not largest:
+        values = tf.negative(values)
+
+    return (values, indices)
