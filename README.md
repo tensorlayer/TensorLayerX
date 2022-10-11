@@ -66,7 +66,8 @@ More resources can be found [here](https://github.com/tensorlayer)
 
 ### Via docker
 
-Docker is an open source application container engine. In the [TensorLayerX Docker Repository](https://hub.docker.com/repository/docker/tensorlayer/tensorlayerx), a specific version of TensorLayerX has been installed in docker images.
+Docker is an open source application container engine. In the [TensorLayerX Docker Repository](https://hub.docker.com/repository/docker/tensorlayer/tensorlayerx), 
+different versions of TensorLayerX have been installed in docker images.
 
 ```bash
 # pull from docker hub
