@@ -123,6 +123,7 @@ API - Operations
    to_device
    roll
    logsoftmax
+   topk
 
 TensorLayerX Tensor Operations
 --------------------------------
@@ -594,3 +595,7 @@ roll
 logsoftmax
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: logsoftmax
+
+topk
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: topk
