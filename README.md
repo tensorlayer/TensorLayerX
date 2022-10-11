@@ -64,6 +64,16 @@ More resources can be found [here](https://github.com/tensorlayer)
 
 ## Installation
 
+### Via docker
+
+Docker is an open source application container engine. In the [TensorLayerX Docker Repository](https://hub.docker.com/repository/docker/tensorlayer/tensorlayerx), a specific version of TensorLayerX has been installed in docker images.
+
+```bash
+# pull from docker hub
+docker pull tensorlayer/tensorlayerx:tagname
+```
+
+
 ### Via pip
 ```bash
 # install from pypi
