@@ -3,6 +3,8 @@
 
 from collections.abc import Iterable
 from tensorboardX import SummaryWriter
+from tqdm import trange
+
 from tensorlayerx.nn.core.common import _save_weights, _load_weights, \
     _save_standard_weights_dict, _load_standard_weights_dict
 from .utils import WithLoss, WithGradPD, WithGradMS, WithGradTF, TrainOneStepWithPD, \
@@ -274,7 +276,7 @@ class Model:
             writer = SummaryWriter('loss_file/monitor')
             train_batch, test_batch = 0, 0
 
-        for epoch in range(n_epoch):
+        for epoch in trange(n_epoch):
             start_time = time.time()
 
             train_loss, train_acc, n_iter = 0, 0, 0
@@ -355,7 +357,7 @@ class Model:
             writer = SummaryWriter('loss_file/monitor')
             train_batch, test_batch = 0, 0
 
-        for epoch in range(n_epoch):
+        for epoch in trange(n_epoch):
             start_time = time.time()
             train_loss, train_acc, n_iter = 0, 0, 0
             for X_batch, y_batch in train_dataset:
@@ -424,7 +426,7 @@ class Model:
             writer = SummaryWriter('loss_file/monitor')
             train_batch, test_batch = 0, 0
 
-        for epoch in range(n_epoch):
+        for epoch in trange(n_epoch):
             start_time = time.time()
 
             train_loss, train_acc, n_iter = 0, 0, 0
@@ -497,7 +499,7 @@ class Model:
             writer = SummaryWriter('loss_file/monitor')
             train_batch, test_batch = 0, 0
 
-        for epoch in range(n_epoch):
+        for epoch in trange(n_epoch):
             start_time = time.time()
 
             train_loss, train_acc, n_iter = 0, 0, 0
