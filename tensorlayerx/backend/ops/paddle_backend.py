@@ -1924,3 +1924,7 @@ def logsoftmax(input, dim = None):
 def topk(input, k, dim=None, largest=True, sorted=True):
 
     return paddle.topk(input, k, axis=dim, largest=largest, sorted=sorted)
+
+def numel(input):
+
+    return paddle.numel(input)

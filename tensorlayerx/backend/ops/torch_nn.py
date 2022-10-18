@@ -2190,3 +2190,7 @@ def prelu(input, weight, data_format):
 def hardsigmoid(input):
 
     return torch.nn.functional.hardsigmoid(input)
+
+def hardswish(input):
+
+    return torch.nn.functional.hardswish(input)

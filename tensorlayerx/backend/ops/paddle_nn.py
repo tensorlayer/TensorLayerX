@@ -2076,3 +2076,7 @@ def prelu(input, weight, data_format):
 def hardsigmoid(input):
 
     return F.hardsigmoid(input)
+
+def hardswish(input):
+
+    return F.hardswish(input)

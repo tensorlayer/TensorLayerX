@@ -7,7 +7,7 @@ from tensorlayerx.nn.core import Module
 
 __all__ = [
     'ELU', 'PRelu', 'PRelu6', 'PTRelu6', 'ReLU', 'ReLU6', 'Softplus', 'LeakyReLU', 'LeakyReLU6', 'LeakyTwiceRelu6',
-    'Ramp', 'Swish', 'HardTanh', 'Mish', 'Tanh', 'Sigmoid', 'Softmax', 'LogSoftmax', 'HardSigmoid'
+    'Ramp', 'Swish', 'HardTanh', 'Mish', 'Tanh', 'Sigmoid', 'Softmax', 'LogSoftmax', 'HardSigmoid', 'Hardswish'
 ]
 
 
@@ -982,13 +982,54 @@ class HardSigmoid(Module):
 
     """
 
-    def __init__(self, dim = None):
+    def __init__(self):
         super(HardSigmoid, self).__init__()
-        self.dim = dim
         self._built = True
 
     def forward(self, x):
         outputs = tlx.ops.hardsigmoid(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, outputs)
+            self._nodes_fixed = True
+        return outputs
+
+class Hardswish(Module):
+    r"""Applies the hardswish function, element-wise, as described in the paper:
+
+    `Searching for MobileNetV3`_.
+
+    .. math::
+        \text{Hardswish}(x) = \begin{cases}
+            0 & \text{if~} x \le -3, \\
+            x & \text{if~} x \ge +3, \\
+            x \cdot (x + 3) /6 & \text{otherwise}
+        \end{cases}
+
+
+    Parameters
+    ----------
+    x : Tensor
+        input.
+
+    Examples
+    --------
+    >>> net = tlx.nn.Input([10, 200])
+    >>> net = tlx.nn.Hardswish()(net)
+
+    Returns
+    -------
+    Tensor
+        A ``Tensor`` in the same type as ``x``.
+
+    """
+
+    def __init__(self):
+        super(Hardswish, self).__init__()
+        self._built = True
+
+    def forward(self, x):
+        outputs = tlx.ops.hardswish(x)
 
         if not self._nodes_fixed and self._build_graph:
             self._add_node(x, outputs)

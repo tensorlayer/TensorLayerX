@@ -1745,3 +1745,7 @@ def logsoftmax(input, dim=None):
 def topk(input, k, dim=-1, largest=True, sorted=True):
 
     return torch.topk(input, k, dim, largest, sorted)
+
+def numel(input):
+
+    return torch.numel(input)

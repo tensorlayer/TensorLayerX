@@ -2501,5 +2501,10 @@ def prelu(input, weight, data_format):
 
 def hardsigmoid(input):
 
-    ops = ms.ops.HSigmoid()
-    return ops(input)
+    op = ms.ops.HSigmoid()
+    return op(input)
+
+def hardswish(input):
+
+    op = ms.ops.HSwish()
+    return op(input)

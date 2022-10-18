@@ -1909,3 +1909,7 @@ def topk(input, k, dim=None, largest=True, sorted=True):
         values = -values
 
     return (values, indices)
+
+def numel(input):
+
+    return ms.ops.size(input)

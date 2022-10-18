@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from . import transforms
-from . import functional
-from .utils import *
+from tensorlayerx.vision import transforms
+from tensorlayerx.vision import ops
+from tensorlayerx.vision.transforms.utils import *
