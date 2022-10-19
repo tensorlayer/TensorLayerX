@@ -1197,7 +1197,7 @@ def split(value, num_or_size_splits, axis=0):
     -------
         Tensor objects resulting from splitting value.
     """
-    pd.split(value, num_or_size_splits, axis)
+    return pd.split(value, num_or_size_splits, axis)
 
 
 class Floor(object):
@@ -1404,7 +1404,8 @@ def divide(x, y):
 
 
 def identity(x):
-    raise NotImplementedError
+
+    return x
 
 
 class BatchToSpace(object):
