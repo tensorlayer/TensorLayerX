@@ -25,6 +25,7 @@ class Adadelta(Optimizer):
         self.init_optim = False
         self.weight_decay = weight_decay
         self.grad_clip = grad_clip
+        self._grad_clip = grad_clip
 
     def gradient(self, loss, weights):
         if loss is None:
@@ -70,6 +71,7 @@ class Adagrad(Optimizer):
         self.init_optim = False
         self.weight_decay = weight_decay
         self.grad_clip = grad_clip
+        self._grad_clip = grad_clip
 
     def gradient(self, loss, weights):
         if loss is None:
@@ -124,6 +126,7 @@ class Adam(Optimizer):
         self.grad_succeed = True
         self.weight_decay = weight_decay
         self.grad_clip = grad_clip
+        self._grad_clip = grad_clip
 
     def gradient(self, loss, weights):
         if loss is None:
@@ -150,6 +153,7 @@ class Adam(Optimizer):
         self.adam._apply_optimize(loss=None, startup_program=None, params_grads=grads_and_vars)
         self.adam.clear_grad()
 
+    
 
 class Adamax(Optimizer):
 
@@ -177,6 +181,7 @@ class Adamax(Optimizer):
         self.init_optim = False
         self.weight_decay = weight_decay
         self.grad_clip = grad_clip
+        self._grad_clip = grad_clip
 
     def gradient(self, loss, weights):
         if loss is None:
@@ -248,6 +253,7 @@ class RMSprop(Optimizer):
         self.init_optim = False
         self.weight_decay = weight_decay
         self.grad_clip = grad_clip
+        self._grad_clip = grad_clip
 
     def gradient(self, loss, weights):
         if loss is None:
@@ -286,6 +292,7 @@ class SGD(Optimizer):
         self.init_optim = False
         self.weight_decay = weight_decay
         self.grad_clip = grad_clip
+        self._grad_clip = grad_clip
 
     def gradient(self, loss, weights):
         if loss is None:
@@ -328,6 +335,7 @@ class Momentum(Optimizer):
         self.init_optim = False
         self.weight_decay = weight_decay
         self.grad_clip = grad_clip
+        self._grad_clip = grad_clip
 
     def gradient(self, loss, weights):
         if loss is None:
@@ -383,6 +391,7 @@ class Lamb(Optimizer):
         self.grad_succeed = True
         self.init_optim = False
         self.grad_clip = grad_clip
+        self._grad_clip = grad_clip
 
     def gradient(self, loss, weights):
         if loss is None:
