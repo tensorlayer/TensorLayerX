@@ -1890,3 +1890,26 @@ def logsoftmax(input, dim = None):
         dim = -1
     log_softmax = P.LogSoftmax(dim)
     return log_softmax(input)
+
+def topk(input, k, dim=None, largest=True, sorted=True):
+    dims = len(input.shape) - 1
+    if dim is not None:
+        if dim < 0:
+            dim = len(input.shape) + dim
+        input = ms.numpy.swapaxes(input, dim, dims)
+    if not largest:
+        input = -input
+
+    values, indices = ms.ops.top_k(input, k=k, sorted=sorted)
+
+    if dim is not None:
+        values = ms.numpy.swapaxes(values, dim, dims)
+
+    if not largest:
+        values = -values
+
+    return (values, indices)
+
+def numel(input):
+
+    return ms.ops.size(input)

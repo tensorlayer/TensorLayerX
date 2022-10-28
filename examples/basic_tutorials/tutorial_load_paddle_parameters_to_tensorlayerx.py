@@ -7,14 +7,10 @@ import os
 os.environ['TL_BACKEND'] = 'paddle'
 # os.environ['TL_BACKEND'] = 'tensorflow'
 import tensorlayerx.nn as nn
-from tensorlayerx import logging
 from tensorlayerx.files import assign_weights
 from paddle.utils.download import get_weights_path_from_url
 import numpy as np
 import paddle
-from paddle import to_tensor
-from PIL import Image
-import copy
 import tensorlayerx as tlx
 from examples.model_zoo.imagenet_classes import class_names
 
@@ -208,7 +204,7 @@ if __name__ == "__main__":
         print(w.name, w.shape)
     # get the whole model
     img = tlx.vision.load_image('data/tiger.jpeg')
-    img = tlx.vision.transforms.Resize((224, 224))(img).astype(np.float32) / 255
+    img = tlx.vision.transforms.transforms.Resize((224, 224))(img).astype(np.float32) / 255
     img = paddle.unsqueeze(paddle.Tensor(img), 0)
     img = tlx.ops.nhwc_to_nchw(img)
     output = model(img)

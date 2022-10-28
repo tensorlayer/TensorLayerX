@@ -2072,3 +2072,11 @@ def prelu(input, weight, data_format):
 
     data_format, _ = preprocess_2d_format(data_format, None)
     return F.prelu(input, weight, data_format=data_format)
+
+def hardsigmoid(input):
+
+    return F.hardsigmoid(input)
+
+def hardswish(input):
+
+    return F.hardswish(input)
