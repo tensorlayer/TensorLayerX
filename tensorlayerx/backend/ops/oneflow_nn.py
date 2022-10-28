@@ -1914,4 +1914,274 @@ class rnnbase(Module):
         for fw in self._flat_weights:
             if (not isinstance(fw.data, flow.Tensor) or not (fw.data.dtype == dtype) or not fw.data.is_cuda):
                 return
-            
+
+    def _apply(self, fn):
+        ret = super(rnnbase, self)._apply(fn)
+        self._flat_weights = [
+            (lambda wn: getattr(self, wn) if hasattr(self, wn) else None)(wn) for wn in self._flat_weights_names
+        ]
+        self.flatten_parameters()
+        return ret
+
+    def check_input(self, input_shape):
+        if len(input_shape) != 3:
+            raise ValueError("input must have 3 dimensions. But got {}.".format(len(input_shape)))
+        if self.input_size != input_shape[-1]:
+            raise ValueError(
+                "The last dimension of input should be equal to input_size {}.But got {}".format(
+                    self.input_size, input_shape[-1]
+                )
+            )
+
+    def check_hidden(self, h, batch_size):
+        expected_hidden_size = (self.num_layers * self.num_directions, batch_size, self.hidden_size)
+        if h.shape != expected_hidden_size:
+            raise ValueError('Expected hidden size {}, got {}.'.format(expected_hidden_size, h.shape))
+
+    def forward(self, input, states):
+        batch_size = input.shape[0] if self.batch_first else input.shape[1]
+        input_shape = input.shape
+        self.check_input(input_shape)
+        if self.mode == 'LSTM':
+            if states is None:
+                h = flow.zeros(
+                    self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
+                    device=input.device
+                )
+                c = flow.zeros(
+                    self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
+                    device=input.device
+                )
+                states = (h, c)
+            else:
+                h, c = states
+                self.check_hidden(h, batch_size)
+                self.check_hidden(c, batch_size)
+            result = _C.lstm(
+                input, states, self._flat_weights, self.bias, self.num_layers, self.dropout, self.training,
+                self.bidirectional, self.batch_first
+            )
+            return result[0], result[1:]
+        else:
+            if states is None:
+                h = flow.zeros(
+                    self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
+                    device=input.device
+                )
+                states = h
+            else:
+                self.check_hidden(states, batch_size)
+            impl = self.rnn_impls[self.mode]
+            result = impl(
+                input, states, self._flat_weights, self.bias, self.num_layers, self.dropout, self.training,
+                self.bidirectional, self.batch_first
+            )
+            return result[0], result[1]
+
+class layernorm(object):
+
+    def __init__(self, normalized_shape, gamma, beta, eps, input_shape):
+        self.normalized_shape = normalized_shape
+        self.gamma = gamma
+        self.beta = beta
+        self.eps = eps
+        self.input_shape = input_shape
+        self.axis = list(range((len(input_shape) - len(normalized_shape)), len(input_shape)))
+        self.ndims = len(input_shape)
+        self.broadcast_shape = [1] * self.ndims
+        for dim in self.axis:
+            self.broadcast_shape[dim] = input_shape[dim]
+
+    def __call__(self, input):
+        return F.layer_norm(input, self.normalized_shape, self.gamma, self.beta, self.eps)
+
+class multiheadattention(Module):
+    def __init__(
+        self,
+        embed_dim,
+        num_heads,
+        dropout,
+        batch_first,
+        need_weights,
+        q_weight,
+        k_weight,
+        v_weight,
+        out_weight,
+        q_bias,
+        k_bias,
+        v_bias,
+        out_bias,
+        train,
+    ):
+        super(multiheadattention, self).__init__()
+        self.embed_dim_check = embed_dim
+        self.num_heads = num_heads
+        self.dropout = dropout
+        self.batch_first = batch_first
+        self.need_weights = need_weights
+        self.q_weight = q_weight
+        self.k_weight = k_weight
+        self.v_weight = v_weight
+        self.out_weight = out_weight
+        self.q_bias = q_bias
+        self.k_bias = k_bias
+        self.v_bias = v_bias
+        self.out_bias = out_bias
+        self.train = train
+        self.head_dim = embed_dim // num_heads
+        assert self.head_dim * num_heads == self.embed_dim_check, 'embed_dim must be divisible by num_heads'
+        self.register_parameter('in_proj_weight', None)
+
+        if q_bias is not None:
+            self.in_proj_bias = flow.cat((self.q_bias, self.k_bias, self.v_bias))
+        else:
+            self.register_parameter('in_proj_bias', None)
+
+        self.bias_k = self.bias_v = None
+        self.add_zero_attn = False
+
+    def forward(self, q, k, v, attn_mask, key_padding_mask):
+        k = q if k is None else k
+        v = q if v is None else v
+        if self.batch_first:
+            q, k, v = [x.transpose(1, 0) for x in (q, k, v)]
+        attn_output, attn_output_weights = F.multi_head_attention_forward(
+            q, k, v, self.embed_dim_check, self.num_heads, self.in_proj_weight, self.in_proj_bias, self.bias_k,
+            self.bias_v, self.add_zero_attn, self.dropout, self.out_weight, self.out_bias, training=self.training,
+            key_padding_mask=key_padding_mask, need_weights=self.need_weights, attn_mask=attn_mask,
+            use_separate_proj_weight=True, q_proj_weight=self.q_weight, k_proj_weight=self.k_weight,
+            v_proj_weight=self.v_weight
+        )
+        if self.batch_first:
+            return attn_output.transpose(1, 0), attn_output_weights
+        else:
+            return attn_output, attn_output_weights
+
+class BinaryDense(object):
+
+    def __init__(self, weights, bias):
+        self.weights = weights
+        self.bias = bias
+
+    def __call__(self, inputs):
+        raise NotImplementedError
+
+
+class DorefaDense(object):
+
+    def __init__(self, weights, bias, bitW, bitA):
+        self.weights = weights
+        self.bias = bias
+        self.bitW = bitW
+        self.bitA = bitA
+
+    def __call__(self, inputs):
+        raise NotImplementedError
+
+
+class TernaryDense(object):
+
+    def __init__(self, weights, bias):
+        self.weights = weights
+        self.bias = bias
+
+    def __call__(self, inputs):
+        raise NotImplementedError
+
+
+class QuanDense(object):
+
+    def __init__(self, weights, bias, bitW, bitA):
+        self.weights = weights
+        self.bias = bias
+        self.bitW = bitW
+        self.bitA = bitA
+
+    def __call__(self, inputs):
+        raise NotImplementedError
+
+
+class QuanDenseBn(object):
+
+    def __init__(
+        self, weights, scale_para, offset_para, moving_mean, moving_variance, decay, bitW, bitA, epsilon, is_train
+    ):
+        self.weights = weights
+        self.scale_para = scale_para
+        self.offset_para = offset_para
+        self.moving_mean = moving_mean
+        self.moving_variance = moving_variance
+        self.decay = decay
+        self.bitW = bitW
+        self.bitA = bitA
+        self.epsilon = epsilon
+        self.is_train = is_train
+
+    def __call__(self, inputs):
+        raise NotImplementedError
+
+
+class TernaryConv(object):
+
+    def __init__(self, weights, strides, padding, data_format, dilations):
+        self.weights = weights
+        self.strides = strides
+        self.dilations = dilations
+        self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+
+    def __call__(self, inputs):
+        raise NotImplementedError
+
+
+class QuanConv(object):
+
+    def __init__(self, weights, strides, padding, data_format, dilations, bitW, bitA):
+        self.weights = weights
+        self.strides = strides
+        self.dilations = dilations
+        self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        self.bitW = bitW
+        self.bitA = bitA
+
+    def __call__(self, inputs):
+        raise NotImplementedError
+
+
+class QuanConvBn(object):
+
+    def __init__(
+        self, weights, scale_para, offset_para, moving_mean, moving_variance, strides, padding, data_format, dilations,
+        bitW, bitA, decay, epsilon, is_train
+    ):
+        self.weights = weights
+        self.strides = strides
+        self.dilations = dilations
+        self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        self.bitW = bitW
+        self.bitA = bitA
+        self.scale_para = scale_para
+        self.offset_para = offset_para
+        self.moving_mean = moving_mean
+        self.moving_variance = moving_variance
+        self.decay = decay
+        self.epsilon = epsilon
+        self.is_train = is_train
+
+    def __call__(self, inputs):
+        raise NotImplementedError
+
+
+class PReLU(object):
+
+    def __init__(self, data_format):
+
+        self.data_format = data_format
+
+    def __call__(self, input, weight):
+        # weight = weight.to(input.device)
+        return F.prelu(input, weight)
+
+
+def prelu(input, weight, data_format):
+    weight = weight.to(input.device)
+    return F.prelu(input, weight)
