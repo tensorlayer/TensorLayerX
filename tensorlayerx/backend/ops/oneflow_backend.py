@@ -1636,9 +1636,9 @@ def round(x):
 def rsqrt(x):
     return flow.rsqrt(x)
 
-def segment_max(data, segment_ids, num_segments=None):
+def segment_max(x, segment_ids):
     segment_ids = flow.Tensor(segment_ids, dtype=flow.int64)
-    num_segments = len(torch.unique(segment_ids))
+    num_segments = len(np.unique(segment_ids))
     return unsorted_segment_max(x, segment_ids, num_segments)
 
 
