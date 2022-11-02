@@ -358,6 +358,13 @@ class LayerNorm(Module):
         self.epsilon = epsilon
         self.gamma_init = self.str_to_init(gamma_init)
         self.beta_init = self.str_to_init(beta_init)
+        self.gamma, self.beta = None, None
+        if self.gamma_init is not None:
+            self.gamma = self._get_weights(
+                var_name='gamma', shape=self.normalized_shape, init=self.gamma_init, order=True
+            )
+        if self.beta_init is not None:
+            self.beta = self._get_weights(var_name='beta', shape=self.normalized_shape, init=self.beta_init, order=True)
         self.act = act
         logging.info(
             "LayerNorm %s:  epsilon: %f act: %s " %
@@ -374,14 +381,14 @@ class LayerNorm(Module):
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
     def build(self, input_shape):
-
-        self.gamma, self.beta = None, None
-        if self.gamma_init is not None:
-            self.gamma = self._get_weights(
-                var_name='gamma', shape=self.normalized_shape, init=self.gamma_init, order=True
-            )
-        if self.beta_init is not None:
-            self.beta = self._get_weights(var_name='beta', shape=self.normalized_shape, init=self.beta_init, order=True)
+        #
+        # self.gamma, self.beta = None, None
+        # if self.gamma_init is not None:
+        #     self.gamma = self._get_weights(
+        #         var_name='gamma', shape=self.normalized_shape, init=self.gamma_init, order=True
+        #     )
+        # if self.beta_init is not None:
+        #     self.beta = self._get_weights(var_name='beta', shape=self.normalized_shape, init=self.beta_init, order=True)
         self.layernorm = tlx.ops.layernorm(self.normalized_shape, self.gamma, self.beta, self.epsilon, input_shape)
         self.act_init_flag = False
         if self.act:

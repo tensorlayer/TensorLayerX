@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
+import torch.nn.functional
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import math_ops, array_ops
 from tensorflow.python.training import moving_averages
@@ -2926,3 +2927,16 @@ def hardsigmoid(input):
     x = math_ops.add(x, point_five)
     x = tf.clip_by_value(x, 0., 1.)
     return x
+
+def hardswish(input):
+
+    point_two = tf.convert_to_tensor(1/6, input.dtype.base_dtype)
+    point_five = tf.convert_to_tensor(0.5, input.dtype.base_dtype)
+    x_sqrt = math_ops.multiply(input, input)
+    x_1 = math_ops.multiply(x_sqrt, point_two)
+    x_2 = math_ops.multiply(input, point_five)
+    x = math_ops.add(x_1, x_2)
+    x = tf.clip_by_value(x, 0., input)
+    return x
+
+

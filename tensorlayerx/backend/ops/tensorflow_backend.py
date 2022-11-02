@@ -4088,3 +4088,16 @@ def topk(input, k, dim=None, largest=True, sorted=True):
         values = tf.negative(values)
 
     return (values, indices)
+
+
+def numel(input):
+    '''Returns the total number of elements in the input tensor.
+
+    Parameters
+    ----------
+    input : tensor
+        the input tensor.
+
+    '''
+
+    return tf.size(input)

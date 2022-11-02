@@ -124,6 +124,7 @@ API - Operations
    roll
    logsoftmax
    topk
+   numel
 
 TensorLayerX Tensor Operations
 --------------------------------
@@ -599,3 +600,7 @@ logsoftmax
 topk
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: topk
+
+numel
+^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: numel

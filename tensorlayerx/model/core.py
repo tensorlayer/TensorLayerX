@@ -15,6 +15,8 @@ from tensorlayerx.nn import Module
 import numpy as np
 import time
 
+from rich.progress import Progress, TextColumn, BarColumn, TimeElapsedColumn, TimeRemainingColumn
+
 if tlx.BACKEND == 'tensorflow':
     import tensorflow as tf
 if tlx.BACKEND == 'mindspore':
@@ -272,74 +274,75 @@ class Model:
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
         print_freq, test_dataset, loss_monitor
     ):
-        if loss_monitor:
-            writer = SummaryWriter('loss_file/monitor')
-            train_batch, test_batch = 0, 0
+        with Progress(TextColumn("[progress.description]{task.description}"),
+                      BarColumn(),
+                      TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                      TimeRemainingColumn(),
+                      TimeElapsedColumn()) as progress:
 
-        for epoch in trange(n_epoch):
-            start_time = time.time()
+            n_batch = len(train_dataset)
+            epoch_tqdm = progress.add_task(description="[red]Epoch progress 0/{}".format(n_epoch), total=n_epoch)
+            batch_tqdm = progress.add_task(description="[green]Batch progress 0/{}".format(n_batch), total=n_batch)
 
-            train_loss, train_acc, n_iter = 0, 0, 0
-            for X_batch, y_batch in train_dataset:
-                network.set_train()
+            for epoch in range(n_epoch):
+                start_time = time.time()
 
-                with tf.GradientTape() as tape:
-                    # compute outputs
-                    _logits = network(X_batch)
-                    # compute loss and update model
-                    _loss_ce = loss_fn(_logits, y_batch)
+                train_loss, train_acc, n_iter = 0, 0, 0
+                for batch, (X_batch, y_batch) in enumerate(train_dataset):
+                    network.set_train()
 
-                grad = tape.gradient(_loss_ce, train_weights)
-                optimizer.apply_gradients(zip(grad, train_weights))
+                    with tf.GradientTape() as tape:
+                        # compute outputs
+                        _logits = network(X_batch)
+                        # compute loss and update model
+                        _loss_ce = loss_fn(_logits, y_batch)
 
-                train_loss += _loss_ce
-                if metrics:
-                    metrics.update(_logits, y_batch)
-                    train_acc += metrics.result()
-                    metrics.reset()
-                else:
-                    train_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
-                n_iter += 1
+                    grad = tape.gradient(_loss_ce, train_weights)
+                    optimizer.apply_gradients(zip(grad, train_weights))
 
-                if loss_monitor:
-                    train_batch += 1
-                    writer.add_scalar('train_loss', tlx.ops.convert_to_numpy(train_loss / n_iter), train_batch)
-                    writer.add_scalar('train_acc', train_acc / n_iter, train_batch)
+                    train_loss += _loss_ce
+                    if metrics:
+                        metrics.update(_logits, y_batch)
+                        train_acc += metrics.result()
+                        metrics.reset()
+                    else:
+                        train_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
+                    n_iter += 1
 
-                if print_train_batch:
+                    if print_train_batch:
+                        print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                        print("   train loss: {}".format(train_loss / n_iter))
+                        print("   train acc:  {}".format(train_acc / n_iter))
+                    progress.advance(batch_tqdm, advance=1)
+                    progress.update(batch_tqdm, description="[green]Batch progress {}/{}".format(batch + 1, n_batch))
+
+                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+
                     print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
                     print("   train loss: {}".format(train_loss / n_iter))
                     print("   train acc:  {}".format(train_acc / n_iter))
 
+                if test_dataset:
+                    # use training and evaluation sets to evaluate the model every print_freq epoch
+                    if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+                        network.set_eval()
+                        val_loss, val_acc, n_iter = 0, 0, 0
+                        for X_batch, y_batch in test_dataset:
+                            _logits = network(X_batch)  # is_train=False, disable dropout
+                            val_loss += loss_fn(_logits, y_batch)
+                            if metrics:
+                                metrics.update(_logits, y_batch)
+                                val_acc += metrics.result()
+                                metrics.reset()
+                            else:
+                                val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
+                            n_iter += 1
+                        print("   val loss: {}".format(val_loss / n_iter))
+                        print("   val acc:  {}".format(val_acc / n_iter))
+                progress.update(epoch_tqdm, description="[red]Epoch progress {}/{}".format(epoch + 1, n_epoch))
+                progress.advance(epoch_tqdm, advance=1)
+                progress.reset(batch_tqdm)
 
-            if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
-                print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
-                print("   train loss: {}".format(train_loss / n_iter))
-                print("   train acc:  {}".format(train_acc / n_iter))
-
-            if test_dataset:
-                # use training and evaluation sets to evaluate the model every print_freq epoch
-                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
-                    network.set_eval()
-                    val_loss, val_acc, n_iter = 0, 0, 0
-                    for X_batch, y_batch in test_dataset:
-                        _logits = network(X_batch)  # is_train=False, disable dropout
-                        val_loss += loss_fn(_logits, y_batch)
-                        if metrics:
-                            metrics.update(_logits, y_batch)
-                            val_acc += metrics.result()
-                            metrics.reset()
-                        else:
-                            val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
-                        n_iter += 1
-
-                        if loss_monitor:
-                            test_batch += 1
-                            writer.add_scalar('val_loss', tlx.ops.convert_to_numpy(val_loss / n_iter), test_batch)
-                            writer.add_scalar('val_acc', val_acc / n_iter, test_batch)
-
-                    print("   val loss: {}".format(val_loss / n_iter))
-                    print("   val acc:  {}".format(val_acc / n_iter))
 
         if loss_monitor:
             writer.export_scalars_to_json("./all_scalars.json")
@@ -353,66 +356,69 @@ class Model:
         train_network = GradWrap(net_with_criterion, network.trainable_weights)
         train_network.set_train()
 
-        if loss_monitor:
-            writer = SummaryWriter('loss_file/monitor')
-            train_batch, test_batch = 0, 0
+        with Progress(TextColumn("[progress.description]{task.description}"),
+                      BarColumn(),
+                      TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                      TimeRemainingColumn(),
+                      TimeElapsedColumn()) as progress:
 
-        for epoch in trange(n_epoch):
-            start_time = time.time()
-            train_loss, train_acc, n_iter = 0, 0, 0
-            for X_batch, y_batch in train_dataset:
-                output = network(X_batch)
-                loss_output = loss_fn(output, y_batch)
-                grads = train_network(X_batch, y_batch)
-                success = optimizer.apply_gradients(zip(grads, train_weights))
-                loss = loss_output.asnumpy()
-                train_loss += loss
-                if metrics:
-                    metrics.update(output, y_batch)
-                    train_acc += metrics.result()
-                    metrics.reset()
-                else:
-                    train_acc += np.mean((P.Equal()(P.Argmax(axis=1)(output), y_batch).asnumpy()))
-                n_iter += 1
+            n_batch = len(train_dataset)
+            epoch_tqdm = progress.add_task(description="[red]Epoch progress 0/{}".format(n_epoch), total=n_epoch)
+            batch_tqdm = progress.add_task(description="[green]Batch progress 0/{}".format(n_batch), total=n_batch)
 
-                if loss_monitor:
-                    train_batch += 1
-                    writer.add_scalar('train_loss', train_loss / n_iter, train_batch)
-                    writer.add_scalar('train_acc', train_acc / n_iter, train_batch)
+            for epoch in range(n_epoch):
+                start_time = time.time()
+                train_loss, train_acc, n_iter = 0, 0, 0
+                for batch, (X_batch, y_batch) in enumerate(train_dataset):
+                    output = network(X_batch)
+                    loss_output = loss_fn(output, y_batch)
+                    grads = train_network(X_batch, y_batch)
+                    success = optimizer.apply_gradients(zip(grads, train_weights))
+                    loss = loss_output.asnumpy()
+                    train_loss += loss
+                    if metrics:
+                        metrics.update(output, y_batch)
+                        train_acc += metrics.result()
+                        metrics.reset()
+                    else:
+                        train_acc += np.mean((P.Equal()(P.Argmax(axis=1)(output), y_batch).asnumpy()))
+                    n_iter += 1
 
-                if print_train_batch:
+                    if print_train_batch:
+                        print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                        print("   train loss: {}".format(train_loss / n_iter))
+                        print("   train acc:  {}".format(train_acc / n_iter))
+                    progress.advance(batch_tqdm, advance=1)
+                    progress.update(batch_tqdm, description="[green]Batch progress {}/{}".format(batch + 1, n_batch))
+
+                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+
                     print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
                     print("   train loss: {}".format(train_loss / n_iter))
                     print("   train acc:  {}".format(train_acc / n_iter))
 
-            if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
-                print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
-                print("   train loss: {}".format(train_loss / n_iter))
-                print("   train acc:  {}".format(train_acc / n_iter))
+                if test_dataset:
+                    # use training and evaluation sets to evaluate the model every print_freq epoch
+                    if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+                        network.set_eval()
+                        val_loss, val_acc, n_iter = 0, 0, 0
+                        for X_batch, y_batch in test_dataset:
+                            _logits = network(X_batch)
+                            val_loss += loss_fn(_logits, y_batch)
+                            if metrics:
+                                metrics.update(_logits, y_batch)
+                                val_acc += metrics.result()
+                                metrics.reset()
+                            else:
+                                val_acc += np.mean((P.Equal()(P.Argmax(axis=1)(_logits), y_batch).asnumpy()))
+                            n_iter += 1
+                        print("   val loss: {}".format(val_loss / n_iter))
+                        print("   val acc:  {}".format(val_acc / n_iter))
 
-            if test_dataset:
-                # use training and evaluation sets to evaluate the model every print_freq epoch
-                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
-                    network.set_eval()
-                    val_loss, val_acc, n_iter = 0, 0, 0
-                    for X_batch, y_batch in test_dataset:
-                        _logits = network(X_batch)
-                        val_loss += loss_fn(_logits, y_batch)
-                        if metrics:
-                            metrics.update(_logits, y_batch)
-                            val_acc += metrics.result()
-                            metrics.reset()
-                        else:
-                            val_acc += np.mean((P.Equal()(P.Argmax(axis=1)(_logits), y_batch).asnumpy()))
-                        n_iter += 1
+                progress.update(epoch_tqdm, description="[red]Epoch progress {}/{}".format(epoch + 1, n_epoch))
+                progress.advance(epoch_tqdm, advance=1)
+                progress.reset(batch_tqdm)
 
-                        if loss_monitor:
-                            test_batch += 1
-                            writer.add_scalar('val_loss', val_loss / n_iter, test_batch)
-                            writer.add_scalar('val_acc', val_acc / n_iter, test_batch)
-
-                    print("   val loss: {}".format(val_loss / n_iter))
-                    print("   val acc:  {}".format(val_acc / n_iter))
 
         if loss_monitor:
             writer.export_scalars_to_json("./all_scalars.json")
@@ -422,70 +428,72 @@ class Model:
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
         print_freq, test_dataset, loss_monitor
     ):
-        if loss_monitor:
-            writer = SummaryWriter('loss_file/monitor')
-            train_batch, test_batch = 0, 0
+        with Progress(TextColumn("[progress.description]{task.description}"),
+                      BarColumn(),
+                      TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                      TimeRemainingColumn(),
+                      TimeElapsedColumn()) as progress:
 
-        for epoch in trange(n_epoch):
-            start_time = time.time()
+            n_batch = len(train_dataset)
+            epoch_tqdm = progress.add_task(description="[red]Epoch progress 0/{}".format(n_epoch), total=n_epoch)
+            batch_tqdm = progress.add_task(description="[green]Batch progress 0/{}".format(n_batch), total=n_batch)
 
-            train_loss, train_acc, n_iter = 0, 0, 0
-            for X_batch, y_batch in train_dataset:
-                network.set_train()
+            for epoch in range(n_epoch):
+                start_time = time.time()
 
-                output = network(X_batch)
-                loss = loss_fn(output, y_batch)
-                loss_ce = loss.numpy()
-                grads = optimizer.gradient(loss, train_weights)
-                optimizer.apply_gradients(zip(grads, train_weights))
+                train_loss, train_acc, n_iter = 0, 0, 0
+                for batch, (X_batch, y_batch) in enumerate(train_dataset):
+                    network.set_train()
 
-                train_loss += loss_ce
-                if metrics:
-                    metrics.update(output, y_batch)
-                    train_acc += metrics.result()
-                    metrics.reset()
-                else:
-                    train_acc += pd.metric.accuracy(output, y_batch)
-                n_iter += 1
+                    output = network(X_batch)
+                    loss = loss_fn(output, y_batch)
+                    loss_ce = loss.numpy()
+                    grads = optimizer.gradient(loss, train_weights)
+                    optimizer.apply_gradients(zip(grads, train_weights))
 
-                if loss_monitor:
-                    train_batch += 1
-                    writer.add_scalar('train_loss', train_loss / n_iter, train_batch)
-                    writer.add_scalar('train_acc', train_acc / n_iter, train_batch)
+                    train_loss += loss_ce
+                    if metrics:
+                        metrics.update(output, y_batch)
+                        train_acc += metrics.result()
+                        metrics.reset()
+                    else:
+                        train_acc += pd.metric.accuracy(output, y_batch)
+                    n_iter += 1
 
-                if print_train_batch:
+                    if print_train_batch:
+                        print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                        print("   train loss: {}".format(train_loss / n_iter))
+                        print("   train acc:  {}".format(train_acc / n_iter))
+                    progress.advance(batch_tqdm, advance=1)
+                    progress.update(batch_tqdm, description="[green]Batch progress {}/{}".format(batch + 1, n_batch))
+
+                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+
                     print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
                     print("   train loss: {}".format(train_loss / n_iter))
                     print("   train acc:  {}".format(train_acc / n_iter))
 
-            if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
-                print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
-                print("   train loss: {}".format(train_loss / n_iter))
-                print("   train acc:  {}".format(train_acc / n_iter))
+                if test_dataset:
+                    # use training and evaluation sets to evaluate the model every print_freq epoch
+                    if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+                        network.set_eval()
+                        val_loss, val_acc, n_iter = 0, 0, 0
+                        for X_batch, y_batch in test_dataset:
+                            _logits = network(X_batch)  # is_train=False, disable dropout
+                            val_loss += loss_fn(_logits, y_batch)
+                            if metrics:
+                                metrics.update(_logits, y_batch)
+                                val_acc += metrics.result()
+                                metrics.reset()
+                            else:
+                                val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
+                            n_iter += 1
+                        print("   val loss: {}".format(val_loss / n_iter))
+                        print("   val acc:  {}".format(val_acc / n_iter))
+                progress.update(epoch_tqdm, description="[red]Epoch progress {}/{}".format(epoch + 1, n_epoch))
+                progress.advance(epoch_tqdm, advance=1)
+                progress.reset(batch_tqdm)
 
-            if test_dataset:
-                # use training and evaluation sets to evaluate the model every print_freq epoch
-                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
-                    network.set_eval()
-                    val_loss, val_acc, n_iter = 0, 0, 0
-                    for X_batch, y_batch in test_dataset:
-                        _logits = network(X_batch)  # is_train=False, disable dropout
-                        val_loss += loss_fn(_logits, y_batch)
-                        if metrics:
-                            metrics.update(_logits, y_batch)
-                            val_acc += metrics.result()
-                            metrics.reset()
-                        else:
-                            val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
-                        n_iter += 1
-
-                        if loss_monitor:
-                            test_batch += 1
-                            writer.add_scalar('val_loss', val_loss / n_iter, test_batch)
-                            writer.add_scalar('val_acc', val_acc / n_iter, test_batch)
-
-                    print("   val loss: {}".format(val_loss / n_iter))
-                    print("   val acc:  {}".format(val_acc / n_iter))
 
         if loss_monitor:
             writer.export_scalars_to_json("./all_scalars.json")
@@ -495,68 +503,72 @@ class Model:
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
         print_freq, test_dataset, loss_monitor
     ):
-        if loss_monitor:
-            writer = SummaryWriter('loss_file/monitor')
-            train_batch, test_batch = 0, 0
+        # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        # network = network.to(device)
+        with Progress(TextColumn("[progress.description]{task.description}"),
+                      BarColumn(),
+                      TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                      TimeRemainingColumn(),
+                      TimeElapsedColumn()) as progress:
 
-        for epoch in trange(n_epoch):
-            start_time = time.time()
+            n_batch = len(train_dataset)
+            epoch_tqdm = progress.add_task(description="[red]Epoch progress 0/{}".format(n_epoch), total=n_epoch)
+            batch_tqdm = progress.add_task(description="[green]Batch progress 0/{}".format(n_batch), total=n_batch)
 
-            train_loss, train_acc, n_iter = 0, 0, 0
-            for X_batch, y_batch in train_dataset:
-                network.set_train()
-                output = network(X_batch)
-                loss = loss_fn(output, y_batch)
-                grads = optimizer.gradient(loss, train_weights)
-                optimizer.apply_gradients(zip(grads, train_weights))
+            for epoch in range(n_epoch):
+                start_time = time.time()
 
-                train_loss += loss
-                if metrics:
-                    metrics.update(output, y_batch)
-                    train_acc += metrics.result()
-                    metrics.reset()
-                else:
-                    train_acc += (output.argmax(1) == y_batch).type(torch.float).mean().item()
-                n_iter += 1
+                train_loss, train_acc, n_iter = 0, 0, 0
+                for batch, (X_batch, y_batch) in enumerate(train_dataset):
+                    network.set_train()
+                    output = network(X_batch)
+                    loss = loss_fn(output, y_batch)
+                    grads = optimizer.gradient(loss, train_weights)
+                    optimizer.apply_gradients(zip(grads, train_weights))
 
-                if loss_monitor:
-                    train_batch += 1
-                    writer.add_scalar('train_loss', tlx.ops.convert_to_numpy(train_loss / n_iter), train_batch)
-                    writer.add_scalar('train_acc', train_acc / n_iter, train_batch)
+                    train_loss += loss
+                    if metrics:
+                        metrics.update(output, y_batch)
+                        train_acc += metrics.result()
+                        metrics.reset()
+                    else:
+                        train_acc += (output.argmax(1) == y_batch).type(torch.float).mean().item()
+                    n_iter += 1
 
-                if print_train_batch:
+                    if print_train_batch:
+                        print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                        print("   train loss: {}".format(train_loss / n_iter))
+                        print("   train acc:  {}".format(train_acc / n_iter))
+                    progress.advance(batch_tqdm, advance=1)
+                    progress.update(batch_tqdm, description="[green]Batch progress {}/{}".format(batch + 1, n_batch))
+
+                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+
                     print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
                     print("   train loss: {}".format(train_loss / n_iter))
                     print("   train acc:  {}".format(train_acc / n_iter))
 
-            if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
-                print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
-                print("   train loss: {}".format(train_loss / n_iter))
-                print("   train acc:  {}".format(train_acc / n_iter))
+                if test_dataset:
+                    # use training and evaluation sets to evaluate the model every print_freq epoch
+                    if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+                        network.set_eval()
+                        val_loss, val_acc, n_iter = 0, 0, 0
+                        for X_batch, y_batch in test_dataset:
+                            _logits = network(X_batch)  # is_train=False, disable dropout
+                            val_loss += loss_fn(_logits, y_batch)
+                            if metrics:
+                                metrics.update(_logits, y_batch)
+                                val_acc += metrics.result()
+                                metrics.reset()
+                            else:
+                                val_acc += (_logits.argmax(1) == y_batch).type(torch.float).mean().item()
+                            n_iter += 1
+                        print("   val loss: {}".format(val_loss / n_iter))
+                        print("   val acc:  {}".format(val_acc / n_iter))
+                progress.update(epoch_tqdm, description="[red]Epoch progress {}/{}".format(epoch + 1, n_epoch))
+                progress.advance(epoch_tqdm, advance=1)
+                progress.reset(batch_tqdm)
 
-            if test_dataset:
-                # use training and evaluation sets to evaluate the model every print_freq epoch
-                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
-                    network.set_eval()
-                    val_loss, val_acc, n_iter = 0, 0, 0
-                    for X_batch, y_batch in test_dataset:
-                        _logits = network(X_batch)  # is_train=False, disable dropout
-                        val_loss += loss_fn(_logits, y_batch)
-                        if metrics:
-                            metrics.update(_logits, y_batch)
-                            val_acc += metrics.result()
-                            metrics.reset()
-                        else:
-                            val_acc += (_logits.argmax(1) == y_batch).type(torch.float).mean().item()
-                        n_iter += 1
-
-                        if loss_monitor:
-                            test_batch += 1
-                            writer.add_scalar('val_loss', tlx.ops.convert_to_numpy(val_loss / n_iter), test_batch)
-                            writer.add_scalar('val_acc', val_acc / n_iter, test_batch)
-
-                    print("   val loss: {}".format(val_loss / n_iter))
-                    print("   val acc:  {}".format(val_acc / n_iter))
 
         if loss_monitor:
             writer.export_scalars_to_json("./all_scalars.json")
@@ -684,11 +696,14 @@ class TrainOneStepWithGradientClipping(object):
             raise Exception("This method must input the gradient clipping function, eg tlx.ops.ClipByGlobalNorm(0.1).")
 
         if tlx.BACKEND == 'tensorflow':
-            self.net_weith_train = TrainOneStepWithGradientClippingTF(net_with_loss, optimizer, train_weights, gradient_clipping)
+            self.net_weith_train = TrainOneStepWithGradientClippingTF(
+                net_with_loss, optimizer, train_weights, gradient_clipping)
         elif tlx.BACKEND == 'paddle':
-            self.net_weith_train = TrainOneStepWithGradientClippingPD(net_with_loss, optimizer, train_weights, gradient_clipping)
+            self.net_weith_train = TrainOneStepWithGradientClippingPD(
+                net_with_loss, optimizer, train_weights, gradient_clipping)
         elif tlx.BACKEND == 'torch':
-            self.net_weith_train = TrainOneStepWithGradientClippingTH(net_with_loss, optimizer, train_weights, gradient_clipping)
+            self.net_weith_train = TrainOneStepWithGradientClippingTH(
+                net_with_loss, optimizer, train_weights, gradient_clipping)
         else:
             raise NotImplementedError("This backend is not supported")
 

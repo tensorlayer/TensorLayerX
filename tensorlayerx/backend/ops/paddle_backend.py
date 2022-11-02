@@ -1197,7 +1197,7 @@ def split(value, num_or_size_splits, axis=0):
     -------
         Tensor objects resulting from splitting value.
     """
-    pd.split(value, num_or_size_splits, axis)
+    return pd.split(value, num_or_size_splits, axis)
 
 
 class Floor(object):
@@ -1404,7 +1404,8 @@ def divide(x, y):
 
 
 def identity(x):
-    raise NotImplementedError
+
+    return x
 
 
 class BatchToSpace(object):
@@ -1924,3 +1925,7 @@ def logsoftmax(input, dim = None):
 def topk(input, k, dim=None, largest=True, sorted=True):
 
     return paddle.topk(input, k, axis=dim, largest=largest, sorted=sorted)
+
+def numel(input):
+
+    return paddle.numel(input)
