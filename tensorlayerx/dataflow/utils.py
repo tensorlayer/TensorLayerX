@@ -13,166 +13,290 @@ from collections import namedtuple
 from dataclasses import dataclass
 import sys
 import traceback
+import re
+import tensorlayerx as tlx
+np_str_obj_array_pattern = re.compile(r"[SaUO]")
+string_classes = (str, bytes)
 
 def default_convert(data):
-    data_type = type(data)
-    if isinstance(data, np.ndarray):
-        if BACKEND == 'tensorflow':
-            import tensorflow as tf
-            data = tf.convert_to_tensor(data)
-        elif BACKEND == 'torch':
-            import torch
-            device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-            data = torch.as_tensor(data)
-            data = data.to(device)
-        elif BACKEND == 'paddle':
-            import paddle
-            data = paddle.to_tensor(data)
-        elif BACKEND == 'mindspore':
-            import mindspore
-            data = mindspore.Tensor(data)
-        return data
+    elem_type = type(data)
+    if elem_type.__module__ == 'numpy' and elem_type.__name__ != 'str_' \
+            and elem_type.__name__ != 'string_':
+        # array of string classes and object
+        if elem_type.__name__ == 'ndarray' \
+                and np_str_obj_array_pattern.search(data.dtype.str) is not None:
+            return data
+        return tlx.ops.convert_to_tensor(data)
     elif isinstance(data, collections.abc.Mapping):
-        return {key: default_convert(data[key]) for key in data}
-    elif isinstance(data, tuple) and hasattr(data, "_fields"):
-        return data_type(*(default_convert(d) for d in data))
-    elif isinstance(data, collections.abc.Sequence) and not isinstance(data, (str, bytes)):
-        return [default_convert(d) for d in data]
+        try:
+            return elem_type({key: default_convert(data[key]) for key in data})
+        except TypeError:
+            # The mapping type may not support `__init__(iterable)`.
+            return {key: default_convert(data[key]) for key in data}
+    elif isinstance(data, tuple) and hasattr(data, '_fields'):  # namedtuple
+        return elem_type(*(default_convert(d) for d in data))
+    elif isinstance(data, tuple):
+        return [default_convert(d) for d in data]  # Backwards compatibility.
+    elif isinstance(data, collections.abc.Sequence) and not isinstance(data, string_classes):
+        try:
+            return elem_type([default_convert(d) for d in data])
+        except TypeError:
+            # The sequence type may not support `__init__(iterable)` (e.g., `range`).
+            return [default_convert(d) for d in data]
     else:
         return data
 
 
+default_collate_err_msg_format = (
+    "default_collate: batch must contain tensors, numpy arrays, numbers, "
+    "dicts or lists; found {}")
+
 def default_collate_tf(batch):
-    data = batch[0]
-    data_type = type(data)
     import tensorflow as tf
-    if isinstance(data, tf.Tensor):
-        batch = tf.stack(batch, axis=0)
-        return batch
-    elif isinstance(data, np.ndarray):
-        batch = np.stack(batch, axis=0)
-        batch = tf.convert_to_tensor(batch)
-        return batch
-    elif isinstance(data, numbers.Number):
-        batch = tf.convert_to_tensor(batch)
-        return batch
-    elif isinstance(data, (str, bytes)):
-        return batch
-    elif isinstance(data, collections.abc.Mapping):
-        return {key: default_collate_tf([d[key] for d in batch]) for key in data}
-    elif isinstance(data, tuple) and hasattr(data, '_fields'):
-        return data_type(*(default_collate_tf(samples) for samples in zip(*batch)))
-    elif isinstance(data, collections.abc.Sequence):
-        data_size = len(data)
-        if not all(len(data) == data_size for data in iter(batch)):
-            raise RuntimeError("each data in list of batch should be of equal size.")
-        return [default_collate_tf(datas) for datas in zip(*batch)]
+    elem = batch[0]
+    elem_type = type(elem)
+    if isinstance(elem, tf.Tensor):
+        return tf.stack(batch, 0)
+    elif elem_type.__module__ == 'numpy' and elem_type.__name__ != 'str_' \
+            and elem_type.__name__ != 'string_':
+        if elem_type.__name__ == 'ndarray' or elem_type.__name__ == 'memmap':
+            # array of string classes and object
+            if np_str_obj_array_pattern.search(elem.dtype.str) is not None:
+                raise TypeError(default_collate_err_msg_format.format(elem.dtype))
 
-    raise TypeError(
-        "batch data con only contains:Tensor, numpy.ndarray, "
-        "dict, list, number, tuple, but got {}".format(type(data))
-    )
+            return default_collate([tf.convert_to_tensor(b) for b in batch])
+        elif elem.shape == ():  # scalars
+            return tf.convert_to_tensor(batch)
+    elif isinstance(elem, float):
+        return tf.convert_to_tensor(batch, dtype=tf.float64)
+    elif isinstance(elem, int):
+        return tf.convert_to_tensor(batch)
+    elif isinstance(elem, string_classes):
+        return batch
+    elif isinstance(elem, collections.abc.Mapping):
+        try:
+            return elem_type({key: default_collate([d[key] for d in batch]) for key in elem})
+        except TypeError:
+            # The mapping type may not support `__init__(iterable)`.
+            return {key: default_collate([d[key] for d in batch]) for key in elem}
+    elif isinstance(elem, tuple) and hasattr(elem, '_fields'):  # namedtuple
+        return elem_type(*(default_collate(samples) for samples in zip(*batch)))
+    elif isinstance(elem, collections.abc.Sequence):
+        # check to make sure that the elements in batch have consistent size
+        it = iter(batch)
+        elem_size = len(next(it))
+        if not all(len(elem) == elem_size for elem in it):
+            raise RuntimeError('each element in list of batch should be of equal size')
+        transposed = list(zip(*batch))  # It may be accessed twice, so we use a list.
 
+        if isinstance(elem, tuple):
+            return [default_collate(samples) for samples in transposed]  # Backwards compatibility.
+        else:
+            try:
+                return elem_type([default_collate(samples) for samples in transposed])
+            except TypeError:
+                # The sequence type may not support `__init__(iterable)` (e.g., `range`).
+                return [default_collate(samples) for samples in transposed]
+
+    raise TypeError(default_collate_err_msg_format.format(elem_type))
 
 def default_collate_torch(batch):
-    data = batch[0]
-    data_type = type(data)
     import torch
-    # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    if isinstance(data, torch.Tensor):
-        batch = torch.stack(batch, 0)
-        # batch = batch.to(device)
-        return batch
-    elif isinstance(data, np.ndarray):
-        batch = np.stack(batch, axis=0)
-        batch = torch.as_tensor(batch)
-        # batch = batch.to(device)
-        return batch
-    elif isinstance(data, numbers.Number):
-        batch = torch.as_tensor(batch)
-        # batch = batch.to(device)
-        return batch
-    elif isinstance(data, (str, bytes)):
-        # batch = batch.to(device)
-        return batch
-    elif isinstance(data, collections.abc.Mapping):
-        return {key: default_collate_torch([d[key] for d in batch]) for key in data}
-    elif isinstance(data, tuple) and hasattr(data, '_fields'):
-        return data_type(*(default_collate_torch(samples) for samples in zip(*batch)))
-    elif isinstance(data, collections.abc.Sequence):
-        data_size = len(data)
-        if not all(len(data) == data_size for data in iter(batch)):
-            raise RuntimeError("each data in list of batch should be of equal size.")
-        return [default_collate_torch(datas) for datas in zip(*batch)]
+    elem = batch[0]
+    elem_type = type(elem)
+    if isinstance(elem, torch.Tensor):
+        out = None
+        if torch.utils.data.get_worker_info() is not None:
+            # If we're in a background process, concatenate directly into a
+            # shared memory tensor to avoid an extra copy
+            numel = sum(x.numel() for x in batch)
+            storage = elem.storage()._new_shared(numel, device=elem.device)
+            out = elem.new(storage).resize_(len(batch), *list(elem.size()))
+        return torch.stack(batch, 0, out=out)
+    elif elem_type.__module__ == 'numpy' and elem_type.__name__ != 'str_' \
+            and elem_type.__name__ != 'string_':
+        if elem_type.__name__ == 'ndarray' or elem_type.__name__ == 'memmap':
+            # array of string classes and object
+            if np_str_obj_array_pattern.search(elem.dtype.str) is not None:
+                raise TypeError(default_collate_err_msg_format.format(elem.dtype))
 
-    raise TypeError(
-        "batch data con only contains:Tensor, numpy.ndarray, "
-        "dict, list, number, tuple, but got {}".format(type(data))
-    )
+            return default_collate([torch.as_tensor(b) for b in batch])
+        elif elem.shape == ():  # scalars
+            return torch.as_tensor(batch)
+    elif isinstance(elem, float):
+        return torch.tensor(batch, dtype=torch.float64)
+    elif isinstance(elem, int):
+        return torch.tensor(batch)
+    elif isinstance(elem, string_classes):
+        return batch
+    elif isinstance(elem, collections.abc.Mapping):
+        try:
+            return elem_type({key: default_collate([d[key] for d in batch]) for key in elem})
+        except TypeError:
+            # The mapping type may not support `__init__(iterable)`.
+            return {key: default_collate([d[key] for d in batch]) for key in elem}
+    elif isinstance(elem, tuple) and hasattr(elem, '_fields'):  # namedtuple
+        return elem_type(*(default_collate(samples) for samples in zip(*batch)))
+    elif isinstance(elem, collections.abc.Sequence):
+        # check to make sure that the elements in batch have consistent size
+        it = iter(batch)
+        elem_size = len(next(it))
+        if not all(len(elem) == elem_size for elem in it):
+            raise RuntimeError('each element in list of batch should be of equal size')
+        transposed = list(zip(*batch))  # It may be accessed twice, so we use a list.
+
+        if isinstance(elem, tuple):
+            return [default_collate(samples) for samples in transposed]  # Backwards compatibility.
+        else:
+            try:
+                return elem_type([default_collate(samples) for samples in transposed])
+            except TypeError:
+                # The sequence type may not support `__init__(iterable)` (e.g., `range`).
+                return [default_collate(samples) for samples in transposed]
+
+    raise TypeError(default_collate_err_msg_format.format(elem_type))
 
 
 def default_collate_paddle(batch):
-    data = batch[0]
-    data_type = type(data)
     import paddle
-    if isinstance(data, paddle.Tensor):
-        batch = paddle.stack(batch, 0)
-        return batch
-    elif isinstance(data, np.ndarray):
-        batch = np.stack(batch, axis=0)
-        batch = paddle.to_tensor(batch)
-        return batch
-    elif isinstance(data, numbers.Number):
-        return paddle.to_tensor(batch)
-    elif isinstance(data, (str, bytes)):
-        return batch
-    elif isinstance(data, collections.abc.Mapping):
-        return {key: default_collate_paddle([d[key] for d in batch]) for key in data}
-    elif isinstance(data, tuple) and hasattr(data, '_fields'):
-        return data_type(*(default_collate_paddle(samples) for samples in zip(*batch)))
-    elif isinstance(data, collections.abc.Sequence):
-        data_size = len(data)
-        if not all(len(data) == data_size for data in iter(batch)):
-            raise RuntimeError("each data in list of batch should be of equal size.")
-        return [default_collate_paddle(datas) for datas in zip(*batch)]
+    elem = batch[0]
+    elem_type = type(elem)
+    if isinstance(elem, paddle.Tensor):
+        return paddle.stack(batch, 0)
+    elif elem_type.__module__ == 'numpy' and elem_type.__name__ != 'str_' \
+            and elem_type.__name__ != 'string_':
+        if elem_type.__name__ == 'ndarray' or elem_type.__name__ == 'memmap':
+            # array of string classes and object
+            if np_str_obj_array_pattern.search(elem.dtype.str) is not None:
+                raise TypeError(default_collate_err_msg_format.format(elem.dtype))
 
-    raise TypeError(
-        "batch data con only contains:Tensor, numpy.ndarray, "
-        "dict, list, number, tuple, but got {}".format(type(data))
-    )
+            return default_collate([paddle.to_tensor(b) for b in batch])
+        elif elem.shape == ():  # scalars
+            return paddle.to_tensor(batch)
+    elif isinstance(elem, float):
+        return paddle.to_tensor(batch, dtype=paddle.float64)
+    elif isinstance(elem, int):
+        return paddle.to_tensor(batch)
+    elif isinstance(elem, string_classes):
+        return batch
+    elif isinstance(elem, collections.abc.Mapping):
+        try:
+            return elem_type({key: default_collate([d[key] for d in batch]) for key in elem})
+        except TypeError:
+            # The mapping type may not support `__init__(iterable)`.
+            return {key: default_collate([d[key] for d in batch]) for key in elem}
+    elif isinstance(elem, tuple) and hasattr(elem, '_fields'):  # namedtuple
+        return elem_type(*(default_collate(samples) for samples in zip(*batch)))
+    elif isinstance(elem, collections.abc.Sequence):
+        # check to make sure that the elements in batch have consistent size
+        it = iter(batch)
+        elem_size = len(next(it))
+        if not all(len(elem) == elem_size for elem in it):
+            raise RuntimeError('each element in list of batch should be of equal size')
+        transposed = list(zip(*batch))  # It may be accessed twice, so we use a list.
+
+        if isinstance(elem, tuple):
+            return [default_collate(samples) for samples in transposed]  # Backwards compatibility.
+        else:
+            try:
+                return elem_type([default_collate(samples) for samples in transposed])
+            except TypeError:
+                # The sequence type may not support `__init__(iterable)` (e.g., `range`).
+                return [default_collate(samples) for samples in transposed]
+
+    raise TypeError(default_collate_err_msg_format.format(elem_type))
+
 
 
 def default_collate_ms(batch):
-    data = batch[0]
-    data_type = type(data)
     import mindspore as ms
-    if isinstance(data, ms.Tensor):
-        stack = ms.ops.Stack(axis=0)
-        batch = stack(batch)
-        return batch
-    elif isinstance(data, np.ndarray):
-        batch = np.stack(batch, axis=0)
-        batch = ms.Tensor(batch)
-        return batch
-    elif isinstance(data, numbers.Number):
-        batch = ms.Tensor(batch)
-        return batch
-    elif isinstance(data, (str, bytes)):
-        return batch
-    elif isinstance(data, collections.abc.Mapping):
-        return {key: default_collate_ms([d[key] for d in batch]) for key in data}
-    elif isinstance(data, tuple) and hasattr(data, '_fields'):
-        return data_type(*(default_collate_ms(samples) for samples in zip(*batch)))
-    elif isinstance(data, collections.abc.Sequence):
-        data_size = len(data)
-        if not all(len(data) == data_size for data in iter(batch)):
-            raise RuntimeError("each data in list of batch should be of equal size.")
-        return [default_collate_ms(datas) for datas in zip(*batch)]
+    elem = batch[0]
+    elem_type = type(elem)
+    if isinstance(elem, ms.Tensor):
+        return ms.ops.stack(batch, 0)
+    elif elem_type.__module__ == 'numpy' and elem_type.__name__ != 'str_' \
+            and elem_type.__name__ != 'string_':
+        if elem_type.__name__ == 'ndarray' or elem_type.__name__ == 'memmap':
+            # array of string classes and object
+            if np_str_obj_array_pattern.search(elem.dtype.str) is not None:
+                raise TypeError(default_collate_err_msg_format.format(elem.dtype))
 
-    raise TypeError(
-        "batch data con only contains:Tensor, numpy.ndarray, "
-        "dict, list, number, tuple, but got {}".format(type(data))
-    )
+            return default_collate([ms.Tensor(b) for b in batch])
+        elif elem.shape == ():  # scalars
+            return ms.Tensor(batch)
+    elif isinstance(elem, float):
+        return ms.Tensor(batch, dtype=ms.float64)
+    elif isinstance(elem, int):
+        return ms.Tensor(batch)
+    elif isinstance(elem, string_classes):
+        return batch
+    elif isinstance(elem, collections.abc.Mapping):
+        try:
+            return elem_type({key: default_collate([d[key] for d in batch]) for key in elem})
+        except TypeError:
+            # The mapping type may not support `__init__(iterable)`.
+            return {key: default_collate([d[key] for d in batch]) for key in elem}
+    elif isinstance(elem, tuple) and hasattr(elem, '_fields'):  # namedtuple
+        return elem_type(*(default_collate(samples) for samples in zip(*batch)))
+    elif isinstance(elem, collections.abc.Sequence):
+        # check to make sure that the elements in batch have consistent size
+        it = iter(batch)
+        elem_size = len(next(it))
+        if not all(len(elem) == elem_size for elem in it):
+            raise RuntimeError('each element in list of batch should be of equal size')
+        transposed = list(zip(*batch))  # It may be accessed twice, so we use a list.
+
+        if isinstance(elem, tuple):
+            return [default_collate(samples) for samples in transposed]  # Backwards compatibility.
+        else:
+            try:
+                return elem_type([default_collate(samples) for samples in transposed])
+            except TypeError:
+                # The sequence type may not support `__init__(iterable)` (e.g., `range`).
+                return [default_collate(samples) for samples in transposed]
+
+    raise TypeError(default_collate_err_msg_format.format(elem_type))
+
+
+def default_collate_flow(batch):
+    import oneflow as flow
+    elem = batch[0]
+    elem_type = type(elem)
+    if isinstance(elem, (flow.Tensor, flow._oneflow_internal.Tensor)):
+        return flow._C.stack(batch, dim=0)
+    elif (
+            elem_type.__module__ == "numpy"
+            and elem_type.__name__ != "str_"
+            and elem_type.__name__ != "string_"
+    ):
+        if elem_type.__name__ == "ndarray" or elem_type.__name__ == "memmap":
+            # array of string classes and object
+            if np_str_obj_array_pattern.search(elem.dtype.str) is not None:
+                raise TypeError(default_collate_err_msg_format.format(elem.dtype))
+
+            return default_collate([flow.tensor(b) for b in batch])
+        elif elem.shape == ():  # scalars
+            return flow.tensor(batch)
+    elif isinstance(elem, float):
+        return flow.tensor(batch, dtype=flow.float64)
+    elif isinstance(elem, int):
+        return flow.tensor(batch)
+    elif isinstance(elem, string_classes):
+        return batch
+    elif isinstance(elem, collections.abc.Mapping):
+        return {key: default_collate([d[key] for d in batch]) for key in elem}
+    elif isinstance(elem, tuple) and hasattr(elem, "_fields"):  # namedtuple
+        return elem_type(*(default_collate(samples) for samples in zip(*batch)))
+    elif isinstance(elem, collections.abc.Sequence):
+        # check to make sure that the elements in batch have consistent size
+        it = iter(batch)
+        elem_size = len(next(it))
+        if not all(len(elem) == elem_size for elem in it):
+            raise RuntimeError("each element in list of batch should be of equal size")
+        transposed = zip(*batch)
+        return [default_collate(samples) for samples in transposed]
+
+    raise TypeError(default_collate_err_msg_format.format(elem_type))
 
 
 def default_collate(batch):
@@ -184,6 +308,8 @@ def default_collate(batch):
         return default_collate_paddle(batch)
     elif BACKEND == 'mindspore':
         return default_collate_ms(batch)
+    elif BACKEND == 'oneflow':
+        return default_collate_flow(batch)
 
 
 class _DatasetKind(object):
