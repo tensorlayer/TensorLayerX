@@ -434,7 +434,7 @@ def cross_entropy_seq(logits, target_seqs, batch_size=None):
     logits : Tensor
         2D tensor with shape of `[batch_size * n_steps, n_classes]`.
     target_seqs : Tensor
-        The target sequence, 2D tensor `[batch_size, n_steps]`, if the number of step is dynamic, please use ``tl.losses.cross_entropy_seq_with_mask`` instead.
+        The target sequence, 2D tensor `[batch_size, n_steps]`, if the number of step is dynamic, please use ``tlx.losses.cross_entropy_seq_with_mask`` instead.
     batch_size : None or int.
         Whether to divide the losses by batch size.
             - If integer, the return losses will be divided by `batch_size`.

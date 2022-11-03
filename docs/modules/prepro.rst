@@ -160,15 +160,15 @@ The following is a typical Python program that applies rotation, shifting, flipp
 
 .. code-block:: python
 
-    image = tl.vis.read_image('tiger.jpeg')
+    image = tlx.vis.read_image('tiger.jpeg')
 
-    xx = tl.prepro.rotation(image, rg=-20, is_random=False)
-    xx = tl.prepro.flip_axis(xx, axis=1, is_random=False)
-    xx = tl.prepro.shear2(xx, shear=(0., -0.2), is_random=False)
-    xx = tl.prepro.zoom(xx, zoom_range=0.8)
-    xx = tl.prepro.shift(xx, wrg=-0.1, hrg=0, is_random=False)
+    xx = tlx.prepro.rotation(image, rg=-20, is_random=False)
+    xx = tlx.prepro.flip_axis(xx, axis=1, is_random=False)
+    xx = tlx.prepro.shear2(xx, shear=(0., -0.2), is_random=False)
+    xx = tlx.prepro.zoom(xx, zoom_range=0.8)
+    xx = tlx.prepro.shift(xx, wrg=-0.1, hrg=0, is_random=False)
 
-    tl.vis.save_image(xx, '_result_slow.png')
+    tlx.vis.save_image(xx, '_result_slow.png')
 
 
 However, by leveraging affine transformation, image operations can be combined into one:
@@ -176,11 +176,11 @@ However, by leveraging affine transformation, image operations can be combined i
 .. code-block:: python
 
     # 1. Create required affine transformation matrices
-    M_rotate = tl.prepro.affine_rotation_matrix(angle=20)
-    M_flip = tl.prepro.affine_horizontal_flip_matrix(prob=1)
-    M_shift = tl.prepro.affine_shift_matrix(wrg=0.1, hrg=0, h=h, w=w)
-    M_shear = tl.prepro.affine_shear_matrix(x_shear=0.2, y_shear=0)
-    M_zoom = tl.prepro.affine_zoom_matrix(zoom_range=0.8)
+    M_rotate = tlx.prepro.affine_rotation_matrix(angle=20)
+    M_flip = tlx.prepro.affine_horizontal_flip_matrix(prob=1)
+    M_shift = tlx.prepro.affine_shift_matrix(wrg=0.1, hrg=0, h=h, w=w)
+    M_shear = tlx.prepro.affine_shear_matrix(x_shear=0.2, y_shear=0)
+    M_zoom = tlx.prepro.affine_zoom_matrix(zoom_range=0.8)
 
     # 2. Combine matrices
     # NOTE: operations are applied in a reversed order (i.e., rotation is performed first)
@@ -188,12 +188,12 @@ However, by leveraging affine transformation, image operations can be combined i
 
     # 3. Convert the matrix from Cartesian coordinates (the origin in the middle of image)
     # to image coordinates (the origin on the top-left of image)
-    transform_matrix = tl.prepro.transform_matrix_offset_center(M_combined, x=w, y=h)
+    transform_matrix = tlx.prepro.transform_matrix_offset_center(M_combined, x=w, y=h)
 
     # 4. Transform the image using a single operation
-    result = tl.prepro.affine_transform_cv2(image, transform_matrix)  # 76 times faster
+    result = tlx.prepro.affine_transform_cv2(image, transform_matrix)  # 76 times faster
 
-    tl.vis.save_image(result, '_result_fast.png')
+    tlx.vis.save_image(result, '_result_fast.png')
 
 
 The following figure illustrates the rational behind combined affine transformation.
@@ -413,52 +413,52 @@ Hi, here is an example for image augmentation on VOC dataset.
 
   ## download VOC 2012 dataset
   imgs_file_list, _, _, _, classes, _, _,\
-      _, objs_info_list, _ = tl.files.load_voc_dataset(dataset="2012")
+      _, objs_info_list, _ = tlx.files.load_voc_dataset(dataset="2012")
 
   ## parse annotation and convert it into list format
   ann_list = []
   for info in objs_info_list:
-      ann = tl.prepro.parse_darknet_ann_str_to_list(info)
-      c, b = tl.prepro.parse_darknet_ann_list_to_cls_box(ann)
+      ann = tlx.prepro.parse_darknet_ann_str_to_list(info)
+      c, b = tlx.prepro.parse_darknet_ann_list_to_cls_box(ann)
       ann_list.append([c, b])
 
   # read and save one image
   idx = 2  # you can select your own image
-  image = tl.vis.read_image(imgs_file_list[idx])
-  tl.vis.draw_boxes_and_labels_to_image(image, ann_list[idx][0],
+  image = tlx.vis.read_image(imgs_file_list[idx])
+  tlx.vis.draw_boxes_and_labels_to_image(image, ann_list[idx][0],
        ann_list[idx][1], [], classes, True, save_name='_im_original.png')
 
   # left right flip
-  im_flip, coords = tl.prepro.obj_box_horizontal_flip(image,
+  im_flip, coords = tlx.prepro.obj_box_horizontal_flip(image,
           ann_list[idx][1], is_rescale=True, is_center=True, is_random=False)
-  tl.vis.draw_boxes_and_labels_to_image(im_flip, ann_list[idx][0],
+  tlx.vis.draw_boxes_and_labels_to_image(im_flip, ann_list[idx][0],
           coords, [], classes, True, save_name='_im_flip.png')
 
   # resize
-  im_resize, coords = tl.prepro.obj_box_imresize(image,
+  im_resize, coords = tlx.prepro.obj_box_imresize(image,
           coords=ann_list[idx][1], size=[300, 200], is_rescale=True)
-  tl.vis.draw_boxes_and_labels_to_image(im_resize, ann_list[idx][0],
+  tlx.vis.draw_boxes_and_labels_to_image(im_resize, ann_list[idx][0],
           coords, [], classes, True, save_name='_im_resize.png')
 
   # crop
-  im_crop, clas, coords = tl.prepro.obj_box_crop(image, ann_list[idx][0],
+  im_crop, clas, coords = tlx.prepro.obj_box_crop(image, ann_list[idx][0],
            ann_list[idx][1], wrg=200, hrg=200,
            is_rescale=True, is_center=True, is_random=False)
-  tl.vis.draw_boxes_and_labels_to_image(im_crop, clas, coords, [],
+  tlx.vis.draw_boxes_and_labels_to_image(im_crop, clas, coords, [],
            classes, True, save_name='_im_crop.png')
 
   # shift
-  im_shfit, clas, coords = tl.prepro.obj_box_shift(image, ann_list[idx][0],
+  im_shfit, clas, coords = tlx.prepro.obj_box_shift(image, ann_list[idx][0],
           ann_list[idx][1], wrg=0.1, hrg=0.1,
           is_rescale=True, is_center=True, is_random=False)
-  tl.vis.draw_boxes_and_labels_to_image(im_shfit, clas, coords, [],
+  tlx.vis.draw_boxes_and_labels_to_image(im_shfit, clas, coords, [],
           classes, True, save_name='_im_shift.png')
 
   # zoom
-  im_zoom, clas, coords = tl.prepro.obj_box_zoom(image, ann_list[idx][0],
+  im_zoom, clas, coords = tlx.prepro.obj_box_zoom(image, ann_list[idx][0],
           ann_list[idx][1], zoom_range=(1.3, 0.7),
           is_rescale=True, is_center=True, is_random=False)
-  tl.vis.draw_boxes_and_labels_to_image(im_zoom, clas, coords, [],
+  tlx.vis.draw_boxes_and_labels_to_image(im_zoom, clas, coords, [],
           classes, True, save_name='_im_zoom.png')
 
 
@@ -477,18 +477,18 @@ In practice, you may want to use threading method to process a batch of images a
       im, ann = data
       clas, coords = ann
       ## change image brightness, contrast and saturation randomly
-      im = tl.prepro.illumination(im, gamma=(0.5, 1.5),
+      im = tlx.prepro.illumination(im, gamma=(0.5, 1.5),
                contrast=(0.5, 1.5), saturation=(0.5, 1.5), is_random=True)
       ## flip randomly
-      im, coords = tl.prepro.obj_box_horizontal_flip(im, coords,
+      im, coords = tlx.prepro.obj_box_horizontal_flip(im, coords,
                is_rescale=True, is_center=True, is_random=True)
       ## randomly resize and crop image, it can have same effect as random zoom
       tmp0 = random.randint(1, int(im_size[0]*jitter))
       tmp1 = random.randint(1, int(im_size[1]*jitter))
-      im, coords = tl.prepro.obj_box_imresize(im, coords,
+      im, coords = tlx.prepro.obj_box_imresize(im, coords,
               [im_size[0]+tmp0, im_size[1]+tmp1], is_rescale=True,
                interp='bicubic')
-      im, clas, coords = tl.prepro.obj_box_crop(im, clas, coords,
+      im, clas, coords = tlx.prepro.obj_box_crop(im, clas, coords,
                wrg=im_size[1], hrg=im_size[0], is_rescale=True,
                is_center=True, is_random=True)
       ## rescale value from [0, 255] to [-1, 1] (optional)
@@ -496,23 +496,23 @@ In practice, you may want to use threading method to process a batch of images a
       return im, [clas, coords]
 
   # randomly read a batch of image and the corresponding annotations
-  idexs = tl.utils.get_random_int(min=0, max=n_data-1, number=batch_size)
+  idexs = tlx.utils.get_random_int(min=0, max=n_data-1, number=batch_size)
   b_im_path = [imgs_file_list[i] for i in idexs]
-  b_images = tl.prepro.threading_data(b_im_path, fn=tl.vis.read_image)
+  b_images = tlx.prepro.threading_data(b_im_path, fn=tlx.vis.read_image)
   b_ann = [ann_list[i] for i in idexs]
 
   # threading process
-  data = tl.prepro.threading_data([_ for _ in zip(b_images, b_ann)],
+  data = tlx.prepro.threading_data([_ for _ in zip(b_images, b_ann)],
                 _data_pre_aug_fn)
   b_images2 = [d[0] for d in data]
   b_ann = [d[1] for d in data]
 
   # save all images
   for i in range(len(b_images)):
-      tl.vis.draw_boxes_and_labels_to_image(b_images[i],
+      tlx.vis.draw_boxes_and_labels_to_image(b_images[i],
                ann_list[idexs[i]][0], ann_list[idexs[i]][1], [],
                classes, True, save_name='_bbox_vis_%d_original.png' % i)
-      tl.vis.draw_boxes_and_labels_to_image((b_images2[i]+1)*127.5,
+      tlx.vis.draw_boxes_and_labels_to_image((b_images2[i]+1)*127.5,
                b_ann[i][0], b_ann[i][1], [], classes, True,
                save_name='_bbox_vis_%d.png' % i)
 

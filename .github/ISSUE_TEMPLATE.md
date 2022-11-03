@@ -22,9 +22,9 @@
 import tensorflow as tf
 import tensorlayerx as tl
 
-net_in = tl.layers.Input((3, 64))
+net_in = tlx.layers.Input((3, 64))
 
-net = tl.nn.Linear(out_features=25, in_features=64, act='relu')
+net = tlx.nn.Linear(out_features=25, in_features=64, act='relu')
 
 print("Output Shape:", net(net_in).shape) ### Output Shape: [None, 25]
 

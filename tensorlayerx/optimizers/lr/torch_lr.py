@@ -16,7 +16,7 @@ class LRScheduler(object):
     """
     LRScheduler Base class. Define the common interface of a learning rate scheduler.
 
-    User can import it by ``from tl.optimizer.lr import LRScheduler`` ,
+    User can import it by ``from tlx.optimizer.lr import LRScheduler`` ,
 
     then overload it for your subclass and have a custom implementation of ``get_lr()`` .
 

@@ -137,7 +137,7 @@ sake of cross-platform. Other file formats such as ``.npz`` are also available.
   ## save model as .npz
   tlx.files.save_npz(network.all_weights , name='model.npz')
   # restore model from .npz (method 1)
-  load_params = tl.files.load_npz(name='model.npz')
+  load_params = tlx.files.load_npz(name='model.npz')
   tlx.files.assign_weights(sess, load_params, network)
   # restore model from .npz (method 2)
   tlx.files.load_and_assign_npz(sess=sess, name='model.npz', network=network)
