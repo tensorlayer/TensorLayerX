@@ -33,15 +33,11 @@ class CNN(Module):
         W_init2 = tlx.nn.initializers.truncated_normal(stddev=0.04)
         b_init2 = tlx.nn.initializers.constant(value=0.1)
 
-        self.conv1 = Conv2d(32, (3, 3), (1, 1), padding='SAME', W_init=W_init, b_init=None, name='conv1', in_channels=3)
+        self.conv1 = Conv2d(32, (3, 3), (1, 1), padding='SAME', W_init=W_init, name='conv1', in_channels=3)
         self.maxpool1 = MaxPool2d((2, 2), (2, 2), padding='SAME', name='pool1')
 
         self.conv2 = Conv2d(
-            64, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=32
-        )
-
-        self.conv3 = Conv2d(
-            64, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, W_init=W_init, b_init=None, name='conv3', in_channels=64
+            64, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, W_init=W_init, name='conv2', in_channels=32
         )
         self.maxpool2 = MaxPool2d((2, 2), (2, 2), padding='SAME', name='pool2')
 
