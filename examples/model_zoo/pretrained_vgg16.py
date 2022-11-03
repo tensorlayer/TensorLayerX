@@ -18,7 +18,7 @@ vgg = vgg16(pretrained=True)
 vgg.set_eval()
 
 img = tlx.vision.load_image('data/tiger.jpeg')
-img = tlx.vision.transforms.Resize((224, 224))(img).astype(np.float32) / 255
+img = tlx.vision.transforms.transforms.Resize((224, 224))(img).astype(np.float32) / 255
 
 start_time = time.time()
 output = vgg(img)

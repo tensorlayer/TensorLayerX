@@ -18,71 +18,71 @@ class Image_Test(CustomTestCase):
         self.input_shape = [100, 100, 3]
         self.input_layer = np.random.randint(0, 255, size = self.input_shape, dtype=np.uint8)
 
-        self.centralcrop_1 = tlx.vision.transforms.CentralCrop(central_fraction=0.5)(self.input_layer)
-        self.centralcrop_2 = tlx.vision.transforms.CentralCrop(size=50)(self.input_layer)
+        self.centralcrop_1 = tensorlayerx.vision.transforms.transforms.CentralCrop(central_fraction=0.5)(self.input_layer)
+        self.centralcrop_2 = tensorlayerx.vision.transforms.transforms.CentralCrop(size=50)(self.input_layer)
 
-        self.adjustbrightness = tlx.vision.transforms.AdjustBrightness(brightness_factor=0.5)(self.input_layer)
-        self.adjustconstrast = tlx.vision.transforms.AdjustContrast(contrast_factor=0.5)(self.input_layer)
-        self.adjusthue = tlx.vision.transforms.AdjustHue(hue_factor=0.5)(self.input_layer)
-        self.adjustsaturation = tlx.vision.transforms.AdjustSaturation(saturation_factor=0.5)(self.input_layer)
+        self.adjustbrightness = tensorlayerx.vision.transforms.transforms.AdjustBrightness(brightness_factor=0.5)(self.input_layer)
+        self.adjustconstrast = tensorlayerx.vision.transforms.transforms.AdjustContrast(contrast_factor=0.5)(self.input_layer)
+        self.adjusthue = tensorlayerx.vision.transforms.transforms.AdjustHue(hue_factor=0.5)(self.input_layer)
+        self.adjustsaturation = tensorlayerx.vision.transforms.transforms.AdjustSaturation(saturation_factor=0.5)(self.input_layer)
 
-        self.crop = tlx.vision.transforms.Crop(top=10, left=10, height=80, width=80)(self.input_layer)
+        self.crop = tensorlayerx.vision.transforms.transforms.Crop(top=10, left=10, height=80, width=80)(self.input_layer)
 
-        self.fliphorizontal = tlx.vision.transforms.FlipHorizontal()(self.input_layer)
-        self.flipvertical = tlx.vision.transforms.FlipVertical()(self.input_layer)
+        self.fliphorizontal = tensorlayerx.vision.transforms.transforms.FlipHorizontal()(self.input_layer)
+        self.flipvertical = tensorlayerx.vision.transforms.transforms.FlipVertical()(self.input_layer)
 
-        self.rgbtogray = tlx.vision.transforms.RgbToGray()(self.input_layer)
+        self.rgbtogray = tensorlayerx.vision.transforms.transforms.RgbToGray()(self.input_layer)
 
-        self.padtoboundingbox = tlx.vision.transforms.PadToBoundingbox(
+        self.padtoboundingbox = tensorlayerx.vision.transforms.transforms.PadToBoundingbox(
             top=10, left=10, height=150, width=150, padding_value=0
         )(self.input_layer)
 
-        self.pad_1 = tlx.vision.transforms.Pad(padding=10, padding_value=0, mode='constant')(self.input_layer)
-        self.pad_2 = tlx.vision.transforms.Pad(padding=(10, 10), mode='reflect')(self.input_layer)
-        self.pad_3 = tlx.vision.transforms.Pad(padding=(10, 20, 30, 40), mode='symmetric')(self.input_layer)
+        self.pad_1 = tensorlayerx.vision.transforms.transforms.Pad(padding=10, padding_value=0, mode='constant')(self.input_layer)
+        self.pad_2 = tensorlayerx.vision.transforms.transforms.Pad(padding=(10, 10), mode='reflect')(self.input_layer)
+        self.pad_3 = tensorlayerx.vision.transforms.transforms.Pad(padding=(10, 20, 30, 40), mode='symmetric')(self.input_layer)
 
-        self.normalize = tlx.vision.transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))(self.input_layer)
-        self.standardize = tlx.vision.transforms.StandardizePerImage()(self.input_layer)
+        self.normalize = tensorlayerx.vision.transforms.transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))(self.input_layer)
+        self.standardize = tensorlayerx.vision.transforms.transforms.StandardizePerImage()(self.input_layer)
 
-        self.randombrightness = tlx.vision.transforms.RandomBrightness(brightness_factor=(0.5, 2))(self.input_layer)
-        self.randomcontrast = tlx.vision.transforms.RandomContrast(contrast_factor=(0.5, 2))(self.input_layer)
-        self.randomhue = tlx.vision.transforms.RandomHue(hue_factor=(-0.5, 0.5))(self.input_layer)
-        self.randomsaturation = tlx.vision.transforms.RandomSaturation(saturation_factor=(0.5, 2))(self.input_layer)
+        self.randombrightness = tensorlayerx.vision.transforms.transforms.RandomBrightness(brightness_factor=(0.5, 2))(self.input_layer)
+        self.randomcontrast = tensorlayerx.vision.transforms.transforms.RandomContrast(contrast_factor=(0.5, 2))(self.input_layer)
+        self.randomhue = tensorlayerx.vision.transforms.transforms.RandomHue(hue_factor=(-0.5, 0.5))(self.input_layer)
+        self.randomsaturation = tensorlayerx.vision.transforms.transforms.RandomSaturation(saturation_factor=(0.5, 2))(self.input_layer)
 
-        self.randomcrop_1 = tlx.vision.transforms.RandomCrop(
+        self.randomcrop_1 = tensorlayerx.vision.transforms.transforms.RandomCrop(
             size=50, padding=10, pad_if_needed=False, fill=0, padding_mode='constant'
         )(self.input_layer)
 
-        self.resize_1 = tlx.vision.transforms.Resize(size=46, interpolation='bilinear')(self.input_layer)
+        self.resize_1 = tensorlayerx.vision.transforms.transforms.Resize(size=46, interpolation='bilinear')(self.input_layer)
 
-        self.rgbtohsv = tlx.vision.transforms.RgbToHsv()(self.input_layer)
-        self.hsvtorgb = tlx.vision.transforms.HsvToRgb()(self.rgbtohsv)
-        self.transpose = tlx.vision.transforms.Transpose(order=(2, 0, 1))(self.input_layer)
-        self.randomrotation = tlx.vision.transforms.RandomRotation(
+        self.rgbtohsv = tensorlayerx.vision.transforms.transforms.RgbToHsv()(self.input_layer)
+        self.hsvtorgb = tensorlayerx.vision.transforms.transforms.HsvToRgb()(self.rgbtohsv)
+        self.transpose = tensorlayerx.vision.transforms.transforms.Transpose(order=(2, 0, 1))(self.input_layer)
+        self.randomrotation = tensorlayerx.vision.transforms.transforms.RandomRotation(
             degrees=30, interpolation='bilinear', expand=False, center=None, fill=0
         )(self.input_layer)
-        self.randomshift_1 = tlx.vision.transforms.RandomShift(shift=(0.2, 0.2), interpolation='bilinear',
-                                                              fill=0)(self.input_layer)
+        self.randomshift_1 = tensorlayerx.vision.transforms.transforms.RandomShift(shift=(0.2, 0.2), interpolation='bilinear',
+                                                                                   fill=0)(self.input_layer)
 
-        self.randomshear = tlx.vision.transforms.RandomShear(shear=30, interpolation='bilinear',
-                                                            fill=0)(self.input_layer)
+        self.randomshear = tensorlayerx.vision.transforms.transforms.RandomShear(shear=30, interpolation='bilinear',
+                                                                                 fill=0)(self.input_layer)
 
-        self.randomzoom_1 = tlx.vision.transforms.RandomZoom(zoom=(0.2, 0.5), interpolation='bilinear',
-                                                            fill=0)(self.input_layer)
+        self.randomzoom_1 = tensorlayerx.vision.transforms.transforms.RandomZoom(zoom=(0.2, 0.5), interpolation='bilinear',
+                                                                                 fill=0)(self.input_layer)
 
-        self.randomflipvertical = tlx.vision.transforms.RandomFlipVertical()(self.input_layer)
-        self.randomfliphorizontal = tlx.vision.transforms.RandomFlipHorizontal()(self.input_layer)
-        self.hwc2chw = tlx.vision.transforms.HWC2CHW()(self.input_layer)
-        self.chw2hwc = tlx.vision.transforms.CHW2HWC()(self.hwc2chw)
-        self.randomresizedcrop = tlx.vision.transforms.RandomResizedCrop(
+        self.randomflipvertical = tensorlayerx.vision.transforms.transforms.RandomFlipVertical()(self.input_layer)
+        self.randomfliphorizontal = tensorlayerx.vision.transforms.transforms.RandomFlipHorizontal()(self.input_layer)
+        self.hwc2chw = tensorlayerx.vision.transforms.transforms.HWC2CHW()(self.input_layer)
+        self.chw2hwc = tensorlayerx.vision.transforms.transforms.CHW2HWC()(self.hwc2chw)
+        self.randomresizedcrop = tensorlayerx.vision.transforms.transforms.RandomResizedCrop(
             size=(80, 80), scale=(0.08, 1.0), ratio=(3. / 4., 4. / 3.), interpolation='bilinear'
         )(self.input_layer)
 
-        self.randomaffine = tlx.vision.transforms.RandomAffine(
+        self.randomaffine = tensorlayerx.vision.transforms.transforms.RandomAffine(
             degrees=30, shift=(0.2, 0.2), zoom=(0.2, 0.5), shear=30, interpolation='bilinear', fill=0
         )(self.input_layer)
 
-        self.colorjitter = tlx.vision.transforms.ColorJitter(
+        self.colorjitter = tensorlayerx.vision.transforms.transforms.ColorJitter(
             brightness=(1, 5), contrast=(1, 5), saturation=(1, 5), hue=(-0.2, 0.2)
         )(self.input_layer)
 

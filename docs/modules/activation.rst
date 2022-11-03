@@ -48,6 +48,8 @@ activation list
    Softmax
    Mish
    LogSoftmax
+   HardSigmoid
+   Hardswish
 
 TensorLayerX Activations
 --------------------------------
@@ -121,8 +123,16 @@ Softmax
 .. autoclass:: Softmax
 
 LogSoftmax
----------
+------------------
 .. autoclass:: LogSoftmax
+
+HardSigmoid
+------------------
+.. autoclass:: HardSigmoid
+
+Hardswish
+------------------
+.. autoclass:: Hardswish
 
 Parametric activation
 ------------------------------

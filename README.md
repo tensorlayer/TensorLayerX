@@ -12,7 +12,7 @@
 [![Build Status](https://travis-ci.org/tensorlayer/tensorlayerx.svg?branch=master)](https://travis-ci.org/tensorlayer/tensorlayerx)
 [![Downloads](http://pepy.tech/badge/tensorlayerx)](http://pepy.tech/project/tensorlayerx)
 [![Downloads](https://pepy.tech/badge/tensorlayerx/week)](https://pepy.tech/project/tensorlayerx/week)
-[![Docker Pulls](https://img.shields.io/docker/pulls/tensorlayer/tensorlayer.svg)](https://hub.docker.com/r/tensorlayer/tensorlayer/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/tensorlayer/tensorlayerx.svg)](https://hub.docker.com/r/tensorlayer/tensorlayerx/)
 
 🇬🇧 TensorLayerX is a multi-backend AI framework, which supports TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow and Jittor as the backends, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend. 
 This project is maintained by researchers from Peking University, Imperial College London, Princeton, Stanford, Tsinghua, Edinburgh and Peng Cheng Lab.
@@ -63,6 +63,17 @@ More resources can be found [here](https://github.com/tensorlayer)
 # Quick Start
 
 ## Installation
+
+### Via docker
+
+Docker is an open source application container engine. In the [TensorLayerX Docker Repository](https://hub.docker.com/repository/docker/tensorlayer/tensorlayerx), 
+different versions of TensorLayerX have been installed in docker images.
+
+```bash
+# pull from docker hub
+docker pull tensorlayer/tensorlayerx:tagname
+```
+
 
 ### Via pip
 ```bash

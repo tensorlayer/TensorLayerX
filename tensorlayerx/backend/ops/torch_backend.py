@@ -1005,7 +1005,12 @@ def split(value, num_or_size_splits, axis=0):
     -------
         Tensor objects resulting from splitting value.
     """
-
+    if isinstance(num_or_size_splits, int):
+        nums = value.size(axis)
+        if nums % num_or_size_splits != 0:
+            raise ValueError("Expected input_axis_nums % num_or_size_splits == 0, but received input_axis_nums % num_or_size_splits = 0")
+        else:
+            num_or_size_splits = int(nums / num_or_size_splits)
     return torch.split(value, num_or_size_splits, dim=axis)
 
 
@@ -1736,3 +1741,11 @@ def roll(input, shifts, dims=None):
 def logsoftmax(input, dim=None):
 
     return F.log_softmax(input, dim)
+
+def topk(input, k, dim=-1, largest=True, sorted=True):
+
+    return torch.topk(input, k, dim, largest, sorted)
+
+def numel(input):
+
+    return torch.numel(input)

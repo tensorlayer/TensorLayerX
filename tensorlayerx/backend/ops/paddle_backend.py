@@ -1404,7 +1404,8 @@ def divide(x, y):
 
 
 def identity(x):
-    raise NotImplementedError
+
+    return x
 
 
 class BatchToSpace(object):
@@ -1919,3 +1920,12 @@ def logsoftmax(input, dim = None):
     if dim is None:
         dim = -1
     return F.log_softmax(input, dim)
+
+
+def topk(input, k, dim=None, largest=True, sorted=True):
+
+    return paddle.topk(input, k, axis=dim, largest=largest, sorted=sorted)
+
+def numel(input):
+
+    return paddle.numel(input)
