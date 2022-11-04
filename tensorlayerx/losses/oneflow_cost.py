@@ -1,8 +1,6 @@
-#! /usr/bin/python
-# -*- coding: utf-8 -*-
+import oneflow as flow
 
-import paddle.nn.functional as F
-import paddle as pd
+import oneflow.nn.functional as F
 
 __all__ = [
     'softmax_cross_entropy_with_logits',
@@ -38,7 +36,7 @@ def softmax_cross_entropy_with_logits(output, target, reduction='mean'):
 
     Examples
     --------
-    >>> import tensorlayerx as tl
+    >>> import tensorlayerx as tlx
     >>> ce = tlx.losses.softmax_cross_entropy_with_logits(y_logits, y_target_logits)
 
     References
@@ -48,7 +46,7 @@ def softmax_cross_entropy_with_logits(output, target, reduction='mean'):
 
     """
 
-    return F.cross_entropy(input=output, label=target, reduction=reduction)
+    return F.sparse_softmax_cross_entropy(labels=target,logits=output)
 
 
 def sigmoid_cross_entropy(output, target, reduction='mean'):
@@ -65,8 +63,7 @@ def sigmoid_cross_entropy(output, target, reduction='mean'):
 
     """
 
-    return F.binary_cross_entropy(F.sigmoid(output), target, reduction=reduction)
-
+    return flow.nn.BCEWithLogitsLoss(reduction=reduction)(output, target)
 
 def binary_cross_entropy(output, target, reduction='mean'):
     """Binary cross entropy operation.
@@ -84,21 +81,7 @@ def binary_cross_entropy(output, target, reduction='mean'):
 
     """
 
-    if False in pd.less_equal(output, pd.to_tensor([1.0])).numpy() or \
-            False in pd.greater_equal(output, pd.to_tensor([0.0])).numpy():
-        raise Exception("all elements of input should be between 0 and 1")
-
-    epsilon = 3.6e-44
-    cal_loss = -(target * pd.log(output + epsilon) + (1. - target) * pd.log(1. - output + epsilon))
-
-    if reduction == 'mean':
-        return pd.mean(cal_loss)
-    elif reduction == 'sum':
-        return pd.sum(cal_loss)
-    elif reduction == 'none':
-        return cal_loss
-    else:
-        raise Exception("The reduction values are 'mean', 'sum', and 'none'.")
+    return flow.nn.BCELoss(reduction=reduction)(output, target)
 
 
 def mean_squared_error(output, target, reduction='mean'):
@@ -117,7 +100,7 @@ def mean_squared_error(output, target, reduction='mean'):
 
     """
 
-    return F.mse_loss(input=output, label=target, reduction=reduction)
+    return flow.nn.MSELoss(reduction=reduction)(output, target)
 
 
 def normalized_mean_square_error(output, target, reduction='mean'):
@@ -132,13 +115,13 @@ def normalized_mean_square_error(output, target, reduction='mean'):
 
     """
 
-    nmse_a = pd.sqrt(pd.fluid.layers.reduce_sum(pd.fluid.layers.square_error_cost(output, target), dim=-1))
-    nmse_b = pd.sqrt(pd.fluid.layers.reduce_sum(pd.square(target), dim=-1))
+    nmse_a = flow.sqrt(flow.sum(flow.square(output - target), dim=-1))
+    nmse_b = flow.sqrt(flow.sum(flow.square(target), dim=-1))
 
     if reduction == 'mean':
-        nmse = pd.fluid.layers.reduce_mean(nmse_a / nmse_b)
+        nmse = flow.mean(nmse_a / nmse_b)
     elif reduction == 'sum':
-        nmse = pd.fluid.layers.reduce_sum(nmse_a / nmse_b)
+        nmse = flow.sum(nmse_a / nmse_b)
     elif reduction == 'none':
         nmse = nmse_a / nmse_b
     else:
@@ -159,11 +142,11 @@ def absolute_difference_error(output, target, reduction='mean'):
     """
 
     if reduction == 'mean':
-        loss = pd.fluid.layers.reduce_mean(pd.abs(output - target))
+        loss = flow.mean(flow.abs(output - target))
     elif reduction == 'sum':
-        loss = pd.fluid.layers.reduce_sum(pd.abs(output - target))
+        loss = flow.sum(flow.abs(output - target))
     elif reduction == 'none':
-        loss = pd.abs(output - target)
+        loss = flow.abs(output - target)
     else:
         raise Exception("The reduction values are 'mean', 'sum', and 'none'.")
     return loss
@@ -201,18 +184,17 @@ def dice_coe(output, target, loss_type='jaccard', axis=(1, 2, 3), smooth=1e-5):
 
     """
 
-    inse = pd.fluid.layers.reduce_sum(output * target, dim=axis)
+    inse = flow.sum(output * target, dim=axis)
     if loss_type == 'jaccard':
-        l = pd.fluid.layers.reduce_sum(output * output, dim=axis)
-        r = pd.fluid.layers.reduce_sum(target * target, dim=axis)
+        l = flow.sum(output * output, dim=axis)
+        r = flow.sum(target * target, dim=axis)
     elif loss_type == 'sorensen':
-        l = pd.fluid.layers.reduce_sum(output, dim=axis)
-        r = pd.fluid.layers.reduce_sum(target, dim=axis)
+        l = flow.sum(output, dim=axis)
+        r = flow.sum(target, dim=axis)
     else:
         raise Exception("Unknow loss_type")
-
     dice = (2. * inse + smooth) / (l + r + smooth)
-    dice = pd.fluid.layers.reduce_mean(dice)
+    dice = flow.mean(dice)
     return dice
 
 
@@ -240,13 +222,13 @@ def dice_hard_coe(output, target, threshold=0.5, axis=(1, 2, 3), smooth=1e-5):
 
     """
 
-    output = pd.cast(output > threshold, dtype='float32')
-    target = pd.cast(target > threshold, dtype='float32')
-    inse = pd.fluid.layers.reduce_sum(pd.multiply(output, target), dim=axis)
-    l = pd.fluid.layers.reduce_sum(output, dim=axis)
-    r = pd.fluid.layers.reduce_sum(target, dim=axis)
+    output = _cast(output, threshold)
+    target = _cast(target, threshold)
+    inse = flow.sum(flow.mul(output, target), dim=axis)
+    l = flow.sum(output, dim=axis)
+    r = flow.sum(target, dim=axis)
     hard_dice = (2. * inse + smooth) / (l + r + smooth)
-    hard_dice = pd.fluid.layers.reduce_mean(hard_dice)
+    hard_dice = flow.mean(hard_dice)
     return hard_dice
 
 
@@ -274,12 +256,12 @@ def iou_coe(output, target, threshold=0.5, axis=(1, 2, 3), smooth=1e-5):
 
     """
 
-    pre = pd.cast(output > threshold, dtype='float32')
-    truth = pd.cast(target > threshold, dtype='float32')
-    inse = pd.fluid.layers.reduce_sum(pd.multiply(pre, truth), dim=axis)  # AND
-    union = pd.fluid.layers.reduce_sum(pd.cast(pd.add(pre, truth) >= 1, dtype='float32'), dim=axis)  # OR
+    pre = _cast(output, threshold)
+    truth = _cast(target, threshold)
+    inse = torch.sum(torch.multiply(pre, truth), dim=axis)
+    union = torch.sum(_cast(torch.add(pre, truth) , 1.0, flag=True), dim=axis)
     batch_iou = (inse + smooth) / (union + smooth)
-    iou = pd.fluid.layers.reduce_mean(batch_iou, name='iou_coe')
+    iou = torch.mean(batch_iou)
     return iou
 
 
@@ -345,7 +327,6 @@ def cross_entropy_seq(logits, target_seqs, batch_size=None):
 
     raise NotImplementedError("Not Implemented.")
 
-
 def cross_entropy_seq_with_mask(logits, target_seqs, input_mask, return_details=False, name=None):
     """Returns the expression of cross-entropy of two sequences, implement
     softmax internally. Normally be used for Dynamic RNN with Synced sequence input and output.
@@ -381,7 +362,7 @@ def cross_entropy_seq_with_mask(logits, target_seqs, input_mask, return_details=
     ...         cell =tf.keras.layers.LSTMCell(units=embedding_size, dropout=0.1),
     ...         return_seq_2d = True,
     ...         name = 'dynamicrnn')(net)
-    >>> net = tlx.layers.Dense(n_units=vocab_size, name="output")(net)
+    >>> net = tlx.layers.Linear(out_features=vocab_size, name="output")(net)
     >>> model = tlx.model.Model(inputs=ni, outputs=net)
     >>> input_seqs = np.random.randint(0, 10, size=(batch_size, 10), dtype=np.int64)
     >>> target_seqs = np.random.randint(0, 10, size=(batch_size, 10), dtype=np.int64)
@@ -408,9 +389,9 @@ def cosine_similarity(v1, v2):
 
     """
 
-    return pd.fluid.layers.reduce_sum(pd.multiply(v1, v2), 1) / \
-        (pd.sqrt(pd.fluid.layers.reduce_sum(pd.multiply(v1, v1), 1)) *
-         pd.sqrt(pd.fluid.layers.reduce_sum(pd.multiply(v2, v2), 1)))
+    return torch.sum(torch.multiply(v1, v2), 1) / \
+        (torch.sqrt(torch.sum(torch.multiply(v1, v1), 1)) *
+         torch.sqrt(torch.sum(torch.multiply(v2, v2), 1)))
 
 
 # Regularization Functions
@@ -567,3 +548,15 @@ def huber_loss(
     """
 
     raise NotImplementedError("Not Implemented.")
+
+
+def _cast(a, threshold, flag=False):
+    zero = flow.zeros_like(a)
+    one = flow.ones_like(a)
+    if flag == False:
+        a = flow.where(a > threshold, one, a)
+        a = flow.where(a <= threshold, zero, a)
+    else:
+        a = flow.where(a >= threshold, one, a)
+        a = flow.where(a < threshold, zero, a)
+    return a

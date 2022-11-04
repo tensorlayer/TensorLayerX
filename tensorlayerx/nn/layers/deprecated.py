@@ -39,16 +39,16 @@ __all__ += [
 
 
 def AtrousConv1dLayer(*args, **kwargs):
-    raise NonExistingLayerError("use `tl.layers.Conv1d` with dilation instead" + __log__)
+    raise NonExistingLayerError("use `tlx.layers.Conv1d` with dilation instead" + __log__)
 
 
 def AtrousConv2dLayer(*args, **kwargs):
-    raise NonExistingLayerError("use `tl.layers.Conv2d` with dilation instead" + __log__)
+    raise NonExistingLayerError("use `tlx.layers.Conv2d` with dilation instead" + __log__)
 
 
 def AtrousDeConv2dLayer(*args, **kwargs):
     # raise NonExistingLayerError("AtrousDeConv2dLayer(net, name='a') --> AtrousDeConv2d(name='a')(net)")
-    raise NonExistingLayerError("use `tl.layers.ConvTranspose2d` with dilation instead" + __log__)
+    raise NonExistingLayerError("use `tlx.layers.ConvTranspose2d` with dilation instead" + __log__)
 
 
 # linear/base_linear.py

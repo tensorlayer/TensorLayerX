@@ -1,7 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
-import torch
+import oneflow as flow
 import math
 import numpy as np
 
@@ -59,8 +59,8 @@ class LRScheduler(object):
     def __init__(self, learning_rate=0.1, last_epoch=-1, verbose=False):
         if not isinstance(learning_rate, (float, int)):
             raise TypeError("The type of learning rate must be float, but received {}".format(type(learning_rate)))
-        self.base_lr = torch.tensor(float(learning_rate))
-        self.last_lr = torch.tensor(float(learning_rate))
+        self.base_lr = flow.tensor(float(learning_rate))
+        self.last_lr = flow.tensor(float(learning_rate))
         self.last_epoch = last_epoch
         self.verbose = verbose
 
@@ -328,8 +328,8 @@ class ReduceOnPlateau(LRScheduler):
         self.num_bad_epochs = 0
 
         # Can not call Parent __init__, so implement here.
-        self.base_lr = torch.tensor(float(learning_rate))
-        self.last_lr = torch.tensor(float(learning_rate))
+        self.base_lr = flow.tensor(float(learning_rate))
+        self.last_lr = flow.tensor(float(learning_rate))
         self.last_epoch = 0
         self.verbose = verbose
         self._var_name = None
@@ -343,7 +343,7 @@ class ReduceOnPlateau(LRScheduler):
             self.last_epoch = epoch
 
         # loss must be float, numpy.ndarray or 1-D Tensor with shape [1]
-        if isinstance(metrics, (torch.Tensor, np.ndarray)):
+        if isinstance(metrics, (flow.Tensor, np.ndarray)):
             assert len(metrics.shape) == 1 and metrics.shape[0] == 1, "the metrics.shape " \
                                                                       "should be (1L,), but the current metrics.shape is {}. Maybe that " \
                                                                       "you should call tlx.reudce_mean to process it first.".format(

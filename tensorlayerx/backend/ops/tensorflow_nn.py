@@ -1671,8 +1671,8 @@ class BatchNorm(object):
     ---------
     With TensorLayer
 
-    >>> net = tl.layers.Input([None, 50, 50, 32], name='input')
-    >>> net = tl.layers.BatchNorm()(net)
+    >>> net = tlx.layers.Input([None, 50, 50, 32], name='input')
+    >>> net = tlx.layers.BatchNorm()(net)
 
     Notes
     -----

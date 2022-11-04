@@ -560,7 +560,7 @@ class ModuleNode(object):
 
     Parameters
     ----------
-    layer : tl.layers.Layer
+    layer : tlx.layers.Layer
         A tl layer that wants to create a node.
     node_index : int
         Index of this node in layer._nodes.

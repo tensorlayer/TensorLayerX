@@ -33,7 +33,7 @@ def minibatches(inputs=None, targets=None, batch_size=None, allow_dynamic_batch_
     --------
     >>> X = np.asarray([['a','a'], ['b','b'], ['c','c'], ['d','d'], ['e','e'], ['f','f']])
     >>> y = np.asarray([0,1,2,3,4,5])
-    >>> for batch in tl.iterate.minibatches(inputs=X, targets=y, batch_size=2, shuffle=False):
+    >>> for batch in tlx.iterate.minibatches(inputs=X, targets=y, batch_size=2, shuffle=False):
     >>>     print(batch)
     ... (array([['a', 'a'], ['b', 'b']], dtype='<U1'), array([0, 1]))
     ... (array([['c', 'c'], ['d', 'd']], dtype='<U1'), array([2, 3]))
@@ -95,7 +95,7 @@ def seq_minibatches(inputs, targets, batch_size, seq_length, stride=1):
 
     >>> X = np.asarray([['a','a'], ['b','b'], ['c','c'], ['d','d'], ['e','e'], ['f','f']])
     >>> y = np.asarray([0, 1, 2, 3, 4, 5])
-    >>> for batch in tl.iterate.seq_minibatches(inputs=X, targets=y, batch_size=2, seq_length=2, stride=1):
+    >>> for batch in tlx.iterate.seq_minibatches(inputs=X, targets=y, batch_size=2, seq_length=2, stride=1):
     >>>     print(batch)
     ... (array([['a', 'a'], ['b', 'b'], ['b', 'b'], ['c', 'c']], dtype='<U1'), array([0, 1, 1, 2]))
     ... (array([['c', 'c'], ['d', 'd'], ['d', 'd'], ['e', 'e']], dtype='<U1'), array([2, 3, 3, 4]))
@@ -106,7 +106,7 @@ def seq_minibatches(inputs, targets, batch_size, seq_length, stride=1):
     >>> num_steps = 2
     >>> X = np.asarray([['a','a'], ['b','b'], ['c','c'], ['d','d'], ['e','e'], ['f','f']])
     >>> Y = np.asarray([0,1,2,3,4,5])
-    >>> for batch in tl.iterate.seq_minibatches(inputs=X, targets=Y, batch_size=2, seq_length=num_steps, stride=1):
+    >>> for batch in tlx.iterate.seq_minibatches(inputs=X, targets=Y, batch_size=2, seq_length=num_steps, stride=1):
     >>>     x, y = batch
     >>>     if return_last:
     >>>         tmp_y = y.reshape((-1, num_steps) + y.shape[1:])
@@ -168,7 +168,7 @@ def seq_minibatches2(inputs, targets, batch_size, num_steps):
     --------
     >>> X = [i for i in range(20)]
     >>> Y = [i for i in range(20,40)]
-    >>> for batch in tl.iterate.seq_minibatches2(X, Y, batch_size=2, num_steps=3):
+    >>> for batch in tlx.iterate.seq_minibatches2(X, Y, batch_size=2, num_steps=3):
     ...     x, y = batch
     ...     print(x, y)
     ...
@@ -246,7 +246,7 @@ def ptb_iterator(raw_data, batch_size, num_steps):
     Examples
     --------
     >>> train_data = [i for i in range(20)]
-    >>> for batch in tl.iterate.ptb_iterator(train_data, batch_size=2, num_steps=3):
+    >>> for batch in tlx.iterate.ptb_iterator(train_data, batch_size=2, num_steps=3):
     >>>     x, y = batch
     >>>     print(x, y)
     ... [[ 0  1  2] <---x                       1st subset/ iteration

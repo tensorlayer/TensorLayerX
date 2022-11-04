@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+from django.shortcuts import redirect
 import torch
 
 __all__ = [
@@ -38,7 +39,7 @@ def softmax_cross_entropy_with_logits(output, target, reduction='mean'):
     Examples
     --------
     >>> import tensorlayerx as tl
-    >>> ce = tl.losses.softmax_cross_entropy_with_logits(y_logits, y_target_logits)
+    >>> ce = tlx.losses.softmax_cross_entropy_with_logits(y_logits, y_target_logits)
 
     References
     -----------
@@ -177,8 +178,8 @@ def dice_coe(output, target, loss_type='jaccard', axis=(1, 2, 3), smooth=1e-5):
     Examples
     ---------
     >>> import tensorlayerx as tl
-    >>> outputs = tl.act.pixel_wise_softmax(outputs)
-    >>> dice_loss = 1 - tl.losses.dice_coe(outputs, y_)
+    >>> outputs = tlx.act.pixel_wise_softmax(outputs)
+    >>> dice_loss = 1 - tlx.losses.dice_coe(outputs, y_)
 
     References
     -----------
@@ -311,7 +312,7 @@ def cross_entropy_seq(logits, target_seqs, batch_size=None):
     logits : Tensor
         2D tensor with shape of `[batch_size * n_steps, n_classes]`.
     target_seqs : Tensor
-        The target sequence, 2D tensor `[batch_size, n_steps]`, if the number of step is dynamic, please use ``tl.losses.cross_entropy_seq_with_mask`` instead.
+        The target sequence, 2D tensor `[batch_size, n_steps]`, if the number of step is dynamic, please use ``tlx.losses.cross_entropy_seq_with_mask`` instead.
     batch_size : None or int.
         Whether to divide the losses by batch size.
             - If integer, the return losses will be divided by `batch_size`.
@@ -323,7 +324,7 @@ def cross_entropy_seq(logits, target_seqs, batch_size=None):
     >>> # see `PTB example <https://github.com/tensorlayer/tensorlayer/blob/master/example/tutorial_ptb_lstm.py>`__.for more details
     >>> # outputs shape : (batch_size * n_steps, n_classes)
     >>> # targets shape : (batch_size, n_steps)
-    >>> losses = tl.losses.cross_entropy_seq(outputs, targets)
+    >>> losses = tlx.losses.cross_entropy_seq(outputs, targets)
 
     """
 
@@ -356,22 +357,22 @@ def cross_entropy_seq_with_mask(logits, target_seqs, input_mask, return_details=
     >>> batch_size = 64
     >>> vocab_size = 10000
     >>> embedding_size = 256
-    >>> ni = tl.layers.Input([batch_size, None], dtype=tf.int64)
-    >>> net = tl.layers.Embedding(
+    >>> ni = tlx.layers.Input([batch_size, None], dtype=tf.int64)
+    >>> net = tlx.layers.Embedding(
     ...         vocabulary_size = vocab_size,
     ...         embedding_size = embedding_size,
     ...         name = 'seq_embedding')(ni)
-    >>> net = tl.layers.RNN(
+    >>> net = tlx.layers.RNN(
     ...         cell =tf.keras.layers.LSTMCell(units=embedding_size, dropout=0.1),
     ...         return_seq_2d = True,
     ...         name = 'dynamicrnn')(net)
-    >>> net = tl.layers.Linear(out_features=vocab_size, name="output")(net)
-    >>> model = tl.model.Model(inputs=ni, outputs=net)
+    >>> net = tlx.layers.Linear(out_features=vocab_size, name="output")(net)
+    >>> model = tlx.model.Model(inputs=ni, outputs=net)
     >>> input_seqs = np.random.randint(0, 10, size=(batch_size, 10), dtype=np.int64)
     >>> target_seqs = np.random.randint(0, 10, size=(batch_size, 10), dtype=np.int64)
     >>> input_mask = np.random.randint(0, 2, size=(batch_size, 10), dtype=np.int64)
     >>> outputs = model(input_seqs, is_train=True)
-    >>> loss = tl.losses.cross_entropy_seq_with_mask(outputs, target_seqs, input_mask)
+    >>> loss = tlx.losses.cross_entropy_seq_with_mask(outputs, target_seqs, input_mask)
 
     """
 
@@ -550,7 +551,7 @@ def huber_loss(
 
     """
 
-    raise NotImplementedError("Not Implemented.")
+    return torch.nn.functional.huber_loss(output, target, reduction='mean' if is_mean else 'sum', delta=delta)
 
 
 def _cast(a, threshold, flag=False):

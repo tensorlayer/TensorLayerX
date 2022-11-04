@@ -208,7 +208,7 @@ The following is an example that pushes 3 tasks with different hyper parameters.
 .. code-block:: python
 
   ## save dataset into database, then allow other servers to use it
-  X_train, y_train, X_val, y_val, X_test, y_test = tl.files.load_mnist_dataset(shape=(-1, 784))
+  X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
   db.save_dataset((X_train, y_train, X_val, y_val, X_test, y_test), 'mnist', description='handwriting digit')
 
   ## push tasks into database, then allow other servers pull tasks to run
