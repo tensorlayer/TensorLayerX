@@ -12,5 +12,7 @@ elif BACKEND == 'paddle':
     from .paddle_optimizers import *
 elif BACKEND == 'torch':
     from .torch_optimizers import *
+elif BACKEND == 'oneflow':
+    from .oneflow_optimizers import *
 else:
     raise NotImplementedError("This backend is not supported")

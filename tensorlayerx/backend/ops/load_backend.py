@@ -76,5 +76,11 @@ elif BACKEND == 'torch':
     import torch
     BACKEND_VERSION = torch.__version__
     sys.stderr.write('Using PyTorch backend.\n')
+elif BACKEND == 'oneflow':
+    from .oneflow_nn import *
+    from .oneflow_backend import *
+    import oneflow as flow
+    BACKEND_VERSION = flow.__version__
+    sys.stderr.write('Using OneFlow backend.\n')
 else:
     raise NotImplementedError("This backend is not supported")

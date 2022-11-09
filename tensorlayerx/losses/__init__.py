@@ -11,5 +11,7 @@ elif BACKEND == 'paddle':
     from .paddle_cost import *
 elif BACKEND == 'torch':
     from .torch_cost import *
+elif BACKEND == 'oneflow':
+    from .oneflow_cost import *
 else:
     raise NotImplementedError("This backend is not supported")

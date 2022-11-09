@@ -1,7 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
-from django.shortcuts import redirect
 import torch
 
 __all__ = [

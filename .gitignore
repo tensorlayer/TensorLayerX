@@ -129,3 +129,8 @@ update_tl.py
 # Data Files and ByteCode files
 *.gz
 *.npz
+
+
+#oneflow logs
+oneflow.user*
+oneflow.INFO

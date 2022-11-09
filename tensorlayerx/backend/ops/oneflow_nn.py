@@ -2185,3 +2185,12 @@ class PReLU(object):
 def prelu(input, weight, data_format):
     weight = weight.to(input.device)
     return F.prelu(input, weight)
+
+
+def hardsigmoid(input):
+
+    return flow.nn.functional.hardsigmoid(input)
+
+def hardswish(input):
+
+    return flow.nn.functional.hardswish(input)
