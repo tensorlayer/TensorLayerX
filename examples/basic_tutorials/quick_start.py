@@ -40,7 +40,7 @@ class CNN(Module):
         self.maxpool1 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool1')
 
         self.conv2 = Conv2d(
-            64, (5, 5), (1, 1), padding='SAME', act=tlx.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=64
+            64, (5, 5), (1, 1), padding='SAME', act=tlx.ReLU, W_init=W_init, name='conv2', in_channels=64
         )
         self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
 
@@ -91,6 +91,14 @@ train_transforms = Compose(
         StandardizePerImage()
     ]
 )
+# 设置训练参数
+batch_size = 128
+n_epoch = 500
+learning_rate = 0.0001
+print_freq = 5
+n_step_epoch = int(len(y_train) / batch_size)
+n_step = n_epoch * n_step_epoch
+shuffle_buffer_size = 128
 
 test_transforms = Compose([Resize(size=(24, 24)), StandardizePerImage()])
 
@@ -103,15 +111,6 @@ test_dataset = DataLoader(test_dataset, batch_size=batch_size)
 # 搭建网络
 net = CNN()
 
-# 设置训练参数
-batch_size = 128
-n_epoch = 500
-learning_rate = 0.0001
-print_freq = 5
-n_step_epoch = int(len(y_train) / batch_size)
-n_step = n_epoch * n_step_epoch
-shuffle_buffer_size = 128
-
 # 定义损失函数、优化器等
 optimizer = tlx.optimizers.Adam(learning_rate)
 metrics = tlx.metrics.Accuracy()
@@ -123,4 +122,4 @@ net_with_train = tlx.model.Model(
 )
 
 #执行训练
-net_with_train.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=False)
+net_with_train.train(n_epoch=n_epoch, train_dataset=train_dataset, print_freq=print_freq, print_train_batch=False)

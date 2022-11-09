@@ -12,6 +12,7 @@ import oneflow.nn as nn
 import oneflow.nn.functional as F
 
 
+
 import numpy as np
 import random
 
@@ -393,13 +394,14 @@ def Variable(initial_value, name=None, trainable=True):
 
 class MatMul(object):
     def __init__(self, transpose_a=False, transpose_b=False, name=None):
-        pass
         self.transpose_a = transpose_a
         self.transpose_b = transpose_b
         self.name = name
+        if self.transpose_a or self.transpose_b:
+            raise NotImplementedError('keyword argument `transpose_a` or `transpose_b` is not supported.')
 
     def forward(self, x, y):
-        return flow.matmul(x, y, transpose_a=self.transpose_a, transpose_b=self.transpose_b, name=self.name)
+        return flow.matmul(x, y)
 
 
 def matmul(a, b, transpose_a=False, transpose_b=False):
@@ -551,7 +553,6 @@ def reshape(tensor, shape):
 
 class Concat(object):
     def __init__(self, axis=0):
-        pass
         self.axis = axis
 
     def forward(self, values):
@@ -1666,9 +1667,11 @@ def round(x):
 def rsqrt(x):
     return flow.rsqrt(x)
 
+
 def segment_max(x, segment_ids, num_segments=None):
     segment_ids = flow.Tensor(segment_ids, dtype=flow.int64)
     num_segments = len(flow.unique(segment_ids))
+
     return unsorted_segment_max(x, segment_ids, num_segments)
 
 

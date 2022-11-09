@@ -218,9 +218,6 @@ def elu(x, alpha=1.0):
 
 class ReLU6(object):
 
-    def __init__(self):
-        pass
-
     def __call__(self, x):
         return F.relu6(x)
 
