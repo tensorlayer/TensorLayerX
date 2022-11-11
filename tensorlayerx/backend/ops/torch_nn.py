@@ -2179,13 +2179,21 @@ class PReLU(object):
         self.data_format = data_format
 
     def __call__(self, input, weight):
-        # weight = weight.to(input.device)
-        return torch.prelu(input, weight)
+        if self.data_format == 'channels_last' :
+            input = nhwc_to_nchw(input)
+        output = torch.prelu(input, weight)
+        if self.data_format == 'channels_last':
+            output = nchw_to_nhwc(output)
+        return output
 
 
 def prelu(input, weight, data_format):
-    weight = weight.to(input.device)
-    return torch.prelu(input, weight)
+    if data_format == 'channels_last':
+        input = nhwc_to_nchw(input)
+    output = torch.prelu(input, weight)
+    if data_format == 'channels_last':
+        output = nchw_to_nhwc(output)
+    return output
 
 def hardsigmoid(input):
 
@@ -2194,3 +2202,7 @@ def hardsigmoid(input):
 def hardswish(input):
 
     return torch.nn.functional.hardswish(input)
+
+def swish(input):
+
+    return torch.sigmoid(input) * input

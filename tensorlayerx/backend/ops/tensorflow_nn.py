@@ -2906,17 +2906,25 @@ class PReLU(object):
         self.data_format = data_format
 
     def __call__(self, input, weight):
-
+        if self.data_format == 'channels_first':
+            input = nchw_to_nhwc(input)
         pos = tf.nn.relu(input)
-        neg = -tf.nn.sigmoid(weight) * tf.nn.relu(-input)
-        return pos + neg
+        neg = -weight * tf.nn.relu(-input)
+        output = pos + neg
+        if self.data_format == 'channels_first':
+            output = nhwc_to_nchw(output)
+        return output
 
 
 def prelu(input, weight, data_format):
-
+    if data_format == 'channels_first':
+        input = nchw_to_nhwc(input)
     pos = tf.nn.relu(input)
-    neg = -tf.nn.sigmoid(weight) * tf.nn.relu(-input)
-    return pos + neg
+    neg = -weight * tf.nn.relu(-input)
+    output = pos + neg
+    if data_format == 'channels_first':
+        output = nhwc_to_nchw(output)
+    return output
 
 
 def hardsigmoid(input):
@@ -2940,3 +2948,7 @@ def hardswish(input):
     return x
 
 
+
+def swish(input):
+
+    return tf.sigmoid(input) * input

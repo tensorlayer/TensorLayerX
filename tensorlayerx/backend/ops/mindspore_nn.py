@@ -2485,18 +2485,24 @@ class PReLU(Cell):
     def __init__(self, data_format):
         super(PReLU, self).__init__()
         self.data_format = data_format
+        self.prelu = P.PReLU()
 
     def __call__(self, input, weight):
-
-        prelu = P.PReLU()
-        v = prelu(input, F.cast(weight, input.dtype))
+        if self.data_format == 'channels_last' :
+            input = nhwc_to_nchw(input)
+        v = self.prelu(input, F.cast(weight, input.dtype))
+        if self.data_format == 'channels_last':
+            v = nchw_to_nhwc(v)
         return v
 
 
 def prelu(input, weight, data_format):
-
+    if data_format == 'channels_last':
+        input = nhwc_to_nchw(input)
     prelu = P.PReLU()
     v = prelu(input, F.cast(weight, input.dtype))
+    if data_format == 'channels_last':
+        v = nchw_to_nhwc(v)
     return v
 
 def hardsigmoid(input):
@@ -2508,3 +2514,8 @@ def hardswish(input):
 
     op = ms.ops.HSwish()
     return op(input)
+
+
+def swish(input):
+    op = ms.ops.Sigmoid()
+    return op(input) * input

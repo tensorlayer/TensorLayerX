@@ -2061,16 +2061,29 @@ class QuanConvBn(object):
 class PReLU(object):
 
     def __init__(self, data_format):
-        self.data_format, _ = preprocess_2d_format(data_format, None)
+        # self.data_format, _ = preprocess_2d_format(data_format, None)
+        self.data_format = data_format
 
     def __call__(self, input, weight):
+        dim = input.ndim
+        if dim == 3:
+            self.data_format, _ = preprocess_1d_format(self.data_format, None)
+        elif dim == 4:
+            self.data_format, _ = preprocess_2d_format(self.data_format, None)
+        elif dim == 5:
+            self.data_format, _ = preprocess_3d_format(self.data_format, None)
 
         return F.prelu(input, weight, data_format=self.data_format)
 
 
 def prelu(input, weight, data_format):
-
-    data_format, _ = preprocess_2d_format(data_format, None)
+    dim = input.ndim
+    if dim == 3:
+        data_format, _ = preprocess_1d_format(data_format, None)
+    elif dim == 4:
+        data_format, _ = preprocess_2d_format(data_format, None)
+    elif dim == 5:
+        data_format, _ = preprocess_3d_format(data_format, None)
     return F.prelu(input, weight, data_format=data_format)
 
 def hardsigmoid(input):
@@ -2080,3 +2093,7 @@ def hardsigmoid(input):
 def hardswish(input):
 
     return F.hardswish(input)
+
+def swish(input):
+
+    return F.swish(input)

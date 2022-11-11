@@ -46,9 +46,10 @@ class PRelu(Module):
 
         super(PRelu, self).__init__(name)
         self.num_parameters = num_parameters
-        self.init = init
+        self.init = tlx.initializers.constant(value=init)
         self.data_format = data_format
-
+        self.build()
+        self._built = True
         logging.info("PRelu %s: num_parameters: %s" % (self.name, self.num_parameters))
 
     def __repr__(self):
@@ -59,29 +60,13 @@ class PRelu(Module):
         s += ')'
         return s.format(classname=self.__class__.__name__, **self.__dict__)
 
-    def build(self, inputs_shape):
-        dim = len(inputs_shape)
-        if self.data_format == 'channels_last':
-            w_shape = (self.num_parameters, )
-        elif self.data_format == 'channels_first':
-            if dim == 4:
-                w_shape = (1, self.num_parameters, 1, 1)
-            elif dim == 3:
-                w_shape = (1, self.num_parameters, 1)
-            elif dim == 5:
-                w_shape = (1, self.num_parameters, 1, 1, 1)
-            elif dim < 3:
-                w_shape = (self.num_parameters, )
+    def build(self):
 
-        self.alpha = self._get_weights("alpha", shape=w_shape, init=tlx.initializers.constant(value=self.init))
+        w_shape = (self.num_parameters, )
+        self.alpha = self._get_weights("alpha", shape=w_shape, init=self.init)
         self.prelu = tlx.ops.PReLU(data_format = self.data_format)
 
     def forward(self, inputs):
-        if self._forward_state == False:
-            if self._built == False:
-                self.build(tlx.get_tensor_shape(inputs))
-                self._built = True
-            self._forward_state = True
 
         output = self.prelu(inputs, self.alpha)
 
@@ -827,11 +812,11 @@ class Swish(Module):
 
     def __init__(self):
         super(Swish, self).__init__()
-        self.sigmoid = tlx.ops.Sigmoid()
+        # self.sigmoid = tlx.ops.Sigmoid()
         self._built = True
 
     def forward(self, x):
-        outputs = self.sigmoid(x) * x
+        outputs = tlx.ops.swish(x)
 
         if not self._nodes_fixed and self._build_graph:
             self._add_node(x, outputs)
