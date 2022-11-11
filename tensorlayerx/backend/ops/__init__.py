@@ -210,6 +210,7 @@ from .load_backend import topk
 from .load_backend import hardsigmoid
 from .load_backend import numel
 from .load_backend import hardswish
+from .load_backend import swish
 # dtype
 from .load_backend import (
     DType, float16, float32, float64, int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, complex64,
