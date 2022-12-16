@@ -1431,7 +1431,7 @@ def angle(x):
     return convert_to_tensor(np.angle(x_np))
 
 
-def argmax(x, axis=None, dtype='int64'):
+def argmax(x, axis=None, keepdim=False, dtype='int64'):
     return ms.numpy.argmax(x, axis=axis)
 
 
@@ -1947,3 +1947,22 @@ class Swish(object):
 
     def __call__(self, x):
         raise NotImplementedError
+
+def expand(x, shape):
+
+
+    raise NotImplementedError
+
+def unique(x, return_index=False, return_inverse=False, return_counts=False, axis=None, dtype='int64'):
+
+    raise NotImplementedError
+
+
+def flip(x, axis):
+
+    raise NotImplementedError
+
+
+def mv(x, vec):
+
+    raise NotImplementedError

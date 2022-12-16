@@ -1455,7 +1455,7 @@ def angle(x):
     return convert_to_tensor(np.angle(x_np))
 
 
-def argmax(x, axis=None, dtype='int64'):
+def argmax(x, axis=None, keepdim=False, dtype='int64'):
     """
     Returns the index with the largest value across axes of a tensor.
 
@@ -1876,6 +1876,7 @@ def logsoftmax(input, dim=None):
 
     return F.log_softmax(input, dim)
 
+
 def histogram(input, bins=100, min=0, max=0, name=None):
     raise NotImplementedError
 
@@ -1909,3 +1910,31 @@ class Swish(object):
 
     def __call__(self, x):
         raise NotImplementedError
+
+def topk(input, k, dim=-1, largest=True, sorted=True):
+
+    return flow.topk(input, k, dim, largest, sorted)
+
+def numel(input):
+
+    return flow.numel(input)
+
+def expand(x, shape):
+
+
+    raise NotImplementedError
+
+def unique(x, return_index=False, return_inverse=False, return_counts=False, axis=None, dtype='int64'):
+
+    raise NotImplementedError
+
+
+def flip(x, axis):
+
+    raise NotImplementedError
+
+
+def mv(x, vec):
+
+    raise NotImplementedError
+

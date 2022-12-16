@@ -1293,8 +1293,8 @@ def angle(x):
     return torch.angle(x)
 
 
-def argmax(x, axis=None, dtype='int64'):
-    return torch.argmax(x, dim=axis)
+def argmax(x, axis=None, keepdim=False, dtype='int64'):
+    return torch.argmax(x, dim=axis, keepdim=keepdim)
 
 
 def argmin(x, axis=None, dtype='int64'):
@@ -1751,6 +1751,7 @@ def numel(input):
     return torch.numel(input)
 
 
+
 def histogram(input, bins=100, min=0, max=0, name=None):
     raise NotImplementedError
 
@@ -1784,3 +1785,22 @@ class Swish(object):
 
     def __call__(self, x):
         raise NotImplementedError
+
+def expand(x, shape):
+
+    return x.expand(shape)
+
+def unique(x, return_index=False, return_inverse=False, return_counts=False, axis=None, dtype='int64'):
+
+    raise NotImplementedError
+
+
+def flip(x, axis):
+
+    return torch.flip(x, axis)
+
+
+def mv(x, vec):
+
+    return torch.mv(x, vec)
+
