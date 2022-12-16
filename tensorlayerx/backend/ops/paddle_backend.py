@@ -1458,8 +1458,8 @@ def acosh(x):
     return pd.log(x + pd.sqrt(pd.pow(x, 2) - 1))
 
 
-def argmax(x, axis=None, dtype='int64'):
-    return pd.argmax(x, axis=axis, dtype=dtype)
+def argmax(x, axis=None,keepdim=False, dtype='int64'):
+    return pd.argmax(x, axis=axis, keepdim = keepdim, dtype=dtype)
 
 
 def argmin(x, axis=None, dtype='int64'):
@@ -1971,4 +1971,21 @@ class Swish(object):
 
     def __call__(self, x):
         return paddle.nn.functional.swish(x)
+
+
+def expand(x, shape):
+
+    return paddle.expand(x, shape)
+
+def unique(x, return_index=False, return_inverse=False, return_counts=False, axis=None, dtype='int64'):
+
+    return paddle.unique(x, return_index, return_inverse, return_counts, axis, dtype)
+
+def flip(x, axis):
+
+    return paddle.flip(x, axis)
+
+def mv(x, vec):
+
+    return paddle.mv(x, vec)
 
