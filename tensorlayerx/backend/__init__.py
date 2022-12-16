@@ -18,6 +18,10 @@ from .ops import softmax
 from .ops import gelu
 from .ops import bias_add
 from .ops import moments
+from .ops import histogram
+from .ops import flatten
+from .ops import index_select
+from .ops import dot
 
 from .ops import ReLU
 from .ops import ELU

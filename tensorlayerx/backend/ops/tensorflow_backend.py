@@ -4101,3 +4101,38 @@ def numel(input):
     '''
 
     return tf.size(input)
+
+
+def histogram(input, bins=100, min=0, max=0, name=None):
+    raise NotImplementedError
+
+
+def flatten(x, start_axis=0, stop_axis=-1, name=None):
+    raise NotImplementedError
+
+
+def interpolate(x,
+                size=None,
+                scale_factor=None,
+                mode='nearest',
+                align_corners=False,
+                align_mode=0,
+                data_format='NCHW',
+                name=None):
+    raise NotImplementedError
+
+
+def index_select(x, index, axis=0, name=None):
+    raise NotImplementedError
+
+
+def dot(x, y, name=None):
+    raise NotImplementedError
+
+
+class Swish(object):
+    def __init__(self):
+        pass
+
+    def __call__(self, x):
+        raise NotImplementedError

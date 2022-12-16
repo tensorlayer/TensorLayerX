@@ -1222,8 +1222,8 @@ def linspace(start, stop, num):
     return pd.linspace(start, stop, num)
 
 
-def slice(inputs, starts, sizes):
-    return pd.slice(inputs, starts=starts, ends=sizes)
+def slice(inputs, axes, starts, sizes):
+    return pd.slice(inputs, axes=axes, starts=starts, ends=sizes)
 
 
 def add_n(inputs):
@@ -1929,3 +1929,46 @@ def topk(input, k, dim=None, largest=True, sorted=True):
 def numel(input):
 
     return paddle.numel(input)
+
+
+def histogram(input, bins=100, min=0, max=0, name=None):
+    return paddle.histogram(input, bins=bins, min=min, max=max, name=name)
+
+
+def flatten(x, start_axis=0, stop_axis=-1, name=None):
+    return paddle.flatten(x, start_axis=start_axis, stop_axis=stop_axis, name=name)
+
+
+def interpolate(x,
+                size=None,
+                scale_factor=None,
+                mode='nearest',
+                align_corners=False,
+                align_mode=0,
+                data_format='NCHW',
+                name=None):
+    return paddle.nn.functional.interpolate(x,
+                size=size,
+                scale_factor=scale_factor,
+                mode=mode,
+                align_corners=align_corners,
+                align_mode=align_mode,
+                data_format=data_format,
+                name=name)
+
+
+def index_select(x, index, axis=0, name=None):
+    return paddle.index_select(x, index, axis=axis, name=name)
+
+
+def dot(x, y, name=None):
+    return paddle.dot(x, y, name=name)
+
+
+class Swish(object):
+    def __init__(self):
+        pass
+
+    def __call__(self, x):
+        return paddle.nn.functional.swish(x)
+

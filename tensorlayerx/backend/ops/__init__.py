@@ -40,6 +40,11 @@ from .load_backend import grucell
 from .load_backend import rnnbase
 from .load_backend import layernorm
 from .load_backend import multiheadattention
+from .load_backend import histogram
+from .load_backend import flatten
+from .load_backend import interpolate
+from .load_backend import index_select
+from .load_backend import dot
 
 from .load_backend import ReLU
 from .load_backend import ELU
@@ -82,6 +87,7 @@ from .load_backend import QuanDenseBn
 from .load_backend import TernaryConv
 from .load_backend import QuanConv
 from .load_backend import QuanConvBn
+from .load_backend import Swish
 
 # load ops
 from .load_backend import Variable

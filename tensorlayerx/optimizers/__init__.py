@@ -24,3 +24,6 @@ from .load_optimizers_backend import Momentum
 from .load_optimizers_backend import Lamb
 from .load_optimizers_backend import LARS
 from tensorlayerx.optimizers import lr
+
+__all__ = ['Adadelta', 'Adagrad', 'Adam', 'Adamax', 'Ftrl', 'Nadam', 'RMSprop', 'SGD', 'Momentum', 'Lamb', 'LARS']
+
