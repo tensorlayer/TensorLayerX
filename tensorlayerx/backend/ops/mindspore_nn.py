@@ -1698,6 +1698,17 @@ class AdaptiveMeanPool3D(Cell):
     def __call__(self, inputs):
         raise NotImplementedError
 
+def adaptive_avg_pool1d(input, output_size):
+
+    raise NotImplementedError
+
+def adaptive_avg_pool2d(input, output_size):
+
+    raise NotImplementedError
+
+def adaptive_avg_pool3d(input, output_size):
+
+    raise NotImplementedError
 
 class AdaptiveMaxPool1D(Cell):
 
@@ -1767,6 +1778,18 @@ class AdaptiveMaxPool3D(Cell):
 
     def __call__(self, inputs):
         raise NotImplementedError
+
+def adaptive_max_pool1d(input, output_size, return_indices = False):
+
+    raise NotImplementedError
+
+def adaptive_max_pool2d(input, output_size, return_indices = False):
+
+    raise NotImplementedError
+
+def adaptive_max_pool3d(input, output_size, return_indices=False):
+
+    raise NotImplementedError
 
 
 class BinaryConv2D(Cell):
@@ -2519,3 +2542,11 @@ def hardswish(input):
 def swish(input):
     op = ms.ops.Sigmoid()
     return op(input) * input
+
+def linear(input, weight, bias = None):
+    matmul = P.MatMul(transpose_b=True)
+    output = matmul(input, weight)
+    if bias:
+        bias_add = P.BiasAdd()
+        output = bias_add(output, bias)
+    return output

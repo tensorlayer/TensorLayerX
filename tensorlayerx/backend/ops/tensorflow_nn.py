@@ -1913,6 +1913,17 @@ class AdaptiveMeanPool3D(object):
 
         return outputs
 
+def adaptive_avg_pool1d(input, output_size):
+
+    raise NotImplementedError
+
+def adaptive_avg_pool2d(input, output_size):
+
+    raise NotImplementedError
+
+def adaptive_avg_pool3d(input, output_size):
+
+    raise NotImplementedError
 
 class AdaptiveMaxPool1D(object):
 
@@ -1989,6 +2000,17 @@ class AdaptiveMaxPool3D(object):
 
         return outputs
 
+def adaptive_max_pool1d(input, output_size, return_indices = False):
+
+    raise NotImplementedError
+
+def adaptive_max_pool2d(input, output_size, return_indices = False):
+
+    raise NotImplementedError
+
+def adaptive_max_pool3d(input, output_size, return_indices=False):
+
+    raise NotImplementedError
 
 class BinaryConv2D(object):
 
@@ -2952,3 +2974,10 @@ def hardswish(input):
 def swish(input):
 
     return tf.sigmoid(input) * input
+
+def linear(input, weight, bias = None):
+
+    output = tf.matmul(input, weight, transpose_b=True)
+    if bias:
+        output = output + bias
+    return output

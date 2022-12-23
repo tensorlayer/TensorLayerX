@@ -23,6 +23,7 @@ __all__ = [
     'maxnorm_regularizer',
     'maxnorm_o_regularizer',
     'maxnorm_i_regularizer',
+    'L1Loss'
 ]
 
 softmax_cross_entropy_with_logits = nn.SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean')
@@ -713,3 +714,8 @@ def huber_loss(
     #     )
     # return loss
     raise NotImplementedError("Not Implemented.")
+
+def L1Loss(input, target, reduction='mean'):
+
+    loss = nn.L1Loss(reduction=reduction)
+    return loss(input, target)
