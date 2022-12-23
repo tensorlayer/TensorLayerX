@@ -1665,6 +1665,19 @@ class AdaptiveMeanPool3D(object):
             output = nchw_to_nhwc(output)
         return output
 
+def adaptive_avg_pool1d(input, output_size):
+
+    return F.adaptive_avg_pool1d(input, output_size)
+
+
+def adaptive_avg_pool2d(input, output_size):
+
+    return F.adaptive_avg_pool2d(input, output_size)
+
+
+def adaptive_avg_pool3d(input, output_size):
+
+    return F.adaptive_avg_pool3d(input, output_size)
 
 class AdaptiveMaxPool1D(object):
 
@@ -1710,6 +1723,17 @@ class AdaptiveMaxPool3D(object):
             output = nchw_to_nhwc(output)
         return output
 
+def adaptive_max_pool1d(input, output_size, return_indices = False):
+
+    return F.adaptive_max_pool1d(input, output_size, return_indices)
+
+def adaptive_max_pool2d(input, output_size, return_indices = False):
+
+    return F.adaptive_max_pool2d(input, output_size, return_indices)
+
+def adaptive_max_pool3d(input, output_size, return_indices=False):
+
+    return F.adaptive_max_pool3d(input, output_size, return_indices)
 
 class BinaryConv2D(object):
 
@@ -2180,5 +2204,21 @@ class PReLU(object):
 
 
 def prelu(input, weight, data_format):
-    weight = weight.to(input.device)
+
     return F.prelu(input, weight)
+
+def hardsigmoid(input):
+
+    return F.hardsigmoid(input)
+
+def hardswish(input):
+
+    return F.hardswish(input)
+
+def swish(input):
+
+    return F.swish(input)
+
+def linear(input, weight, bias = None):
+
+    return F.linear(input, weight, bias)

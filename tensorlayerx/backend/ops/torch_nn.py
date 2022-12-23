@@ -1649,6 +1649,21 @@ class AdaptiveMeanPool3D(object):
         return output
 
 
+def adaptive_avg_pool1d(input, output_size):
+
+    return F.adaptive_avg_pool1d(input, output_size)
+
+
+def adaptive_avg_pool2d(input, output_size):
+
+    return F.adaptive_avg_pool2d(input, output_size)
+
+
+def adaptive_avg_pool3d(input, output_size):
+
+    return F.adaptive_avg_pool3d(input, output_size)
+
+
 class AdaptiveMaxPool1D(object):
 
     def __init__(self, output_size, data_format):
@@ -1692,6 +1707,17 @@ class AdaptiveMaxPool3D(object):
             output = nchw_to_nhwc(output)
         return output
 
+def adaptive_max_pool1d(input, output_size, return_indices = False):
+
+    return F.adaptive_max_pool1d(input, output_size, return_indices)
+
+def adaptive_max_pool2d(input, output_size, return_indices = False):
+
+    return F.adaptive_max_pool2d(input, output_size, return_indices)
+
+def adaptive_max_pool3d(input, output_size, return_indices=False):
+
+    return F.adaptive_max_pool3d(input, output_size, return_indices)
 
 
 class BinaryConv2D(object):
@@ -2206,3 +2232,7 @@ def hardswish(input):
 def swish(input):
 
     return torch.sigmoid(input) * input
+
+def linear(input, weight, bias = None):
+
+    return torch.nn.functional.linear(input, weight, bias)

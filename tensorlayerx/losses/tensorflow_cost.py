@@ -27,6 +27,7 @@ __all__ = [
     'maxnorm_regularizer',
     'maxnorm_o_regularizer',
     'maxnorm_i_regularizer',
+    'L1Loss'
 ]
 
 
@@ -855,3 +856,12 @@ def huber_loss(
             ), name=name
         )
     return loss
+
+def L1Loss(input, target, reduction='mean'):
+
+    x = tf.abs(input-target)
+    if reduction == 'mean':
+        x = tf.reduce_mean(x)
+    elif reduction == 'sum':
+        x = tf.reduce_sum(x)
+    return x

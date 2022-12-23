@@ -1298,6 +1298,26 @@ class AdaptiveMeanPool3D(object):
 
         return F.adaptive_avg_pool3d(inputs, output_size=self.output_size, data_format=self.data_format)
 
+def adaptive_avg_pool1d(input, output_size, data_format = 'NCL'):
+    data_format, _ = preprocess_1d_format(data_format, None)
+
+    if data_format == 'NLC':
+        input = nhwc_to_nchw(input)
+    output = F.adaptive_avg_pool1d(input, output_size)
+    if data_format == 'NLC':
+        output = nchw_to_nhwc(output)
+
+    return output
+
+
+def adaptive_avg_pool2d(input, output_size, data_format = 'NCHW'):
+    data_format, _ = preprocess_2d_format(data_format, None)
+    return F.adaptive_avg_pool2d(input, output_size=output_size, data_format=data_format)
+
+
+def adaptive_avg_pool3d(input, output_size, data_format = 'NCDHW'):
+    data_format, _ = preprocess_3d_format(data_format, None)
+    return F.adaptive_avg_pool3d(input, output_size, data_format=data_format)
 
 class AdaptiveMaxPool1D(object):
 
@@ -1354,6 +1374,17 @@ class AdaptiveMaxPool3D(object):
 
         return output
 
+def adaptive_max_pool1d(input, output_size, return_indices = False):
+
+    return F.adaptive_max_pool1d(input, output_size, return_indices)
+
+def adaptive_max_pool2d(input, output_size, return_indices = False):
+
+    return F.adaptive_max_pool2d(input, output_size, return_indices)
+
+def adaptive_max_pool3d(input, output_size, return_indices=False):
+
+    return F.adaptive_max_pool3d(input, output_size, return_indices)
 
 class BinaryConv2D(object):
 
@@ -2097,3 +2128,7 @@ def hardswish(input):
 def swish(input):
 
     return F.swish(input)
+
+def linear(input, weight, bias = None):
+
+    return F.linear(input, weight, bias)

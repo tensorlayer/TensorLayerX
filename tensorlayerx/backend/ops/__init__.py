@@ -268,3 +268,10 @@ from .load_backend import ClipGradByValue
 from .load_backend import ClipGradByNorm
 from .load_backend import ClipByGlobalNorm
 from .load_backend import Einsum
+from .load_backend import linear
+from .load_backend import adaptive_avg_pool1d
+from .load_backend import adaptive_avg_pool2d
+from .load_backend import adaptive_avg_pool3d
+from .load_backend import adaptive_max_pool1d
+from .load_backend import adaptive_max_pool2d
+from .load_backend import adaptive_max_pool3d
