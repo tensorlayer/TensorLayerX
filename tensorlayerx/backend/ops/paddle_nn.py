@@ -8,7 +8,7 @@ import paddle.nn.functional as F
 import numpy as np
 import paddle.fluid as fluid
 from paddle.nn import initializer as I
-from paddle.fluid.layers.utils import map_structure, flatten, pack_sequence_as
+from paddle.fluid.layers.utils import map_structure, pack_sequence_as
 from paddle.fluid.data_feeder import convert_dtype
 from paddle.fluid.dygraph import Layer, LayerList
 from paddle.nn.layer.rnn import RNNCellBase
@@ -1509,9 +1509,9 @@ def split_states(states, bidirectional=False, state_components=1):
 
 def concat_states(states, bidirectional=False, state_components=1):
     if state_components == 1:
-        return pd.stack(flatten(states))
+        return pd.stack(pd.flatten(states))
     else:
-        states = flatten(states)
+        states = pd.flatten(states)
         componnets = []
         for i in range(state_components):
             componnets.append(states[i::state_components])
