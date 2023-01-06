@@ -213,5 +213,12 @@ from .ops import adaptive_avg_pool3d
 from .ops import adaptive_max_pool1d
 from .ops import adaptive_max_pool2d
 from .ops import adaptive_max_pool3d
+from .ops import unfold
+from .ops import avg_pool1d
+from .ops import avg_pool2d
+from .ops import avg_pool3d
+from .ops import max_pool1d
+from .ops import max_pool2d
+from .ops import max_pool3d
 
 from tensorlayerx.backend import ops

@@ -885,6 +885,19 @@ def max_pool(input, ksize, strides, padding, data_format=None):
     return maxpool_obj(input)
 
 
+def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False, ceil_mode=False, data_format='NCL'):
+    raise NotImplementedError
+
+
+def max_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format='NCHW'):
+    raise NotImplementedError
+
+
+def max_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format="NCDHW"):
+    raise NotImplementedError
+
+
+
 class AvgPool1d(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
@@ -997,37 +1010,37 @@ class MaxPool3d(object):
         return self.max_pool3d(inputs)
 
 
-def max_pool3d(input, ksize, strides, padding, data_format=None):
-    """
-    Performs the max pooling on the input.
-
-    Parameters
-    ----------
-    input : tensor
-         A 5-D Tensor of the format specified by data_format.
-    ksize : int or list of ints
-        An int or list of ints that has length 1, 3 or 5.
-        The size of the window for each dimension of the input tensor.
-    strides : int or list of ints
-        An int or list of ints that has length 1, 3 or 5.
-        The stride of the sliding window for each dimension of the input tensor.
-    padding : string
-        'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
-    data_format : string
-         "NDHWC", "NCDHW". Defaults to "NDHWC". The data format of the input and output data.
-         With the default format "NDHWC", the data is stored in the order of: [batch, in_depth, in_height, in_width, in_channels].
-         Alternatively, the format could be "NCDHW", the data storage order is: [batch, in_channels, in_depth, in_height, in_width].
-    name : string
-         A name for the operation (optional).
-
-    Returns
-    -------
-        A Tensor of format specified by data_format. The max pooled output tensor.
-    """
-
-    data_format, padding = preprocess_3d_format(data_format, padding)
-    max_pool3d_obj = MaxPool(ksize, strides, padding, data_format)
-    return max_pool3d_obj(input)
+# def max_pool3d(input, ksize, strides, padding, data_format=None):
+#     """
+#     Performs the max pooling on the input.
+#
+#     Parameters
+#     ----------
+#     input : tensor
+#          A 5-D Tensor of the format specified by data_format.
+#     ksize : int or list of ints
+#         An int or list of ints that has length 1, 3 or 5.
+#         The size of the window for each dimension of the input tensor.
+#     strides : int or list of ints
+#         An int or list of ints that has length 1, 3 or 5.
+#         The stride of the sliding window for each dimension of the input tensor.
+#     padding : string
+#         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
+#     data_format : string
+#          "NDHWC", "NCDHW". Defaults to "NDHWC". The data format of the input and output data.
+#          With the default format "NDHWC", the data is stored in the order of: [batch, in_depth, in_height, in_width, in_channels].
+#          Alternatively, the format could be "NCDHW", the data storage order is: [batch, in_channels, in_depth, in_height, in_width].
+#     name : string
+#          A name for the operation (optional).
+#
+#     Returns
+#     -------
+#         A Tensor of format specified by data_format. The max pooled output tensor.
+#     """
+#
+#     data_format, padding = preprocess_3d_format(data_format, padding)
+#     max_pool3d_obj = MaxPool(ksize, strides, padding, data_format)
+#     return max_pool3d_obj(input)
 
 
 class AvgPool3d(object):
@@ -1040,33 +1053,22 @@ class AvgPool3d(object):
         return self.avg_pool3d_obj(inputs)
 
 
-def avg_pool3d(input, ksize, strides, padding, data_format=None):
-    """
-    Performs the average pooling on the input.
+def avg_pool1d(input, kernel_size, stride=None, padding=0, count_include_pad=True, ceil_mode=False, data_format='NCL'):
 
-    Parameters
-    ----------
-    input : tensor
-        A 5-D Tensor of shape [batch, height, width, channels] and type float32, float64, qint8, quint8, or qint32.
-    ksize : int or list of ints
-        An int or list of ints that has length 1, 3 or 5. The size of the window for each dimension of the input tensor.
-    strides : int or list of ints
-        An int or list of ints that has length 1, 3 or 5.
-        The stride of the sliding window for each dimension of the input tensor.
-    padding : string
-        'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
-    data_format : string
-        'NDHWC' and 'NCDHW' are supported.
-    name : string
-        Optional name for the operation.
+    raise NotImplementedError
 
-    Returns
-    -------
-        A Tensor with the same type as value. The average pooled output tensor.
-    """
 
-    avg_pool_obj = AvgPool(ksize, strides, padding, data_format)
-    return avg_pool_obj(input)
+def avg_pool2d(
+        input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
+        divisor_override=None, data_format='NCHW'
+):
+    raise NotImplementedError
+
+
+def avg_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
+               divisor_override=None, data_format='NCDHW'
+               ):
+    raise NotImplementedError
 
 
 def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_format=None, dilations=None, name=None):
@@ -2222,3 +2224,7 @@ def swish(input):
 def linear(input, weight, bias = None):
 
     return F.linear(input, weight, bias)
+
+def unfold(input, kernel_size, dilation = 1, padding = 0, stride = 1):
+
+    return F.unfold(input, kernel_size, stride=stride, padding=padding, dilation=dilation)

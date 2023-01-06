@@ -23,3 +23,4 @@ from .spatial_transformer import *
 from .stack import *
 # from .utils import *
 from .Transformer import *
+from .fold import *
