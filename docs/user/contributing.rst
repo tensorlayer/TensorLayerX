@@ -4,10 +4,10 @@
 Contributing
 ===============
 
-TensorLayerx is a major ongoing research project in Peking University and Pengcheng Laboratory, the first version was established at Imperial College London in 2016. The goal of the project is to develop a compositional language that is compatible with multiple deep learning frameworks,
+TensorLayerX is a major ongoing research project in Peking University and Pengcheng Laboratory, the first version was established at Imperial College London in 2016. The goal of the project is to develop a compositional language that is compatible with multiple deep learning frameworks,
 while complex learning systems can be built through composition of neural network modules.
 
-Numerous contributors come from various horizons such as: Imperial College London, Tsinghua University, Carnegie Mellon University, Stanford, University of Technology of Compiegne, Google, Microsoft, Bloomberg and etc.
+Numerous contributors come from various horizons such as: Peking University, Pengcheng Laboratory.
 
 You can easily open a Pull Request (PR) on `GitHub <https://github.com/tensorlayer/TensorLayerX>`__, every little step counts and will be credited.
 As an open-source project, we highly welcome and value contributions!
@@ -23,7 +23,7 @@ As an open-source project, we highly welcome and value contributions!
 Project Maintainers
 --------------------------
 
-The TensorLayer project was started by `Hao Dong <https://zsdonghao.github.io>`_ at Imperial College London in June 2016. 
+TensorLayerX is a major ongoing research project in Peking University and Pengcheng Laboratory.
 
 For TensorLayerX, it is now actively developing and maintaining by the following people *(in alphabetical order)*:
 
@@ -31,26 +31,7 @@ For TensorLayerX, it is now actively developing and maintaining by the following
 - **Hao Dong** (`@zsdonghao <https://github.com/zsdonghao>`_) - `<https://zsdonghao.github.io>`_
 - **Jiarong Han** (`@hanjr92 <https://github.com/hanjr92>`_) - `<https://hanjr92.github.io>`_
 
-For TensorLayer 2.x, it is now actively developing and maintaining by the following people who has more than 50 contributions:
-
-- **Hao Dong** (`@zsdonghao <https://github.com/zsdonghao>`_) - `<https://zsdonghao.github.io>`_
-- **Jingqing Zhang** (`@JingqingZ <https://github.com/JingqingZ>`_) - `<https://jingqingz.github.io>`_
-- **Rundi Wu** (`@ChrisWu1997 <https://github.com/ChrisWu1997>`_) - `<http://chriswu1997.github.io>`_
-- **Ruihai Wu** (`@warshallrho <https://github.com/warshallrho>`_) - `<https://warshallrho.github.io/>`_
-
-For TensorLayer 1.x, it was actively developed and maintained by the following people *(in alphabetical order)*:
-
-- **Akara Supratak** (`@akaraspt <https://github.com/akaraspt>`_) - `<https://akaraspt.github.io>`_
-- **Fangde Liu** (`@fangde <https://github.com/fangde>`_) - `<http://fangde.github.io/>`_
-- **Guo Li** (`@lgarithm <https://github.com/lgarithm>`_) - `<https://lgarithm.github.io>`_
-- **Hao Dong** (`@zsdonghao <https://github.com/zsdonghao>`_) - `<https://zsdonghao.github.io>`_
-- **Jonathan Dekhtiar** (`@DEKHTIARJonathan <https://github.com/DEKHTIARJonathan>`_) - `<https://www.jonathandekhtiar.eu>`_
-- **Luo Mai** (`@luomai <https://github.com/luomai>`_) - `<http://www.doc.ic.ac.uk/~lm111/>`_
-- **Pan Wang** (`@FerociousPanda <http://github.com/FerociousPanda>`_) - `<http://github.com/FerociousPanda>`_  (UI)
-- **Simiao Yu** (`@nebulaV <https://github.com/nebulaV>`_) - `<https://nebulav.github.io>`_
-
-
-Numerous other contributors can be found in the `Github Contribution Graph <https://github.com/tensorlayer/tensorlayer/graphs/contributors>`_.
+Numerous other contributors can be found in the `Github Contribution Graph <https://github.com/tensorlayer/TensorLayerX/graphs/contributors>`_.
 
 
 What to contribute
