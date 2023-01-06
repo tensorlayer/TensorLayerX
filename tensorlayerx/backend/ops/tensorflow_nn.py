@@ -838,6 +838,18 @@ def max_pool(input, ksize, strides, padding, data_format=None):
     outputs = tf.nn.max_pool(input=input, ksize=ksize, strides=strides, padding=padding, data_format=data_format)
     return outputs
 
+def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False, ceil_mode=False, data_format='NCL'):
+
+    raise NotImplementedError
+
+def max_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format='NCHW'):
+
+    raise NotImplementedError
+
+def max_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format="NCDHW"):
+
+    raise NotImplementedError
+
 
 class AvgPool1d(object):
 
@@ -919,6 +931,25 @@ def avg_pool(input, ksize, strides, padding):
         padding=padding,
     )
     return outputs
+
+def avg_pool1d(input, kernel_size, stride=None, padding=0, count_include_pad=True, ceil_mode=False, data_format='NCL'):
+
+    raise NotImplementedError
+
+
+def avg_pool2d(
+        input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
+        divisor_override=None, data_format='NCHW'
+):
+
+    raise NotImplementedError
+
+
+def avg_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
+               divisor_override=None, data_format='NCDHW'
+):
+
+    raise NotImplementedError
 
 
 class MaxPool3d(object):
@@ -2980,4 +3011,17 @@ def linear(input, weight, bias = None):
     output = tf.matmul(input, weight, transpose_b=True)
     if bias:
         output = output + bias
+    return output
+
+def unfold(input, kernel_size, dilation = 1, padding = 0, stride = 1):
+
+    input = tf.transpose(input, perm=[0, 2, 3, 1])
+    kernel_size = [1,] + list(kernel_size) + [1]
+    stride = [1,] + list(stride) + [1]
+    dilation = [1,] + list(dilation) + [1]
+    padding = [[0, 0], [padding[0],padding[0]], [padding[1],padding[1]], [0, 0]]
+    input = tf.pad(input, paddings=padding, mode='CONSTANT', constant_values=0)
+    output = tf.image.extract_patches(input, sizes = kernel_size, strides=stride, padding='VALID', rates=dilation)
+    output = tf.transpose(output, perm=[0, 3, 1, 2])
+    output = tf.reshape(output, shape=[output.shape[0], output.shape[1], output.shape[2] * output.shape[3]])
     return output

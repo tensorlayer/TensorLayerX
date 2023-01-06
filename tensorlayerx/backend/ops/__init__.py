@@ -275,3 +275,10 @@ from .load_backend import adaptive_avg_pool3d
 from .load_backend import adaptive_max_pool1d
 from .load_backend import adaptive_max_pool2d
 from .load_backend import adaptive_max_pool3d
+from .load_backend import unfold
+from .load_backend import avg_pool1d
+from .load_backend import avg_pool2d
+from .load_backend import avg_pool3d
+from .load_backend import max_pool1d
+from .load_backend import max_pool2d
+from .load_backend import max_pool3d
