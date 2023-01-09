@@ -34,7 +34,6 @@ to the library as a developer.
   user/installation
   user/examples
   user/contributing
-  user/get_involved
   user/faq
 
 .. toctree::
