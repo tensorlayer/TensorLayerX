@@ -665,30 +665,38 @@ def moments(x, axes, shift=None, keepdims=False):
 
 class MaxPool1d(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
         self.ksize = ksize
         self.strides = strides
+        self.return_mask = return_mask
 
     def __call__(self, inputs):
         if self.data_format == 'NLC':
             inputs = nhwc_to_nchw(inputs)
-        outputs = F.max_pool1d(inputs, self.ksize, self.strides, self.padding)
+        outputs = F.max_pool1d(inputs, self.ksize, self.strides, self.padding, return_mask=self.return_mask)
         if self.data_format == 'NLC':
-            outputs = nchw_to_nhwc(outputs)
-        return outputs
+            if self.return_mask:
+                output = [None, None]
+                output[0] = nchw_to_nhwc(outputs[0])
+                output[1] = nchw_to_nhwc(outputs[1])
+            else:
+                output = nchw_to_nhwc(outputs)
+        return output
 
 
 class MaxPool(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
         self.ksize = ksize
         self.strides = strides
+        self.return_mask = return_mask
 
     def __call__(self, inputs):
         outputs = F.max_pool2d(
-            x=inputs, kernel_size=self.ksize, stride=self.strides, padding=self.padding, data_format=self.data_format
+            x=inputs, kernel_size=self.ksize, stride=self.strides, padding=self.padding,
+            return_mask=self.return_mask, data_format=self.data_format
         )
         return outputs
 
@@ -715,33 +723,33 @@ def max_pool(input, ksize, strides, padding, data_format=None):
     """
     pass
 
-def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False, ceil_mode=False, data_format='NCL'):
+def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format='NCL'):
 
     data_format, padding = preprocess_1d_format(data_format=data_format, padding=padding)
-    if data_format != 'NCL':
-        input = pd.transpose(input, [0, 2, 1])
-    output =  F.max_pool1d(input, kernel_size, stride = stride, padding = padding, return_mask=return_mask, ceil_mode=ceil_mode)
-    if data_format != 'NCL':
+    if data_format == 'NLC':
+        input =nhwc_to_nchw(input)
+    output =  F.max_pool1d(input, kernel_size, stride = stride, padding = padding, return_mask=return_mask)
+    if data_format == 'NLC':
         if return_mask:
-            output[0] = pd.transpose(output[0], [0, 2, 1])
-            output[1] = pd.transpose(output[1], [0, 2, 1])
+            outputs = [None, None]
+            outputs[0] = nchw_to_nhwc(output[0])
+            outputs[1] = nchw_to_nhwc(output[1])
         else:
-            output = pd.transpose(output, [0, 2, 1])
-    return output
+            outputs = nchw_to_nhwc(output)
+    return outputs
 
-def max_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format='NCHW'):
+def max_pool2d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format='NCHW'):
 
     data_format, padding = preprocess_2d_format(data_format=data_format, padding=padding)
     return F.max_pool2d(
-        input, kernel_size, stride=stride, padding=padding, ceil_mode=ceil_mode,
-        return_mask=return_mask, data_format = data_format
+        input, kernel_size, stride=stride, padding=padding, return_mask=return_mask, data_format = data_format
     )
 
-def max_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format="NCDHW"):
+def max_pool3d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format="NCDHW"):
+
     data_format, padding = preprocess_3d_format(data_format=data_format, padding=padding)
     return F.max_pool3d(
-        input, kernel_size, stride=stride, padding=padding, ceil_mode=ceil_mode,
-        return_mask=return_mask, data_format=data_format
+        input, kernel_size, stride=stride, padding=padding, return_mask=return_mask, data_format=data_format
     )
 
 
@@ -798,44 +806,37 @@ def avg_pool(input, ksize, strides, padding):
     """
     pass
 
-def avg_pool1d(input, kernel_size, stride=None, padding=0, count_include_pad=True, ceil_mode=False, data_format='NCL'):
+def avg_pool1d(input, kernel_size, stride=None, padding=0, data_format='NCL'):
     data_format, padding = preprocess_1d_format(data_format=data_format, padding=padding)
     if data_format != 'NCL':
-        input = pd.transpose(input, [0, 2, 1])
+        input = nhwc_to_nchw(input)
     output =  F.avg_pool1d(
-        input, kernel_size, stride = stride, padding = padding, exclusive=count_include_pad, ceil_mode=ceil_mode
+        input, kernel_size, stride = stride, padding = padding
     )
     if data_format != 'NCL':
-        output = pd.transpose(output, [0, 2, 1])
+        output = nchw_to_nhwc(output)
     return output
 
-def avg_pool2d(
-        input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
-        divisor_override=None, data_format='NCHW'
-):
+def avg_pool2d(input, kernel_size, stride=None, padding=0, data_format='NCHW'):
     data_format, padding = preprocess_2d_format(data_format=data_format, padding=padding)
-    return F.avg_pool2d(input, kernel_size, stride = stride, padding = padding,
-                        exclusive=count_include_pad, ceil_mode=ceil_mode,
-                        divisor_override=divisor_override,data_format=data_format)
+    return F.avg_pool2d(input, kernel_size, stride = stride, padding = padding, data_format=data_format)
 
-def avg_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
-               divisor_override=None, data_format='NCDHW'
-):
+def avg_pool3d(input, kernel_size, stride=None, padding=0, data_format='NCDHW'):
     data_format, padding = preprocess_3d_format(data_format=data_format, padding=padding)
-    return F.avg_pool3d(input, kernel_size, stride=stride, padding=padding,
-                        exclusive=count_include_pad, ceil_mode=ceil_mode,
-                        divisor_override=divisor_override, data_format=data_format)
+    return F.avg_pool3d(input, kernel_size, stride=stride, padding=padding, data_format=data_format)
 
 class MaxPool3d(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
         self.ksize = ksize
         self.strides = strides
+        self.return_mask = return_mask
 
     def __call__(self, inputs):
         outputs = F.max_pool3d(
-            inputs, kernel_size=self.ksize, stride=self.strides, padding=self.padding, data_format=self.data_format
+            inputs, kernel_size=self.ksize, stride=self.strides, padding=self.padding,
+            return_mask=self.return_mask, data_format=self.data_format
         )
         return outputs
 
