@@ -774,9 +774,9 @@ def moments(x, axes, shift=None, keepdims=False):
 
 class MaxPool1d(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.max_pool1d = MaxPool([ksize,], strides, padding, data_format)
+        self.max_pool1d = MaxPool([ksize,], strides, padding,return_mask, data_format)
 
     def __call__(self, inputs):
         return self.max_pool1d(inputs)
@@ -784,9 +784,10 @@ class MaxPool1d(object):
 
 class MaxPool(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask = False, data_format=None):
         self.ksize = ksize
         self.strides = strides
+        self.return_mask = return_mask
         if data_format in ['channels_last', 'NLC', 'NWC', 'NHWC', 'NDHWC']:
             self.data_format = 'channels_last'
         elif data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
@@ -802,20 +803,29 @@ class MaxPool(object):
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool1d_same_padding(inputs)
             else:
-                out = F.max_pool1d(inputs, self.ksize, self.strides, padding=self.padding)
+                out = F.max_pool1d(inputs, self.ksize, self.strides, padding=self.padding,
+                            return_indices=self.return_mask)
         if len(inputs.shape) == 4:
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool2d_same_padding(inputs)
             else:
-                out = F.max_pool2d(inputs, self.ksize, self.strides, padding=self.padding)
+                out = F.max_pool2d(inputs, self.ksize, self.strides, padding=self.padding,
+                            return_indices=self.return_mask)
         if len(inputs.shape) == 5:
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool3d_same_padding(inputs)
             else:
-                out = F.max_pool3d(inputs, self.ksize, self.strides, padding=self.padding)
+                out = F.max_pool3d(inputs, self.ksize, self.strides, padding=self.padding,
+                            return_indices=self.return_mask)
 
         if self.data_format == 'channels_last':
-            return nchw_to_nhwc(out)
+            if self.return_mask:
+                    outputs = [None, None]
+                    outputs[0] = nchw_to_nhwc(out[0])
+                    outputs[1] = nchw_to_nhwc(out[1])
+                    return outputs
+            else:
+                return nchw_to_nhwc(out)
         else:
             return out
 
@@ -823,7 +833,7 @@ class MaxPool(object):
         rows_odd, padding_rows = same_padding(input, self.ksize, self.strides, 1)
         if rows_odd:
             input = F.pad(input, [0, int(rows_odd)], 'constant', float('-inf'))
-        return F.max_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2))
+        return F.max_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2), return_indices=self.return_mask)
 
     def maxpool2d_same_padding(self, input):
         rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, self.strides, (1, 1))
@@ -831,7 +841,8 @@ class MaxPool(object):
             # TODO The fill value for maxpool is -INF.
             input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)], 'constant', float('-inf'))
 
-        return F.max_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2))
+        return F.max_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2),
+                            return_indices=self.return_mask)
 
     def maxpool3d_same_padding(self, input):
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(
@@ -840,11 +851,12 @@ class MaxPool(object):
         if rows_odd or cols_odd or depth_odd:
             input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], 'constant', float('-inf'))
         return F.max_pool3d(
-                input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
+                input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2),
+                return_indices=self.return_mask
         )
 
 
-def max_pool(input, ksize, strides, padding, data_format=None):
+def max_pool(input, ksize, strides, padding, return_mask, data_format=None):
     """
     Performs the max pooling on the input.
 
@@ -870,54 +882,25 @@ def max_pool(input, ksize, strides, padding, data_format=None):
         A Tensor of format specified by data_format. The max pooled output tensor.
     """
 
-    maxpool_obj = MaxPool(ksize, strides, padding, data_format)
+    maxpool_obj = MaxPool(ksize, strides, padding, return_mask, data_format)
     return maxpool_obj(input)
 
-def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False, ceil_mode=False, data_format='NCL'):
+def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format='NCL'):
 
-    data_format, padding = preprocess_1d_format(data_format=data_format, padding=padding)
-    if data_format != 'NCL':
-        input = torch.permute(input, [0, 2, 1])
-    output =  F.max_pool1d(input, kernel_size, stride = stride, padding = padding, return_indices=return_mask, ceil_mode=ceil_mode)
-    if data_format != 'NCL':
-        if return_mask:
-            output[0] = torch.permute(output[0], [0, 2, 1])
-            output[1] = torch.permute(output[1], [0, 2, 1])
-        else:
-            output = torch.permute(output, [0, 2, 1])
-    return output
 
-def max_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format='NCHW'):
+    maxpool_obj = MaxPool(kernel_size, stride, padding, return_mask, data_format)
+    return maxpool_obj(input)
 
-    data_format, padding = preprocess_2d_format(data_format=data_format, padding=padding)
-    if data_format != 'NCHW':
-        input = torch.permute(input, [0, 3, 1, 2])
-    output =  F.max_pool2d(
-        input, kernel_size, stride=stride, padding=padding, ceil_mode=ceil_mode, return_indices=return_mask
-    )
-    if data_format != 'NCHW':
-        if return_mask:
-            output[0] = torch.permute(output[0], [0, 2, 3, 1])
-            output[1] = torch.permute(output[1], [0, 2, 3, 1])
-        else:
-            output = torch.permute(output, [0, 2, 3, 1])
-    return output
+def max_pool2d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format='NCHW'):
 
-def max_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format="NCDHW"):
-    data_format, padding = preprocess_3d_format(data_format=data_format, padding=padding)
-    if data_format != 'NCDHW':
-        input = torch.permute(input, [0, 4, 1, 2, 3])
 
-    output =  F.max_pool3d(
-        input, kernel_size, stride=stride, padding=padding, ceil_mode=ceil_mode, return_indices=return_mask
-    )
-    if data_format != 'NCDHW':
-        if return_mask:
-            output[0] = torch.permute(output[0], [0, 2, 3, 4, 1])
-            output[1] = torch.permute(output[1], [0, 2, 3, 4, 1])
-        else:
-            output = torch.permute(output, [0, 2, 3, 4, 1])
-    return output
+    maxpool_obj = MaxPool(kernel_size, stride, padding, return_mask, data_format)
+    return maxpool_obj(input)
+
+def max_pool3d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format="NCDHW"):
+
+    maxpool_obj = MaxPool(kernel_size, stride, padding, return_mask, data_format)
+    return maxpool_obj(input)
 
 
 class AvgPool1d(object):
@@ -1021,49 +1004,26 @@ def avg_pool(input, ksize, strides, padding):
     avg_pool_obj = AvgPool(ksize, strides, padding)
     return avg_pool_obj(input)
 
-def avg_pool1d(input, kernel_size, stride=None, padding=0, count_include_pad=True, ceil_mode=False, data_format='NCL'):
-    data_format, padding = preprocess_1d_format(data_format=data_format, padding=padding)
-    if data_format != 'NCL':
-        input = torch.permute(input, [0, 2, 1])
-    output =  F.avg_pool1d(
-        input, kernel_size, stride = stride, padding = padding, count_include_pad=count_include_pad, ceil_mode=ceil_mode
-    )
-    if data_format != 'NCL':
-        output = torch.permute(output, [0, 2, 1])
-    return output
+def avg_pool1d(input, kernel_size, stride=None, padding=0, data_format='NCL'):
+    data_format, padding = preprocess_1d_format(data_format, padding)
+    avg_pool_obj = AvgPool(kernel_size, stride, padding, data_format)
+    return avg_pool_obj(input)
 
-def avg_pool2d(
-        input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
-        divisor_override=None, data_format='NCHW'
-):
-    data_format, padding = preprocess_2d_format(data_format=data_format, padding=padding)
-    if data_format != 'NCHW':
-        input = torch.permute(input, [0, 3, 1, 2])
-    output =  F.avg_pool2d(input, kernel_size, stride = stride, padding = padding,
-                        count_include_pad=count_include_pad, ceil_mode=ceil_mode,
-                        divisor_override=divisor_override)
-    if data_format != 'NCHW':
-        output = torch.permute(output, [0, 2, 3, 1])
-    return output
+def avg_pool2d(input, kernel_size, stride=None, padding=0, data_format='NCHW'):
+    data_format, padding = preprocess_2d_format(data_format, padding)
+    avg_pool_obj = AvgPool(kernel_size, stride, padding, data_format)
+    return avg_pool_obj(input)
 
-def avg_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
-               divisor_override=None, data_format='NCDHW'
-):
-    data_format, padding = preprocess_3d_format(data_format=data_format, padding=padding)
-    if data_format != 'NCDHW':
-        input = torch.permute(input, [0, 4, 1, 2, 3])
-    output =  F.avg_pool3d(input, kernel_size, stride=stride, padding=padding,
-                        count_include_pad=count_include_pad, ceil_mode=ceil_mode,
-                        divisor_override=divisor_override)
-    if data_format != 'NCDHW':
-        output = torch.permute(output, [0, 2, 3, 4, 1])
-    return output
+def avg_pool3d(input, kernel_size, stride=None, padding=0, data_format='NCDHW'):
+    data_format, padding = preprocess_3d_format(data_format, padding)
+    avg_pool_obj = AvgPool(kernel_size, stride, padding, data_format)
+    return avg_pool_obj(input)
 
 class MaxPool3d(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
-        self.max_pool3d = MaxPool(ksize, strides, padding, data_format)
+        self.max_pool3d = MaxPool(ksize, strides, padding, return_mask, data_format)
 
     def __call__(self, inputs):
         return self.max_pool3d(inputs)
@@ -1112,33 +1072,33 @@ class AvgPool3d(object):
         return self.avg_pool3d_obj(inputs)
 
 
-def avg_pool3d(input, ksize, strides, padding, data_format=None):
-    """
-    Performs the average pooling on the input.
-
-    Parameters
-    ----------
-    input : tensor
-        A 5-D Tensor of shape [batch, height, width, channels] and type float32, float64, qint8, quint8, or qint32.
-    ksize : int or list of ints
-        An int or list of ints that has length 1, 3 or 5. The size of the window for each dimension of the input tensor.
-    strides : int or list of ints
-        An int or list of ints that has length 1, 3 or 5.
-        The stride of the sliding window for each dimension of the input tensor.
-    padding : string
-        'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
-    data_format : string
-        'NDHWC' and 'NCDHW' are supported.
-    name : string
-        Optional name for the operation.
-
-    Returns
-    -------
-        A Tensor with the same type as value. The average pooled output tensor.
-    """
-
-    avg_pool_obj = AvgPool(ksize, strides, padding, data_format)
-    return avg_pool_obj(input)
+# def avg_pool3d(input, ksize, strides, padding, data_format=None):
+#     """
+#     Performs the average pooling on the input.
+#
+#     Parameters
+#     ----------
+#     input : tensor
+#         A 5-D Tensor of shape [batch, height, width, channels] and type float32, float64, qint8, quint8, or qint32.
+#     ksize : int or list of ints
+#         An int or list of ints that has length 1, 3 or 5. The size of the window for each dimension of the input tensor.
+#     strides : int or list of ints
+#         An int or list of ints that has length 1, 3 or 5.
+#         The stride of the sliding window for each dimension of the input tensor.
+#     padding : string
+#         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
+#     data_format : string
+#         'NDHWC' and 'NCDHW' are supported.
+#     name : string
+#         Optional name for the operation.
+#
+#     Returns
+#     -------
+#         A Tensor with the same type as value. The average pooled output tensor.
+#     """
+#
+#     avg_pool_obj = AvgPool(ksize, strides, padding, data_format)
+#     return avg_pool_obj(input)
 
 
 def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_format=None, dilations=None, name=None):

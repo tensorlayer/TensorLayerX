@@ -785,8 +785,9 @@ def moments(x, axes, shift=None, keepdims=False):
 
 class MaxPool1d(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
+        self.return_mask = return_mask
         self.max_pool1d = MaxPool([ksize, ], strides, padding, data_format)
 
     def __call__(self, inputs):
@@ -795,9 +796,10 @@ class MaxPool1d(object):
 
 class MaxPool(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.ksize = ksize
         self.strides = strides
+        self.return_mask = return_mask
         if data_format in ['channels_last', 'NLC', 'NWC', 'NHWC', 'NDHWC']:
             self.data_format = 'channels_last'
         elif data_format in ['channels_first', 'NCL', 'NCW', 'NCHW', 'NCDHW']:
@@ -885,15 +887,15 @@ def max_pool(input, ksize, strides, padding, data_format=None):
     return maxpool_obj(input)
 
 
-def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False, ceil_mode=False, data_format='NCL'):
+def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False,  data_format='NCL'):
     raise NotImplementedError
 
 
-def max_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format='NCHW'):
+def max_pool2d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format='NCHW'):
     raise NotImplementedError
 
 
-def max_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format="NCDHW"):
+def max_pool3d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format="NCDHW"):
     raise NotImplementedError
 
 
@@ -1002,8 +1004,9 @@ def avg_pool(input, ksize, strides, padding):
 
 class MaxPool3d(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
+        self.return_mask = return_mask
         self.max_pool3d = MaxPool(ksize, strides, padding, data_format)
 
     def __call__(self, inputs):
@@ -1053,21 +1056,18 @@ class AvgPool3d(object):
         return self.avg_pool3d_obj(inputs)
 
 
-def avg_pool1d(input, kernel_size, stride=None, padding=0, count_include_pad=True, ceil_mode=False, data_format='NCL'):
+def avg_pool1d(input, kernel_size, stride=None, padding=0,  data_format='NCL'):
 
     raise NotImplementedError
 
 
-def avg_pool2d(
-        input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
-        divisor_override=None, data_format='NCHW'
-):
+def avg_pool2d(input, kernel_size, stride=None, padding=0, data_format='NCHW'):
+
     raise NotImplementedError
 
 
-def avg_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
-               divisor_override=None, data_format='NCDHW'
-               ):
+def avg_pool3d(input, kernel_size, stride=None, padding=0, data_format='NCDHW'):
+
     raise NotImplementedError
 
 

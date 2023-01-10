@@ -38,6 +38,8 @@ class MaxPool1d(Module):
         Stride of the pooling operation.
     padding : str or int
         The padding method: 'VALID' or 'SAME'.
+    return_mask : bool
+        Whether to return the max indices along with the outputs.
     data_format : str
         One of channels_last (default, [batch, length, channel]) or channels_first. The ordering of the dimensions in the inputs.
     name : None or str
@@ -58,6 +60,7 @@ class MaxPool1d(Module):
         kernel_size=3,
         stride=2,
         padding='SAME',
+        return_mask = False,
         data_format='channels_last',
         name=None  # 'maxpool1d'
     ):
@@ -65,18 +68,19 @@ class MaxPool1d(Module):
         self.kernel_size = kernel_size
         self.stride = stride
         self.padding = padding
+        self.return_mask = return_mask
         self.data_format = data_format
 
         self.build()
         self._built = True
 
         logging.info(
-            "MaxPool1d %s: kernel_size: %s stride: %s padding: %s" %
-            (self.name, str(kernel_size), str(stride), str(padding))
+            "MaxPool1d %s: kernel_size: %s stride: %s padding: %s return_mask: %s" %
+            (self.name, str(kernel_size), str(stride), str(padding), str(return_mask))
         )
 
     def __repr__(self):
-        s = ('{classname}(kernel_size={kernel_size}' ', stride={stride}, padding={padding}')
+        s = ('{classname}(kernel_size={kernel_size}' ', stride={stride}, padding={padding}, return_mask={return_mask}')
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
@@ -85,7 +89,8 @@ class MaxPool1d(Module):
     def build(self, inputs_shape=None):
         # https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/nn/pool
         self.max_pool = tlx.ops.MaxPool1d(
-            ksize=self.kernel_size, strides=self.stride, padding=self.padding, data_format=self.data_format
+            ksize=self.kernel_size, strides=self.stride, padding=self.padding,
+            return_mask=self.return_mask, data_format=self.data_format
         )
 
     def forward(self, inputs):
@@ -179,6 +184,8 @@ class MaxPool2d(Module):
         (height, width) for stride.
     padding : int、tuple or str
         The padding method: 'VALID' or 'SAME'.
+    return_mask : bool
+        Whether to return the max indices along with the outputs.
     data_format : str
         One of channels_last (default, [batch, height, width, channel]) or channels_first. The ordering of the dimensions in the inputs.
     name : None or str
@@ -199,6 +206,7 @@ class MaxPool2d(Module):
         kernel_size=(3, 3),
         stride=(2, 2),
         padding='SAME',
+        return_mask=False,
         data_format='channels_last',
         name=None  # 'maxpool2d'
     ):
@@ -206,18 +214,19 @@ class MaxPool2d(Module):
         self.kernel_size = self.check_param(kernel_size)
         self.stride = self.check_param(stride)
         self.padding = padding
+        self.return_mask = return_mask
         self.data_format = data_format
 
         self.build()
         self._built = True
 
         logging.info(
-            "MaxPool2d %s: kernel_size: %s stride: %s padding: %s" %
-            (self.name, str(kernel_size), str(stride), str(padding))
+            "MaxPool2d %s: kernel_size: %s stride: %s padding: %s return_mask: %s" %
+            (self.name, str(kernel_size), str(stride), str(padding), str(return_mask))
         )
 
     def __repr__(self):
-        s = ('{classname}(kernel_size={kernel_size}' ', stride={stride}, padding={padding}')
+        s = ('{classname}(kernel_size={kernel_size}' ', stride={stride}, padding={padding}, return_mask={return_mask}')
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
@@ -225,7 +234,8 @@ class MaxPool2d(Module):
 
     def build(self, inputs_shape=None):
         self.max_pool = tlx.ops.MaxPool(
-            ksize=self.kernel_size, strides=self.stride, padding=self.padding, data_format=self.data_format
+            ksize=self.kernel_size, strides=self.stride, padding=self.padding,
+            return_mask=self.return_mask, data_format=self.data_format
         )
 
     def forward(self, inputs):
@@ -317,6 +327,8 @@ class MaxPool3d(Module):
         Strides of the pooling operation.
     padding : int、tuple or str
         The padding method: 'VALID' or 'SAME'.
+    return_mask : bool
+        Whether to return the max indices along with the outputs.
     data_format : str
         One of channels_last (default, [batch, depth, height, width, channel]) or channels_first. The ordering of the dimensions in the inputs.
     name : None or str
@@ -342,6 +354,7 @@ class MaxPool3d(Module):
         kernel_size=(3, 3, 3),
         stride=(2, 2, 2),
         padding='VALID',
+        return_mask = False,
         data_format='channels_last',
         name=None  # 'maxpool3d'
     ):
@@ -349,18 +362,19 @@ class MaxPool3d(Module):
         self.kernel_size = self.check_param(kernel_size, '3d')
         self.stride = self.check_param(stride, '3d')
         self.padding = padding
+        self.return_mask = return_mask
         self.data_format = data_format
 
         self.build()
         self._built = True
 
         logging.info(
-            "MaxPool3d %s: kernel_size: %s stride: %s padding: %s" %
-            (self.name, str(kernel_size), str(stride), str(padding))
+            "MaxPool3d %s: kernel_size: %s stride: %s padding: %s return_mask: %s" %
+            (self.name, str(kernel_size), str(stride), str(padding), str(return_mask))
         )
 
     def __repr__(self):
-        s = ('{classname}(kernel_size={kernel_size}' ', stride={stride}, padding={padding}')
+        s = ('{classname}(kernel_size={kernel_size}' ', stride={stride}, padding={padding}, return_mask={return_mask}')
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
@@ -368,7 +382,8 @@ class MaxPool3d(Module):
 
     def build(self, inputs_shape=None):
         self.max_pool3d = tlx.ops.MaxPool3d(
-            ksize=self.kernel_size, strides=self.stride, padding=self.padding, data_format=self.data_format
+            ksize=self.kernel_size, strides=self.stride, padding=self.padding,
+            return_mask=self.return_mask, data_format=self.data_format
         )
 
     def forward(self, inputs):

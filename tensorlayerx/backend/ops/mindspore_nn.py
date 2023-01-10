@@ -728,12 +728,15 @@ def moments(x, axes, shift=None, keepdims=False):
 
 class MaxPool1d(Cell):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         super(MaxPool1d, self).__init__()
         self.data_format, padding = preprocess_1d_format(data_format=data_format, padding=padding)
         self.expand = P.ExpandDims()
         _strides = (1, strides)
         _ksize = (1, ksize)
+        self.return_mask = return_mask
+        if self.return_mask:
+            raise NotImplementedError
         if self.data_format == 'NWC':
             self.squeeze = P.Squeeze(1)
             _data_format = 'NHWC'
@@ -755,9 +758,12 @@ class MaxPool1d(Cell):
 
 class MaxPool(Cell):
 
-    def __init__(self, ksize, strides, padding, data_format='NHWC'):
+    def __init__(self, ksize, strides, padding, return_mask, data_format='NHWC'):
         super(MaxPool, self).__init__()
         data_format, padding = preprocess_2d_format(data_format=data_format, padding=padding)
+        self.return_mask = return_mask
+        if self.return_mask:
+            raise NotImplementedError
         self.maxpool = P.MaxPool(kernel_size=ksize, strides=strides, pad_mode=padding, data_format=data_format)
 
     def construct(self, inputs):
@@ -793,15 +799,15 @@ def max_pool(input, ksize, strides, padding, data_format=None):
     return outputs
 
 
-def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False, ceil_mode=False, data_format='NCL'):
+def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format='NCL'):
     raise NotImplementedError
 
 
-def max_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format='NCHW'):
+def max_pool2d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format='NCHW'):
     raise NotImplementedError
 
 
-def max_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, return_mask=False, data_format="NCDHW"):
+def max_pool3d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format="NCDHW"):
     raise NotImplementedError
 
 
@@ -890,9 +896,12 @@ def avg_pool(input, ksize, strides, padding):
 
 class MaxPool3d(Cell):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         super(MaxPool3d, self).__init__()
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
+        self.return_mask = return_mask
+        if self.return_mask:
+            raise NotImplementedError
         if data_format == 'NDHWC':
             raise NotImplementedError("The optional value for data format. Currently only support ‘NCDHW’.")
         self.max_pool3d = P.MaxPool3D(
@@ -917,20 +926,17 @@ class AvgPool3d(Cell):
         return self.avg_pool(inputs)
 
 
-def avg_pool1d(input, kernel_size, stride=None, padding=0, count_include_pad=True, ceil_mode=False, data_format='NCL'):
+def avg_pool1d(input, kernel_size, stride=None, padding=0, data_format='NCL'):
+
     raise NotImplementedError
 
 
-def avg_pool2d(
-        input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
-        divisor_override=None, data_format='NCHW'
-):
+def avg_pool2d(input, kernel_size, stride=None, padding=0, data_format='NCHW'):
+
     raise NotImplementedError
 
 
-def avg_pool3d(input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True,
-               divisor_override=None, data_format='NCDHW'
-               ):
+def avg_pool3d(input, kernel_size, stride=None, padding=0, data_format='NCDHW'):
 
     raise NotImplementedError
 
