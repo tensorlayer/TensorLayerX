@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-import torch.nn.functional
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import math_ops, array_ops
 from tensorflow.python.training import moving_averages
