@@ -1322,7 +1322,7 @@ class Conv2d_transpose(object):
         self.groups = groups
         self.output_padding = output_padding
 
-    def __call__(self, input, filters):
+    def __call__(self, input, filters, output_size):
         if self.data_format == 'NHWC':
             input = nhwc_to_nchw(input)
         if self.padding == 'same':
