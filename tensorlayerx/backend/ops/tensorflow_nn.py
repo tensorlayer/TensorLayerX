@@ -1418,16 +1418,36 @@ def conv1d_transpose(
 class Conv2d_transpose(object):
 
     def __init__(
-        self, strides, padding, data_format='NHWC', dilations=None, name=None, out_channel=None, k_size=None,
-        in_channels=None
+        self, strides, padding, data_format='NHWC', dilations=None, name=None, out_channels=None, k_size=None,
+        in_channels=None, groups = 1, output_padding = 0,
     ):
         self.strides = strides
         self.dilations = dilations
         self.name = name
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
         self._padding = padding
+        self.groups = groups
+        if groups != 1:
+            raise NotImplementedError
+        self.output_padding = output_padding
+        self.out_channel = out_channels
+        self.in_channel = in_channels
 
-    def __call__(self, input, filters):
+    def _output_padding(self, output_shape, output_size):
+
+        if len(output_size) != 2:
+            raise ValueError(
+                "ConvTranspose2D: for 4D input, output_size must have 2 elements (got {})"
+                    .format(len(output_size)))
+        res = []
+        for i in range(2):
+            if output_size[i] < output_shape[i]:
+                ValueError(
+                    "output size must greater than {}".format(output_shape))
+            res.append(output_size[i] - output_shape[i])
+        return tuple(res)
+
+    def __call__(self, input, filters, output_size = None):
         if self.data_format == 'NHWC':
             h_axis, w_axis = 1, 2
         else:
@@ -1438,8 +1458,8 @@ class Conv2d_transpose(object):
         batch_size = input.shape[0]
         input_h, input_w = input_shape[h_axis], input_shape[w_axis]
         kernel_h, kernel_w = filters_shape[0], filters_shape[1]
-        output_channels = filters_shape[2]
         dilations_h, dilations_w = 1, 1
+
 
         if isinstance(self.strides, int):
             strides_h = self.strides
@@ -1488,18 +1508,39 @@ class Conv2d_transpose(object):
                 self.padding = [[0, 0], [self._padding[0], self._padding[0]],[self._padding[1], self._padding[1]], [0, 0]]
 
         if self.data_format == 'NCHW':
-            out_shape = (batch_size, output_channels, output_h, output_w)
+            out_shape = (batch_size, self.out_channel, output_h, output_w)
         else:
-            out_shape = (batch_size, output_h, output_w, output_channels)
+            out_shape = (batch_size, output_h, output_w, self.out_channel)
 
-        output_shape = tf.stack(out_shape)
-
-        outputs = tf.nn.conv2d_transpose(
-            input=input, filters=filters, output_shape=output_shape, strides=self.strides, padding=self.padding,
-            data_format=self.data_format, dilations=self.dilations, name=self.name
-        )
-        return outputs
-
+        if output_size is None:
+            output_padding = preprocess_padding(self.output_padding, '2d', self.data_format)
+            if self.data_format == 'NHWC':
+                output_padding[1][1] = 0
+                output_padding[2][1] = 0
+            else:
+                output_padding[2][1] = 0
+                output_padding[3][1] = 0
+            outputs = tf.nn.conv2d_transpose(
+                input=input, filters=filters, output_shape=out_shape, strides=self.strides, padding=self.padding,
+                data_format=self.data_format, dilations=self.dilations, name=self.name
+            )
+            outputs = tf.pad(outputs, output_padding)
+            return outputs
+        else:
+            output_padding = self._output_padding(output_shape = [output_h, output_w], output_size=output_size)
+            output_padding = preprocess_padding(output_padding, '2d', self.data_format)
+            if self.data_format == 'NHWC':
+                output_padding[1][1] = 0
+                output_padding[2][1] = 0
+            else:
+                output_padding[2][1] = 0
+                output_padding[3][1] = 0
+            outputs = tf.nn.conv2d_transpose(
+                input=input, filters=filters, output_shape=out_shape, strides=self.strides, padding=self.padding,
+                data_format=self.data_format, dilations=self.dilations, name=self.name
+            )
+            outputs = tf.pad(outputs, output_padding)
+            return outputs
 
 def conv2d_transpose(
     input, filters, output_shape, strides, padding='SAME', data_format='NHWC', dilations=None, name=None
@@ -1536,18 +1577,19 @@ def conv2d_transpose(
         A Tensor with the same type as input.
     """
 
-    data_format, padding = preprocess_2d_format(data_format, padding)
-    outputs = tf.nn.conv2d_transpose(
-        input=input,
-        filters=filters,
-        output_shape=output_shape,
-        strides=strides,
-        padding=padding,
-        data_format=data_format,
-        dilations=dilations,
-        name=name,
-    )
-    return outputs
+    # data_format, padding = preprocess_2d_format(data_format, padding)
+    # outputs = tf.nn.conv2d_transpose(
+    #     input=input,
+    #     filters=filters,
+    #     output_shape=output_shape,
+    #     strides=strides,
+    #     padding=padding,
+    #     data_format=data_format,
+    #     dilations=dilations,
+    #     name=name,
+    # )
+    # return outputs
+    raise NotImplementedError
 
 
 class Conv3d_transpose(object):
@@ -1895,39 +1937,17 @@ class GroupConv2D(object):
         self.groups = groups
         if isinstance(padding, int) or isinstance(padding, tuple):
             self.padding = preprocess_padding(self.padding, '2d', self.data_format)
-        if self.data_format == 'NHWC':
-            self.channels_axis = 3
-        else:
-            self.channels_axis = 1
 
     def __call__(self, input, filters):
 
-        if self.groups == 1:
-            outputs = tf.nn.conv2d(
-                input=input,
-                filters=filters,
-                strides=self.strides,
-                padding=self.padding,
-                data_format=self.data_format,
-                dilations=self.dilations,
-            )
-        else:
-            inputgroups = tf.split(input, num_or_size_splits=self.groups, axis=self.channels_axis)
-            weightsgroups = tf.split(filters, num_or_size_splits=self.groups, axis=self.channels_axis)
-            convgroups = []
-            for i, k in zip(inputgroups, weightsgroups):
-                convgroups.append(
-                    tf.nn.conv2d(
-                        input=i,
-                        filters=k,
-                        strides=self.strides,
-                        padding=self.padding,
-                        data_format=self.data_format,
-                        dilations=self.dilations,
-                    )
-                )
-            outputs = tf.concat(axis=self.channels_axis, values=convgroups)
-
+        outputs = tf.nn.conv2d(
+            input=input,
+            filters=filters,
+            strides=self.strides,
+            padding=self.padding,
+            data_format=self.data_format,
+            dilations=self.dilations,
+        )
         return outputs
 
 

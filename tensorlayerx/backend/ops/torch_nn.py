@@ -5,7 +5,8 @@ import torch
 import torch.nn.functional as F
 from torch import _VF
 from torch.nn import Module
-
+import collections
+from itertools import repeat
 
 def padding_format(padding):
     """
@@ -1338,50 +1339,110 @@ def conv1d_transpose(
     conv1d_transpose_obj = Conv1d_transpose(strides, padding, data_format, dilations)
     return conv1d_transpose_obj(input, filters)
 
+def _ntuple(n, name="parse"):
+    def parse(x):
+        if isinstance(x, collections.abc.Iterable):
+            return tuple(x)
+        return tuple(repeat(x, n))
+
+    parse.__name__ = name
+    return parse
+
+
+_single = _ntuple(1, "_single")
 
 class Conv2d_transpose(object):
 
     def __init__(
-        self, strides, padding, data_format='NHWC', dilations=None, name=None, out_channel=None, k_size=None,
-        in_channels=None
+        self, strides, padding, data_format='NHWC', dilations=None, name=None, out_channels=None, k_size=None,
+        in_channels=None, groups = 1, output_padding = 0,
     ):
         self.strides = strides
         self.dilations = dilations
         self.name = name
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        self.groups = groups
+        self.output_padding = output_padding
 
-    def __call__(self, input, filters):
+    def _output_padding(self, input, output_size,
+                        stride, padding, kernel_size,
+                        num_spatial_dims, dilation = None):
+        if output_size is None:
+            ret = _single(self.output_padding)  # converting to list if was not already
+        else:
+            has_batch_dim = input.dim() == num_spatial_dims + 2
+            num_non_spatial_dims = 2 if has_batch_dim else 1
+            if len(output_size) == num_non_spatial_dims + num_spatial_dims:
+                output_size = output_size[num_non_spatial_dims:]
+            if len(output_size) != num_spatial_dims:
+                raise ValueError(
+                    "ConvTranspose{}D: for {}D input, output_size must have {} or {} elements (got {})"
+                    .format(num_spatial_dims, input.dim(), num_spatial_dims,
+                            num_non_spatial_dims + num_spatial_dims, len(output_size)))
+
+            min_sizes = []
+            max_sizes = []
+            for d in range(num_spatial_dims):
+                dim_size = ((input.size(d + num_non_spatial_dims) - 1) * stride[d] -
+                            2 * padding[d] +
+                            (dilation[d] if dilation is not None else 1) * (kernel_size[d] - 1) + 1)
+                min_sizes.append(dim_size)
+                max_sizes.append(min_sizes[d] + stride[d] - 1)
+
+            for i in range(len(output_size)):
+                size = output_size[i]
+                min_size = min_sizes[i]
+                max_size = max_sizes[i]
+                if size < min_size or size > max_size:
+                    raise ValueError((
+                        "requested an output size of {}, but valid sizes range "
+                        "from {} to {} (for an input of {})").format(
+                            output_size, min_sizes, max_sizes, input.size()[2:]))
+
+            res = []
+            for d in range(num_spatial_dims):
+                res.append(output_size[d] - min_sizes[d])
+
+            ret = res
+        return ret
+
+    def __call__(self, input, filters, output_size):
         if self.data_format == 'NHWC':
             input = nhwc_to_nchw(input)
         if self.padding == 'same':
-            out = self.conv2d_transpore_same(input, filters)
+            out = self.conv2d_transpore_same(input, filters, output_size)
         else:
+            out_padding = self._output_padding(input, output_size, self.strides, (0 if isinstance(self.padding, str) else self.padding),
+                                               filters.shape,
+                                               2, self.dilations)
             out = F.conv_transpose2d(
                 input,
                 weight=filters,
                 padding=(0 if isinstance(self.padding, str) else self.padding),
                 stride=self.strides,
-                dilation=self.dilations
+                dilation=self.dilations,
+                output_padding = out_padding,
+                groups = self.groups
             )
         if self.data_format == 'NHWC':
             out = nchw_to_nhwc(out)
         return out
 
-    def conv2d_transpore_same(self,input, filters):
+    def conv2d_transpore_same(self,input, filters, output_size):
         rows_odd, cols_odd, padding_rows, padding_cols = same_padding_deconvolution(input, filters, self.strides, (1, 1))
         if rows_odd or cols_odd:
             input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)])
             out_padding = 0
         else:
             out_padding = 1
+        out_padding = self._output_padding(input, output_size, self.strides, (padding_rows // 2, padding_cols // 2), filters.shape,
+                                           2, self.dilations)
         out = F.conv_transpose2d(input, weight=filters, padding=(padding_rows // 2, padding_cols // 2), stride=self.strides,
-                                 dilation=self.dilations, output_padding=out_padding)
+                                 dilation=self.dilations, output_padding=out_padding, groups=self.groups)
         return out
 
 
-def conv2d_transpose(
-    input, filters, output_shape, strides, padding='SAME', data_format='NHWC', dilations=None, name=None
-):
+def conv2d_transpose(x, weight, bias=None, stride=1, padding=0, output_padding=0, groups=1, dilation=1, data_format='NCHW', output_size=None):
     """
     The transpose of conv2d.
 
@@ -1413,10 +1474,71 @@ def conv2d_transpose(
     -------
         A Tensor with the same type as input.
     """
+    data_format, padding = preprocess_2d_format(data_format, padding)
+    if isinstance(padding, str):
+        raise ValueError("padding should be int or tuple of int.")
+    def _output_padding(input, output_size,
+                        stride, padding, kernel_size,
+                        num_spatial_dims, dilation = None):
+        if output_size is None:
+            ret = _single(output_padding)  # converting to list if was not already
+        else:
+            has_batch_dim = input.dim() == num_spatial_dims + 2
+            num_non_spatial_dims = 2 if has_batch_dim else 1
+            if len(output_size) == num_non_spatial_dims + num_spatial_dims:
+                output_size = output_size[num_non_spatial_dims:]
+            if len(output_size) != num_spatial_dims:
+                raise ValueError(
+                    "ConvTranspose{}D: for {}D input, output_size must have {} or {} elements (got {})"
+                    .format(num_spatial_dims, input.dim(), num_spatial_dims,
+                            num_non_spatial_dims + num_spatial_dims, len(output_size)))
 
-    conv2d_transpose_obj = Conv2d_transpose(strides, padding, data_format, dilations)
-    return conv2d_transpose_obj(input, filters)
+            min_sizes = []
+            max_sizes = []
+            for d in range(num_spatial_dims):
+                dim_size = ((input.size(d + num_non_spatial_dims) - 1) * stride[d] -
+                            2 * padding[d] +
+                            (dilation[d] if dilation is not None else 1) * (kernel_size[d] - 1) + 1)
+                min_sizes.append(dim_size)
+                max_sizes.append(min_sizes[d] + stride[d] - 1)
 
+            for i in range(len(output_size)):
+                size = output_size[i]
+                min_size = min_sizes[i]
+                max_size = max_sizes[i]
+                if size < min_size or size > max_size:
+                    raise ValueError((
+                        "requested an output size of {}, but valid sizes range "
+                        "from {} to {} (for an input of {})").format(
+                            output_size, min_sizes, max_sizes, input.size()[2:]))
+
+            res = []
+            for d in range(num_spatial_dims):
+                res.append(output_size[d] - min_sizes[d])
+
+            ret = res
+        return ret
+
+    if data_format == 'NHWC':
+        x = nhwc_to_nchw(x)
+
+    out_padding = _output_padding(x, output_size, stride,
+                                           padding,
+                                           weight.shape[2:],
+                                           2, dilation)
+    out = F.conv_transpose2d(
+            x,
+            weight=weight,
+            bias = bias,
+            padding=padding,
+            stride=stride,
+            dilation=dilation,
+            output_padding=out_padding,
+            groups=groups
+        )
+    if data_format == 'NHWC':
+        out = nchw_to_nhwc(out)
+    return out
 
 class Conv3d_transpose(object):
 

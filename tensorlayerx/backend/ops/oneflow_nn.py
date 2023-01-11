@@ -1313,12 +1313,14 @@ class Conv2d_transpose(object):
 
     def __init__(
         self, strides, padding, data_format='NHWC', dilations=None, name=None, out_channel=None, k_size=None,
-        in_channels=None
+        in_channels=None, groups = 1, output_padding = 0,
     ):
         self.strides = strides
         self.dilations = dilations
         self.name = name
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        self.groups = groups
+        self.output_padding = output_padding
 
     def __call__(self, input, filters):
         if self.data_format == 'NHWC':
@@ -1385,8 +1387,7 @@ def conv2d_transpose(
         A Tensor with the same type as input.
     """
 
-    conv2d_transpose_obj = Conv2d_transpose(strides, padding, data_format, dilations)
-    return conv2d_transpose_obj(input, filters)
+    raise NotImplementedError
 
 
 class Conv3d_transpose(object):
