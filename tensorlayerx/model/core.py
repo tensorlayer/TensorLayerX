@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from collections.abc import Iterable
-from tensorboardX import SummaryWriter
 from tqdm import trange
 
 from tensorlayerx.nn.core.common import _save_weights, _load_weights, \
@@ -93,7 +92,7 @@ class Model:
         self.all_weights = network.all_weights
         self.train_weights = self.network.trainable_weights
 
-    def train(self, n_epoch, train_dataset=None, test_dataset=False, print_train_batch=False, print_freq=5, loss_monitor=False):
+    def train(self, n_epoch, train_dataset=None, test_dataset=False, print_train_batch=False, print_freq=5):
         if not isinstance(train_dataset, Iterable):
             raise Exception("Expected type in (train_dataset, Iterable), but got {}.".format(type(train_dataset)))
 
@@ -101,29 +100,25 @@ class Model:
             self.tf_train(
                 n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
                 train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
-                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset,
-                loss_monitor=loss_monitor
+                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
             )
         elif tlx.BACKEND == 'mindspore':
             self.ms_train(
                 n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
                 train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
-                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset,
-                loss_monitor=loss_monitor
+                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
             )
         elif tlx.BACKEND == 'paddle':
             self.pd_train(
                 n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
                 train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
-                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset,
-                loss_monitor=loss_monitor
+                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
             )
         elif tlx.BACKEND == 'torch':
             self.th_train(
                 n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
                 train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
-                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset,
-                loss_monitor=loss_monitor
+                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
             )
 
     def eval(self, test_dataset):
@@ -272,7 +267,7 @@ class Model:
 
     def tf_train(
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
-        print_freq, test_dataset, loss_monitor
+        print_freq, test_dataset
     ):
         with Progress(TextColumn("[progress.description]{task.description}"),
                       BarColumn(),
@@ -344,13 +339,9 @@ class Model:
                 progress.reset(batch_tqdm)
 
 
-        if loss_monitor:
-            writer.export_scalars_to_json("./all_scalars.json")
-            writer.close()
-
     def ms_train(
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
-        print_freq, test_dataset, loss_monitor
+        print_freq, test_dataset
     ):
         net_with_criterion = WithLoss(network, loss_fn)
         train_network = GradWrap(net_with_criterion, network.trainable_weights)
@@ -420,13 +411,9 @@ class Model:
                 progress.reset(batch_tqdm)
 
 
-        if loss_monitor:
-            writer.export_scalars_to_json("./all_scalars.json")
-            writer.close()
-
     def pd_train(
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
-        print_freq, test_dataset, loss_monitor
+        print_freq, test_dataset
     ):
         with Progress(TextColumn("[progress.description]{task.description}"),
                       BarColumn(),
@@ -495,13 +482,9 @@ class Model:
                 progress.reset(batch_tqdm)
 
 
-        if loss_monitor:
-            writer.export_scalars_to_json("./all_scalars.json")
-            writer.close()
-
     def th_train(
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
-        print_freq, test_dataset, loss_monitor
+        print_freq, test_dataset
     ):
         # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         # network = network.to(device)
@@ -570,9 +553,6 @@ class Model:
                 progress.reset(batch_tqdm)
 
 
-        if loss_monitor:
-            writer.export_scalars_to_json("./all_scalars.json")
-            writer.close()
 
 class WithGrad(object):
     """Module that returns the gradients.
