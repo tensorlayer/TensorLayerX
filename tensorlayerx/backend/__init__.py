@@ -220,5 +220,6 @@ from .ops import avg_pool3d
 from .ops import max_pool1d
 from .ops import max_pool2d
 from .ops import max_pool3d
+from .ops import conv2d_transpose
 
 from tensorlayerx.backend import ops

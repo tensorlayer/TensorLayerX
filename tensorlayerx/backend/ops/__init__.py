@@ -282,3 +282,4 @@ from .load_backend import avg_pool3d
 from .load_backend import max_pool1d
 from .load_backend import max_pool2d
 from .load_backend import max_pool3d
+from .load_backend import conv2d_transpose

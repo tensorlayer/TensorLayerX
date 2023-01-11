@@ -1129,7 +1129,8 @@ def conv1d_transpose(
 
 class Conv2d_transpose(Cell):
 
-    def __init__(self, strides, padding, data_format, dilations=None, out_channel=None, k_size=None, in_channels=None):
+    def __init__(self, strides, padding, data_format, dilations=None, out_channel=None, k_size=None,
+                 in_channels=None, groups = 1, output_padding = 0,):
         super(Conv2d_transpose, self).__init__()
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
         self.in_channels = in_channels
@@ -1137,6 +1138,8 @@ class Conv2d_transpose(Cell):
         self.k_size = k_size
         self.strides = strides
         self.dilations = dilations
+        self.groups = groups
+        self.output_padding = output_padding
 
         if self.data_format == 'NHWC':
             raise NotImplementedError("The optional value for data format. Currently only support “NCWH”.")
@@ -1160,14 +1163,16 @@ class Conv2d_transpose(Cell):
                                                   pad=self.pad,
                                                   stride=self.strides,
                                                   dilation=self.dilations,
-                                                  group=1)
+                                                  group=self.groups)
         if isinstance(self.padding, int):
             self.padding_top, self.padding_bottom, self.padding_left, self.padding_right = (self.padding,) * 4
         else:
             self.padding_top, self.padding_bottom = (self.padding[0],) * 2
             self.padding_left, self.padding_right = (self.padding[1],) * 2
 
-    def construct(self, x, filters):
+    def construct(self, x, filters, output_size):
+        if output_size is not None:
+            raise NotImplementedError
         n, _, h, w = P.Shape()(x)
         h_out = self._deconv_output_length(self.is_valid, self.is_same, self.is_pad, h, self.k_size[0],
                                       self.strides[0], self.dilations[0], self.padding_top + self.padding_bottom)
@@ -1193,85 +1198,8 @@ class Conv2d_transpose(Cell):
 
         return length
 
-# class Conv2d_transpose(Cell):
-#
-#     def __init__(self, strides, padding, data_format, dilations=None, out_channel=None, k_size=None, in_channels=None):
-#         super(Conv2d_transpose, self).__init__()
-#         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-#         self.in_channels = in_channels
-#         self.out_channel = out_channel
-#         self.k_size = k_size
-#         self.strides = strides
-#         self.dilations = dilations
-#
-#         if self.data_format == 'NHWC':
-#             raise NotImplementedError("The optional value for data format. Currently only support “NCWH”.")
-#
-#         self.conv2d_transpose = P.Conv2DBackpropInput(
-#             out_channel=self.in_channels, kernel_size=self.k_size, pad_mode=self.padding, stride=self.strides,
-#             dilation=self.dilations, mode=1, group=1, data_format=self.data_format
-#         )
-#         self.shape = P.Shape()
-#
-#     def _deconv_output_length(self, input_length, filter_size, stride_size, dilation_size):
-#         length = 0
-#         filter_size = filter_size + (filter_size - 1) * (dilation_size - 1)
-#
-#         if self.padding == 'same':
-#             length = input_length * stride_size
-#         elif self.padding == 'valid':
-#             length = input_length * stride_size + max(filter_size - stride_size, 0)
-#
-#         return length
-#
-#     def construct(self, x, filters):
-#         if self.data_format == 'NHWC':
-#             h_axis, w_axis = 1, 2
-#             n, h, w, _ = self.shape(x)
-#         else:
-#             h_axis, w_axis = 2, 3
-#             n, _, h, w = self.shape(x)
-#
-#         if isinstance(self.strides, int):
-#             strides_h = self.strides
-#             strides_w = self.strides
-#         else:
-#             strides_list = list(self.strides)
-#             if len(strides_list) == 2:
-#                 strides_h = strides_list[0]
-#                 strides_w = strides_list[1]
-#             elif len(strides_list) == 4:
-#                 strides_h = strides_list[h_axis]
-#                 strides_w = strides_list[w_axis]
-#
-#         if self.dilations is not None:
-#             if isinstance(self.dilations, int):
-#                 dilations_h = self.dilations
-#                 dilations_w = self.dilations
-#             else:
-#                 dilations_list = list(self.dilations)
-#                 if len(dilations_list) == 2:
-#                     dilations_h = dilations_list[0]
-#                     dilations_w = dilations_list[1]
-#                 elif len(dilations_list) == 4:
-#                     dilations_h = dilations_list[h_axis]
-#                     dilations_w = dilations_list[w_axis]
-#
-#         h_out = self._deconv_output_length(h, self.k_size[0], strides_h, dilations_h)
-#         w_out = self._deconv_output_length(w, self.k_size[1], strides_w, dilations_w)
-#
-#         if self.data_format == 'NCHW':
-#             output_size = (n, self.out_channel, h_out, w_out)
-#         else:
-#             output_size = (n, h_out, w_out, self.out_channel)
-#         output = self.conv2d_transpose(x, filters, output_size)
-#
-#         return output
 
-
-def conv2d_transpose(
-    input, filters, output_shape, strides, padding='SAME', data_format='NHWC', dilations=None, name=None
-):
+def conv2d_transpose(x, weight, bias=None, stride=1, padding=0, output_padding=0, groups=1, dilation=1, data_format='NCHW', output_size=None):
     """
     The transpose of conv2d.
 
@@ -1303,7 +1231,7 @@ def conv2d_transpose(
     -------
         A Tensor with the same type as input.
     """
-    pass
+    raise NotImplementedError
 
 
 class Conv3d_transpose(Cell):

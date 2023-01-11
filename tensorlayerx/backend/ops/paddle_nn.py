@@ -1010,24 +1010,29 @@ def conv1d_transpose(
 class Conv2d_transpose(object):
 
     def __init__(
-        self, strides, padding, data_format='NHWC', dilations=None, name=None, out_channel=None, k_size=None,
-        in_channels=None
+        self, strides, padding, data_format='NHWC', dilations=None, name=None, out_channels=None, k_size=None,
+        in_channels=None, groups = 1, output_padding = 0,
     ):
         self.strides = strides
         self.dilations = dilations
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        self.groups = groups
+        self.output_padding = output_padding
 
-    def __call__(self, input, filters):
+    def __call__(self, input, filters, output_size):
+        if output_size is None:
+            self.output_padding = self.output_padding
+        else:
+            self.output_padding = 0
+
         output = F.conv2d_transpose(
             x=input, weight=filters, stride=self.strides, padding=self.padding, dilation=self.dilations,
-            data_format=self.data_format
+            data_format=self.data_format, groups=self.groups, output_size=output_size, output_padding=self.output_padding
         )
         return output
 
 
-def conv2d_transpose(
-    input, filters, output_shape, strides, padding='SAME', data_format='NHWC', dilations=None, name=None
-):
+def conv2d_transpose(x, weight, bias=None, stride=1, padding=0, output_padding=0, groups=1, dilation=1, data_format='NCHW', output_size=None):
     """
     The transpose of conv2d.
 
@@ -1062,11 +1067,14 @@ def conv2d_transpose(
     data_format, padding = preprocess_2d_format(data_format, padding)
     output = F.conv2d_transpose(
         x=input,
-        weight=filters,
-        output_size=output_shape,
-        stride=strides,
+        weight=weight,
+        bias=bias,
+        stride=stride,
         padding=padding,
-        dilation=dilations,
+        output_padding=output_padding,
+        dilation=dilation,
+        groups=groups,
+        output_size=output_size,
         data_format=data_format,
     )
     return output
