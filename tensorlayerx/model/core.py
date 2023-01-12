@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from collections.abc import Iterable
-from tqdm import trange
 
 from tensorlayerx.nn.core.common import _save_weights, _load_weights, \
     _save_standard_weights_dict, _load_standard_weights_dict

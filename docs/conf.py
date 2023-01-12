@@ -72,6 +72,7 @@ autodoc_mock_imports = [
     'tensorflow',
     'tqdm',
     'h5py',
+    'rich',
 
     # TL C++ Packages
     'tensorlayerx.third_party.roi_pooling.roi_pooling.roi_pooling_ops',
