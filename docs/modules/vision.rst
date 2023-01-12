@@ -57,7 +57,7 @@ Vision Transforms list
    StandardizePerImage
 
 
-.. automodule:: tensorlayerx.vision.utils
+.. automodule:: tensorlayerx.vision
 
 .. -----------------------------------------------------------
 ..                        Vision IO
@@ -235,16 +235,16 @@ Vision IO
 
 load_image
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: load_image
+.. autoclass:: tensorlayerx.vision.load_image
 
 save_image
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: save_image
+.. autoclass:: tensorlayerx.vision.save_image
 
 load_images
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: load_images
+.. autoclass:: tensorlayerx.vision.load_images
 
 save_image
 ^^^^^^^^^^^^^^^^^^^^^
-.. autoclass:: save_images
+.. autoclass:: tensorlayerx.vision.save_images
