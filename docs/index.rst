@@ -3,7 +3,7 @@ Welcome to TensorLayerX
 
 
 .. image:: user/my_figs/tlx_transparent_logo.png
-  :width: 30 %
+  :width: 60 %
   :align: center
   :target: https://github.com/tensorlayer/TensorLayerX
 
