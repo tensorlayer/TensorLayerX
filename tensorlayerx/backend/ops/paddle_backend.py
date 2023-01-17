@@ -72,6 +72,12 @@ else:
     complex64 = paddle.complex64
     complex128 = paddle.complex128
 
+def _npairs(x, n):
+    if isinstance(x, (paddle.Tensor, list, tuple)):
+        return x
+    x = [x] * (n * 2)
+    return x
+
 
 def _getter(init_fn, **kwargs):
     """Return an named eager tensor."""
@@ -836,6 +842,25 @@ def reduce_min(input_tensor, axis=None, keepdims=False):
         The reduced tensor.
     """
     return pd.min(input_tensor, axis, keepdim=keepdims)
+
+
+class Pad2d(object):
+    def __init__(self, padding, mode='constant', value=0.0, data_format="NCHW", name=None):
+        self._pad = _npairs(padding, 2)
+        self._mode = mode
+        self._value = value
+        self._data_format = data_format
+        self._name = name
+
+    def __call__(self, x):
+        return F.pad(
+            x,
+            pad=self._pad,
+            mode=self._mode,
+            value=self._value,
+            data_format=self._data_format,
+            name=self._name,
+        )
 
 
 class Pad(object):

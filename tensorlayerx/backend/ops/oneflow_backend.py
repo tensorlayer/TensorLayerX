@@ -733,6 +733,14 @@ def reduce_min(input_tensor, axis=None, keepdims=False):
         return flow.min(input_tensor)
 
 
+class Pad2d(object):
+    def __init__(self, padding, mode='constant', value=0.0, data_format="NCHW", name=None):
+        pass
+
+    def __call__(self, x):
+        pass
+
+
 class Pad(object):
 
     def __init__(self, paddings, mode="REFLECT", constant_values=0.0):

@@ -259,6 +259,7 @@ from .load_backend import Unstack
 from .load_backend import Sign
 from .load_backend import Resize
 from .load_backend import Pad
+from .load_backend import Pad2d
 from .load_backend import Minimum
 from .load_backend import Maximum
 from .load_backend import Meshgrid

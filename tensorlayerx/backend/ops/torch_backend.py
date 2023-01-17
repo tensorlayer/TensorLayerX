@@ -608,6 +608,23 @@ def reduce_min(input_tensor, axis=None, keepdims=False):
         return torch.min(input_tensor)
 
 
+class Pad2d(object):
+    def __init__(self, padding, mode='constant', value=0.0, data_format="NCHW", name=None):
+        self.padding = padding
+        self._mode = mode
+        self._value = value
+        self._data_format = data_format
+        self._name = name
+
+    def __call__(self, x):
+        if self._data_format == "NHWC":
+            x = nhwc_to_nchw(x)
+        output = torch.nn.functional.pad(x, self.padding, self._mode, value=self._value)
+        if self._data_format == "NHWC":
+            output = nchw_to_nhwc(output)
+        return output
+
+
 class Pad(object):
 
     def __init__(self, paddings, mode="REFLECT", constant_values=0.0):

@@ -927,6 +927,24 @@ def reduce_min(x, axis=None, keepdims=False):
     return tf.reduce_min(x, axis=axis, keepdims=keepdims)
 
 
+class Pad2d(object):
+    def __init__(self, padding, mode='constant', value=0.0, data_format="NCHW", name=None):
+        self.padding = [[0, 0], [padding[0], padding[1]],
+                        [padding[2], padding[3]], [0, 0]]
+        self._mode = mode
+        self._value = value
+        self._data_format = data_format
+        self._name = name
+
+    def __call__(self, x):
+        if self._data_format == "NCHW":
+            x = nchw_to_nhwc(x)
+        outputs = tf.pad(x, self.padding, mode=self._mode, constant_values=self._value)
+        if self._data_format == "NCHW":
+            outputs = nhwc_to_nchw(outputs)
+        return outputs
+
+
 class Pad(object):
 
     def __init__(self, paddings, mode="REFLECT", constant_values=0):
