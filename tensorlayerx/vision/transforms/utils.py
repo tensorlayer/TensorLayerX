@@ -92,10 +92,16 @@ def load_images(path, n_threads = 10):
     '''
     images = []
     files = sorted(os.listdir(path))
-    for file in range(0, len(files), n_threads):
-        image_list = files[file:file + n_threads]
-        image = threading_data(image_list, fn=load_image, path = path)
-        images.extend(image)
+    if n_threads == 0:
+        for file in files:
+            file = os.path.join(path, file)
+            image = load_image(file)
+            images.append(image)
+    else:
+        for file in range(0, len(files), n_threads):
+            image_list = files[file:file + n_threads]
+            image = threading_data(image_list, fn=load_image, path = path)
+            images.extend(image)
     return images
 
 
