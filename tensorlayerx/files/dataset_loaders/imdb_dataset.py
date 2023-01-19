@@ -6,9 +6,9 @@ import os
 
 import numpy as np
 import six.moves.cPickle as pickle
-
+from tensorlayerx import logging
 from tensorlayerx.files.utils import maybe_download_and_extract
-
+logging.set_verbosity(logging.INFO)
 __all__ = ['load_imdb_dataset']
 
 
@@ -52,7 +52,10 @@ def load_imdb_dataset(
 
     """
     path = os.path.join(path, 'imdb')
-
+    logging.info("If can't download this dataset automatically, "
+                  "please download it from the official website manually."
+                  "imdb Dataset <https://s3.amazonaws.com/text-datasets/imdb.pkl>."
+                  "Please place dataset under 'data/imdb/' by default.")
     filename = "imdb.pkl"
     url = 'https://s3.amazonaws.com/text-datasets/'
     maybe_download_and_extract(filename, path, url)
