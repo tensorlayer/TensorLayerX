@@ -6,7 +6,7 @@ import zipfile
 
 from tensorlayerx import logging
 from tensorlayerx.files.utils import maybe_download_and_extract
-
+logging.set_verbosity(logging.INFO)
 __all__ = ['load_matt_mahoney_text8_dataset']
 
 
@@ -35,7 +35,10 @@ def load_matt_mahoney_text8_dataset(path='data'):
 
     """
     path = os.path.join(path, 'mm_test8')
-    logging.info("Load or Download matt_mahoney_text8 Dataset> {}".format(path))
+    logging.info("If can't download this dataset automatically, "
+                  "please download it from the official website manually."
+                  "mm_test8 Dataset <http://mattmahoney.net/dc/>."
+                  "Please place dataset under 'data/mm_test8/' by default.")
 
     filename = 'text8.zip'
     url = 'http://mattmahoney.net/dc/'

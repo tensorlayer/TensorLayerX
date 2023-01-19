@@ -3,10 +3,9 @@
 
 import os
 import zipfile
-
 from tensorlayerx import logging
 from tensorlayerx.files.utils import (download_file_from_google_drive, exists_or_mkdir, load_file_list)
-
+logging.set_verbosity(logging.INFO)
 __all__ = ['load_celebA_dataset']
 
 
@@ -21,6 +20,11 @@ def load_celebA_dataset(path='data'):
         The path that the data is downloaded to, defaults is ``data/celebA/``.
 
     """
+    logging.info("The dataset is stored on google drive, if you can't download it from google drive, "
+                  "please download it from the official website manually. " 
+                  "Large-scale CelebFaces Attributes (CelebA) Dataset <http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html>. "
+                  "Please place dataset 'img_align_celeba.zip' under 'data/celebA/' by default.")
+
     data_dir = 'celebA'
     filename, drive_id = "img_align_celeba.zip", "0B7EVK8r0v71pZjFTYXZWM3FlRnM"
     save_path = os.path.join(path, filename)

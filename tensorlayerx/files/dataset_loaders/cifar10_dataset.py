@@ -4,12 +4,11 @@
 import os
 import pickle
 import sys
-
 import numpy as np
 
 from tensorlayerx import logging
 from tensorlayerx.files.utils import maybe_download_and_extract
-
+logging.set_verbosity(logging.INFO)
 __all__ = ['load_cifar10_dataset']
 
 
@@ -46,7 +45,10 @@ def load_cifar10_dataset(shape=(-1, 32, 32, 3), path='data', plotable=False):
 
     """
     path = os.path.join(path, 'cifar10')
-    logging.info("Load or Download cifar10 > {}".format(path))
+    logging.info("If can't download this dataset automatically, "
+                  "please download it from the official website manually."
+                  "CIFAR10 Dataset <https://www.cs.toronto.edu/~kriz/cifar.html>."
+                  "Please place dataset 'cifar-10-python.tar.gz' under 'data/cifar10/' by default.")
 
     #Helper function to unpickle the data
     def unpickle(file):

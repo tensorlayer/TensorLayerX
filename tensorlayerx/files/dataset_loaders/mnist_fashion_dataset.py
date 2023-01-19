@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from tensorlayerx.files.utils import _load_mnist_dataset
-
+from tensorlayerx import logging
+logging.set_verbosity(logging.INFO)
 __all__ = ['load_fashion_mnist_dataset']
 
 
@@ -28,6 +29,11 @@ def load_fashion_mnist_dataset(shape=(-1, 784), path='data'):
     >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_fashion_mnist_dataset(shape=(-1,784), path='datasets')
     >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_fashion_mnist_dataset(shape=(-1, 28, 28, 1))
     """
+    logging.info("If can't download this dataset automatically, "
+                  "please download it from the official website manually."
+                  "fashion_mnist Dataset <http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/fashion_mnist>."
+                  "Please place dataset under 'data/fashion_mnist/' by default.")
+
     return _load_mnist_dataset(
         shape, path, name='fashion_mnist', url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/'
     )

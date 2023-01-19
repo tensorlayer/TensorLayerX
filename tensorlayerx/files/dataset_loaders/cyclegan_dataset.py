@@ -8,7 +8,7 @@ import numpy as np
 from tensorlayerx import logging
 from tensorlayerx.vision import load_images
 from tensorlayerx.files.utils import (del_file, folder_exists, load_file_list, maybe_download_and_extract)
-
+logging.set_verbosity(logging.INFO)
 __all__ = ['load_cyclegan_dataset']
 
 
@@ -29,6 +29,11 @@ def load_cyclegan_dataset(filename='summer2winter_yosemite', path='data'):
     """
     path = os.path.join(path, 'cyclegan')
     url = 'https://people.eecs.berkeley.edu/~taesung_park/CycleGAN/datasets/'
+
+    logging.info("If can't download this dataset automatically, "
+                  "please download it from the official website manually."
+                  "cyclegan Dataset <https://people.eecs.berkeley.edu/~taesung_park/CycleGAN/datasets/>."
+                  "Please place dataset under 'data/cyclegan/' by default.")
 
     if folder_exists(os.path.join(path, filename)) is False:
         logging.info("[*] {} is nonexistent in {}".format(filename, path))

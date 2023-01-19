@@ -68,12 +68,12 @@ class DataLoader(object):
     ):
         self.dataset = dataset
         assert num_workers >= 0, "num_workers should be a non_negative integer"
-        if num_workers == 0 and prefetch_factor != 2:
-            raise ValueError("prefetch_factor option should not be specified, when num_workers is 0.")
+        # if num_workers == 0 and prefetch_factor != 2:
+        #     raise ValueError("prefetch_factor option should not be specified, when num_workers is 0.")
         if persistent_workers and num_workers == 0:
             raise ValueError('persistent_workers option needs num_workers > 0')
-        self.num_workers = num_workers
-        self.prefetch_factor = prefetch_factor
+        self.num_workers = 0 # TODO optimizer multiprocess in multi backends
+        self.prefetch_factor = 2
         self.time_out = time_out
         self.worker_init_fn = worker_init_fn
         if isinstance(dataset, IterableDataset):
