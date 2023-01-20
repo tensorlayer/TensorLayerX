@@ -21,6 +21,8 @@ This project is maintained by researchers from Peking University, Imperial Colle
 🇨🇳 TensorLayerX 是一个跨平台开发框架，支持TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow和Jittor，用户不需要修改任何代码即可以运行在各类操作系统和AI硬件上（如Nvidia-GPU 和 Huawei-Ascend），并支持混合框架的开发。这个项目由北京大学、鹏城实验室、爱丁堡大学、帝国理工、清华、普林斯顿、斯坦福等机构的研究人员维护。
 [支持列表](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)。
 
+GitHub项目地址：https://github.com/tensorlayer/TensorLayerX  
+启智平台（国内访问）：https://openi.pcl.ac.cn/OpenI/TensorLayerX
 
 # Document
 TensorLayerX has extensive documentation for both beginners and professionals. 
