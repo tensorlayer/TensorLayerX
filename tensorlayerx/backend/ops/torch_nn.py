@@ -1235,7 +1235,8 @@ def same_padding_deconvolution(input, weight, strides, dilations):
         input_cols = input.size(3)
 
         out_rows = input_rows * strides[0] - strides[0] + 1
-        out_cols = input_rows * strides[1] - strides[1] + 1
+        out_cols = input_cols * strides[1] - strides[1] + 1
+
 
         padding_rows = max(0, (input_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - out_rows)
         padding_cols = max(0, (input_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - out_cols)
@@ -1250,8 +1251,8 @@ def same_padding_deconvolution(input, weight, strides, dilations):
         input_depth = input.size(4)
 
         out_rows = input_rows * strides[0] - strides[0] + 1
-        out_cols = input_rows * strides[1] - strides[1] + 1
-        out_depth = input_rows * strides[2] - strides[2] + 1
+        out_cols = input_cols * strides[1] - strides[1] + 1
+        out_depth = input_depth * strides[2] - strides[2] + 1
 
         padding_rows = max(0, (input_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - out_rows)
         padding_cols = max(0, (input_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - out_cols)
@@ -1410,7 +1411,7 @@ class Conv2d_transpose(object):
         if self.data_format == 'NHWC':
             input = nhwc_to_nchw(input)
         if self.padding == 'same':
-            out = self.conv2d_transpore_same(input, filters, output_size)
+            out = self.conv2d_transpore_same(input, filters)
         else:
             out_padding = self._output_padding(input, output_size, self.strides, (0 if isinstance(self.padding, str) else self.padding),
                                                filters.shape,
@@ -1428,15 +1429,13 @@ class Conv2d_transpose(object):
             out = nchw_to_nhwc(out)
         return out
 
-    def conv2d_transpore_same(self,input, filters, output_size):
+    def conv2d_transpore_same(self,input, filters):
         rows_odd, cols_odd, padding_rows, padding_cols = same_padding_deconvolution(input, filters, self.strides, (1, 1))
         if rows_odd or cols_odd:
             input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)])
             out_padding = 0
         else:
             out_padding = 1
-        out_padding = self._output_padding(input, output_size, self.strides, (padding_rows // 2, padding_cols // 2), filters.shape,
-                                           2, self.dilations)
         out = F.conv_transpose2d(input, weight=filters, padding=(padding_rows // 2, padding_cols // 2), stride=self.strides,
                                  dilation=self.dilations, output_padding=out_padding, groups=self.groups)
         return out
