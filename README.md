@@ -66,6 +66,11 @@ More resources can be found [here](https://github.com/tensorlayer)
 
 ## Installation
 
+### TensorLayerX corresponds to the back-end version
+| TensorLayerX | TensorFlow | MindSpore | PaddlePaddle|PyTorch|
+| :-----:| :----: | :----: |:-----:|:----:|
+|  v0.5.8  | v2.4.0 | v1.8.1 | v2.2.0 | v1.10.0 |
+| v0.5.7 | v2.0.0 | v1.6.1 | v2.0.2 | v1.10.0 |
 ### Via docker
 
 Docker is an open source application container engine. In the [TensorLayerX Docker Repository](https://hub.docker.com/repository/docker/tensorlayer/tensorlayerx), 

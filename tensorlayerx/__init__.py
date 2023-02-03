@@ -4,7 +4,7 @@
 
 # import backend
 from .backend import *
-
+import warnings
 import os
 
 from tensorlayerx.package_info import (
@@ -33,3 +33,14 @@ if 'TENSORLAYER_PACKAGE_BUILDING' not in os.environ:
     # global vars
     global_flag = {}
     global_dict = {}
+
+backend_v = {
+    'tensorflow': '2.4.0',
+    'mindspore': '1.8.1',
+    'paddle': '2.2.0',
+    'torch': '1.10.0',
+}
+
+if BACKEND_VERSION != backend_v[BACKEND]:
+    warnings.warn("The version of the backend you have installed does not match the specified backend version "
+                  "and may not work, please install version {} {}.".format(BACKEND, backend_v[BACKEND]))
