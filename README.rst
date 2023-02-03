@@ -89,5 +89,5 @@ License
 
 TensorLayerX is released under the Apache 2.0 license.
 
-.. |TENSORLAYER-LOGO| image:: https://git.openi.org.cn/TensorLayer/tensorlayer3.0/src/branch/master/img/tl_transparent_logo.png
+.. |TENSORLAYER-LOGO| image:: https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/tlx-LOGO--02.jpg
    :target: https://tensorlayerx.readthedocs.io/en/latest/
