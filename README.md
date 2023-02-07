@@ -32,7 +32,7 @@ We have opened a video course for introductory learning deep learning, with exam
 
 # Design Features
 
-[TensorLayerX](http://tensorlayerx.readthedocs.io)（TLX) is a platform-agnostic framework, supporting worldwide frameworks and AI chips, enabling one code runs on all platform.
+[TensorLayerX](http://tensorlayerx.readthedocs.io)（TLX) is a platform-agnostic framework, supporting worldwide frameworks and AI chips, enabling one code runs on all platforms.
 
 <p align="center"><img src="https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/version.png" width="840"\></p>
 
