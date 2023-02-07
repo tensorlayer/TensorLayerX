@@ -27,18 +27,14 @@ TensorLayerX has extensive documentation for both beginners and professionals.
 [![English Documentation](https://img.shields.io/badge/documentation-english-blue.svg)](https://tensorlayerx.readthedocs.io/en/latest/)
 
 # DeepLearning course  
-🔥We have opened a video course for introductory learning deep learning, with example codes based on TensorLayerX.  
+We have opened a video course for introductory learning deep learning, with example codes based on TensorLayerX.  
 [Bilibili link](https://www.bilibili.com/video/BV1xB4y1h7V2?share_source=copy_web&vd_source=467c17f872fcde378494433520e19999) (chinese)
 
 # Design Features
 
-Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), [TensorLayerX](http://tensorlayerx.readthedocs.io)（TLX) is a brand new seperated project for platform-agnostic purpose. 
-
-Compare to TensorLayer version:
+[TensorLayerX](http://tensorlayerx.readthedocs.io)（TLX) is a platform-agnostic framework, supporting worldwide frameworks and AI chips, enabling one code runs on all platform.
 
 <p align="center"><img src="https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/version.png" width="840"\></p>
-
-🔥TensorLayerX inherits the features of the previous verison, including ***Simplicity***, ***Flexibility*** and ***Zero-cost Abstraction***. ***Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), TensorLayerX supports more backends, such as TensorFlow, MindSpore, PaddlePaddle and PyTorch. It allows users to run the same code on different hardwares like Nvidia-GPU and Huawei-Ascend.*** In addition, more features are ***under development***.
 
 - ***Model Zoo***: Build a series of model Zoos containing classic and sota models,covering CV, NLP, RL and other fields.
 
