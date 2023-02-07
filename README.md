@@ -40,55 +40,7 @@ We have video courses for deep learning, with example codes based on TensorLayer
 
 - ***Deploy***: Support ONNX protocol, model export, import and deployment.
 
-
-# Resources
-
-- [TLX2ONNX](https://github.com/tensorlayer/TLX2ONNX/) ONNX Model Exporter for TensorLayerX. ✅
-- [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials✅
-- [GammaGL](https://github.com/BUPT-GAMMA/GammaGL) is a multi-backend graph learning library based on TensorLayerX.✅
-- OpenIVA an easy-to-use product-level deployment framework✅
-- [TLXZoo](https://github.com/tensorlayer/TLXZoo) pretrained models/backbones
-- TLXCV a bunch of Computer Vision applications
-- TLXNLP a bunch of Natural Language Processing applications
-- TLXRL a bunch of Reinforcement Learning applications, check [RLZoo](https://github.com/tensorlayer/RLzoo) for the old version✅
-
-More resources can be found [here](https://github.com/tensorlayer)
-
-
-# Quick Start
-
-## Installation
-
-### The latest TensorLayerX compatible with the following backend version
-| TensorLayerX | TensorFlow | MindSpore | PaddlePaddle|PyTorch|
-| :-----:| :----: | :----: |:-----:|:----:|
-|  v0.5.8  | v2.4.0 | v1.8.1 | v2.2.0 | v1.10.0 |
-| v0.5.7 | v2.0.0 | v1.6.1 | v2.0.2 | v1.10.0 |
-### Via docker
-
-Docker is an open source application container engine. In the [TensorLayerX Docker Repository](https://hub.docker.com/repository/docker/tensorlayer/tensorlayerx), 
-different versions of TensorLayerX have been installed in docker images.
-
-```bash
-# pull from docker hub
-docker pull tensorlayer/tensorlayerx:tagname
-```
-
-
-### Via pip
-```bash
-# install from pypi
-pip3 install tensorlayerx 
-```
-
-### Build from source
-```bash
-# install from Github
-pip3 install git+https://github.com/tensorlayer/tensorlayerx.git 
-```
-For more installation instructions, please refer to [Installtion](https://tensorlayerx.readthedocs.io/en/latest/user/installation.html)
-
-## Define a model
+# Multi-backend Design
 
 You can immediately use TensorLayerX to define a model, using your favourite framework in the background, like so:
 ```python
@@ -120,6 +72,54 @@ class CustomModel(Module):
 MLP = CustomModel()
 MLP.set_eval()
 ```
+
+
+
+# Resources
+
+- [TLX2ONNX](https://github.com/tensorlayer/TLX2ONNX/) ONNX Model Exporter for TensorLayerX. ✅
+- [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials✅
+- [GammaGL](https://github.com/BUPT-GAMMA/GammaGL) is a multi-backend graph learning library based on TensorLayerX.✅
+- OpenIVA an easy-to-use product-level deployment framework✅
+- [TLXZoo](https://github.com/tensorlayer/TLXZoo) pretrained models/backbones
+- TLXCV a bunch of Computer Vision applications
+- TLXNLP a bunch of Natural Language Processing applications
+- TLXRL a bunch of Reinforcement Learning applications, check [RLZoo](https://github.com/tensorlayer/RLzoo) for the old version✅
+
+More resources can be found [here](https://github.com/tensorlayer)
+
+
+# Installation
+
+## The latest TensorLayerX compatible with the following backend version
+| TensorLayerX | TensorFlow | MindSpore | PaddlePaddle|PyTorch|
+| :-----:| :----: | :----: |:-----:|:----:|
+|  v0.5.8  | v2.4.0 | v1.8.1 | v2.2.0 | v1.10.0 |
+| v0.5.7 | v2.0.0 | v1.6.1 | v2.0.2 | v1.10.0 |
+## Via docker
+
+Docker is an open source application container engine. In the [TensorLayerX Docker Repository](https://hub.docker.com/repository/docker/tensorlayer/tensorlayerx), 
+different versions of TensorLayerX have been installed in docker images.
+
+```bash
+# pull from docker hub
+docker pull tensorlayer/tensorlayerx:tagname
+```
+
+
+## Via pip for the stable version
+```bash
+# install from pypi
+pip3 install tensorlayerx 
+```
+
+## Build from source for the latest version
+```bash
+# install from Github
+pip3 install git+https://github.com/tensorlayer/tensorlayerx.git 
+```
+For more installation instructions, please refer to [Installtion](https://tensorlayerx.readthedocs.io/en/latest/user/installation.html)
+
 
 # Contributing
 Join our community as a code contributor, find out more in our [Help wanted list](https://github.com/tensorlayer/TensorLayerX/issues/5) and [Contributing](https://tensorlayerx.readthedocs.io/en/latest/user/contributing.html) guide!
