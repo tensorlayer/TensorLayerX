@@ -159,7 +159,7 @@ If you find TensorLayerX useful for your project, please cite the following pape
     title   = {{TensorLayer: A Versatile Library for Efficient Deep Learning Development}},
     url     = {http://tensorlayer.org},
     year    = {2017}
-}
+} 
 ```
 
 
