@@ -83,7 +83,7 @@ MLP.set_eval()
 - [TLXCV](https://github.com/tensorlayer/TLXCV) a series of Computer Vision applications
 - [TLXNLP](https://github.com/tensorlayer/TLXNLP) a series of Natural Language Processing applications
 - [TLX2ONNX](https://github.com/tensorlayer/TLX2ONNX/) ONNX model exporter for TensorLayerX.
-- [paddle2tlx](https://github.com/tensorlayer/paddle2tlx) model code converter from PaddlePaddle to TensorLayerX.  
+- [Paddle2TLX](https://github.com/tensorlayer/paddle2tlx) model code converter from PaddlePaddle to TensorLayerX.  
 
 More resources can be found [here](https://github.com/tensorlayer)
 
