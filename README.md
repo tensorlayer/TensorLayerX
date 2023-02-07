@@ -14,15 +14,12 @@
 [![Downloads](https://pepy.tech/badge/tensorlayerx/week)](https://pepy.tech/project/tensorlayerx/week)
 [![Docker Pulls](https://img.shields.io/docker/pulls/tensorlayer/tensorlayerx.svg)](https://hub.docker.com/r/tensorlayer/tensorlayerx/)
 
-🇬🇧 TensorLayerX is a multi-backend AI framework, which supports TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow and Jittor as the backends, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend. 
+[TensorLayerX](https://tensorlayerx.readthedocs.io) is a multi-backend AI framework, which supports TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow and Jittor as the backends, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend. 
 This project is maintained by researchers from Peking University, Imperial College London, Princeton, Stanford, Tsinghua, Edinburgh and Peng Cheng Lab.
-[supported layers](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z). 
 
-🇨🇳 TensorLayerX 是一个跨平台开发框架，支持TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow和Jittor，用户不需要修改任何代码即可以运行在各类操作系统和AI硬件上（如Nvidia-GPU 和 Huawei-Ascend），并支持混合框架的开发。这个项目由北京大学、鹏城实验室、爱丁堡大学、帝国理工、清华、普林斯顿、斯坦福等机构的研究人员维护。
-[支持列表](https://shimo.im/sheets/kJGCCTxXvqj99RGV/F5m5Z)。
 
-GitHub项目地址：https://github.com/tensorlayer/TensorLayerX  
-启智平台（国内访问）：https://openi.pcl.ac.cn/OpenI/TensorLayerX
+GitHub: https://github.com/tensorlayer/TensorLayerX  
+OpenI: https://openi.pcl.ac.cn/OpenI/TensorLayerX
 
 # Document
 TensorLayerX has extensive documentation for both beginners and professionals. 
@@ -31,7 +28,8 @@ TensorLayerX has extensive documentation for both beginners and professionals.
 
 # DeepLearning course  
 🔥We have opened a video course for introductory learning deep learning, with example codes based on TensorLayerX.  
-[Bilibili link](https://www.bilibili.com/video/BV1xB4y1h7V2?share_source=copy_web&vd_source=467c17f872fcde378494433520e19999)
+[Bilibili link](https://www.bilibili.com/video/BV1xB4y1h7V2?share_source=copy_web&vd_source=467c17f872fcde378494433520e19999) (chinese)
+
 # Design Features
 
 Compare with [TensorLayer](https://github.com/tensorlayer/TensorLayer), [TensorLayerX](http://tensorlayerx.readthedocs.io)（TLX) is a brand new seperated project for platform-agnostic purpose. 
@@ -54,9 +52,9 @@ Compare to TensorLayer version:
 - [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials✅
 - [GammaGL](https://github.com/BUPT-GAMMA/GammaGL) is a multi-backend graph learning library based on TensorLayerX.✅
 - OpenIVA an easy-to-use product-level deployment framework✅
-- [TLXZoo](https://github.com/tensorlayer/TLXZoo) pretrained models/backbones🚧
-- TLXCV a bunch of Computer Vision applications🚧
-- TLXNLP a bunch of Natural Language Processing applications🚧
+- [TLXZoo](https://github.com/tensorlayer/TLXZoo) pretrained models/backbones
+- TLXCV a bunch of Computer Vision applications
+- TLXNLP a bunch of Natural Language Processing applications
 - TLXRL a bunch of Reinforcement Learning applications, check [RLZoo](https://github.com/tensorlayer/RLzoo) for the old version✅
 
 More resources can be found [here](https://github.com/tensorlayer)
@@ -140,14 +138,6 @@ Join our community as a code contributor, find out more in our [Help wanted list
 If you find TensorLayerX useful for your project, please cite the following papers：
 
 ```
-@article{tensorlayer2017,
-    author  = {Dong, Hao and Supratak, Akara and Mai, Luo and Liu, Fangde and Oehmichen, Axel and Yu, Simiao and Guo, Yike},
-    journal = {ACM Multimedia},
-    title   = {{TensorLayer: A Versatile Library for Efficient Deep Learning Development}},
-    url     = {http://tensorlayer.org},
-    year    = {2017}
-}
-
 @inproceedings{tensorlayer2021,
   title={TensorLayer 3.0: A Deep Learning Library Compatible With Multiple Backends},
   author={Lai, Cheng and Han, Jiarong and Dong, Hao},
@@ -155,6 +145,13 @@ If you find TensorLayerX useful for your project, please cite the following pape
   pages={1--3},
   year={2021},
   organization={IEEE}
+}
+@article{tensorlayer2017,
+    author  = {Dong, Hao and Supratak, Akara and Mai, Luo and Liu, Fangde and Oehmichen, Axel and Yu, Simiao and Guo, Yike},
+    journal = {ACM Multimedia},
+    title   = {{TensorLayer: A Versatile Library for Efficient Deep Learning Development}},
+    url     = {http://tensorlayer.org},
+    year    = {2017}
 }
 ```
 
