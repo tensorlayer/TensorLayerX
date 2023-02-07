@@ -26,8 +26,8 @@ TensorLayerX has extensive documentation for both beginners and professionals.
 
 [![English Documentation](https://img.shields.io/badge/documentation-english-blue.svg)](https://tensorlayerx.readthedocs.io/en/latest/)
 
-# DeepLearning course  
-We have opened a video course for introductory learning deep learning, with example codes based on TensorLayerX.  
+# Deep Learning course  
+We have video courses for deep learning, with example codes based on TensorLayerX.  
 [Bilibili link](https://www.bilibili.com/video/BV1xB4y1h7V2?share_source=copy_web&vd_source=467c17f872fcde378494433520e19999) (chinese)
 
 # Design Features
