@@ -130,6 +130,18 @@ MLP.set_eval()
 Join our community as a code contributor, find out more in our [Help wanted list](https://github.com/tensorlayer/TensorLayerX/issues/5) and [Contributing](https://tensorlayerx.readthedocs.io/en/latest/user/contributing.html) guide!
 
 
+# Getting Involved
+
+We suggest users to report bugs using Github issues. Users can also discuss how to use TensorLayerX in the following slack channel.
+
+<br/>
+
+<a href="https://join.slack.com/t/tensorlayer/shared_invite/enQtODk1NTQ5NTY1OTM5LTQyMGZhN2UzZDBhM2I3YjYzZDBkNGExYzcyZDNmOGQzNmYzNjc3ZjE3MzhiMjlkMmNiMmM3Nzc4ZDY2YmNkMTY" target="\_blank">
+	<div align="center">
+		<img src="https://github.com/tensorlayer/TensorLayer/blob/bdc2c14ff9ed9bd3ec7004d625e15683df7b530d/img/join_slack.png?raw=true" width="40%"/>
+	</div>
+</a>
+
 # Contact
  - tensorlayer@gmail.com
 
