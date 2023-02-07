@@ -14,7 +14,7 @@
 [![Downloads](https://pepy.tech/badge/tensorlayerx/week)](https://pepy.tech/project/tensorlayerx/week)
 [![Docker Pulls](https://img.shields.io/docker/pulls/tensorlayer/tensorlayerx.svg)](https://hub.docker.com/r/tensorlayer/tensorlayerx/)
 
-[TensorLayerX](https://tensorlayerx.readthedocs.io) is a multi-backend AI framework, which supports TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow and Jittor as the backends, allowing users to run the code on different hardware like Nvidia-GPU and Huawei-Ascend. 
+[TensorLayerX](https://tensorlayerx.readthedocs.io) is a multi-backend AI framework, supports TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow and Jittor as the backends, allowing users to run the code on different hardware like Nvidia-GPU, Huawei-Ascend, Cambricon and more.
 This project is maintained by researchers from Peking University, Imperial College London, Princeton, Stanford, Tsinghua, Edinburgh and Peng Cheng Lab.
 
 
@@ -36,9 +36,9 @@ We have video courses for deep learning, with example codes based on TensorLayer
 
 <p align="center"><img src="https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/version.png" width="840"\></p>
 
-- ***Model Zoo***: Build a series of model Zoos containing classic and sota models,covering CV, NLP, RL and other fields.
+- ***Model Zoo***: Build a series of model Zoos containing classic and sota models, covering CV, NLP, RL and other fields.
 
-- ***Deploy***: In feature, TensorLayerX will support the ONNX protocol, supporting model export, import and deployment.
+- ***Deploy***: Support the ONNX protocol, model export, import and deployment.
 
 - ***Parallel***: In order to improve the efficiency of neural network model training, parallel computing is indispensable. 
 
@@ -60,7 +60,7 @@ More resources can be found [here](https://github.com/tensorlayer)
 
 ## Installation
 
-### TensorLayerX corresponds to the back-end version
+### The latest TensorLayerX compatible with the following backend version
 | TensorLayerX | TensorFlow | MindSpore | PaddlePaddle|PyTorch|
 | :-----:| :----: | :----: |:-----:|:----:|
 |  v0.5.8  | v2.4.0 | v1.8.1 | v2.2.0 | v1.10.0 |
@@ -91,7 +91,7 @@ For more installation instructions, please refer to [Installtion](https://tensor
 
 ## Define a model
 
-You can immediately use tensorlayerx to define a model, using your favourite framework in the background, like so:
+You can immediately use TensorLayerX to define a model, using your favourite framework in the background, like so:
 ```python
 import os
 os.environ['TL_BACKEND'] = 'tensorflow' # modify this line, switch to any framework easily!
