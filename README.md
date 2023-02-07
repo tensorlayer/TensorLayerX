@@ -38,7 +38,7 @@ We have video courses for deep learning, with example codes based on TensorLayer
 
 - ***Model Zoo***: Provide a series of applications containing classic and SOTA models, covering CV, NLP, RL and other fields.
 
-- ***Deploy***: Support ONNX protocol, model export, import and deployment.
+- ***Deployment***: Support ONNX protocol, model export, import and deployment.
 
 # Multi-backend Design
 
