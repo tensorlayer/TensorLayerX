@@ -42,10 +42,11 @@ We have video courses for deep learning, with example codes based on TensorLayer
 
 # Multi-backend Design
 
-You can immediately use TensorLayerX to define a model, using your favourite framework in the background, like so:
+You can immediately use TensorLayerX to define a model via Pytorch-stype, and switch to any backends easily.
+
 ```python
 import os
-os.environ['TL_BACKEND'] = 'tensorflow' # modify this line, switch to any framework easily!
+os.environ['TL_BACKEND'] = 'tensorflow' # modify this line, switch to any backends easily!
 #os.environ['TL_BACKEND'] = 'mindspore'
 #os.environ['TL_BACKEND'] = 'paddle'
 #os.environ['TL_BACKEND'] = 'torch'
