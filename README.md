@@ -32,15 +32,14 @@ We have video courses for deep learning, with example codes based on TensorLayer
 
 # Design Features
 
-[TensorLayerX](http://tensorlayerx.readthedocs.io)（TLX) is a platform-agnostic framework, supporting worldwide frameworks and AI chips, enabling one code runs on all platforms.
-
 <p align="center"><img src="https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/version.png" width="840"\></p>
 
-- ***Model Zoo***: Build a series of model Zoos containing classic and sota models, covering CV, NLP, RL and other fields.
+- ***Compatibility***: Support worldwide frameworks and AI chips, enabling one code runs on all platforms.
 
-- ***Deploy***: Support the ONNX protocol, model export, import and deployment.
+- ***Model Zoo***: Provide a series of applications containing classic and SOTA models, covering CV, NLP, RL and other fields.
 
-- ***Parallel***: In order to improve the efficiency of neural network model training, parallel computing is indispensable. 
+- ***Deploy***: Support ONNX protocol, model export, import and deployment.
+
 
 # Resources
 
