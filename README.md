@@ -77,14 +77,12 @@ MLP.set_eval()
 
 # Resources
 
-- [TLX2ONNX](https://github.com/tensorlayer/TLX2ONNX/) ONNX Model Exporter for TensorLayerX. ✅
-- [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials✅
-- [GammaGL](https://github.com/BUPT-GAMMA/GammaGL) is a multi-backend graph learning library based on TensorLayerX.✅
-- OpenIVA an easy-to-use product-level deployment framework✅
-- [TLXZoo](https://github.com/tensorlayer/TLXZoo) pretrained models/backbones
-- TLXCV a bunch of Computer Vision applications
-- TLXNLP a bunch of Natural Language Processing applications
-- TLXRL a bunch of Reinforcement Learning applications, check [RLZoo](https://github.com/tensorlayer/RLzoo) for the old version✅
+- [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials
+- [GammaGL](https://github.com/BUPT-GAMMA/GammaGL) is series of graph learning algorithm
+- [TLXZoo](https://github.com/tensorlayer/TLXZoo) a series of pretrained backbones
+- TLXCV a series of Computer Vision applications
+- TLXNLP a series of Natural Language Processing applications
+- [TLX2ONNX](https://github.com/tensorlayer/TLX2ONNX/) ONNX model exporter for TensorLayerX.
 
 More resources can be found [here](https://github.com/tensorlayer)
 
