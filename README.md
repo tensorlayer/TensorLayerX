@@ -90,12 +90,14 @@ More resources can be found [here](https://github.com/tensorlayer)
 
 # Installation
 
-## The latest TensorLayerX compatible with the following backend version
+- The latest TensorLayerX compatible with the following backend version
+
 | TensorLayerX | TensorFlow | MindSpore | PaddlePaddle|PyTorch|
 | :-----:| :----: | :----: |:-----:|:----:|
 |  v0.5.8  | v2.4.0 | v1.8.1 | v2.2.0 | v1.10.0 |
 | v0.5.7 | v2.0.0 | v1.6.1 | v2.0.2 | v1.10.0 |
-## Via docker
+
+- Via docker
 
 Docker is an open source application container engine. In the [TensorLayerX Docker Repository](https://hub.docker.com/repository/docker/tensorlayer/tensorlayerx), 
 different versions of TensorLayerX have been installed in docker images.
@@ -105,14 +107,13 @@ different versions of TensorLayerX have been installed in docker images.
 docker pull tensorlayer/tensorlayerx:tagname
 ```
 
-
-## Via pip for the stable version
+- Via pip for the stable version
 ```bash
 # install from pypi
 pip3 install tensorlayerx 
 ```
 
-## Build from source for the latest version
+- Build from source for the latest version
 ```bash
 # install from Github
 pip3 install git+https://github.com/tensorlayer/tensorlayerx.git 
