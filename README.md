@@ -80,8 +80,8 @@ MLP.set_eval()
 - [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials
 - [GammaGL](https://github.com/BUPT-GAMMA/GammaGL) is series of graph learning algorithm
 - [TLXZoo](https://github.com/tensorlayer/TLXZoo) a series of pretrained backbones
-- TLXCV a series of Computer Vision applications
-- TLXNLP a series of Natural Language Processing applications
+- [TLXCV](https://github.com/tensorlayer/TLXCV) a series of Computer Vision applications
+- [TLXNLP](https://github.com/tensorlayer/TLXNLP) a series of Natural Language Processing applications
 - [TLX2ONNX](https://github.com/tensorlayer/TLX2ONNX/) ONNX model exporter for TensorLayerX.
 - [paddle2tlx](https://github.com/tensorlayer/paddle2tlx) model code converter from PaddlePaddle to TensorLayerX.  
 
