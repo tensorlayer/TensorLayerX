@@ -4,8 +4,8 @@
 Installation
 ============
 
-TensorLayerX has some prerequisites that need to be installed first, including
-`TensorFlow`_ , `MindSpore <https://www.mindspore.cn/>`__, `PaddlePaddle <https://www.paddlepaddle.org.cn/>`__,  `PyTorch <https://pytorch.org/>`__, numpy and matplotlib. For GPU
+TensorLayerX has some prerequisites that need to be installed first, including NumPy, Matplotlib and one of the frameworks (
+`TensorFlow`_ , `MindSpore <https://www.mindspore.cn/>`__, `PaddlePaddle <https://www.paddlepaddle.org.cn/>`__,  `PyTorch <https://pytorch.org/>`__). For GPU
 support CUDA and cuDNN are required.
 
 If you run into any trouble, please check the `TensorFlow installation
@@ -13,7 +13,7 @@ instructions <https://www.tensorflow.org/versions/master/get_started/os_setup.ht
 `MindSpore installation instructions <https://www.mindspore.cn/install>`__,
 `PaddlePaddle installation instructions <https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html>`__,
 `PyTorch installation instructions <https://pytorch.org/get-started/locally/>`__,
-which cover installing the TensorFlow for a range of operating systems including
+which cover installing the frameworks for a range of operating systems including
 Mac OX, Linux and Windows, or ask for help on `tensorlayer@gmail.com <tensorlayer@gmail.com>`_
 or `FAQ <http://tensorlayer.readthedocs.io/en/latest/user/more.html>`_.
 
@@ -47,7 +47,7 @@ Alternatively, you can build from the source.
 
   # First clone the repository and change the current directory to the newly cloned repository
   git clone https://github.com/tensorlayer/TensorLayerX.git
-  cd tensorlayer
+  cd tensorlayerx
   python setup.py install
 
 This command will run the ``setup.py`` to install TensorLayerX.
