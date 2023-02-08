@@ -1,4 +1,4 @@
-docker pull hadolint/hadolint:latest
-docker run --rm -i hadolint/hadolint hadolint --ignore DL3007 - < Dockerfile
+docker pull tensorlayer/tensorlayerx:tagname
+docker run --rm -i tensorlayer/tensorlayerx hadolint --ignore DL3007 - < Dockerfile
 
 PAUSE;

@@ -24,8 +24,8 @@ RUN echo "Container Tag: ${TF_CONTAINER_VERSION}" \
         echo "Building a Nightly Release" \
         && apt-get install -y git \
         && mkdir /dist/ && cd /dist/ \
-        && git clone https://github.com/tensorlayer/tensorlayer.git \
-        && cd tensorlayer \
+        && git clone https://github.com/tensorlayer/tensorlayerx.git \
+        && cd tensorlayerx \
         && pip install --disable-pip-version-check --no-cache-dir --upgrade -e .[all]; \
     else \
         echo "Building Tag Release: $TL_VERSION" \
