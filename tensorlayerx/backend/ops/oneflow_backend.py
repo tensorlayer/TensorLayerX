@@ -400,7 +400,7 @@ class MatMul(object):
         if self.transpose_a or self.transpose_b:
             raise NotImplementedError('keyword argument `transpose_a` or `transpose_b` is not supported.')
 
-    def forward(self, x, y):
+    def __call__(self, x, y):
         return flow.matmul(x, y)
 
 
