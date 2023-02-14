@@ -608,6 +608,23 @@ def reduce_min(input_tensor, axis=None, keepdims=False):
         return torch.min(input_tensor)
 
 
+class Pad2d(object):
+    def __init__(self, padding, mode='constant', value=0.0, data_format="NCHW", name=None):
+        self.padding = padding
+        self._mode = mode
+        self._value = value
+        self._data_format = data_format
+        self._name = name
+
+    def __call__(self, x):
+        if self._data_format == "NHWC":
+            x = nhwc_to_nchw(x)
+        output = torch.nn.functional.pad(x, self.padding, self._mode, value=self._value)
+        if self._data_format == "NHWC":
+            output = nchw_to_nhwc(output)
+        return output
+
+
 class Pad(object):
 
     def __init__(self, paddings, mode="REFLECT", constant_values=0.0):
@@ -1293,8 +1310,8 @@ def angle(x):
     return torch.angle(x)
 
 
-def argmax(x, axis=None, dtype='int64'):
-    return torch.argmax(x, dim=axis)
+def argmax(x, axis=None, keepdim=False, dtype='int64'):
+    return torch.argmax(x, dim=axis, keepdim=keepdim)
 
 
 def argmin(x, axis=None, dtype='int64'):
@@ -1749,3 +1766,58 @@ def topk(input, k, dim=-1, largest=True, sorted=True):
 def numel(input):
 
     return torch.numel(input)
+
+
+
+def histogram(input, bins=100, min=0, max=0, name=None):
+    raise NotImplementedError
+
+
+def flatten(x, start_axis=0, stop_axis=-1, name=None):
+    raise NotImplementedError
+
+
+def interpolate(x,
+                size=None,
+                scale_factor=None,
+                mode='nearest',
+                align_corners=False,
+                align_mode=0,
+                data_format='NCHW',
+                name=None):
+    raise NotImplementedError
+
+
+def index_select(x, index, axis=0, name=None):
+    raise NotImplementedError
+
+
+def dot(x, y, name=None):
+    raise NotImplementedError
+
+
+class Swish(object):
+    def __init__(self):
+        pass
+
+    def __call__(self, x):
+        raise NotImplementedError
+
+def expand(x, shape):
+
+    return x.expand(shape)
+
+def unique(x, return_index=False, return_inverse=False, return_counts=False, axis=None, dtype='int64'):
+
+    raise NotImplementedError
+
+
+def flip(x, axis):
+
+    return torch.flip(x, axis)
+
+
+def mv(x, vec):
+
+    return torch.mv(x, vec)
+

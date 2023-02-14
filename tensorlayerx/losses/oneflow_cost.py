@@ -20,6 +20,7 @@ __all__ = [
     'maxnorm_regularizer',
     'maxnorm_o_regularizer',
     'maxnorm_i_regularizer',
+    'L1Loss'
 ]
 
 
@@ -560,3 +561,7 @@ def _cast(a, threshold, flag=False):
         a = flow.where(a >= threshold, one, a)
         a = flow.where(a < threshold, zero, a)
     return a
+
+def L1Loss(input, target, reduction='mean'):
+
+    return flow.nn.functional.l1_loss(input, target, reduction=reduction)

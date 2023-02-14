@@ -927,6 +927,24 @@ def reduce_min(x, axis=None, keepdims=False):
     return tf.reduce_min(x, axis=axis, keepdims=keepdims)
 
 
+class Pad2d(object):
+    def __init__(self, padding, mode='constant', value=0.0, data_format="NCHW", name=None):
+        self.padding = [[0, 0], [padding[0], padding[1]],
+                        [padding[2], padding[3]], [0, 0]]
+        self._mode = mode
+        self._value = value
+        self._data_format = data_format
+        self._name = name
+
+    def __call__(self, x):
+        if self._data_format == "NCHW":
+            x = nchw_to_nhwc(x)
+        outputs = tf.pad(x, self.padding, mode=self._mode, constant_values=self._value)
+        if self._data_format == "NCHW":
+            outputs = nhwc_to_nchw(outputs)
+        return outputs
+
+
 class Pad(object):
 
     def __init__(self, paddings, mode="REFLECT", constant_values=0):
@@ -1818,7 +1836,7 @@ def angle(x):
     return tf.math.angle(x)
 
 
-def argmax(x, axis=None, dtype='int64'):
+def argmax(x, axis=None, keepdim=False, dtype='int64'):
     """
     Returns the index with the largest value across axes of a tensor.
 
@@ -4101,3 +4119,105 @@ def numel(input):
     '''
 
     return tf.size(input)
+
+
+
+def histogram(input, bins=100, min=0, max=0, name=None):
+    raise NotImplementedError
+
+
+def flatten(x, start_axis=0, stop_axis=-1, name=None):
+    raise NotImplementedError
+
+
+def interpolate(x,
+                size=None,
+                scale_factor=None,
+                mode='nearest',
+                align_corners=False,
+                align_mode=0,
+                data_format='NCHW',
+                name=None):
+    raise NotImplementedError
+
+
+def index_select(x, index, axis=0, name=None):
+    raise NotImplementedError
+
+
+def dot(x, y, name=None):
+    raise NotImplementedError
+
+
+class Swish(object):
+    def __init__(self):
+        pass
+
+    def __call__(self, x):
+        raise NotImplementedError
+
+def expand(x, shape):
+    '''
+
+    Parameters
+    ----------
+    x : Tensor
+         The input Tensor, its data type is bool, float32, float64, int32 or int64.
+    shape : list|tuple|Tensor
+        The result shape after expanding.
+
+
+    '''
+
+    raise NotImplementedError
+
+def unique(x, return_index=False, return_inverse=False, return_counts=False, axis=None, dtype='int64'):
+    """
+
+    Parameters
+    ----------
+    x : Tensor
+        The input tensor
+    return_index : bool
+        If True, also return the indices of the input tensor that result in the unique Tensor.
+    return_inverse : bool
+         If True, also return the indices for where elements in the original input ended up in the returned unique tensor.
+    return_counts : bool
+        If True, also return the counts for each unique element.
+    axis : int
+        The axis to apply unique. If None, the input will be flattened. Default: None.
+    dtype : str
+         The date type of indices or inverse tensor: int32 or int64. Default: int64.
+
+    """
+
+    raise NotImplementedError
+
+
+def flip(x, axis):
+    """
+
+    Parameters
+    ----------
+    x : Tensor
+        The input tensor
+    axis : list|tuple|int
+        The axis(axes) to flip on.
+
+    """
+    raise NotImplementedError
+
+
+def mv(x, vec):
+    """
+
+    Parameters
+    ----------
+    x : Tensor
+        A tensor with shape [M,N] , The data type of the input Tensor x should be one of float32, float64.
+    vec : Tensor
+        A tensor with shape [N] , The data type of the input Tensor x should be one of float32, float64.
+
+
+    """
+    pass

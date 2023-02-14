@@ -22,6 +22,7 @@ __all__ = [
     'maxnorm_regularizer',
     'maxnorm_o_regularizer',
     'maxnorm_i_regularizer',
+    'L1Loss'
 ]
 
 
@@ -567,3 +568,9 @@ def huber_loss(
     """
 
     raise NotImplementedError("Not Implemented.")
+
+
+def L1Loss(input, target, reduction='mean'):
+
+    return pd.nn.functional.l1_loss(input, target, reduction)
+

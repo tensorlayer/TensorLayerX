@@ -40,6 +40,11 @@ from .load_backend import grucell
 from .load_backend import rnnbase
 from .load_backend import layernorm
 from .load_backend import multiheadattention
+from .load_backend import histogram
+from .load_backend import flatten
+from .load_backend import interpolate
+from .load_backend import index_select
+from .load_backend import dot
 
 from .load_backend import ReLU
 from .load_backend import ELU
@@ -82,6 +87,7 @@ from .load_backend import QuanDenseBn
 from .load_backend import TernaryConv
 from .load_backend import QuanConv
 from .load_backend import QuanConvBn
+from .load_backend import Swish
 
 # load ops
 from .load_backend import Variable
@@ -210,6 +216,11 @@ from .load_backend import topk
 from .load_backend import hardsigmoid
 from .load_backend import numel
 from .load_backend import hardswish
+from .load_backend import swish
+from .load_backend import expand
+from .load_backend import unique
+from .load_backend import flip
+from .load_backend import mv
 # dtype
 from .load_backend import (
     DType, float16, float32, float64, int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, complex64,
@@ -248,6 +259,7 @@ from .load_backend import Unstack
 from .load_backend import Sign
 from .load_backend import Resize
 from .load_backend import Pad
+from .load_backend import Pad2d
 from .load_backend import Minimum
 from .load_backend import Maximum
 from .load_backend import Meshgrid
@@ -257,3 +269,18 @@ from .load_backend import ClipGradByValue
 from .load_backend import ClipGradByNorm
 from .load_backend import ClipByGlobalNorm
 from .load_backend import Einsum
+from .load_backend import linear
+from .load_backend import adaptive_avg_pool1d
+from .load_backend import adaptive_avg_pool2d
+from .load_backend import adaptive_avg_pool3d
+from .load_backend import adaptive_max_pool1d
+from .load_backend import adaptive_max_pool2d
+from .load_backend import adaptive_max_pool3d
+from .load_backend import unfold
+from .load_backend import avg_pool1d
+from .load_backend import avg_pool2d
+from .load_backend import avg_pool3d
+from .load_backend import max_pool1d
+from .load_backend import max_pool2d
+from .load_backend import max_pool3d
+from .load_backend import conv2d_transpose

@@ -10,6 +10,7 @@ __all__ = [
     'ZeroPad1d',
     'ZeroPad2d',
     'ZeroPad3d',
+    'Pad2D'
 ]
 
 
@@ -76,6 +77,80 @@ class PadLayer(Module):
             self._add_node(inputs, outputs)
             self._nodes_fixed = True
         return outputs
+
+
+class Pad2D(Module):
+    """
+    This interface is used to construct a callable object of the ``Pad2D`` class.
+    Pad tensor according to 'pad', 'mode' and 'value'.
+    If mode is 'reflect', pad[0] and pad[1] must be no greater
+    than width-1. The height dimension has the same condition.
+    Parameters
+    ----------
+    padding : Tensor|list[int]|int
+        The padding size with data type int. If is int, use the same padding in all dimensions.
+        Else [len(padding)/2] dimensions of input will be padded.
+        The pad has the form (pad_left, pad_right, pad_top, pad_bottom).
+    mode :  str, optional
+        Four modes: 'constant' (default), 'reflect', 'replicate', 'circular'. Default is 'constant'.
+        - 'constant' mode, uses a constant value to pad the input tensor.
+        - 'reflect' mode, uses reflection of the input boundaries to pad the input tensor.
+        - 'replicate' mode, uses input boundaries to pad the input tensor.
+        - 'circular' mode, uses circular input to pad the input tensor.
+    value : float, optional
+        The value to fill the padded areas. Default is :math:`0.0`。
+    data_format : str, optional
+     An string from: "NCHW", "NHWC". Specify the data format of the input data. Default is  "NCHW"。
+    name : str, optional
+        For details, please refer to :ref:`api_guide_Name`. Generally, no setting is required. Default: None.
+    Returns:
+    -----------
+        None
+    Examples:
+    -------------
+    With TensorLayer
+
+    >>> net = tlx.nn.Input([10, 224, 224, 3], name='input')
+    >>> padlayer = tlx.nn.Pad2D([0, 3, 3, 0], "constant", name='inpad')(net)
+    >>> print(padlayer)
+    >>> output shape : (10, 230, 230, 3)
+    """
+
+    def __init__(
+        self, padding, mode='constant', value=0.0, data_format="NCHW", name=None
+    ):
+        super(Pad2D, self).__init__()
+        self.padding = padding
+        self.mode = mode
+        self.value = value
+        self.data_format = data_format
+        self.name = name
+        self.build()
+        self._built = True
+
+    def __repr__(self):
+        s = '{classname}(padding={padding}, mode={mode}, value={value}, data_format={data_format}'
+        if self.name is not None:
+            s += ', name=\'{name}\''
+        s += ')'
+        return s.format(classname=self.__class__.__name__, **self.__dict__)
+
+    def build(self, inputs_shape=None):
+        self.padlayer = tlx.ops.Pad2d(
+            padding=self.padding,
+            mode=self.mode,
+            value=self.value,
+            data_format=self.data_format,
+            name=self.name)
+
+    def forward(self, x):
+        output = self.padlayer(x)
+
+        if not self._nodes_fixed and self._build_graph:
+            self._add_node(x, output)
+            self._nodes_fixed = True
+
+        return output
 
 
 class ZeroPad1d(Module):

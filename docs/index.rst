@@ -3,7 +3,7 @@ Welcome to TensorLayerX
 
 
 .. image:: user/my_figs/tlx_transparent_logo.png
-  :width: 30 %
+  :width: 60 %
   :align: center
   :target: https://github.com/tensorlayer/TensorLayerX
 
@@ -34,7 +34,6 @@ to the library as a developer.
   user/installation
   user/examples
   user/contributing
-  user/get_involved
   user/faq
 
 .. toctree::

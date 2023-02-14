@@ -746,6 +746,14 @@ def reduce_min(input_tensor, axis=None, keepdims=False):
         return flow.min(input_tensor)
 
 
+class Pad2d(object):
+    def __init__(self, padding, mode='constant', value=0.0, data_format="NCHW", name=None):
+        pass
+
+    def __call__(self, x):
+        pass
+
+
 class Pad(object):
 
     def __init__(self, paddings, mode="REFLECT", constant_values=0.0):
@@ -1486,7 +1494,7 @@ def angle(x):
     return convert_to_tensor(np.angle(x_np))
 
 
-def argmax(x, axis=None, dtype='int64'):
+def argmax(x, axis=None, keepdim=False, dtype='int64'):
     """
     Returns the index with the largest value across axes of a tensor.
 
@@ -1938,6 +1946,40 @@ def logsoftmax(input, dim=None):
     return F.log_softmax(input, dim)
 
 
+def histogram(input, bins=100, min=0, max=0, name=None):
+    raise NotImplementedError
+
+
+def flatten(x, start_axis=0, stop_axis=-1, name=None):
+    raise NotImplementedError
+
+
+def interpolate(x,
+                size=None,
+                scale_factor=None,
+                mode='nearest',
+                align_corners=False,
+                align_mode=0,
+                data_format='NCHW',
+                name=None):
+    raise NotImplementedError
+
+
+def index_select(x, index, axis=0, name=None):
+    raise NotImplementedError
+
+
+def dot(x, y, name=None):
+    raise NotImplementedError
+
+
+class Swish(object):
+    def __init__(self):
+        pass
+
+    def __call__(self, x):
+        raise NotImplementedError
+
 def topk(input, k, dim=-1, largest=True, sorted=True):
 
     return flow.topk(input, k, dim, largest, sorted)
@@ -1945,3 +1987,23 @@ def topk(input, k, dim=-1, largest=True, sorted=True):
 def numel(input):
 
     return flow.numel(input)
+
+def expand(x, shape):
+
+
+    raise NotImplementedError
+
+def unique(x, return_index=False, return_inverse=False, return_counts=False, axis=None, dtype='int64'):
+
+    raise NotImplementedError
+
+
+def flip(x, axis):
+
+    raise NotImplementedError
+
+
+def mv(x, vec):
+
+    raise NotImplementedError
+

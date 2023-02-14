@@ -77,7 +77,7 @@ def _get_logger():
 
             # Add the output handler.
             _handler = _logging.StreamHandler(_logging_target)
-            _handler.setFormatter(_logging.Formatter('[TL] %(message)s'))
+            _handler.setFormatter(_logging.Formatter('[TLX] %(message)s'))
             logger.addHandler(_handler)
 
         _logger = logger

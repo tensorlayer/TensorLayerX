@@ -5,7 +5,7 @@ import os
 
 from tensorlayerx import logging
 from tensorlayerx.vision import load_images
-
+logging.set_verbosity(logging.INFO)
 from tensorlayerx.files.utils import (
     del_file, folder_exists, load_file_list, maybe_download_and_extract, natural_keys, read_file
 )
@@ -49,7 +49,10 @@ def load_flickr25k_dataset(tag='sky', path="data", n_threads=50, printable=False
 
     filename = 'mirflickr25k.zip'
     url = 'http://press.liacs.nl/mirflickr/mirflickr25k/'
-
+    logging.info("If can't download this dataset automatically, "
+                  "please download it from the official website manually."
+                  "flickr25k Dataset <http://press.liacs.nl/mirflickr/mirflickr25k/>."
+                  "Please place dataset under 'data/flickr25k/' by default.")
     # download dataset
     if folder_exists(os.path.join(path, "mirflickr")) is False:
         logging.info("[*] Flickr25k is nonexistent in {}".format(path))

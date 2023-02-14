@@ -42,9 +42,6 @@ requirements:
     # Not necessary, but recommended libraries
     - requirements/requirements_extra.txt
 
-    # Requirements for contrib loggers
-    - requirements_contrib_loggers.txt
-
     # Requirements for the db
     - requirements/requirements_db.txt
 

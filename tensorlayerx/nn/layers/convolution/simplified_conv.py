@@ -613,6 +613,10 @@ class ConvTranspose2d(Module):
         The activation function of this layer.
     padding : int, tuple or str
         The padding algorithm type: "SAME" or "VALID".
+    output_padding : int or list or tuple
+        Additional size added to one side of each dimension in the output shape. Default: 0.
+    groups : int
+        Number of blocked connections from input channels to output channels. Default: 1
     data_format : str
         "channels_last" (NHWC, default) or "channels_first" (NCHW).
     W_init : initializer or str
@@ -641,10 +645,12 @@ class ConvTranspose2d(Module):
         out_channels=32,
         kernel_size=(3, 3),
         stride=(1, 1),
+        dilation=(1, 1),
         act=None,
         padding='SAME',
+        output_padding=0,
+        groups=1,
         data_format='channels_last',
-        dilation=(1, 1),
         W_init='truncated_normal',
         b_init='constant',
         in_channels=None,
@@ -656,6 +662,8 @@ class ConvTranspose2d(Module):
         self.stride = self.check_param(stride)
         self.padding = padding
         self.data_format = data_format
+        self.output_padding = self.check_param(output_padding)
+        self.groups = groups
         self.dilation = self.check_param(dilation)
         self.W_init = self.str_to_init(W_init)
         self.b_init = self.str_to_init(b_init)
@@ -666,9 +674,10 @@ class ConvTranspose2d(Module):
             self._built = True
 
         logging.info(
-            "ConvTranspose2d %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s" % (
+            "ConvTranspose2d %s: out_channels: %d kernel_size: %s stride: %s pad: %s act: %s output_padding: %s groups: %s" % (
                 self.name, out_channels, str(kernel_size), str(stride), padding,
-                self.act.__class__.__name__ if self.act is not None else 'No Activation'
+                self.act.__class__.__name__ if self.act is not None else 'No Activation',
+                str(output_padding), str(groups)
             )
         )
 
@@ -676,7 +685,7 @@ class ConvTranspose2d(Module):
         actstr = self.act.__class__.__name__ if self.act is not None else 'No Activation'
         s = (
             '{classname}(in_channels={in_channels}, out_channels={out_channels}, kernel_size={kernel_size}'
-            ', stride={stride}, padding={padding}'
+            ', stride={stride}, padding={padding}, output_padding={output_padding}, groups={groups}'
         )
         if self.dilation != (1, ) * len(self.dilation):
             s += ', dilation={dilation}'
@@ -698,8 +707,20 @@ class ConvTranspose2d(Module):
         else:
             raise Exception("data_format should be either channels_last or channels_first")
 
+
+        if self.groups < 1:
+            raise ValueError(
+                "The groups must be a integer greater than or equal to 1, but we got :{}".format(self.groups)
+            )
+
+        if self.out_channels % self.groups != 0:
+            raise ValueError(
+                "The channels of output must be divisible by groups, but we got: the channels of output"
+                "is {}, the groups is {}.".format(self.out_channels, self.groups)
+            )
+
         #TODO channels first filter shape [out_channel, in_channel, filter_h, filter_w]
-        self.filter_shape = (self.kernel_size[0], self.kernel_size[1], self.out_channels, self.in_channels)
+        self.filter_shape = (self.kernel_size[0], self.kernel_size[1], int(self.out_channels/self.groups), self.in_channels)
         self.filters = self._get_weights("filters", shape=self.filter_shape, init=self.W_init)#, transposed=True)
 
         self.b_init_flag = False
@@ -710,21 +731,22 @@ class ConvTranspose2d(Module):
 
         self.conv2d_transpose = tlx.ops.Conv2d_transpose(
             strides=self.stride, padding=self.padding, data_format=self.data_format, dilations=self.dilation,
-            out_channel=self.out_channels, k_size=(self.kernel_size[0], self.kernel_size[1]), in_channels=self.in_channels
+            out_channels=self.out_channels, k_size=(self.kernel_size[0], self.kernel_size[1]), in_channels=self.in_channels,
+            groups = self.groups, output_padding = self.output_padding
         )
 
         self.act_init_flag = False
         if self.act:
             self.act_init_flag = True
 
-    def forward(self, inputs):
+    def forward(self, inputs, output_size = None):
         if self._forward_state == False:
             if self._built == False:
                 self.build(tlx.get_tensor_shape(inputs))
                 self._built = True
             self._forward_state = True
 
-        outputs = self.conv2d_transpose(inputs, self.filters)
+        outputs = self.conv2d_transpose(inputs, self.filters, output_size)
         if self.b_init_flag:
             outputs = self.bias_add(outputs, self.biases)
         if self.act_init_flag:

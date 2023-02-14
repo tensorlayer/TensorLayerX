@@ -18,6 +18,10 @@ from .ops import softmax
 from .ops import gelu
 from .ops import bias_add
 from .ops import moments
+from .ops import histogram
+from .ops import flatten
+from .ops import index_select
+from .ops import dot
 
 from .ops import ReLU
 from .ops import ELU
@@ -158,6 +162,10 @@ from .ops import topk
 from .ops import hardsigmoid
 from .ops import hardswish
 from .ops import numel
+from .ops import expand
+from .ops import unique
+from .ops import flip
+from .ops import mv
 # dtype
 from .ops import (
     DType, float16, float32, float64, int8, int16, int32, int64, uint8, uint16, uint32, uint64, bool, complex64,
@@ -198,5 +206,20 @@ from .ops import Maximum
 from .ops import Meshgrid
 from .ops import BatchToSpace
 from .ops import DepthToSpace
+from .ops import linear
+from .ops import adaptive_avg_pool1d
+from .ops import adaptive_avg_pool2d
+from .ops import adaptive_avg_pool3d
+from .ops import adaptive_max_pool1d
+from .ops import adaptive_max_pool2d
+from .ops import adaptive_max_pool3d
+from .ops import unfold
+from .ops import avg_pool1d
+from .ops import avg_pool2d
+from .ops import avg_pool3d
+from .ops import max_pool1d
+from .ops import max_pool2d
+from .ops import max_pool3d
+from .ops import conv2d_transpose
 
 from tensorlayerx.backend import ops

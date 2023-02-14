@@ -4,8 +4,8 @@
 import os
 
 from tensorlayerx import logging
-from tensorlayerx.vision import load_images
-
+from tensorlayerx.utils import visualize
+logging.set_verbosity(logging.INFO)
 from tensorlayerx.files.utils import (
     del_file, folder_exists, load_file_list, load_folder_list, maybe_download_and_extract, read_file
 )
@@ -30,7 +30,7 @@ def load_flickr1M_dataset(tag='sky', size=10, path="data", n_threads=50, printab
     size : int
         integer between 1 to 10. 1 means 100k images ... 5 means 500k images, 10 means all 1 million images. Default is 10.
     path : str
-        The path that the data is downloaded to, defaults is ``data/flickr25k/``.
+        The path that the data is downloaded to, defaults is ``data/flickr1M/``.
     n_threads : int
         The number of thread to read image.
     printable : boolean
@@ -57,7 +57,10 @@ def load_flickr1M_dataset(tag='sky', size=10, path="data", n_threads=50, printab
     ]
     tag_zip = 'tags.zip'
     url = 'http://press.liacs.nl/mirflickr/mirflickr1m/'
-
+    logging.info("If can't download this dataset automatically, "
+                  "please download it from the official website manually."
+                  "flickr1M Dataset <http://press.liacs.nl/mirflickr/mirflickr1m/>."
+                  "Please place dataset under 'data/flickr1M/' by default.")
     # download dataset
     for image_zip in images_zip[0:size]:
         image_folder = image_zip.split(".")[0]

@@ -5,7 +5,7 @@ import os
 
 from tensorlayerx import logging
 from tensorlayerx.files.utils import maybe_download_and_extract
-
+logging.set_verbosity(logging.INFO)
 __all__ = ['load_nietzsche_dataset']
 
 
@@ -30,7 +30,10 @@ def load_nietzsche_dataset(path='data'):
     >>> words = words.split()
 
     """
-    logging.info("Load or Download nietzsche dataset > {}".format(path))
+    logging.info("If can't download this dataset automatically, "
+                 "please download it from the official website manually."
+                 "nietzsche Dataset <https://s3.amazonaws.com/text-datasets/nietzsche.txt>."
+                 "Please place dataset under 'data/nietzsche/' by default.")
     path = os.path.join(path, 'nietzsche')
 
     filename = "nietzsche.txt"

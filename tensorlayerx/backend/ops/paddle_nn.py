@@ -8,7 +8,7 @@ import paddle.nn.functional as F
 import numpy as np
 import paddle.fluid as fluid
 from paddle.nn import initializer as I
-from paddle.fluid.layers.utils import map_structure, flatten, pack_sequence_as
+from paddle.fluid.layers.utils import map_structure, pack_sequence_as
 from paddle.fluid.data_feeder import convert_dtype
 from paddle.fluid.dygraph import Layer, LayerList
 from paddle.nn.layer.rnn import RNNCellBase
@@ -665,38 +665,44 @@ def moments(x, axes, shift=None, keepdims=False):
 
 class MaxPool1d(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
         self.ksize = ksize
         self.strides = strides
+        self.return_mask = return_mask
 
     def __call__(self, inputs):
         if self.data_format == 'NLC':
             inputs = nhwc_to_nchw(inputs)
-        outputs = F.max_pool1d(inputs, self.ksize, self.strides, self.padding)
+        outputs = F.max_pool1d(inputs, self.ksize, self.strides, self.padding, return_mask=self.return_mask)
         if self.data_format == 'NLC':
-            outputs = nchw_to_nhwc(outputs)
-        return outputs
+            if self.return_mask:
+                output = [None, None]
+                output[0] = nchw_to_nhwc(outputs[0])
+                output[1] = nchw_to_nhwc(outputs[1])
+            else:
+                output = nchw_to_nhwc(outputs)
+        return output
 
 
 class MaxPool(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
         self.ksize = ksize
         self.strides = strides
+        self.return_mask = return_mask
 
     def __call__(self, inputs):
         outputs = F.max_pool2d(
-            x=inputs, kernel_size=self.ksize, stride=self.strides, padding=self.padding, data_format=self.data_format
+            x=inputs, kernel_size=self.ksize, stride=self.strides, padding=self.padding,
+            return_mask=self.return_mask, data_format=self.data_format
         )
         return outputs
-
 
 def max_pool(input, ksize, strides, padding, data_format=None):
     """
     Performs the max pooling on the input.
-
     Parameters
     ----------
     input : tensor
@@ -711,12 +717,40 @@ def max_pool(input, ksize, strides, padding, data_format=None):
         The stride of the sliding window for each dimension of the input tensor.
     padding : string
         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
-
     Returns
     -------
         A Tensor of format specified by data_format. The max pooled output tensor.
     """
     pass
+
+def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format='NCL'):
+
+    data_format, padding = preprocess_1d_format(data_format=data_format, padding=padding)
+    if data_format == 'NLC':
+        input =nhwc_to_nchw(input)
+    output =  F.max_pool1d(input, kernel_size, stride = stride, padding = padding, return_mask=return_mask)
+    if data_format == 'NLC':
+        if return_mask:
+            outputs = [None, None]
+            outputs[0] = nchw_to_nhwc(output[0])
+            outputs[1] = nchw_to_nhwc(output[1])
+        else:
+            outputs = nchw_to_nhwc(output)
+    return outputs
+
+def max_pool2d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format='NCHW'):
+
+    data_format, padding = preprocess_2d_format(data_format=data_format, padding=padding)
+    return F.max_pool2d(
+        input, kernel_size, stride=stride, padding=padding, return_mask=return_mask, data_format = data_format
+    )
+
+def max_pool3d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format="NCDHW"):
+
+    data_format, padding = preprocess_3d_format(data_format=data_format, padding=padding)
+    return F.max_pool3d(
+        input, kernel_size, stride=stride, padding=padding, return_mask=return_mask, data_format=data_format
+    )
 
 
 class AvgPool1d(object):
@@ -749,11 +783,9 @@ class AvgPool(object):
         )
         return outputs
 
-
 def avg_pool(input, ksize, strides, padding):
     """
     Performs the avg pooling on the input.
-
     Parameters
     ----------
     input : tensor
@@ -768,56 +800,45 @@ def avg_pool(input, ksize, strides, padding):
         The stride of the sliding window for each dimension of the input tensor.
     padding : string
         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
-
     Returns
     -------
         A Tensor of format specified by data_format. The average pooled output tensor.
     """
     pass
 
+def avg_pool1d(input, kernel_size, stride=None, padding=0, data_format='NCL'):
+    data_format, padding = preprocess_1d_format(data_format=data_format, padding=padding)
+    if data_format != 'NCL':
+        input = nhwc_to_nchw(input)
+    output =  F.avg_pool1d(
+        input, kernel_size, stride = stride, padding = padding
+    )
+    if data_format != 'NCL':
+        output = nchw_to_nhwc(output)
+    return output
+
+def avg_pool2d(input, kernel_size, stride=None, padding=0, data_format='NCHW'):
+    data_format, padding = preprocess_2d_format(data_format=data_format, padding=padding)
+    return F.avg_pool2d(input, kernel_size, stride = stride, padding = padding, data_format=data_format)
+
+def avg_pool3d(input, kernel_size, stride=None, padding=0, data_format='NCDHW'):
+    data_format, padding = preprocess_3d_format(data_format=data_format, padding=padding)
+    return F.avg_pool3d(input, kernel_size, stride=stride, padding=padding, data_format=data_format)
 
 class MaxPool3d(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
         self.ksize = ksize
         self.strides = strides
+        self.return_mask = return_mask
 
     def __call__(self, inputs):
         outputs = F.max_pool3d(
-            inputs, kernel_size=self.ksize, stride=self.strides, padding=self.padding, data_format=self.data_format
+            inputs, kernel_size=self.ksize, stride=self.strides, padding=self.padding,
+            return_mask=self.return_mask, data_format=self.data_format
         )
         return outputs
-
-
-def max_pool3d(input, ksize, strides, padding, data_format=None, name=None):
-    """
-    Performs the max pooling on the input.
-
-    Parameters
-    ----------
-    input : tensor
-         A 5-D Tensor of the format specified by data_format.
-    ksize : int or list of ints
-        An int or list of ints that has length 1, 3 or 5.
-        The size of the window for each dimension of the input tensor.
-    strides : int or list of ints
-        An int or list of ints that has length 1, 3 or 5.
-        The stride of the sliding window for each dimension of the input tensor.
-    padding : string
-        'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
-    data_format : string
-         "NDHWC", "NCDHW". Defaults to "NDHWC". The data format of the input and output data.
-         With the default format "NDHWC", the data is stored in the order of: [batch, in_depth, in_height, in_width, in_channels].
-         Alternatively, the format could be "NCDHW", the data storage order is: [batch, in_channels, in_depth, in_height, in_width].
-    name : string
-         A name for the operation (optional).
-
-    Returns
-    -------
-        A Tensor of format specified by data_format. The max pooled output tensor.
-    """
-    pass
 
 
 class AvgPool3d(object):
@@ -832,33 +853,6 @@ class AvgPool3d(object):
             inputs, kernel_size=self.ksize, stride=self.strides, padding=self.padding, data_format=self.data_format
         )
         return outputs
-
-
-def avg_pool3d(input, ksize, strides, padding, data_format=None, name=None):
-    """
-    Performs the average pooling on the input.
-
-    Parameters
-    ----------
-    input : tensor
-        A 5-D Tensor of shape [batch, height, width, channels] and type float32, float64, qint8, quint8, or qint32.
-    ksize : int or list of ints
-        An int or list of ints that has length 1, 3 or 5. The size of the window for each dimension of the input tensor.
-    strides : int or list of ints
-        An int or list of ints that has length 1, 3 or 5.
-        The stride of the sliding window for each dimension of the input tensor.
-    padding : string
-        'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
-    data_format : string
-        'NDHWC' and 'NCDHW' are supported.
-    name : string
-        Optional name for the operation.
-
-    Returns
-    -------
-        A Tensor with the same type as value. The average pooled output tensor.
-    """
-    pass
 
 
 def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_format=None, dilations=None, name=None):
@@ -1016,24 +1010,29 @@ def conv1d_transpose(
 class Conv2d_transpose(object):
 
     def __init__(
-        self, strides, padding, data_format='NHWC', dilations=None, name=None, out_channel=None, k_size=None,
-        in_channels=None
+        self, strides, padding, data_format='NHWC', dilations=None, name=None, out_channels=None, k_size=None,
+        in_channels=None, groups = 1, output_padding = 0,
     ):
         self.strides = strides
         self.dilations = dilations
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        self.groups = groups
+        self.output_padding = output_padding
 
-    def __call__(self, input, filters):
+    def __call__(self, input, filters, output_size):
+        if output_size is None:
+            self.output_padding = self.output_padding
+        else:
+            self.output_padding = 0
+
         output = F.conv2d_transpose(
             x=input, weight=filters, stride=self.strides, padding=self.padding, dilation=self.dilations,
-            data_format=self.data_format
+            data_format=self.data_format, groups=self.groups, output_size=output_size, output_padding=self.output_padding
         )
         return output
 
 
-def conv2d_transpose(
-    input, filters, output_shape, strides, padding='SAME', data_format='NHWC', dilations=None, name=None
-):
+def conv2d_transpose(x, weight, bias=None, stride=1, padding=0, output_padding=0, groups=1, dilation=1, data_format='NCHW', output_size=None):
     """
     The transpose of conv2d.
 
@@ -1068,11 +1067,14 @@ def conv2d_transpose(
     data_format, padding = preprocess_2d_format(data_format, padding)
     output = F.conv2d_transpose(
         x=input,
-        weight=filters,
-        output_size=output_shape,
-        stride=strides,
+        weight=weight,
+        bias=bias,
+        stride=stride,
         padding=padding,
-        dilation=dilations,
+        output_padding=output_padding,
+        dilation=dilation,
+        groups=groups,
+        output_size=output_size,
         data_format=data_format,
     )
     return output
@@ -1298,6 +1300,26 @@ class AdaptiveMeanPool3D(object):
 
         return F.adaptive_avg_pool3d(inputs, output_size=self.output_size, data_format=self.data_format)
 
+def adaptive_avg_pool1d(input, output_size, data_format = 'NCL'):
+    data_format, _ = preprocess_1d_format(data_format, None)
+
+    if data_format == 'NLC':
+        input = nhwc_to_nchw(input)
+    output = F.adaptive_avg_pool1d(input, output_size)
+    if data_format == 'NLC':
+        output = nchw_to_nhwc(output)
+
+    return output
+
+
+def adaptive_avg_pool2d(input, output_size, data_format = 'NCHW'):
+    data_format, _ = preprocess_2d_format(data_format, None)
+    return F.adaptive_avg_pool2d(input, output_size=output_size, data_format=data_format)
+
+
+def adaptive_avg_pool3d(input, output_size, data_format = 'NCDHW'):
+    data_format, _ = preprocess_3d_format(data_format, None)
+    return F.adaptive_avg_pool3d(input, output_size, data_format=data_format)
 
 class AdaptiveMaxPool1D(object):
 
@@ -1354,6 +1376,17 @@ class AdaptiveMaxPool3D(object):
 
         return output
 
+def adaptive_max_pool1d(input, output_size, return_indices = False):
+
+    return F.adaptive_max_pool1d(input, output_size, return_indices)
+
+def adaptive_max_pool2d(input, output_size, return_indices = False):
+
+    return F.adaptive_max_pool2d(input, output_size, return_indices)
+
+def adaptive_max_pool3d(input, output_size, return_indices=False):
+
+    return F.adaptive_max_pool3d(input, output_size, return_indices)
 
 class BinaryConv2D(object):
 
@@ -1478,9 +1511,9 @@ def split_states(states, bidirectional=False, state_components=1):
 
 def concat_states(states, bidirectional=False, state_components=1):
     if state_components == 1:
-        return pd.stack(flatten(states))
+        return pd.stack(pd.flatten(states))
     else:
-        states = flatten(states)
+        states = pd.flatten(states)
         componnets = []
         for i in range(state_components):
             componnets.append(states[i::state_components])
@@ -2061,16 +2094,29 @@ class QuanConvBn(object):
 class PReLU(object):
 
     def __init__(self, data_format):
-        self.data_format, _ = preprocess_2d_format(data_format, None)
+        # self.data_format, _ = preprocess_2d_format(data_format, None)
+        self.data_format = data_format
 
     def __call__(self, input, weight):
+        dim = input.ndim
+        if dim == 3:
+            self.data_format, _ = preprocess_1d_format(self.data_format, None)
+        elif dim == 4:
+            self.data_format, _ = preprocess_2d_format(self.data_format, None)
+        elif dim == 5:
+            self.data_format, _ = preprocess_3d_format(self.data_format, None)
 
         return F.prelu(input, weight, data_format=self.data_format)
 
 
 def prelu(input, weight, data_format):
-
-    data_format, _ = preprocess_2d_format(data_format, None)
+    dim = input.ndim
+    if dim == 3:
+        data_format, _ = preprocess_1d_format(data_format, None)
+    elif dim == 4:
+        data_format, _ = preprocess_2d_format(data_format, None)
+    elif dim == 5:
+        data_format, _ = preprocess_3d_format(data_format, None)
     return F.prelu(input, weight, data_format=data_format)
 
 def hardsigmoid(input):
@@ -2080,3 +2126,15 @@ def hardsigmoid(input):
 def hardswish(input):
 
     return F.hardswish(input)
+
+def swish(input):
+
+    return F.swish(input)
+
+def linear(input, weight, bias = None):
+
+    return F.linear(input, weight, bias)
+
+def unfold(input, kernel_size, dilation = 1, padding = 0, stride = 1):
+
+    return F.unfold(input, kernel_size, strides=stride, paddings=padding, dilations=dilation)

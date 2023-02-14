@@ -5,7 +5,7 @@ import os
 
 from tensorlayerx import logging
 from tensorlayerx.files.utils import (del_file, folder_exists, load_file_list, maybe_download_and_extract)
-
+logging.set_verbosity(logging.INFO)
 __all__ = ['load_mpii_pose_dataset']
 
 
@@ -47,8 +47,10 @@ def load_mpii_pose_dataset(path='data', is_16_pos_only=False):
     - `MPII Keyponts and ID <http://human-pose.mpi-inf.mpg.de/#download>`__
     """
     path = os.path.join(path, 'mpii_human_pose')
-    logging.info("Load or Download MPII Human Pose > {}".format(path))
-
+    logging.info("If can't download this dataset automatically, "
+                  "please download it from the official website manually."
+                  "mpii_human_pose Dataset <http://datasets.d2.mpi-inf.mpg.de/andriluka14cvpr/mpii_human_pose_v1_u12_2.zip>."
+                  "Please place dataset under 'data/mpii_human_pose/' by default.")
     # annotation
     url = "http://datasets.d2.mpi-inf.mpg.de/andriluka14cvpr/"
     tar_filename = "mpii_human_pose_v1_u12_2.zip"

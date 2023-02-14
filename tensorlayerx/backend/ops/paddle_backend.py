@@ -72,6 +72,12 @@ else:
     complex64 = paddle.complex64
     complex128 = paddle.complex128
 
+def _npairs(x, n):
+    if isinstance(x, (paddle.Tensor, list, tuple)):
+        return x
+    x = [x] * (n * 2)
+    return x
+
 
 def _getter(init_fn, **kwargs):
     """Return an named eager tensor."""
@@ -838,6 +844,25 @@ def reduce_min(input_tensor, axis=None, keepdims=False):
     return pd.min(input_tensor, axis, keepdim=keepdims)
 
 
+class Pad2d(object):
+    def __init__(self, padding, mode='constant', value=0.0, data_format="NCHW", name=None):
+        self._pad = _npairs(padding, 2)
+        self._mode = mode
+        self._value = value
+        self._data_format = data_format
+        self._name = name
+
+    def __call__(self, x):
+        return F.pad(
+            x,
+            pad=self._pad,
+            mode=self._mode,
+            value=self._value,
+            data_format=self._data_format,
+            name=self._name,
+        )
+
+
 class Pad(object):
 
     def __init__(self, paddings, mode="REFLECT", constant_values=0):
@@ -1222,8 +1247,8 @@ def linspace(start, stop, num):
     return pd.linspace(start, stop, num)
 
 
-def slice(inputs, starts, sizes):
-    return pd.slice(inputs, starts=starts, ends=sizes)
+def slice(inputs, axes, starts, sizes):
+    return pd.slice(inputs, axes=axes, starts=starts, ends=sizes)
 
 
 def add_n(inputs):
@@ -1458,8 +1483,8 @@ def acosh(x):
     return pd.log(x + pd.sqrt(pd.pow(x, 2) - 1))
 
 
-def argmax(x, axis=None, dtype='int64'):
-    return pd.argmax(x, axis=axis, dtype=dtype)
+def argmax(x, axis=None,keepdim=False, dtype='int64'):
+    return pd.argmax(x, axis=axis, keepdim = keepdim, dtype=dtype)
 
 
 def argmin(x, axis=None, dtype='int64'):
@@ -1929,3 +1954,63 @@ def topk(input, k, dim=None, largest=True, sorted=True):
 def numel(input):
 
     return paddle.numel(input)
+
+
+def histogram(input, bins=100, min=0, max=0, name=None):
+    return paddle.histogram(input, bins=bins, min=min, max=max, name=name)
+
+
+def flatten(x, start_axis=0, stop_axis=-1, name=None):
+    return paddle.flatten(x, start_axis=start_axis, stop_axis=stop_axis, name=name)
+
+
+def interpolate(x,
+                size=None,
+                scale_factor=None,
+                mode='nearest',
+                align_corners=False,
+                align_mode=0,
+                data_format='NCHW',
+                name=None):
+    return paddle.nn.functional.interpolate(x,
+                size=size,
+                scale_factor=scale_factor,
+                mode=mode,
+                align_corners=align_corners,
+                align_mode=align_mode,
+                data_format=data_format,
+                name=name)
+
+
+def index_select(x, index, axis=0, name=None):
+    return paddle.index_select(x, index, axis=axis, name=name)
+
+
+def dot(x, y, name=None):
+    return paddle.dot(x, y, name=name)
+
+
+class Swish(object):
+    def __init__(self):
+        pass
+
+    def __call__(self, x):
+        return paddle.nn.functional.swish(x)
+
+
+def expand(x, shape):
+
+    return paddle.expand(x, shape)
+
+def unique(x, return_index=False, return_inverse=False, return_counts=False, axis=None, dtype='int64'):
+
+    return paddle.unique(x, return_index, return_inverse, return_counts, axis, dtype)
+
+def flip(x, axis):
+
+    return paddle.flip(x, axis)
+
+def mv(x, vec):
+
+    return paddle.mv(x, vec)
+

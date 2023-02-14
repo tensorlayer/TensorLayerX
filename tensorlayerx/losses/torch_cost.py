@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import torch
+import torch.nn.functional as F
 
 __all__ = [
     'softmax_cross_entropy_with_logits',
@@ -21,6 +22,7 @@ __all__ = [
     'maxnorm_regularizer',
     'maxnorm_o_regularizer',
     'maxnorm_i_regularizer',
+    'L1Loss'
 ]
 
 
@@ -563,3 +565,8 @@ def _cast(a, threshold, flag=False):
         a = torch.where(a >= threshold, one, a)
         a = torch.where(a < threshold, zero, a)
     return a
+
+
+def L1Loss(input, target, reduction='mean'):
+
+    return torch.nn.functional.l1_loss(input, target, reduction=reduction)

@@ -10,4 +10,4 @@ h5py>=2.9
 cloudpickle>=0.8.1
 tensorboardX>=2.5
 rich>=12.2
-
+six==1.15.0

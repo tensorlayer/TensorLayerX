@@ -23,7 +23,8 @@ _act_dict = {
     "softplus": tlx.ops.Softplus,
     "tanh": tlx.ops.Tanh,
     "sigmoid": tlx.ops.Sigmoid,
-    "softmax": tlx.ops.Softmax
+    "softmax": tlx.ops.Softmax,
+    "swish": tlx.ops.Swish
 }
 
 _initializers_dict = {

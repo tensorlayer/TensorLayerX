@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from tensorlayerx.files.utils import _load_mnist_dataset
-
+from tensorlayerx import logging
+logging.set_verbosity(logging.INFO)
 __all__ = ['load_mnist_dataset']
 
 
@@ -28,4 +29,8 @@ def load_mnist_dataset(shape=(-1, 784), path='data'):
     >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1,784), path='datasets')
     >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 28, 28, 1))
     """
+    logging.info("If can't download this dataset automatically, "
+                  "please download it from the official website manually."
+                  "mnist Dataset <http://yann.lecun.com/exdb/mnist/>."
+                  "Please place dataset under 'data/mnist/' by default.")
     return _load_mnist_dataset(shape, path, name='mnist', url='http://yann.lecun.com/exdb/mnist/')

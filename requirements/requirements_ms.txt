@@ -1,1 +1,1 @@
-mindspore==1.6.1
+mindspore==1.8.1

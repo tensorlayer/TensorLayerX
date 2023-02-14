@@ -25,10 +25,11 @@ class LRScheduler(LearningRateSchedule):
         self.base_lr = learning_rate
         self.last_lr = learning_rate
         self.verbose = verbose
+        self.cast = P.Cast()
 
     def construct(self, global_step):
 
-        return self.last_lr
+        return self.cast(self.last_lr, mstype.float32)
 
     def step(self, epoch=None):
         if epoch is None:
