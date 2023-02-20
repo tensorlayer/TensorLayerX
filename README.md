@@ -93,12 +93,26 @@ More resources can be found [here](https://github.com/tensorlayer)
 
 - The latest TensorLayerX compatible with the following backend version
 
-| TensorLayerX | TensorFlow | MindSpore | PaddlePaddle|PyTorch|
-| :-----:| :----: | :----: |:-----:|:----:|
-|  v0.5.8  | v2.4.0 | v1.8.1 | v2.2.0 | v1.10.0 |
-| v0.5.7 | v2.0.0 | v1.6.1 | v2.0.2 | v1.10.0 |
+| TensorLayerX | TensorFlow | MindSpore | PaddlePaddle | PyTorch | OneFlow | Jittor|
+| :-----:| :----: | :----: |:-----:|:----:|:----:|:----:|
+|  v0.5.8  | v2.4.0 | v1.8.1 | v2.2.0 | v1.10.0 | -- | -- |
+| v0.5.7 | v2.0.0 | v1.6.1 | v2.0.2 | v1.10.0 | -- | -- |
 
-- Via docker
+- via pip for the stable version
+```bash
+# install from pypi
+pip3 install tensorlayerx 
+```
+
+- build from source for the latest version (for advanced users)
+```bash
+# install from Github
+pip3 install git+https://github.com/tensorlayer/tensorlayerx.git 
+```
+For more installation instructions, please refer to [Installtion](https://tensorlayerx.readthedocs.io/en/latest/user/installation.html)
+
+
+- via docker
 
 Docker is an open source application container engine. In the [TensorLayerX Docker Repository](https://hub.docker.com/repository/docker/tensorlayer/tensorlayerx), 
 different versions of TensorLayerX have been installed in docker images.
@@ -107,20 +121,6 @@ different versions of TensorLayerX have been installed in docker images.
 # pull from docker hub
 docker pull tensorlayer/tensorlayerx:tagname
 ```
-
-- Via pip for the stable version
-```bash
-# install from pypi
-pip3 install tensorlayerx 
-```
-
-- Build from source for the latest version
-```bash
-# install from Github
-pip3 install git+https://github.com/tensorlayer/tensorlayerx.git 
-```
-For more installation instructions, please refer to [Installtion](https://tensorlayerx.readthedocs.io/en/latest/user/installation.html)
-
 
 # Contributing
 Join our community as a code contributor, find out more in our [Help wanted list](https://github.com/tensorlayer/TensorLayerX/issues/5) and [Contributing](https://tensorlayerx.readthedocs.io/en/latest/user/contributing.html) guide!
