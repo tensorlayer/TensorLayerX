@@ -125,7 +125,6 @@ class Model:
                 n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
                 train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
                 print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset,
-                loss_monitor=loss_monitor
             )
 
     def eval(self, test_dataset):
@@ -563,7 +562,7 @@ class Model:
 
     def of_train(
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
-        print_freq, test_dataset, loss_monitor
+        print_freq, test_dataset
     ):
         with Progress(TextColumn("[progress.description]{task.description}"),
                       BarColumn(),

@@ -47,7 +47,7 @@ def softmax_cross_entropy_with_logits(output, target, reduction='mean'):
 
     """
 
-    return F.sparse_softmax_cross_entropy(labels=target,logits=output)
+    return flow.nn.CrossEntropyLoss(reduction=reduction)(output, target)
 
 
 def sigmoid_cross_entropy(output, target, reduction='mean'):
