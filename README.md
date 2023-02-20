@@ -18,10 +18,10 @@
 This project is maintained by researchers from Peking University, Imperial College London, Princeton, Stanford, Tsinghua, Edinburgh and Peng Cheng Lab.
 
 
-GitHub: https://github.com/tensorlayer/TensorLayerX  
-OpenI: https://openi.pcl.ac.cn/OpenI/TensorLayerX
-Homepage: http://tensorlayerx.com
-Document: https://tensorlayerx.readthedocs.io
+- GitHub: https://github.com/tensorlayer/TensorLayerX  
+- OpenI: https://openi.pcl.ac.cn/OpenI/TensorLayerX
+- Homepage: http://tensorlayerx.com
+- Document: https://tensorlayerx.readthedocs.io
 
 # Document
 TensorLayerX has extensive documentation for both beginners and professionals. 
