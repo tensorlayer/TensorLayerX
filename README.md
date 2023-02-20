@@ -20,7 +20,7 @@ This project is maintained by researchers from Peking University, Imperial Colle
 
 - GitHub: https://github.com/tensorlayer/TensorLayerX  
 - OpenI: https://openi.pcl.ac.cn/OpenI/TensorLayerX
-- Homepage: [English](http://www.tensorlayerx.com/index_en.html?chlang=&langid=2) [Chinese](http://www.tensorlayerx.com)
+- Homepage: [English](http://www.tensorlayerx.com/index_en.html?chlang=&langid=2) [中文](http://tensorlayerx.com)
 - Document: https://tensorlayerx.readthedocs.io
 
 # Document
