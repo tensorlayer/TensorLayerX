@@ -32,7 +32,7 @@ We have video courses for deep learning, with example codes based on TensorLayer
 
 # Design Features
 
-<p align="center"><img src="https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/version.png" width="840"\></p>
+<!-- <p align="center"><img src="https://git.openi.org.cn/hanjr/tensorlayerx-image/raw/branch/master/version.png" width="840"\></p> -->
 
 - ***Compatibility***: Support worldwide frameworks and AI chips, enabling one code runs on all platforms.
 
