@@ -10,7 +10,9 @@ from .oneflow_nn import nchw_to_nhwc, nhwc_to_nchw
 import oneflow as flow
 import oneflow.nn as nn
 import oneflow.nn.functional as F
-from oneflow.nn.parameter import Parameter
+
+
+
 import numpy as np
 import random
 
@@ -32,7 +34,7 @@ _dtypeDict = {
     'complex128': None
 }
 
-Dtype = flow.dtype
+DType = flow.dtype
 float16 = flow.float16
 float32 = flow.float32
 float64 = flow.float64
@@ -306,7 +308,7 @@ def he_uniform(shape, dtype=None, seed=None):
     return out
 
 
-def xaiver_normal(shape, dtype=None, seed=None):
+def xavier_normal(shape, dtype=None, seed=None):
     """
     Xavier normal initializer.
 
@@ -398,7 +400,7 @@ class MatMul(object):
         if self.transpose_a or self.transpose_b:
             raise NotImplementedError('keyword argument `transpose_a` or `transpose_b` is not supported.')
 
-    def forward(self, x, y):
+    def __call__(self, x, y):
         return flow.matmul(x, y)
 
 
@@ -638,6 +640,17 @@ class ReduceSum(object):
         else:
             return flow.sum(input, keepdim=self.keepdims)
 
+class ReduceMean(object):
+
+    def __init__(self, axis=None, keepdims=False):
+        self.axis = axis
+        self.keepdims = keepdims
+
+    def __call__(self, inputs):
+        if self.axis is not None:
+            return flow.mean(input=inputs, dim=self.axis, keepdim=self.keepdims)
+        else:
+            return flow.mean(inputs)
 
 def reduce_mean(input_tensor, axis=None, keepdims=False):
     """
@@ -992,6 +1005,15 @@ def cast(x, dtype=None):
 
     return x.type(dtype)
 
+class Transpose(object):
+
+    def __init__(self, perm, conjugate=False):
+        self.perm = perm
+        self.conjugate = conjugate
+
+    def __call__(self, a):
+        return transpose(a, self.perm, self.conjugate)
+
 
 def transpose(a, perm=None, conjugate=False):
     """
@@ -1097,12 +1119,13 @@ class ClipGradByNorm(object):
         flow.nn.utils.clip_grad_norm_(inputs, max_norm=self.clip_norm, norm_type=2)
 
 
-class ClipGradByGlobalNorm(object):
+class ClipByGlobalNorm(object):
     def __init__(self, clip_norm=0.1):
         self.clip_norm = clip_norm
 
     def __call__(self, inputs):
         raise NotImplementedError
+
 
 
 def clip_by_value(t, clip_value_min, clip_value_max):
@@ -1418,6 +1441,14 @@ def identity(x):
 
     raise NotImplementedError
 
+class BatchToSpace(object):
+
+    def __init__(self, block_size, crops):
+        self.bolock_size = block_size
+        self.crops = crops
+
+    def __call__(self, input_x):
+        raise NotImplementedError
 
 class DepthToSpace(object):
 
@@ -1489,6 +1520,9 @@ def argmax(x, axis=None, keepdim=False, dtype='int64'):
     """
 
     return flow.argmax(x, axis=axis, dtype=dtype)
+
+def argmin(x, axis=None, dtype='int64'):
+    return flow.argmin(x, dim=axis)
 
 
 def asin(x):
@@ -1574,7 +1608,7 @@ def greater_equal(x, y):
     return flow.greater_equal(x, y)
 
 
-def isinf(x):
+def is_inf(x):
     return flow.isinf(x)
 
 def is_nan(x):
@@ -1641,9 +1675,11 @@ def round(x):
 def rsqrt(x):
     return flow.rsqrt(x)
 
-def segment_max(x, segment_ids):
+
+def segment_max(x, segment_ids, num_segments=None):
     segment_ids = flow.Tensor(segment_ids, dtype=flow.int64)
-    num_segments = len(np.unique(segment_ids))
+    num_segments = len(flow.unique(segment_ids))
+
     return unsorted_segment_max(x, segment_ids, num_segments)
 
 
@@ -1657,6 +1693,16 @@ def segment_min(x, segment_ids):
     segment_ids = flow.Tensor(segment_ids, dtype=flow.int64)
     num_segments = len(np.unique(segment_ids.numpy()))
     return unsorted_segment_min(x, segment_ids, num_segments)
+
+
+def segment_sum(x, segment_ids):
+    segment_ids = flow.tensor(segment_ids, dtype=flow.int64)
+    num_segments = len(flow.unique(segment_ids))
+    return unsorted_segment_sum(x, segment_ids, num_segments)
+
+
+def segment_prod(x, segment_ids):
+    raise NotImplementedError
 
 def sigmoid(x):
     return flow.sigmoid(x)
@@ -1772,6 +1818,21 @@ def unsorted_segment_mean(x, segment_ids, num_segments):
     tensor =  flow.scatter_add(flow.zeros(*shape).to(x.dtype),0,segment_ids, x)
     tensor_nums = flow.scatter_add(flow.zeros(*shape).to(x.dtype),0,segment_ids, ones_data)
     tensor = tensor / tensor_nums
+    return tensor
+
+
+def unsorted_segment_sum(x, segment_ids, num_segments):
+
+    segment_ids = flow.tensor(segment_ids, dtype=flow.int64)
+    assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
+    if len(segment_ids.shape) == 1:
+        s = flow.prod(flow.tensor(x.shape[1:])).to(flow.int32)
+        segment_ids = segment_ids.repeat_interleave(s).view(segment_ids.shape[0], *x.shape[1:])
+
+    assert x.shape == segment_ids.shape, "data.shape and segment_ids.shape should be equal"
+
+    shape = [num_segments] + list(x.shape[1:])
+    tensor = flow.zeros(*shape).to(x.dtype).scatter_add(0, segment_ids, x)
     return tensor
 
 

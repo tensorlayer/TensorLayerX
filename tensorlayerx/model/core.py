@@ -120,6 +120,13 @@ class Model:
                 print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
             )
 
+        elif tlx.BACKEND == "oneflow":
+            self.of_train(
+                n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
+                train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
+                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset,
+            )
+
     def eval(self, test_dataset):
         self.network.set_eval()
         test_loss, test_acc, n_iter = 0, 0, 0
@@ -552,6 +559,74 @@ class Model:
                 progress.reset(batch_tqdm)
 
 
+
+    def of_train(
+        self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
+        print_freq, test_dataset
+    ):
+        with Progress(TextColumn("[progress.description]{task.description}"),
+                      BarColumn(),
+                      TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                      TimeRemainingColumn(),
+                      TimeElapsedColumn()) as progress:
+
+            n_batch = len(train_dataset)
+            epoch_tqdm = progress.add_task(description="[red]Epoch progress 0/{}".format(n_epoch), total=n_epoch)
+            batch_tqdm = progress.add_task(description="[green]Batch progress 0/{}".format(n_batch), total=n_batch)
+
+            for epoch in range(n_epoch):
+                start_time = time.time()
+
+                train_loss, train_acc, n_iter = 0, 0, 0
+                for batch, (X_batch, y_batch) in enumerate(train_dataset):
+                    network.set_train()
+                    output = network(X_batch)
+                    loss = loss_fn(output, y_batch)
+                    grads = optimizer.gradient(loss, train_weights)
+                    optimizer.apply_gradients(zip(grads, train_weights))
+
+                    train_loss += loss
+                    if metrics:
+                        metrics.update(output, y_batch)
+                        train_acc += metrics.result()
+                        metrics.reset()
+                    else:
+                        train_acc += (output.argmax(1) == y_batch).type(torch.float).mean().item()
+                    n_iter += 1
+
+                    if print_train_batch:
+                        print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                        print("   train loss: {}".format(train_loss / n_iter))
+                        print("   train acc:  {}".format(train_acc / n_iter))
+                    progress.advance(batch_tqdm, advance=1)
+                    progress.update(batch_tqdm, description="[green]Batch progress {}/{}".format(batch + 1, n_batch))
+
+                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+
+                    print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                    print("   train loss: {}".format(train_loss / n_iter))
+                    print("   train acc:  {}".format(train_acc / n_iter))
+
+                if test_dataset:
+                    # use training and evaluation sets to evaluate the model every print_freq epoch
+                    if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+                        network.set_eval()
+                        val_loss, val_acc, n_iter = 0, 0, 0
+                        for X_batch, y_batch in test_dataset:
+                            _logits = network(X_batch)  # is_train=False, disable dropout
+                            val_loss += loss_fn(_logits, y_batch)
+                            if metrics:
+                                metrics.update(_logits, y_batch)
+                                val_acc += metrics.result()
+                                metrics.reset()
+                            else:
+                                val_acc += (_logits.argmax(1) == y_batch).type(torch.float).mean().item()
+                            n_iter += 1
+                        print("   val loss: {}".format(val_loss / n_iter))
+                        print("   val acc:  {}".format(val_acc / n_iter))
+                progress.update(epoch_tqdm, description="[red]Epoch progress {}/{}".format(epoch + 1, n_epoch))
+                progress.advance(epoch_tqdm, advance=1)
+                progress.reset(batch_tqdm)
 
 class WithGrad(object):
     """Module that returns the gradients.

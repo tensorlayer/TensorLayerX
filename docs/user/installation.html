@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Installation</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Installation</h1>
+</header>
+<p>TensorLayerX has some prerequisites that need to be installed first, including <a href="https://www.tensorflow.org/versions/master/get_started/os_setup.html">TensorFlow</a> , <a href="https://www.mindspore.cn/">MindSpore</a>, <a href="https://www.paddlepaddle.org.cn/">PaddlePaddle</a>, <a href="https://pytorch.org/">PyTorch</a>, numpy and matplotlib. For GPU support CUDA and cuDNN are required.</p>
+<p>If you run into any trouble, please check the <a href="https://www.tensorflow.org/versions/master/get_started/os_setup.html">TensorFlow installation instructions</a>, <a href="https://www.mindspore.cn/install">MindSpore installation instructions</a>, <a href="https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/windows-pip.html">PaddlePaddle installation instructions</a>, <a href="https://pytorch.org/get-started/locally/">PyTorch installation instructions</a>, which cover installing the TensorFlow for a range of operating systems including Mac OX, Linux and Windows, or ask for help on <a href="tensorlayer@gmail.com">tensorlayer@gmail.com</a> or <a href="http://tensorlayer.readthedocs.io/en/latest/user/more.html">FAQ</a>.</p>
+<h1 id="install-backend">Install Backend</h1>
+<p>TensorLayerX supports multiple deep learning backends, default TensorFlow as backend also supports MindSpore, PaddlePaddle and PyTorch.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb1-1" title="1"><span class="ex">pip3</span> install tensorflow-gpu==2.0.0-beta1 <span class="co"># specific version  (YOU SHOULD INSTALL THIS ONE NOW)</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="ex">pip3</span> install tensorflow-gpu <span class="co"># GPU version</span></a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="ex">pip3</span> install tensorflow <span class="co"># CPU version</span></a></code></pre></div>
+<p>The installation instructions of TensorFlow are written to be very detailed on <a href="https://www.tensorflow.org/versions/master/get_started/os_setup.html">TensorFlow</a> website. However, there are something need to be considered. For example, <a href="https://www.tensorflow.org/versions/master/get_started/os_setup.html">TensorFlow</a> officially supports GPU acceleration for Linux, Mac OX and Windows at present. For ARM processor architecture, you need to install TensorFlow from source.</p>
+<p>If you want to use mindspore backend, you should install mindspore==1.6.1.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb2-1" title="1"><span class="ex">pip</span> install https://ms-release.obs.cn-north-4.myhuaweicloud.com/1.6.1/MindSpore/gpu/x86_64/cuda-10.1/mindspore_gpu-1.6.1-cp37-cp37m-linux_x86_64.whl --trusted-host ms-release.obs.cn-north-4.myhuaweicloud.com -i https://pypi.tuna.tsinghua.edu.cn/simple</a></code></pre></div>
+<p>If you want to use paddlepaddle backend, you should install paddlepaddle&gt;=2.1.1</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb3-1" title="1"><span class="ex">python</span> -m pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple</a></code></pre></div>
+<p>If you want to use PyTorch backend, you should install PyTorch&gt;=1.8.0</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb4-1" title="1"><span class="ex">pip3</span> install torch==1.8.2+cu102 torchvision==0.9.2+cu102 torchaudio===0.8.2 -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html</a></code></pre></div>
+<h1 id="install-tensorlayerx">Install TensorLayerX</h1>
+<p>For stable version:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb5-1" title="1"><span class="ex">pip3</span> install tensorlayerx</a>
+<a class="sourceLine" id="cb5-2" title="2"></a>
+<a class="sourceLine" id="cb5-3" title="3"><span class="ex">pip</span> install tensorlayerx -i https://pypi.tuna.tsinghua.edu.cn/simple  (faster in China)</a></code></pre></div>
+<p>For latest version, please install from github.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb6-1" title="1"><span class="ex">pip3</span> install git+https://github.com/tensorlayer/TensorLayerX.git</a></code></pre></div>
+<p>For developers, you should clone the folder to your local machine and put it along with your project scripts.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb7-1" title="1"><span class="fu">git</span> clone https://github.com/tensorlayer/TensorLayerX.git</a></code></pre></div>
+<p>Alternatively, you can build from the source.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb8-1" title="1"><span class="co"># First clone the repository and change the current directory to the newly cloned repository</span></a>
+<a class="sourceLine" id="cb8-2" title="2"><span class="fu">git</span> clone https://github.com/tensorlayer/TensorLayerX.git</a>
+<a class="sourceLine" id="cb8-3" title="3"><span class="bu">cd</span> tensorlayer</a>
+<a class="sourceLine" id="cb8-4" title="4"></a>
+<a class="sourceLine" id="cb8-5" title="5"><span class="co"># Install virtualenv if necessary</span></a>
+<a class="sourceLine" id="cb8-6" title="6"><span class="fu">sudo</span> pip3 install virtualenv</a>
+<a class="sourceLine" id="cb8-7" title="7"><span class="co"># Then create a virtualenv called `venv`</span></a>
+<a class="sourceLine" id="cb8-8" title="8"><span class="ex">virtualenv</span> venv</a>
+<a class="sourceLine" id="cb8-9" title="9"></a>
+<a class="sourceLine" id="cb8-10" title="10"><span class="co"># Activate the virtualenv</span></a>
+<a class="sourceLine" id="cb8-11" title="11"></a>
+<a class="sourceLine" id="cb8-12" title="12"><span class="co">## Linux:</span></a>
+<a class="sourceLine" id="cb8-13" title="13"><span class="bu">source</span> venv/bin/activate</a>
+<a class="sourceLine" id="cb8-14" title="14"></a>
+<a class="sourceLine" id="cb8-15" title="15"><span class="co">## Windows:</span></a>
+<a class="sourceLine" id="cb8-16" title="16"><span class="ex">venv</span>\Scripts\activate.bat</a>
+<a class="sourceLine" id="cb8-17" title="17"></a>
+<a class="sourceLine" id="cb8-18" title="18"><span class="co"># basic installation</span></a>
+<a class="sourceLine" id="cb8-19" title="19"><span class="ex">pip3</span> install .</a>
+<a class="sourceLine" id="cb8-20" title="20"></a>
+<a class="sourceLine" id="cb8-21" title="21"><span class="co"># ============= IF TENSORFLOW IS NOT ALREADY INSTALLED ============= #</span></a>
+<a class="sourceLine" id="cb8-22" title="22"></a>
+<a class="sourceLine" id="cb8-23" title="23"><span class="co"># for a machine **without** an NVIDIA GPU</span></a>
+<a class="sourceLine" id="cb8-24" title="24"><span class="ex">pip3</span> install -e <span class="st">&quot;.[all_cpu_dev]&quot;</span></a>
+<a class="sourceLine" id="cb8-25" title="25"></a>
+<a class="sourceLine" id="cb8-26" title="26"><span class="co"># for a machine **with** an NVIDIA GPU</span></a>
+<a class="sourceLine" id="cb8-27" title="27"><span class="ex">pip3</span> install -e <span class="st">&quot;.[all_gpu_dev]&quot;</span></a></code></pre></div>
+<p>If you want install TensorLayer 2.X, It does not support multiple backends.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb9-1" title="1">[<span class="ex">stable</span> version] pip3 install tensorlayer==2.x.x</a></code></pre></div>
+<p>If you want install TensorLayer 1.X, the simplest way to install TensorLayer 1.X is as follow. It will also install the numpy and matplotlib automatically.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb10-1" title="1">[<span class="ex">stable</span> version] pip3 install tensorlayer==1.x.x</a></code></pre></div>
+<p>However, if you want to modify or extend TensorLayer 1.X, you can download the repository from <a href="https://github.com/tensorlayer/tensorlayer">Github</a> and install it as follow.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb11-1" title="1"><span class="bu">cd</span> to the root of the git tree</a>
+<a class="sourceLine" id="cb11-2" title="2"><span class="ex">pip3</span> install -e .</a></code></pre></div>
+<p>This command will run the <code>setup.py</code> to install TensorLayerX. The <code>-e</code> reflects editable, then you can edit the source code in <code>tensorlayer</code> folder, and <code>import</code> the edited TensorLayerX.</p>
+<h1 id="gpu-support">GPU support</h1>
+<p>Thanks to NVIDIA supports, training a fully connected network on a GPU, which may be 10 to 20 times faster than training them on a CPU. For convolutional network, may have 50 times faster. This requires an NVIDIA GPU with CUDA and cuDNN support.</p>
+<h2 id="cuda">CUDA</h2>
+<p>The TensorFlow website also teach how to install the CUDA and cuDNN, please see <a href="https://www.tensorflow.org/versions/master/get_started/os_setup.html#optional-install-cuda-gpus-on-linux">TensorFlow GPU Support</a>.</p>
+<p>Download and install the latest CUDA is available from NVIDIA website:</p>
+<blockquote>
+<ul>
+<li><a href="https://developer.nvidia.com/cuda-downloads">CUDA download and install</a></li>
+</ul>
+</blockquote>
+<p>If CUDA is set up correctly, the following command should print some GPU information on the terminal:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb12-1" title="1"><span class="ex">python</span> -c <span class="st">&quot;import tensorflow&quot;</span></a></code></pre></div>
+<h2 id="cudnn">cuDNN</h2>
+<p>Apart from CUDA, NVIDIA also provides a library for common neural network operations that especially speeds up Convolutional Neural Networks (CNNs). Again, it can be obtained from NVIDIA after registering as a developer (it take a while):</p>
+<p>Download and install the latest cuDNN is available from NVIDIA website:</p>
+<blockquote>
+<ul>
+<li><a href="https://developer.nvidia.com/cudnn">cuDNN download and install</a></li>
+</ul>
+</blockquote>
+<p>To install it, copy the <code>*.h</code> files to <code>/usr/local/cuda/include</code> and the <code>lib*</code> files to <code>/usr/local/cuda/lib64</code>.</p>
+<h1 id="windows-user">Windows User</h1>
+<p>TensorLayer is built on the top of Python-version TensorFlow, so please install Python first. Note:We highly recommend installing Anaconda. The lowest version requirements of Python is py36.</p>
+<p><a href="https://www.continuum.io/downloads">Anaconda download</a></p>
+<h2 id="gpu-support-1">GPU support</h2>
+<p>Thanks to NVIDIA supports, training a fully connected network on a GPU, which may be 10 to 20 times faster than training them on a CPU. For convolutional network, may have 50 times faster. This requires an NVIDIA GPU with CUDA and cuDNN support.</p>
+<h3 id="installing-microsoft-visual-studio">1. Installing Microsoft Visual Studio</h3>
+<p>You should preinstall Microsoft Visual Studio (VS) before installing CUDA. The lowest version requirements is VS2010. We recommend installing VS2015 or VS2013. CUDA7.5 supports VS2010, VS2012 and VS2013. CUDA8.0 also supports VS2015.</p>
+<h3 id="installing-cuda">2. Installing CUDA</h3>
+<p>Download and install the latest CUDA is available from NVIDIA website:</p>
+<p><a href="https://developer.nvidia.com/CUDA-downloads">CUDA download</a></p>
+<p>We do not recommend modifying the default installation directory.</p>
+<h3 id="installing-cudnn">3. Installing cuDNN</h3>
+<p>The NVIDIA CUDA® Deep Neural Network library (cuDNN) is a GPU-accelerated library of primitives for deep neural networks. Download and extract the latest cuDNN is available from NVIDIA website:</p>
+<p><a href="https://developer.nvidia.com/cuDNN">cuDNN download</a></p>
+<p>After extracting cuDNN, you will get three folders (bin, lib, include). Then these folders should be copied to CUDA installation. (The default installation directory is <span class="title-ref">C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0</span>)</p>
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>cifar10_cnn.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="%E4%BD%BF%E7%94%A8%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E8%BF%9B%E8%A1%8C%E5%9B%BE%E5%83%8F%E5%88%86%E7%B1%BB">使用卷积神经网络进行图像分类</h1>
+<p><strong>摘要:</strong> 本示例教程将会演示如何使用TensorLayerX的卷积神经网络来完成图像分类任务。这是一个较为简单的示例，将会使用一个由三个卷积层组成的网络完成cifar10数据集的图像分类任务。</p>
+<h2 id="%E4%B8%80%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE">一、环境配置</h2>
+<p>本教程基于TensorLayerX 0.5.6 编写，如果你的环境不是本版本，请先参考官网<a href="https://tensorlayerx.readthedocs.io/en/latest/user/installation.html">安装</a>。<br>
+TensorlayerX目前支持包括TensorFlow、Pytorch、PaddlePaddle、MindSpore作为计算后端，指定计算后端的方法也非常简单，只需要设置环境变量即可</p>
+<pre class="hljs"><code><div>import os
+os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'tensorflow'
+# os.environ['TL_BACKEND'] = 'mindspore'
+# os.environ['TL_BACKEND'] = 'torch'
+</div></code></pre>
+<p>引入需要的模块</p>
+<pre class="hljs"><code><div>import tensorlayerx as tlx
+from tensorlayerx.nn import Module
+from tensorlayerx.nn import (Conv2d, Linear, Flatten, MaxPool2d, BatchNorm2d)
+
+from tensorlayerx.dataflow import Dataset, DataLoader
+from tensorlayerx.vision.transforms import (
+    Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop
+)
+</div></code></pre>
+<h2 id="%E4%BA%8C%E5%8A%A0%E8%BD%BD%E6%95%B0%E6%8D%AE%E9%9B%86">二、加载数据集</h2>
+<p>本案例将会使用TensorLayerX提供的API完成数据集的下载并为后续的训练任务准备好数据迭代器。
+cifar10数据集由60000张大小为32 * 32的彩色图片组成，其中有50000张图片组成了训练集，另外10000张图片组成了测试集。这些图片分为10个类别，将训练一个模型能够把图片进行正确的分类。</p>
+<pre class="hljs"><code><div># prepare cifar10 data
+X_train, y_train, X_test, y_test = tlx.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
+
+class CIFAR10Dataset(Dataset):
+
+    def __init__(self, data, label, transforms):
+        self.data = data
+        self.label = label
+        self.transforms = transforms
+
+    def __getitem__(self, idx):
+        x = self.data[idx].astype('uint8')
+        y = self.label[idx].astype('int64')
+        x = self.transforms(x)
+
+        return x, y
+
+    def __len__(self):
+
+        return len(self.label)
+
+#设置数据处理函数
+train_transforms = Compose(
+    [
+        RandomCrop(size=[24, 24]),
+        RandomFlipHorizontal(),
+        RandomBrightness(brightness_factor=(0.5, 1.5)),
+        RandomContrast(contrast_factor=(0.5, 1.5)),
+        StandardizePerImage()
+    ]
+)
+
+test_transforms = Compose([Resize(size=(24, 24)), StandardizePerImage()])
+
+#构建数据集和加载器
+train_dataset = CIFAR10Dataset(data=X_train, label=y_train, transforms=train_transforms)
+test_dataset = CIFAR10Dataset(data=X_test, label=y_test, transforms=test_transforms)
+
+</div></code></pre>
+<h1 id="%E4%B8%89%E7%BB%84%E5%BB%BA%E7%BD%91%E7%BB%9C">三、组建网络</h1>
+<p>接下来使用TensorLayerX定义一个使用了三个二维卷积（ <code>Conv2D</code> ) 且每次卷积之后使用 <code>relu</code> 激活函数，两个二维池化层（ <code>MaxPool2D</code> ），和两个线性变换层组成的分类网络，来把一个<code>(32, 32, 3)</code>形状的图片通过卷积神经网络映射为10个输出，这对应着10个分类的类别。</p>
+<pre class="hljs"><code><div>class CNN(Module):
+
+    def __init__(self):
+        super(CNN, self).__init__()
+        # weights init
+        W_init = tlx.nn.initializers.truncated_normal(stddev=5e-2)
+        W_init2 = tlx.nn.initializers.truncated_normal(stddev=0.04)
+        b_init2 = tlx.nn.initializers.constant(value=0.1)
+
+        self.conv1 = Conv2d(32, (3, 3), (1, 1), padding='SAME', W_init=W_init, b_init=None, name='conv1', in_channels=3)
+        self.maxpool1 = MaxPool2d((2, 2), (2, 2), padding='SAME', name='pool1')
+
+        self.conv2 = Conv2d(
+            64, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, W_init=W_init, b_init=None, name='conv2', in_channels=32
+        )
+
+        self.conv3 = Conv2d(
+            64, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, W_init=W_init, b_init=None, name='conv3', in_channels=64
+        )
+        self.maxpool2 = MaxPool2d((2, 2), (2, 2), padding='SAME', name='pool2')
+
+        self.flatten = Flatten(name='flatten')
+        self.linear1 = Linear(1024, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_features=2304)
+        self.linear2 = Linear(10, act=None, W_init=W_init2, name='output', in_features=1024)
+
+    def forward(self, x):
+        z = self.conv1(x)
+        z = self.maxpool1(z)
+        z = self.conv2(z)
+        z = self.maxpool2(z)
+        z = self.flatten(z)
+        z = self.linear1(z)
+        z = self.linear2(z)
+        return z
+
+
+# get the network
+net = CNN()
+</div></code></pre>
+<p>打印模型结构</p>
+<pre class="hljs"><code><div>[TL] Conv2d conv1: out_channels : 32 kernel_size: (3, 3) stride: (1, 1) pad: SAME act: No Activation
+[TL] MaxPool2d pool1: kernel_size: (2, 2) stride: (2, 2) padding: SAME
+[TL] Conv2d conv2: out_channels : 64 kernel_size: (3, 3) stride: (1, 1) pad: SAME act: ReLU
+[TL] Conv2d conv3: out_channels : 64 kernel_size: (3, 3) stride: (1, 1) pad: SAME act: ReLU
+[TL] MaxPool2d pool2: kernel_size: (2, 2) stride: (2, 2) padding: SAME
+[TL] Flatten flatten:
+[TL] Linear  linear1relu: 1024 ReLU
+[TL] Linear  output: 10 No Activation
+</div></code></pre>
+<h2 id="%E5%9B%9B%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83%E9%A2%84%E6%B5%8B">四、模型训练&amp;预测</h2>
+<p>接下来，用Model高级接口来快速开始模型的训练，将会:</p>
+<ul>
+<li>
+<p>使用 <code>tlx.optimizers.Adam</code> 优化器来进行优化。</p>
+</li>
+<li>
+<p>使用 <code>tlx.losses.softmax_cross_entropy_with_logits</code> 来计算损失值。</p>
+</li>
+<li>
+<p>使用 <code>tensorlayerx.dataflow.DataLoader</code> 来加载数据并组建batch。</p>
+</li>
+<li>
+<p>使用 <code>tlx.model.Model</code> 高级模型接口构建用于训练的模型</p>
+</li>
+</ul>
+<pre class="hljs"><code><div>#构建batch数据加载器
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size)
+
+#使用高级API构建可训练模型
+model = tlx.model.Model(network=net, loss_fn=loss_fn, optimizer=optimizer, metrics=metrics)
+
+#执行训练
+model.train(n_epoch=n_epoch, train_dataset=train_loader, test_dataset=test_loader, print_freq=print_freq, print_train_batch=True)
+</div></code></pre>
+<pre class="hljs"><code><div>Epoch 1 of 500 took 2.037001371383667
+   train loss: [2.4006615]
+   train acc:  0.0546875
+Epoch 1 of 500 took 2.0650012493133545
+   train loss: [2.3827682]
+   train acc:  0.05859375
+      ......
+
+Epoch 30 of 500 took 11.347046375274658
+   train loss: [0.8383277]
+   train acc:  0.7114410166240409
+   val loss: Tensor(shape=[1], dtype=float32, place=Place(gpu:0), stop_gradient=False,
+       [0.87068987])
+   val acc:  0.7016416139240507
+</div></code></pre>
+<h2 id="the-end">The End</h2>
+<p>从上面的示例可以看到，在cifar10数据集上，使用简单的卷积神经网络，用TensorLayerX可以达到70%以上的准确率。你也可以通过调整网络结构和参数，达到更好的效果。</p>
+
+</body>
+</html>

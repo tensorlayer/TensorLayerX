@@ -11,5 +11,7 @@ elif BACKEND == 'paddle':
     from .paddle_metric import *
 elif BACKEND == 'torch':
     from .torch_metric import *
+elif BACKEND == 'oneflow':
+    from .oneflow_metric import *
 else:
     raise NotImplementedError("This backend is not supported")

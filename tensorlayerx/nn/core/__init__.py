@@ -11,5 +11,7 @@ elif BACKEND == 'paddle':
     from .core_paddle import *
 elif BACKEND == 'torch':
     from .core_torch import *
+elif BACKEND == 'oneflow':
+    from .core_oneflow import *
 else:
     raise ("Unsupported backend:", BACKEND)

@@ -81,7 +81,7 @@ class Zeros(Initializer):
     """
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = flow.empty(size=shape, dtype=dtype)
+        _tensor = flow.empty(shape, dtype=dtype)
         return flow.nn.init.zeros_(_tensor)
 
 
@@ -98,7 +98,7 @@ class Ones(Initializer):
     """
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = flow.empty(size=shape, dtype=dtype)
+        _tensor = flow.empty(shape, dtype=dtype)
         return flow.nn.init.ones_(_tensor)
 
 
@@ -123,7 +123,7 @@ class Constant(Initializer):
         self.value = value
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = flow.empty(size=shape, dtype=dtype)
+        _tensor = flow.empty(shape, dtype=dtype)
         if isinstance(self.value, (int, float)):
             return flow.nn.init.constant_(_tensor, val=self.value)
         elif isinstance(self.value, (flow.Tensor, list, np.ndarray)):
@@ -161,7 +161,7 @@ class RandomUniform(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = flow.empty(size=shape, dtype=dtype)
+        _tensor = flow.empty(shape, dtype=dtype)
         return flow.nn.init.uniform_(_tensor, a=self.minval, b=self.maxval)
 
     def get_config(self):
@@ -197,7 +197,7 @@ class RandomNormal(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = flow.empty(size=shape)
+        _tensor = flow.empty(shape)
         return flow.nn.init.normal_(_tensor, mean=self.mean, std=self.stddev)
 
     def get_config(self):
@@ -237,7 +237,7 @@ class TruncatedNormal(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = flow.empty(size=shape)
+        _tensor = flow.empty(shape)
         return self._truncated_normal(_tensor, self.mean, self.stddev)
 
     def _truncated_normal(self, tensor, mean=0, std=0.09):

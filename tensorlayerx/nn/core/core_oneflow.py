@@ -75,13 +75,13 @@ class Module(F_Module):
             module.is_train = mode
         return self
 
-    @property.setter
-    def is_train(self, value):
-        self.training = value
+    # @property.setter
+    # def is_train(self, value):
+    #     self.training = value
     
-    @property.getter
-    def is_train(self):
-        return self.training
+    # @property.getter
+    # def is_train(self):
+    #     return self.training
 
     def set_eval(self):
         self.set_train(False)

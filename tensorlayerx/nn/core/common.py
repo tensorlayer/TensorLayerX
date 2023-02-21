@@ -162,7 +162,7 @@ def _save_weights(net, file_path, format=None):
             format = 'hdf5'
 
     if format == 'hdf5' or format == 'h5':
-        if tlx.BACKEND == 'torch':
+        if tlx.BACKEND == 'torch' or tlx.BACKEND == 'oneflow':
             utils.save_weights_to_hdf5(net.named_parameters(), file_path)
         else:
             utils.save_weights_to_hdf5(net.all_weights, file_path)
