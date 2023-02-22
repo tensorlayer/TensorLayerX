@@ -88,7 +88,7 @@ MLP.set_eval()
 - [TLX2ONNX](https://github.com/tensorlayer/TLX2ONNX/) ONNX model exporter for TensorLayerX.
 - [Paddle2TLX](https://github.com/tensorlayer/paddle2tlx) model code converter from PaddlePaddle to TensorLayerX.  
 
-More resources can be found [here](https://github.com/tensorlayer)
+More official resources can be found [here](https://github.com/tensorlayer)
 
 
 # Installation
