@@ -4,38 +4,24 @@
 Examples
 ============
 
-We list some examples here, but more tutorials and applications can be found in `Github examples <https://github.com/tensorlayer/TensorLayerX/tree/main/examples>`__.
-
 Basics
 ============
+You can learn TensorLayerX quickly from the following two examples:
 
  - Multi-layer perceptron (MNIST), simple usage and supports multiple backends. Classification task, see `mnist_mlp.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp.py>`__.
- - Generative Adversarial Networks (MNIST), simple usage and supports multiple backends. See `mnist_gan.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_gan.py>`__.
  - Convolutional Network (CIFAR-10), simple usage and supports multiple backends. Classification task, see `cifar10_cnn.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn.py>`__.
- - Recurrent Neural Network (IMDB), simple usage and supports multiple backends. Text classification task, see `imdb_lstm_simple.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/imdb_lstm_simple.py>`__.
- - Using tensorlayerx to automatic inference input shape. See `automatic_inference_input _shape.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/automatic_inference_input%20_shape.py>`__.
- - Using ModuleList in tensorlayerx. See `module_contaniner.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/module_contaniner.py>`__.
- - Using Sequential in tensorlayerx. See `mnist_sequential.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_sequential.py>`__.
- - Using Dataflow in tensorlayerx. See `mnist_dataflow.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_dataflow.py>`__.
- - Using nested layer in tensorlayerx. See `nested_usage_of_layer.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/nested_usage_of_layer.py>`__.
- - Using tensorlayerx to save tensorflow model to pb. See `tensorflow_model_save_to_pb.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tensorflow_model_save_to_pb.py>`__.
- - Using tensorlayerx to load model from npz. See `tensorlayer_model_load.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/tensorlayer_model_load.py>`__.
- - Using tensorlayerx model training monitoring. See `using_tensorboardx.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/using_tensorboardx.py>`__.
- - Load the Paddle model parameters using tensorlayerx. See `load_paddle_parameters_to_tensorlayerx.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/load_paddle_parameters_to_tensorlayerx.py>`__.
- - Load the PyTorch model parameters using tensorlayerx. See `load_pytorch_parameters_to_tensorlayerx.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/load_pytorch_parameters_to_tensorlayerx.py>`__.
 
-
-
-Commonly used dataset and pretrained models
+Resources
 ===========================================
+More official tutorials can be found in the resources below:
 
- - MNIST, see `OpenI <https://openi.pcl.ac.cn/attachments/2f397a11-3017-4ea2-88c0-9f5b461e2f1e?type=0>`__. or  `MNIST <http://yann.lecun.com/exdb/mnist/>`__.
- - CIFAR10, see `OpenI <https://openi.pcl.ac.cn/attachments/456bb49c-4e2d-490b-ba58-2f87ccf6b81a?type=0>`__. or `CIFAR10 <http://www.cs.toronto.edu/~kriz/cifar.html>`__.
-
- - YOLOv4 Pretrained Model, see `OpenI <https://openi.pcl.ac.cn/attachments/7498aecf-6e9f-4ec1-9a36-41ea6b7371f5?type=0>`__.
- - VGG16 Pretrained Model, see `OpenI <https://openi.pcl.ac.cn/attachments/83ebc39a-043a-4871-ac47-0abbc1e1c14d?type=0>`__.
- - VGG19 Pretrained Model, see `OpenI <https://openi.pcl.ac.cn/attachments/72aab257-a97c-4ee8-89b8-9d885d9aa770?type=0>`__.
- - ResNet50 Pretrained Model, see `OpenI <https://openi.pcl.ac.cn/attachments/2a70b18b-a32e-46ba-af1b-09430a563453?type=0>`__.
+- [Examples](https://github.com/tensorlayer/TensorLayerX/tree/main/examples) for tutorials
+- [GammaGL](https://github.com/BUPT-GAMMA/GammaGL) is series of graph learning algorithm
+- [TLXZoo](https://github.com/tensorlayer/TLXZoo) a series of pretrained backbones
+- [TLXCV](https://github.com/tensorlayer/TLXCV) a series of Computer Vision applications
+- [TLXNLP](https://github.com/tensorlayer/TLXNLP) a series of Natural Language Processing applications
+- [TLX2ONNX](https://github.com/tensorlayer/TLX2ONNX/) ONNX model exporter for TensorLayerX.
+- [Paddle2TLX](https://github.com/tensorlayer/paddle2tlx) model code converter from PaddlePaddle to TensorLayerX.
 
 
 .. _GitHub: https://github.com/tensorlayer/tensorlayer
