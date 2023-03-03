@@ -2453,7 +2453,7 @@ def swish(input):
 def linear(input, weight, bias = None):
     matmul = P.MatMul(transpose_b=True)
     output = matmul(input, weight)
-    if bias:
+    if bias is not None:
         bias_add = P.BiasAdd()
         output = bias_add(output, bias)
     return output

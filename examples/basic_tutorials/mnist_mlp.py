@@ -5,8 +5,8 @@
 import os
 # os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
-# os.environ['TL_BACKEND'] = 'paddle'
-os.environ['TL_BACKEND'] = 'oneflow'
+os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'oneflow'
 # os.environ['TL_BACKEND'] = 'torch'
 
 import tensorlayerx as tlx
@@ -61,7 +61,7 @@ batch_size = 128
 print_freq = 2
 
 train_weights = MLP.trainable_weights
-optimizer = tlx.optimizers.Adadelta()#Momentum(0.05, 0.9)
+optimizer = tlx.optimizers.Momentum(0.05, 0.9)#Momentum(0.05, 0.9)
 metric = tlx.metrics.Accuracy()
 loss_fn = tlx.losses.softmax_cross_entropy_with_logits
 train_dataset = mnistdataset(data=X_train, label=y_train)

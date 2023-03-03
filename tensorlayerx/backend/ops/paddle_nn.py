@@ -2133,7 +2133,7 @@ def swish(input):
 
 def linear(input, weight, bias = None):
 
-    return F.linear(input, weight, bias)
+    return F.linear(input, weight.t(), bias)
 
 def unfold(input, kernel_size, dilation = 1, padding = 0, stride = 1):
 

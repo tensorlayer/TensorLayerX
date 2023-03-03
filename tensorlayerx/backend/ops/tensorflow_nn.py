@@ -3138,7 +3138,7 @@ def swish(input):
 def linear(input, weight, bias = None):
 
     output = tf.matmul(input, weight, transpose_b=True)
-    if bias:
+    if bias is not None:
         output = output + bias
     return output
 

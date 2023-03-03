@@ -83,24 +83,21 @@ class Linear(Module):
         if self.in_features is None and len(inputs_shape) < 2:
             raise AssertionError("The dimension of input should not be less than 2")
         if self.in_features:
-            shape = [self.in_features, self.out_features]
+            shape = [self.out_features, self.in_features]
         else:
             self.in_features = inputs_shape[-1]
-            shape = [self.in_features, self.out_features]
+            shape = [self.out_features, self.in_features]
 
         self.weights = self._get_weights("weights", shape=tuple(shape), init=self.W_init)
-
+        self.biases = None
         self.b_init_flag = False
         if self.b_init:
-            self.biases = self._get_weights("biases", shape=(self.out_features, ), init=self.b_init)
+            self.biases = self._get_weights("biases", shape=(self.out_features,), init=self.b_init)
             self.b_init_flag = True
-            self.bias_add = tlx.ops.BiasAdd(data_format='NWC')
 
         self.act_init_flag = False
         if self.act:
             self.act_init_flag = True
-
-        self.matmul = tlx.ops.MatMul()
 
     def forward(self, inputs):
         if self._forward_state == False:
@@ -109,9 +106,8 @@ class Linear(Module):
                 self._built = True
             self._forward_state = True
 
-        z = self.matmul(inputs, self.weights)
-        if self.b_init_flag:
-            z = self.bias_add(z, self.biases)
+        z = tlx.ops.linear(inputs, self.weights, self.biases)
+
         if self.act_init_flag:
             z = self.act(z)
 
