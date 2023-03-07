@@ -22,6 +22,7 @@ This project is maintained by researchers from Peking University, Imperial Colle
 - OpenI: https://openi.pcl.ac.cn/OpenI/TensorLayerX
 - Homepage: [English](http://www.tensorlayerx.com/index_en.html?chlang=&langid=2) [中文](http://tensorlayerx.com)
 - Document: https://tensorlayerx.readthedocs.io
+- Previous Project: https://github.com/tensorlayer/TensorLayer
 
 # Document
 TensorLayerX has extensive documentation for both beginners and professionals. 
