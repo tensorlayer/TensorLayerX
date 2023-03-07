@@ -24,10 +24,10 @@ This project is maintained by researchers from Peking University, Imperial Colle
 - Document: https://tensorlayerx.readthedocs.io
 - Previous Project: https://github.com/tensorlayer/TensorLayer
 
-# Document
+<!-- # Document
 TensorLayerX has extensive documentation for both beginners and professionals. 
 
-[![English Documentation](https://img.shields.io/badge/documentation-english-blue.svg)](https://tensorlayerx.readthedocs.io/en/latest/)
+[![English Documentation](https://img.shields.io/badge/documentation-english-blue.svg)](https://tensorlayerx.readthedocs.io/en/latest/) -->
 
 # Deep Learning course  
 We have video courses for deep learning, with example codes based on TensorLayerX.  
