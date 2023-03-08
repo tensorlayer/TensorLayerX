@@ -76,11 +76,8 @@ class CustomModel(Module):
 MLP = CustomModel()
 MLP.set_eval()
 ```
-# TensorLayerX: A Cross-Platform Deep Learning Framework
 
-TensorLayerX is a powerful, platform-agnostic deep learning framework that makes it easy to build and train deep learning models. With only one set of source code, it supports a variety of frameworks and chips, making it a versatile tool for developers.
-
-## Quick Start
+# Quick Start
 
 Get started with TensorLayerX quickly using the following examples:
 
@@ -91,12 +88,6 @@ Get started with TensorLayerX quickly using the following examples:
 - **MNIST GAN Training:** Train a generative adversarial network (GAN) on the MNIST dataset. See the example: [mnist_gan.py](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_gan.py).
 
 - **MNIST Mix Programming:** Mix TensorLayerX code with other deep learning libraries such as TensorFlow, PyTorch, Paddle, and MindSpore to run on the MNIST dataset. See the example: [mnist_mlp_mix_programming.py](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mix_programming.py).
-
-
-## Credits
-
-TensorLayerX is developed and maintained by the [TensorLayer team](https://github.com/tensorlayer).
-
 
 
 # Resources
