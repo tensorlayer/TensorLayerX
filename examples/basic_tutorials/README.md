@@ -13,13 +13,13 @@ TensorLayerX provides Sequential and Subclass define a model. Sequential model a
 - [MNIST Dataflow](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_dataflow.py)
 
 ## Model training
-- [MNIST MLP](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp.py)
+- [MNIST MLP](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_simple_train.py)
 - [MNIST GAN](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_gan.py)
 - [CIFAR10 CNN](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn.py)
 - [IMDB LSTM](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/imdb_LSTM_simple.py)
 
 ## TensorLayerX can be mixed programming with other frameworks.
-- look code comments in [MNIST MLP](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp.py)
+- look code comments in [MNIST MLP](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_mix_programming.py)
 - look code comments in [CIFAR10 CNN](https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn.py)
 
 ## Others

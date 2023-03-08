@@ -8,7 +8,7 @@ Basics
 ============
 You can learn TensorLayerX quickly from the following two examples:
 
- - Multi-layer perceptron (MNIST), simple usage and supports multiple backends. Classification task, see `mnist_mlp.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp.py>`__.
+ - Multi-layer perceptron (MNIST), simple usage and supports multiple backends. Classification task, see `mnist_mlp.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/mnist_mlp_simple_train.py>`__.
  - Convolutional Network (CIFAR-10), simple usage and supports multiple backends. Classification task, see `cifar10_cnn.py <https://github.com/tensorlayer/TensorLayerX/blob/main/examples/basic_tutorials/cifar10_cnn.py>`__.
 
 Resources
