@@ -53,5 +53,5 @@ Alternatively, you can build from the source.
 This command will run the ``setup.py`` to install TensorLayerX.
 
 .. _TensorFlow: https://www.tensorflow.org/versions/master/get_started/os_setup.html
-.. _GitHub: https://github.com/tensorlayer/tensorlayer
+.. _GitHub: https://github.com/tensorlayer/TensorLayerX
 .. _TensorLayer: https://github.com/tensorlayer/tensorlayer/

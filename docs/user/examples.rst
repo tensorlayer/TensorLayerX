@@ -24,7 +24,7 @@ More official tutorials can be found in the resources below:
 - [Paddle2TLX](https://github.com/tensorlayer/paddle2tlx) model code converter from PaddlePaddle to TensorLayerX.
 
 
-.. _GitHub: https://github.com/tensorlayer/tensorlayer
+.. _GitHub: https://github.com/tensorlayer/TensorLayerX
 .. _Deeplearning Tutorial: http://deeplearning.stanford.edu/tutorial/
 .. _Convolutional Neural Networks for Visual Recognition: http://cs231n.github.io/
 .. _Neural Networks and Deep Learning: http://neuralnetworksanddeeplearning.com/

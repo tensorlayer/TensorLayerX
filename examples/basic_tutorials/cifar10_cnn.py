@@ -45,13 +45,13 @@ class make_dataset(Dataset):
         return len(self.label)
 
 # We define the CIFAR10 iamges preprocessing pipeline.
-train_transforms = Compose(
+train_transforms = Compose( # Combining multiple operations sequentially
     [
         RandomCrop(size=[24, 24]), #random crop from images to shape [24, 24]
-        RandomFlipHorizontal(),
-        RandomBrightness(brightness_factor=(0.5, 1.5)),
-        RandomContrast(contrast_factor=(0.5, 1.5)),
-        StandardizePerImage() #Normalize each image
+        RandomFlipHorizontal(), # random invert each image horizontally by probability
+        RandomBrightness(brightness_factor=(0.5, 1.5)), # Within the range of values (0.5, 1.5), adjust brightness randomly
+        RandomContrast(contrast_factor=(0.5, 1.5)), # Within the range of values (0.5, 1.5), adjust contrast randomly
+        StandardizePerImage() #Normalize the values of each image to [-1, 1]
     ]
 )
 
@@ -74,7 +74,7 @@ class CNN(Module):
         W_init2 = tlx.nn.initializers.truncated_normal(stddev=0.04)
         b_init2 = tlx.nn.initializers.constant(value=0.1)
 
-        # 2D Convolutional Neural Network, Set padding, kernel size, stride, in channels, out channels
+        # 2D Convolutional Neural Network, Set padding method "SAME", convolutional kernel size [5,5], stride [1,1], in channels, out channels
         self.conv1 = Conv2d(64, (5, 5), (1, 1), padding='SAME', W_init=W_init, b_init=None, name='conv1', in_channels=3)
         # Add 2D BatchNormalize, using ReLU for output.
         self.bn = BatchNorm2d(num_features=64, act=tlx.nn.ReLU)
