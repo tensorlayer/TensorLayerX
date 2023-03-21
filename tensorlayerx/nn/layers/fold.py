@@ -171,7 +171,7 @@ class Unfold(Module):
         self.build()
         self._built = True
 
-    def assert_int_or_pair(arg, arg_name, message):
+    def assert_int_or_pair(self, arg, arg_name, message):
         assert isinstance(arg, int) or len(arg) == 2, message.format(arg_name)
         if isinstance(arg, int):
             return [arg,] * 2

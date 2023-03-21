@@ -101,7 +101,7 @@ class GroupConv2d(Module):
             s += ', dilation = {dilation}'
         if self.b_init is None:
             s += ', bias=False'
-        s += (',', +actstr)
+        s += (', ' + actstr)
         if self.name is not None:
             s += ', name=\'{name}\''
         s += ')'
