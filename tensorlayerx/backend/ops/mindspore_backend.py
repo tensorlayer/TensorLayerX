@@ -159,7 +159,7 @@ class Uniform(Initializer):
         Array, uniform array.
     """
 
-    def __init__(self, minval=0, maxval=None, seed=None):
+    def __init__(self, minval=0, maxval=1, seed=None):
         super(Uniform, self).__init__(minval=minval, maxval=maxval, seed=seed)
         self.minval = minval
         self.maxval = maxval
@@ -171,7 +171,7 @@ class Uniform(Initializer):
         _assignment(arr, tmp)
 
 
-def random_uniform(shape, minval=0, maxval=None, dtype=mstype.float32, seed=None):
+def random_uniform(shape, minval=0, maxval=1, dtype=mstype.float32, seed=None):
     """
     Outputs random values from a uniform distribution.
 
@@ -193,10 +193,9 @@ def random_uniform(shape, minval=0, maxval=None, dtype=mstype.float32, seed=None
 
     """
     # shape = shape[::-1]
-    arr = np.ndarray(shape)
-    init_obj = Uniform(minval=minval, maxval=maxval, seed=seed)
-    init_obj(arr)
-    return Tensor(arr, dtype=dtype)
+    tmp = np.random.uniform(minval, maxval, shape)
+    return Tensor(tmp, dtype=dtype)
+
 
 
 class Normal(Initializer):
@@ -1026,9 +1025,8 @@ def transpose(a, perm=None, conjugate=False):
     -------
         A transposed Tensor.
     """
-    # TODO conjugate
-    outputs = msnp.transpose(a, perm)
-    print(outputs)
+    outputs = ms.ops.transpose(a, tuple(perm))
+    return outputs
 
 
 def gather_nd(params, indices, batch_dims=0):
@@ -1149,15 +1147,15 @@ def gather(params, indices, axis=None):
 
 
 def linspace(start, stop, num):
-    return NotImplementedError
+    return ms.ops.linspace(start, stop, num)
 
 
 def slice(inputs, starts, sizes):
-    return NotImplementedError
+    return ms.ops.slice(inputs, starts, sizes)
 
 
 def add_n(inputs):
-    return NotImplementedError
+    return ms.ops.addn(inputs)
 
 
 class OneHot(Cell):
@@ -1369,15 +1367,13 @@ def ceil(x):
 
 
 def multiply(x, y):
-    return ms.numpy.multiply(x, y)
-
+    return ms.ops.mul(x, y)
 
 def divide(x, y):
-    return msnp.divide(x, y)
-
+    return ms.ops.div(x, y)
 
 def identity(x):
-    return ms.numpy.identity(x)
+    return ms.ops.identity(x)
 
 
 class BatchToSpace(Cell):
@@ -1415,23 +1411,17 @@ def triu(data, diagonal=0):
 
 
 def tril(data, diagonal=0):
-
     return msnp.tril(data, k=diagonal)
 
-
 def abs(x):
-
-    return ms.numpy.abs(x)
+    return ms.ops.abs(x)
 
 
 def acos(x):
-    _acos = ms.ops.ACos()
-    return _acos(x)
-
+    return ms.ops.acos(x)
 
 def acosh(x):
-    _acosh = ms.ops.Acosh()
-    return _acosh(x)
+    return ms.ops.acosh(x)
 
 
 def angle(x):
@@ -1448,43 +1438,35 @@ def argmin(x, axis=None, dtype='int64'):
 
 
 def asin(x):
-    _asin = ms.ops.Asin()
-    return _asin(x)
-
+    return ms.ops.asin(x)
 
 def asinh(x):
-    _asinh = ms.ops.Asinh()
-    return _asinh(x)
-
+    return ms.ops.asinh(x)
 
 def atan(x):
-    _atan = ms.ops.Atan()
-    return _atan(x)
-
+    return ms.ops.atan(x)
 
 def atanh(x):
-    _atanh = ms.ops.Atanh()
-    return _atanh(x)
-
+    return ms.ops.atanh(x)
 
 def cos(x):
-    return ms.numpy.cos(x)
+    return ms.ops.cos(x)
 
 
 def cosh(x):
-    return ms.numpy.cosh(x)
+    return ms.ops.cosh(x)
 
 
-def count_nonzero(x, axis=None, keepdims=False, dtype="int64"):
-    return ms.numpy.count_nonzero(x, axis=axis, keepdims=keepdims)
+def count_nonzero(x, axis=(), keepdims=False, dtype="int64"):
+    return ms.ops.count_nonzero(x, axis, keepdims)
 
 
 def cumprod(x, axis=0, exclusive=False, reverse=False):
-    return ms.numpy.cumprod(x, axis=axis)
+    return ms.ops.cumprod(x, axis)
 
 
 def cumsum(x, axis=0, exclusive=False, reverse=False):
-    return ms.numpy.cumsum(x, axis=axis)
+    return ms.ops.cumsum(x, axis)
 
 
 def equal(x, y):
@@ -1492,7 +1474,7 @@ def equal(x, y):
 
 
 def exp(x):
-    return ms.numpy.exp(x)
+    return ms.ops.exp(x)
 
 
 def floordiv(x, y):
@@ -1517,7 +1499,7 @@ def is_inf(x):
 
 
 def is_nan(x):
-    return ms.numpy.isnan(x)
+    return ms.ops.isnan(x)
 
 
 def l2_normalize(x, axis=None, eps=1e-12):
@@ -1526,7 +1508,7 @@ def l2_normalize(x, axis=None, eps=1e-12):
 
 
 def less(x, y):
-    return ms.numpy.less(x, y)
+    return ms.ops.less(x, y)
 
 
 def less_equal(x, y):
@@ -1534,7 +1516,7 @@ def less_equal(x, y):
 
 
 def log(x):
-    return ms.numpy.log(x)
+    return ms.ops.log(x)
 
 
 def log_sigmoid(x):
@@ -1555,9 +1537,7 @@ def not_equal(x, y):
 
 
 def pow(x, y):
-    _pow = ms.ops.Pow()
-    return _pow(x, y)
-
+    return ms.ops.pow(x, y)
 
 def real(x):
     _real = ms.ops.Real()
@@ -1577,7 +1557,6 @@ def reduce_prod(x, axis=None, keepdims=False):
 
 def reduce_std(x, axis=None, keepdims=False):
     return msnp.std(x, axis=axis, keepdims=keepdims)
-
 
 def reduce_sum(x, axis=None, keepdims=False):
     return msnp.sum(x, axis=axis, keepdims=keepdims)
@@ -1649,13 +1628,11 @@ def sign(x):
 
 
 def sin(x):
-    op = P.Sin()
-    return op(x)
+    return ms.ops.sin(x)
 
 
 def sinh(x):
-    op = P.Sinh()
-    return op(x)
+    return ms.ops.sinh(x)
 
 
 def softplus(x):
@@ -1677,8 +1654,7 @@ def softplus(x):
 
 
 def square(x):
-    op = P.Square()
-    return op(x)
+    return ms.ops.square(x)
 
 
 def squared_difference(x, y):
@@ -1687,13 +1663,11 @@ def squared_difference(x, y):
 
 
 def subtract(x, y):
-    op = P.Sub()
-    return op(x, y)
+    return ms.ops.sub(x, y)
 
 
 def tan(x):
-    op = P.Tan()
-    return op(x)
+    return ms.ops.tan(x)
 
 
 def tanh(x):
@@ -1710,8 +1684,7 @@ def tanh(x):
         A Tensor. Has the same type as x.
     """
 
-    _tanh = ms.ops.Tanh()
-    return _tanh(x)
+    return ms.ops.tanh(x)
 
 
 def any(x, axis=None, keepdims=False):
@@ -1770,17 +1743,19 @@ def zeros_like(x, dtype=None):
 
 
 def squeeze(x, axis=None):
-    return msnp.squeeze(x, axis)
+    if axis is None:
+        axis = ()
+    return ms.ops.squeeze(x, axis)
 
 
 def unsorted_segment_sum(x, segment_ids, num_segments):
-    segment_ids = ms.Tensor(segment_ids)
+    segment_ids = convert_to_tensor(segment_ids, ms.int32)
     op = P.UnsortedSegmentSum()
     return op(x, segment_ids, num_segments)
 
 
 def unsorted_segment_mean(x, segment_ids, num_segments):
-    segment_ids = ms.Tensor(segment_ids)
+    segment_ids = convert_to_tensor(segment_ids, ms.int32)
     op = P.UnsortedSegmentSum()
     x_one = msnp.ones_like(x, dtype=x.dtype)
     sum = op(x, segment_ids, num_segments)
@@ -1788,13 +1763,13 @@ def unsorted_segment_mean(x, segment_ids, num_segments):
     return sum/one
 
 def unsorted_segment_min(x, segment_ids, num_segments):
-    segment_ids = ms.Tensor(segment_ids)
+    segment_ids = convert_to_tensor(segment_ids, ms.int32)
     op = P.UnsortedSegmentMin()
     return op(x, segment_ids, num_segments)
 
 
 def unsorted_segment_max(x, segment_ids, num_segments):
-    segment_ids = ms.Tensor(segment_ids)
+    segment_ids = convert_to_tensor(segment_ids, ms.int32)
     op = P.UnsortedSegmentMax()
     return op(x, segment_ids, num_segments)
 
@@ -1973,4 +1948,4 @@ def flip(x, axis):
 
 def mv(x, vec):
 
-    raise NotImplementedError
+    return ms.ops.mv(x, vec)
