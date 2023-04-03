@@ -1240,6 +1240,11 @@ def gather(params, indices, axis=None):
         axis = 0
     if axis < 0:
         axis = len(params.shape) + axis
+    if params.dtype == paddle.bool:
+        params = paddle.cast(params, 'uint8')
+        output = pd.gather(params, indices, axis)
+        output = pd.cast(output, 'bool')
+        return output
     return pd.gather(params, indices, axis)
 
 

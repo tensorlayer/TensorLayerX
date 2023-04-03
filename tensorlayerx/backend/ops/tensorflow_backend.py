@@ -175,7 +175,7 @@ def constant(value, dtype='float32', shape=None, device = None):
     return tf.constant(value=value, dtype=dtype_str(dtype), shape=shape)
 
 
-def random_uniform(shape, minval=0, maxval=None, dtype='float32', seed=None):
+def random_uniform(shape, minval=0, maxval=1, dtype='float32', seed=None):
     """
     Outputs random values from a uniform distribution.
 

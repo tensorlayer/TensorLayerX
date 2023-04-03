@@ -2451,11 +2451,17 @@ def swish(input):
     return op(input) * input
 
 def linear(input, weight, bias = None):
+    input_shape = input.shape
+    if len(input_shape) != 2:
+        input = ms.ops.reshape(input, (-1, input_shape[-1]))
     matmul = P.MatMul(transpose_b=True)
     output = matmul(input, weight)
     if bias is not None:
         bias_add = P.BiasAdd()
         output = bias_add(output, bias)
+    if len(input_shape) != 2:
+        out_shape = input_shape[:-1] + (output.shape[-1],)
+        output =ms.ops.reshape(output, out_shape)
     return output
 
 def unfold(input, kernel_size, dilation = 1, padding = 0, stride = 1):
