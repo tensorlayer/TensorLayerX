@@ -1760,6 +1760,7 @@ def unsorted_segment_mean(x, segment_ids, num_segments):
     x_one = msnp.ones_like(x, dtype=x.dtype)
     sum = op(x, segment_ids, num_segments)
     one = op(x_one, segment_ids, num_segments)
+    one = msnp.where(one == 0, msnp.ones_like(one), one)
     return sum/one
 
 def unsorted_segment_min(x, segment_ids, num_segments):

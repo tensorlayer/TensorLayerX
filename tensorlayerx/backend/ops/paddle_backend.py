@@ -1815,8 +1815,13 @@ def unsorted_segment_mean(x, segment_ids, num_segments):
     assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
     res = []
     for i in range(num_segments):
-        a = pd.mean(x[segment_ids == i], axis=0)
-        res.append(a)
+        mask_index = segment_ids == i
+        if pd.any(mask_index):
+            a = pd.mean(x[mask_index], axis=0)
+            res.append(a)
+        else:
+            a = pd.zeros_like(x[0])
+            res.append(a)
     if res[0].shape == [1]:
         return pd.concat(res, axis = 0)
     else:
