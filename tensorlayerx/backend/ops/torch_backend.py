@@ -1632,18 +1632,19 @@ def unsorted_segment_mean(x, segment_ids, num_segments):
 
     segment_ids = torch.tensor(segment_ids, dtype=torch.int64)
     assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
-    if len(segment_ids.shape) == 1:
-        s = torch.prod(torch.tensor(x.shape[1:])).to(torch.int32)
-        segment_ids = segment_ids.repeat_interleave(s).view(segment_ids.shape[0], *x.shape[1:])
-
-    assert x.shape == segment_ids.shape, "data.shape and segment_ids.shape should be equal"
-
-    shape = [num_segments] + list(x.shape[1:])
-    ones_data = torch.ones_like(x, dtype=x.dtype)
-    tensor = torch.zeros(*shape).to(x.dtype).scatter_add(0, segment_ids, x)
-    tensor_nums = torch.zeros(*shape).to(x.dtype).scatter_add(0, segment_ids, ones_data)
-    tensor = tensor / tensor_nums
-    return tensor
+    res = []
+    for i in range(num_segments):
+        mask_index = segment_ids == i
+        if torch.any(mask_index):
+            a = torch.mean(x[mask_index], 0)
+            res.append(a)
+        else:
+            a = torch.zeros_like(x[0])
+            res.append(a)
+    if res[0].shape == [1]:
+        return torch.concat(res, 0)
+    else:
+        return torch.stack(res, 0)
 
 def unsorted_segment_min(x, segment_ids, num_segments):
 
@@ -1651,8 +1652,17 @@ def unsorted_segment_min(x, segment_ids, num_segments):
     assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
     res = []
     for i in range(num_segments):
-        res.append(torch.min(x[segment_ids == i], dim=0)[0])
-    return torch.stack(res, dim=0)
+        mask_index = segment_ids == i
+        if torch.any(mask_index):
+            res.append(torch.min(x[mask_index], 0)[0])
+        else:
+            a = torch.zeros_like(x[0])
+            a.fill_(torch.tensor(float('inf')).to(a.dtype))
+            res.append(a)
+    if res[0].shape == [1]:
+        return torch.concat(res, 0)
+    else:
+        return torch.stack(res, 0)
 
 
 def unsorted_segment_max(x, segment_ids, num_segments):
@@ -1661,8 +1671,17 @@ def unsorted_segment_max(x, segment_ids, num_segments):
     assert x.shape[0] == segment_ids.shape[0], "the length of segment_ids should be equal to data.shape[0]."
     res = []
     for i in range(num_segments):
-        res.append(torch.max(x[segment_ids == i], dim=0)[0])
-    return torch.stack(res, dim=0)
+        mask_index = segment_ids == i
+        if torch.any(mask_index):
+            res.append(torch.max(x[mask_index], 0)[0])
+        else:
+            a = torch.zeros_like(x[0])
+            a.fill_(torch.tensor(float('-inf')).to(a.dtype))
+            res.append(a)
+    if res[0].shape == [1]:
+        return torch.concat(res, 0)
+    else:
+        return torch.stack(res, 0)
 
 def set_seed(seed):
 
