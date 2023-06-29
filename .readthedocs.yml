@@ -1,14 +1,21 @@
 # https://docs.readthedocs.io/en/latest/yaml-config.html
+# Read the Docs configuration file for Sphinx projects
+
+version: 2
 
 build:
-  image: latest  # For python 3.6
+  os: ubuntu-22.04
+  tools:
+    python: "3.7"
+
+sphinx:
+   configuration: docs/conf.py
 
 formats:
     - epub
     - pdf
 
 python:
-    version: 3.7
-    
-requirements_file: 
-    requirements/requirements_doc.txt
+  install:
+    - requirements: requirements/requirements_doc.txt
+    - method: pip
