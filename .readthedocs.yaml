@@ -15,3 +15,4 @@ formats:
 python:
   install:
     - requirements: requirements/requirements_doc.txt
+    - requirements: requirements/requirements_contrib_loggers.txt
