@@ -17,5 +17,5 @@ formats:
 
 python:
   install:
-  - requirements: requirements/requirements_doc.txt
-  - method: pip
+    - requirements: requirements/requirements_doc.txt
+    - method: pip
