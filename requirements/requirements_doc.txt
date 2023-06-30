@@ -9,3 +9,4 @@ h5py>=2.9
 cloudpickle>=0.8.1
 tensorflow>=2.0.0
 sphinx-mathjax-offline
+protobuf==3.20.*
