@@ -15,7 +15,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/tensorlayer/tensorlayerx.svg)](https://hub.docker.com/r/tensorlayer/tensorlayerx/)
 
 [TensorLayerX](https://tensorlayerx.readthedocs.io) is a multi-backend AI framework, supports TensorFlow, Pytorch, MindSpore, PaddlePaddle, OneFlow and Jittor as the backends, allowing users to run the code on different hardware like Nvidia-GPU, Huawei-Ascend, Cambricon and more.
-This project is maintained by researchers from Peking University, Imperial College London, Princeton, Stanford, Tsinghua, Edinburgh and Peng Cheng Lab.
+This project is maintained by researchers from Peking University, Peng Cheng Lab, HKUST, Imperial College London, Princeton, Oxford, Stanford, Tsinghua and Edinburgh.
 
 
 - GitHub: https://github.com/tensorlayer/TensorLayerX  
