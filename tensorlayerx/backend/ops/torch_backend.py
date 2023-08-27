@@ -72,6 +72,8 @@ def zeros(shape, dtype=None, device = None):
         device = torch.device('cpu')
     elif device == 'gpu':
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    elif device == 'mlu':
+        device = torch.device('mlu:0' if torch.mlu.is_available() else 'cpu')
     return torch.zeros(size=shape, dtype=dtype, device = device)
 
 
@@ -95,6 +97,8 @@ def ones(shape, dtype=None, device = None):
         device = torch.device('cpu')
     elif device == 'gpu':
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    elif device == 'mlu':
+        device = torch.device('mlu:0' if torch.mlu.is_available() else 'cpu')
     return torch.ones(size=shape, dtype=dtype, device = device)
 
 
@@ -120,6 +124,8 @@ def constant(value, dtype=None, shape=None, device =None):
         device = torch.device('cpu')
     elif device == 'gpu':
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    elif device == 'mlu':
+        device = torch.device('mlu:0' if torch.mlu.is_available() else 'cpu')
     w = torch.empty(size=shape, dtype=dtype, device = device)
     return torch.nn.init.constant_(w, value)
 
@@ -1687,6 +1693,10 @@ def set_seed(seed):
 
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    try:
+        torch.mlu.manual_seed_all(seed)
+    except:
+        pass
     np.random.seed(seed)
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
@@ -1745,6 +1755,23 @@ def set_device(device = 'GPU', id = 0):
     if device == 'GPU':
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
         torch.cuda.set_device(id)
+    if device == 'MLU':
+        torch.set_default_tensor_type('torch.mlu.FloatTensor')
+        torch.mlu.set_device(id)
+
+def distributed_init(backend="cncl"):
+    torch.distributed.init_process_group(backend=backend)
+
+def distributed_model(module, device_ids=None, output_device=None, 
+                    dim=0, broadcast_buffers=True, process_group=None, bucket_cap_mb=25, 
+                    find_unused_parameters=False, check_reduction=False, gradient_as_bucket_view=False):
+    return torch.nn.parallel.DistributedDataParallel(module, device_ids=device_ids,
+                                                     output_device=output_device,
+                                                     dim=dim, broadcast_buffers=broadcast_buffers,
+                                                     process_group=process_group, bucket_cap_mb=bucket_cap_mb,
+                                                     find_unused_parameters=find_unused_parameters,
+                                                     check_reduction=check_reduction, 
+                                                     gradient_as_bucket_view=gradient_as_bucket_view)
 
 def scatter_update(tensor, indices, updates):
     tensor = torch.tensor(tensor)
@@ -1756,16 +1783,23 @@ def scatter_update(tensor, indices, updates):
 def get_device():
     try:
         id = torch.cuda.current_device()
-        device = 'GPU:' + str(id)
-        return device
+        device = 'GPU:' + str(id)    
     except:
         device = 'CPU'
-        return device
+        
+    try:
+        id = torch.mlu.current_device()
+        device = 'MLU:' + str(id)    
+    except:
+        device = 'CPU'    
+    return device
 
-def to_device(tensor, device='GPU', id=0):
+def to_device(tensor, device='MLU', id=0):
     device = device.lower()
     if device == 'gpu':
         device = 'cuda' + ':' + str(id)
+    if device == 'mlu':
+        device = 'mlu' + ':' + str(id)
     tensor = tensor.detach().to(device)
     return tensor
 

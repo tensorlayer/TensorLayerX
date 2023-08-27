@@ -207,6 +207,8 @@ from .load_backend import mask_select
 from .load_backend import eye
 from .load_backend import einsum
 from .load_backend import set_device
+from .load_backend import distributed_init
+from .load_backend import distributed_model
 from .load_backend import get_device
 from .load_backend import scatter_update
 from .load_backend import to_device
