@@ -1913,6 +1913,15 @@ def set_device(device = 'GPU', id = 0):
         flow.set_default_dtype(flow.float32)
         flow.cuda.set_device(id)
 
+def distributed_init(backend="cncl"):
+    raise NotImplementedError("Distributed for this backend is not supported")
+
+def distributed_model(module, device_ids=None, output_device=None, 
+                    dim=0, broadcast_buffers=True, process_group=None, bucket_cap_mb=25, 
+                    find_unused_parameters=False, check_reduction=False, gradient_as_bucket_view=False):
+    raise NotImplementedError("Distributed for this backend is not supported")
+
+
 def scatter_update(tensor, indices, updates):
     tensor = flow.Tensor(tensor)
     indices = flow.Tensor(indices, dtype=flow.int64)

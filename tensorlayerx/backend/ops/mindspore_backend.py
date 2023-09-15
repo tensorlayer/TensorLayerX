@@ -1845,6 +1845,15 @@ def set_device(device = 'GPU', id = 0):
     ms.context.set_context(device_target=device)
     ms.context.set_context(device_id = id)
 
+def distributed_init(backend="cncl"):
+    raise NotImplementedError("Distributed for this backend is not supported")
+
+def distributed_model(module, device_ids=None, output_device=None, 
+                    dim=0, broadcast_buffers=True, process_group=None, bucket_cap_mb=25, 
+                    find_unused_parameters=False, check_reduction=False, gradient_as_bucket_view=False):
+    raise NotImplementedError("Distributed for this backend is not supported")
+
+
 def scatter_update(tensor, indices, updates):
     if not isinstance(tensor,  ms.Tensor) or not isinstance(updates, ms.Tensor):
         raise TypeError("tensor, updates should be Tensor, but got tensor type is {}, "

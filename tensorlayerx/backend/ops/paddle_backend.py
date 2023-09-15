@@ -1932,6 +1932,14 @@ def set_device(device = 'GPU', id = 0):
         device = device + ':' + str(id)
     paddle.device.set_device(device)
 
+def distributed_init(backend="cncl"):
+    raise NotImplementedError("Distributed for this backend is not supported")
+
+def distributed_model(module, device_ids=None, output_device=None, 
+                    dim=0, broadcast_buffers=True, process_group=None, bucket_cap_mb=25, 
+                    find_unused_parameters=False, check_reduction=False, gradient_as_bucket_view=False):
+    raise NotImplementedError("Distributed for this backend is not supported")
+
 def scatter_update(tensor, indices, updates):
 
     return pd.scatter(tensor, indices, updates)
