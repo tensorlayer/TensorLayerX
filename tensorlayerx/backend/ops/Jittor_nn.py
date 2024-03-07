@@ -7,7 +7,8 @@
 
 import jittor as jt
 import jittor.nn as nn
-
+import collections
+from itertools import repeat
 
 def padding_format(padding):
     """
@@ -161,12 +162,13 @@ def nchw_to_nhwc(x):
     -------
         channels last tensor data
     """
-    if len(P.Shape()(x)) == 3:
-        x = P.Transpose()(x, (0, 2, 1))
-    elif len(P.Shape()(x)) == 4:
-        x = P.Transpose()(x, (0, 2, 3, 1))
-    elif len(P.Shape()(x)) == 5:
-        x = P.Transpose()(x, (0, 2, 3, 4, 1))
+    shape = x.shape
+    if len(shape) == 3:
+        x = jt.transpose(x, (0, 2, 1))
+    elif len(shape) == 4:
+        x = jt.transpose(x, (0, 2, 3, 1))
+    elif len(shape) == 5:
+        x = jt.transpose(x, (0, 2, 3, 4, 1))
     # else:
     #     raise Exception("Unsupported dimensions")
     return x
@@ -184,13 +186,13 @@ def nhwc_to_nchw(x):
     -------
         channels first tensor data
     """
-
-    if len(P.Shape()(x)) == 3:
-        x = P.Transpose()(x, (0, 2, 1))
-    elif len(P.Shape()(x)) == 4:
-        x = P.Transpose()(x, (0, 3, 1, 2))
-    elif len(P.Shape()(x)) == 5:
-        x = P.Transpose()(x, (0, 4, 1, 2, 3))
+    shape = x.shape
+    if len(shape) == 3:
+        x = jt.transpose(x, (0, 2, 1))
+    elif len(shape) == 4:
+        x = jt.transpose(x, (0, 3, 1, 2))
+    elif len(shape) == 5:
+        x = jt.transpose(x, (0, 4, 1, 2, 3))
     # else:
     #     raise Exception("Unsupported dimensions")
     return x
@@ -462,11 +464,75 @@ def bias_add(x, bias, data_format=None):
     return add_obj(x, bias)
 
 
+
+class Conv1D(object):
+
+    def __init__(self, stride, padding, data_format='NWC', dilations=None, out_channel=None, k_size=None, groups=1):
+        self.stride = stride
+        self.dilations = dilations
+        self.groups = groups
+        self.data_format, self.padding = preprocess_1d_format(data_format, padding)
+        # self.conv1d = nn.Conv1d()
+    def __call__(self, input, filters):
+        if self.data_format == 'NLC':
+            input = nhwc_to_nchw(input)
+        if self.padding == 'same':
+            out = self.conv1d_same_padding(input, filters)
+        else:
+            
+            out = nn.Conv1d(input, filters, stride=self.stride, padding=self.padding,
+                           dilation=self.dilations, groups=self.groups)
+        if self.data_format == 'NLC':
+            out = nchw_to_nhwc(out)
+
+        return out
+
+    def conv1d_same_padding(self, input, filters):
+        rows_odd, padding_rows = same_padding(input, filters, self.stride, 1)
+        if rows_odd:
+            input = nn.pad(input, [0, int(rows_odd)], 'replicate')
+        
+        return nn.Conv1d(input, filters, stride=self.stride, padding=(padding_rows // 2), groups=self.groups)
+
+
+
+def conv1d(input, filters, stride, padding, data_format='NWC', dilations=None):
+    """
+    Computes a 1-D convolution given 3-D input and filter tensors.
+
+    Parameters
+    ----------
+    input : tensor
+        A 3D Tensor. Must be of type float16, float32, or float64
+    filters : tensor
+        A 3D Tensor. Must have the same type as input.
+    stride : int of list
+         An int or list of ints that has length 1 or 3. The number of entries by which the filter is moved right at each step.
+    padding : string
+         'SAME' or 'VALID'
+    data_format : string
+        An optional string from "NWC", "NCW". Defaults to "NWC", the data is stored in the order of
+        [batch, in_width, in_channels]. The "NCW" format stores data as [batch, in_channels, in_width].
+    dilations : int or list
+        An int or list of ints that has length 1 or 3 which defaults to 1.
+        The dilation factor for each dimension of input. If set to k > 1,
+        there will be k-1 skipped cells between each filter element on that dimension.
+        Dilations in the batch and depth dimensions must be 1.
+    name : string
+        A name for the operation (optional).
+    Returns
+    -------
+        A Tensor. Has the same type as input.
+    """
+
+    return Conv1D(stride=stride, padding=padding, data_format=data_format, dilations=dilations)(input, filters)
+
+
 def same_padding(input, weight, strides, dilations):
     #                     H(in) + 2* padding[0] - dilation[0] * (Ksize[0] - 1) - 1
     # H(out) = = floor( --------------------------------------------------------------   + 1 )
     #                                        stride[0]
-    if isinstance(weight, flow.Tensor):
+    if isinstance(weight, jt.array):
         if len(input.shape) == 3:
             filter_rows = weight.size(2)
         if len(input.shape) == 4:
@@ -534,66 +600,6 @@ def same_padding(input, weight, strides, dilations):
         return rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth
 
 
-class Conv1D(object):
-
-    def __init__(self, stride, padding, data_format='NWC', dilations=None, out_channel=None, k_size=None, groups=1):
-        self.stride = stride
-        self.dilations = dilations
-        self.groups = groups
-        self.data_format, self.padding = preprocess_1d_format(data_format, padding)
-
-    def __call__(self, input, filters):
-        if self.data_format == 'NLC':
-            input = nhwc_to_nchw(input)
-        if self.padding == 'same':
-            out = self.conv1d_same_padding(input, filters)
-        else:
-            out = F.conv1d(input, filters, stride=self.stride, padding=self.padding,
-                           dilation=self.dilations, groups=self.groups)
-        if self.data_format == 'NLC':
-            out = nchw_to_nhwc(out)
-
-        return out
-
-    def conv1d_same_padding(self, input, filters):
-        rows_odd, padding_rows = same_padding(input, filters, self.stride, 1)
-        if rows_odd:
-            input = F.pad(input, [0, int(rows_odd)], 'replicate')
-        return F.conv1d(input, filters, stride=self.stride, padding=(padding_rows // 2), groups=self.groups)
-
-
-def conv1d(input, filters, stride, padding, data_format='NWC', dilations=None):
-    """
-    Computes a 1-D convolution given 3-D input and filter tensors.
-
-    Parameters
-    ----------
-    input : tensor
-        A 3D Tensor. Must be of type float16, float32, or float64
-    filters : tensor
-        A 3D Tensor. Must have the same type as input.
-    stride : int of list
-         An int or list of ints that has length 1 or 3. The number of entries by which the filter is moved right at each step.
-    padding : string
-         'SAME' or 'VALID'
-    data_format : string
-        An optional string from "NWC", "NCW". Defaults to "NWC", the data is stored in the order of
-        [batch, in_width, in_channels]. The "NCW" format stores data as [batch, in_channels, in_width].
-    dilations : int or list
-        An int or list of ints that has length 1 or 3 which defaults to 1.
-        The dilation factor for each dimension of input. If set to k > 1,
-        there will be k-1 skipped cells between each filter element on that dimension.
-        Dilations in the batch and depth dimensions must be 1.
-    name : string
-        A name for the operation (optional).
-    Returns
-    -------
-        A Tensor. Has the same type as input.
-    """
-
-    return Conv1D(stride=stride, padding=padding, data_format=data_format, dilations=dilations)(input, filters)
-
-
 class Conv2D(object):
 
     def __init__(self, strides, padding, data_format='NHWC', dilations=None, out_channel=None, k_size=None, groups=1):
@@ -613,7 +619,7 @@ class Conv2D(object):
         if self.padding == 'same':
             output = self.conv2d_same_padding(input, filters)
         else:
-            output = F.conv2d(input, filters, stride=self.strides, padding=self.padding,
+            output = nn.conv2d(input, filters, stride=self.strides, padding=self.padding,
                               dilation=self.dilations, groups=self.groups)
 
         if self.data_format == 'NHWC':
@@ -625,7 +631,7 @@ class Conv2D(object):
         if rows_odd or cols_odd:
             input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd)])
 
-        return F.conv2d(
+        return nn.conv2d(
             input, weight, bias, self.strides, padding=(padding_rows // 2, padding_cols // 2), dilation=self.dilations,
             groups=self.groups
         )
@@ -662,7 +668,7 @@ def conv2d(input, filters, strides, padding, data_format='NHWC', dilations=None)
     if data_format == 'NHWC':
         input = nhwc_to_nchw(input)
 
-    output = F.conv2d(input, filters, stride=strides, padding=padding, dilation=dilations)
+    output = nn.conv2d(input, filters, stride=strides, padding=padding, dilation=dilations)
 
     if data_format == 'NHWC':
         output = nchw_to_nhwc(output)
@@ -679,6 +685,7 @@ class Conv3D(object):
         elif self.data_format is 'NCDHW':
             self._strides = (strides[2], strides[3], strides[4])
             self._dilations = (dilations[2], dilations[3], dilations[4])
+
 
     def __call__(self, input, filters):
         if self.data_format == 'NDHWC':
@@ -700,8 +707,8 @@ class Conv3D(object):
         if rows_odd or cols_odd or depth_odd:
             input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)])
 
-        return F.conv3d(
-            input, weight, bias, self._strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2),
+        return nn.conv3d(
+            input, weight, bias, self._strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth//2),
             dilation=self._dilations, groups=groups
         )
 
@@ -744,38 +751,6 @@ def conv3d(input, filters, strides, padding, data_format='NDHWC', dilations=None
     return Conv3D(strides=strides, padding=padding, data_format=data_format, dilations=dilations)(input, filters)
 
 
-def local_response_norm(input: flow.Tensor, size: int, alpha: float = 1e-4, beta: float = 0.75, k: float = 1.0) -> flow.Tensor:
-    r"""Applies local response normalization over an input signal composed of
-    several input planes, where channels occupy the second dimension.
-    Applies normalization across channels.
-
-    reference from torch.nn.LocalResponseNorm
-    """
-    dim = input.dim()
-    if dim < 3:
-        raise ValueError(
-            "Expected 3D or higher dimensionality \
-                         input (got {} dimensions)".format(
-                dim
-            )
-        )
-    if input.numel() == 0:
-        return input
-
-    div = input.mul(input).unsqueeze(1)
-    if dim == 3:
-        div = F.pad(div, (0, 0, size // 2, (size - 1) // 2))
-        div = F.avg_pool2d(div, (size, 1), stride=1).squeeze(1)
-    else:
-        sizes = input.size()
-        div = div.view(sizes[0], 1, sizes[1], sizes[2], -1)
-        div = F.pad(div, (0, 0, 0, 0, size // 2, (size - 1) // 2))
-        div = F.avg_pool3d(div, (size, 1, 1), stride=1).squeeze(1)
-        div = div.view(sizes)
-    div = div.mul(alpha).add(k).pow(beta)
-    return input / div
-
-
 def lrn(inputs, depth_radius, bias, alpha, beta):
     """
     Local Response Normalization.
@@ -798,7 +773,7 @@ def lrn(inputs, depth_radius, bias, alpha, beta):
         A Tensor. Has the same type as input.
     """
 
-    return local_response_norm(inputs, depth_radius, alpha, beta, bias)
+    raise NotImplementedError
 
 
 def moments(x, axes, shift=None, keepdims=False):
@@ -826,18 +801,13 @@ def moments(x, axes, shift=None, keepdims=False):
 
 class MaxPool1d(object):
 
-    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
-        self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.return_mask = return_mask
-        self.max_pool1d = MaxPool([ksize, ], strides, padding, data_format)
-
-    def __call__(self, inputs):
-        return self.max_pool1d(inputs)
+    def __call__():
+        return NotImplementedError
 
 
 class MaxPool(object):
 
-    def __init__(self, ksize, strides, padding, return_mask, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask = False, data_format=None):
         self.ksize = ksize
         self.strides = strides
         self.return_mask = return_mask
@@ -853,52 +823,55 @@ class MaxPool(object):
         if self.data_format == 'channels_last':
             inputs = nhwc_to_nchw(inputs)
         if len(inputs.shape) == 2 or len(inputs.shape) == 3:
-            if self.padding in ['SAME', 'same']:
-                out = self.maxpool1d_same_padding(inputs)
-            else:
-                out = F.max_pool1d(inputs, self.ksize, self.strides, padding=self.padding)
+            raise NotImplementedError
+        
         if len(inputs.shape) == 4:
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool2d_same_padding(inputs)
             else:
-                out = F.max_pool2d(inputs, self.ksize, self.strides, padding=self.padding)
+                out = nn.max_pool2d(inputs, self.ksize, self.strides, padding=self.padding,
+                            return_indices=self.return_mask)
         if len(inputs.shape) == 5:
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool3d_same_padding(inputs)
             else:
-                out = F.max_pool3d(inputs, self.ksize, self.strides, padding=self.padding)
+                out = nn.max_pool3d(inputs, self.ksize, self.strides, padding=self.padding,
+                            return_indices=self.return_mask)
 
         if self.data_format == 'channels_last':
-            return nchw_to_nhwc(out)
+            if self.return_mask:
+                    outputs = [None, None]
+                    outputs[0] = nchw_to_nhwc(out[0])
+                    outputs[1] = nchw_to_nhwc(out[1])
+                    return outputs
+            else:
+                return nchw_to_nhwc(out)
         else:
             return out
 
-    def maxpool1d_same_padding(self, input):
-        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides, 1)
-        if rows_odd:
-            input = F.pad(input, [0, int(rows_odd)], 'constant', float('-inf'))
-        return F.max_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2))
 
     def maxpool2d_same_padding(self, input):
         rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, self.strides, (1, 1))
         if rows_odd or cols_odd:
             # TODO The fill value for maxpool is -INF.
-            input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)], 'constant', float('-inf'))
+            input = nn.pad(input, [0, int(rows_odd), 0, int(cols_odd)], 'constant', float('-inf'))
 
-        return F.max_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2))
+        return nn.max_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2),
+                            return_indices=self.return_mask)
 
     def maxpool3d_same_padding(self, input):
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(
             input, self.ksize, self.strides, (1, 1, 1)
         )
         if rows_odd or cols_odd or depth_odd:
-            input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], 'constant', float('-inf'))
-        return F.max_pool3d(
-            input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
+            input = nn.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], 'constant', float('-inf'))
+        return nn.max_pool3d(
+                input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2),
+                return_indices=self.return_mask
         )
 
 
-def max_pool(input, ksize, strides, padding, data_format=None):
+def max_pool(input, ksize, strides, padding, return_mask, data_format=None):
     """
     Performs the max pooling on the input.
 
@@ -924,31 +897,27 @@ def max_pool(input, ksize, strides, padding, data_format=None):
         A Tensor of format specified by data_format. The max pooled output tensor.
     """
 
-    maxpool_obj = MaxPool(ksize, strides, padding, data_format)
+    maxpool_obj = MaxPool(ksize, strides, padding, return_mask, data_format)
     return maxpool_obj(input)
 
-
-def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False,  data_format='NCL'):
+def max_pool1d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format='NCL'):
     raise NotImplementedError
-
 
 def max_pool2d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format='NCHW'):
-    raise NotImplementedError
 
+    maxpool_obj = MaxPool(kernel_size, stride, padding, return_mask, data_format)
+    return maxpool_obj(input)
 
 def max_pool3d(input, kernel_size, stride=None, padding=0, return_mask=False, data_format="NCDHW"):
-    raise NotImplementedError
 
+    maxpool_obj = MaxPool(kernel_size, stride, padding, return_mask, data_format)
+    return maxpool_obj(input)
 
 
 class AvgPool1d(object):
 
-    def __init__(self, ksize, strides, padding, data_format=None):
-        self.data_format, self.padding = preprocess_1d_format(data_format=data_format, padding=padding)
-        self.avg_poo1d = AvgPool([ksize, ], strides, padding, data_format)
-
-    def __call__(self, inputs):
-        return self.avg_poo1d(inputs)
+    def __call__(inputs):
+        raise NotImplementedError
 
 
 class AvgPool(object):
@@ -968,48 +937,41 @@ class AvgPool(object):
         if self.data_format == 'channels_last':
             inputs = nhwc_to_nchw(inputs)
         if len(inputs.shape) == 2 or len(inputs.shape) == 3:
-            if self.padding in ['SAME', 'same']:
-                out = self.avgpool1d_same_padding(inputs)
-            else:
-                out = F.avg_pool1d(inputs, self.ksize, self.strides, padding=self.padding)
+            raise NotImplementedError
+               
         if len(inputs.shape) == 4:
             if self.padding in ['SAME', 'same']:
                 out = self.avgpool2d_same_padding(inputs)
             else:
-                out = F.avg_pool2d(inputs, self.ksize, self.strides, padding=self.padding)
+                out = nn.avg_pool2d(inputs, self.ksize, self.strides, padding=self.padding)
         if len(inputs.shape) == 5:
             if self.padding in ['SAME', 'same']:
                 out = self.avgpool3d_same_padding(inputs)
             else:
-                out = F.avg_pool3d(inputs, self.ksize, self.strides, padding=self.padding)
+                out = nn.AvgPool2d(inputs, self.ksize, self.strides, padding=self.padding)
 
         if self.data_format == 'channels_last':
             return nchw_to_nhwc(out)
         else:
             return out
 
-    def avgpool1d_same_padding(self, input):
-        rows_odd, padding_rows = same_padding(input, self.ksize, self.strides, 1)
-        if rows_odd:
-            input = F.pad(input, [0, int(rows_odd)], 'replicate')
-        return F.avg_pool1d(input, self.ksize, self.strides, padding=(padding_rows // 2))
 
     def avgpool2d_same_padding(self, input):
         rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, self.ksize, self.strides, (1, 1))
         if rows_odd or cols_odd:
             # TODO The fill value for maxpool is -INF.
-            input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)], mode='replicate')
+            input = nn.pad(input, [0, int(rows_odd), 0, int(cols_odd)], mode='replicate')
 
-        return F.avg_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2))
+        return nn.avg_pool2d(input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2))
 
     def avgpool3d_same_padding(self, input):
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(
             input, self.ksize, self.strides, (1, 1, 1)
         )
         if rows_odd or cols_odd or depth_odd:
-            input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], mode='replicate')
-        return F.avg_pool3d(
-            input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
+            input = nn.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], mode='replicate')
+        return nn.AvgPool3d(
+                input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
         )
 
 
@@ -1042,13 +1004,24 @@ def avg_pool(input, ksize, strides, padding):
     avg_pool_obj = AvgPool(ksize, strides, padding)
     return avg_pool_obj(input)
 
+def avg_pool1d(input, kernel_size, stride=None, padding=0, data_format='NCL'):
+    raise NotImplementedError
+
+def avg_pool2d(input, kernel_size, stride=None, padding=0, data_format='NCHW'):
+    data_format, padding = preprocess_2d_format(data_format, padding)
+    avg_pool_obj = AvgPool(kernel_size, stride, padding, data_format)
+    return avg_pool_obj(input)
+
+def avg_pool3d(input, kernel_size, stride=None, padding=0, data_format='NCDHW'):
+    data_format, padding = preprocess_3d_format(data_format, padding)
+    avg_pool_obj = AvgPool(kernel_size, stride, padding, data_format)
+    return avg_pool_obj(input)
 
 class MaxPool3d(object):
 
     def __init__(self, ksize, strides, padding, return_mask, data_format=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
-        self.return_mask = return_mask
-        self.max_pool3d = MaxPool(ksize, strides, padding, data_format)
+        self.max_pool3d = MaxPool(ksize, strides, padding, return_mask, data_format)
 
     def __call__(self, inputs):
         return self.max_pool3d(inputs)
@@ -1097,19 +1070,33 @@ class AvgPool3d(object):
         return self.avg_pool3d_obj(inputs)
 
 
-def avg_pool1d(input, kernel_size, stride=None, padding=0,  data_format='NCL'):
-
-    raise NotImplementedError
-
-
-def avg_pool2d(input, kernel_size, stride=None, padding=0, data_format='NCHW'):
-
-    raise NotImplementedError
-
-
-def avg_pool3d(input, kernel_size, stride=None, padding=0, data_format='NCDHW'):
-
-    raise NotImplementedError
+# def avg_pool3d(input, ksize, strides, padding, data_format=None):
+#     """
+#     Performs the average pooling on the input.
+#
+#     Parameters
+#     ----------
+#     input : tensor
+#         A 5-D Tensor of shape [batch, height, width, channels] and type float32, float64, qint8, quint8, or qint32.
+#     ksize : int or list of ints
+#         An int or list of ints that has length 1, 3 or 5. The size of the window for each dimension of the input tensor.
+#     strides : int or list of ints
+#         An int or list of ints that has length 1, 3 or 5.
+#         The stride of the sliding window for each dimension of the input tensor.
+#     padding : string
+#         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
+#     data_format : string
+#         'NDHWC' and 'NCDHW' are supported.
+#     name : string
+#         Optional name for the operation.
+#
+#     Returns
+#     -------
+#         A Tensor with the same type as value. The average pooled output tensor.
+#     """
+#
+#     avg_pool_obj = AvgPool(ksize, strides, padding, data_format)
+#     return avg_pool_obj(input)
 
 
 def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_format=None, dilations=None, name=None):
@@ -1168,8 +1155,7 @@ class DepthwiseConv2d(object):
             self.dilations = (1, 1, dilations[0], dilations[1])
         self.depthwise = Conv2D(padding=self.padding, strides=self.strides, data_format=self.data_format,
                                 dilations=self.dilations, groups=in_channels)
-        self.pointwise = Conv2D(strides=(1, 1, 1, 1), padding=self.padding,
-                                data_format=self.data_format, dilations=self.dilations, k_size=1)
+        self.pointwise = Conv2D(strides=(1, 1, 1, 1), padding=self.padding, data_format=self.data_format, dilations=self.dilations, k_size=1)
 
     def __call__(self, input, filter, point_filter=None):
         depthwise_conv = self.depthwise(input, filter)
@@ -1211,9 +1197,9 @@ def depthwise_conv2d(input, filter, strides, padding, data_format=None, dilation
 
 
 def same_padding_deconvolution(input, weight, strides, dilations):
-    # H(out) = floor((H(in) - 1)*stride[0] - 2* padding[0] + dilation[0] * (ksize[0]-1) + 1)
+    #H(out) = floor((H(in) - 1)*stride[0] - 2* padding[0] + dilation[0] * (ksize[0]-1) + 1)
 
-    if isinstance(weight, flow.Tensor):
+    if isinstance(weight, jt.array):
         if len(input.shape) == 3:
             filter_rows = weight.size(2)
         if len(input.shape) == 4:
@@ -1237,7 +1223,7 @@ def same_padding_deconvolution(input, weight, strides, dilations):
     if len(input.shape) == 3:
         input_rows = input.size(2)
         out_rows = input_rows * strides - strides + 1
-        padding_rows = max(0, (input_rows - 1) * strides + (filter_rows - 1) * dilations + 1 - out_rows)
+        padding_rows = max(0, (input_rows-1) * strides + (filter_rows - 1) * dilations + 1 - out_rows)
         rows_odd = (padding_rows % 2 != 0)
         return rows_odd, padding_rows
 
@@ -1246,7 +1232,8 @@ def same_padding_deconvolution(input, weight, strides, dilations):
         input_cols = input.size(3)
 
         out_rows = input_rows * strides[0] - strides[0] + 1
-        out_cols = input_rows * strides[1] - strides[1] + 1
+        out_cols = input_cols * strides[1] - strides[1] + 1
+
 
         padding_rows = max(0, (input_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - out_rows)
         padding_cols = max(0, (input_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - out_cols)
@@ -1261,8 +1248,8 @@ def same_padding_deconvolution(input, weight, strides, dilations):
         input_depth = input.size(4)
 
         out_rows = input_rows * strides[0] - strides[0] + 1
-        out_cols = input_rows * strides[1] - strides[1] + 1
-        out_depth = input_rows * strides[2] - strides[2] + 1
+        out_cols = input_cols * strides[1] - strides[1] + 1
+        out_depth = input_depth * strides[2] - strides[2] + 1
 
         padding_rows = max(0, (input_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - out_rows)
         padding_cols = max(0, (input_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - out_cols)
@@ -1276,84 +1263,97 @@ def same_padding_deconvolution(input, weight, strides, dilations):
 
 class Conv1d_transpose(object):
 
-    def __init__(
-        self, stride, padding, data_format='NWC', dilations=None, out_channel=None, k_size=None, in_channels=None
-    ):
-        self.stride = stride
-        self.dilations = dilations
-        self.data_format, self.padding = preprocess_1d_format(data_format, padding)
+    # def __init__(
+    #     self, stride, padding, data_format='NWC', dilations=None, out_channel=None, k_size=None, in_channels=None
+    # ):
+    #     self.stride = stride
+    #     self.dilations = dilations
+    #     self.data_format, self.padding = preprocess_1d_format(data_format, padding)
 
     def __call__(self, input, filters):
-        if self.data_format == 'NLC':
-            input = nhwc_to_nchw(input)
-        if self.padding == 'same':
-            out = self.conv1d_transpose_same_padding(input, filters)
-        else:
-            out = F.conv_transpose1d(
-                input,
-                weight=filters,
-                padding=(0 if isinstance(self.padding, str) else self.padding),
-                stride=self.stride,
-                dilation=self.dilations
-            )
-        if self.data_format == 'NLC':
-            out = nchw_to_nhwc(out)
-        return out
+        raise NotImplementedError
+#         if self.data_format == 'NLC':
+#             input = nhwc_to_nchw(input)
+#         if self.padding == 'same':
+#             out = self.conv1d_transpose_same_padding(input, filters)
+#         else:
+#             out = F.conv_transpose1d(
+#                 input,
+#                 weight=filters,
+#                 padding=(0 if isinstance(self.padding, str) else self.padding),
+#                 stride=self.stride,
+#                 dilation=self.dilations
+#             )
+#         if self.data_format == 'NLC':
+#             out = nchw_to_nhwc(out)
+#         return out
 
-    def conv1d_transpose_same_padding(self, input, filters):
-        rows_odd, padding_rows = same_padding_deconvolution(input, filters, self.stride, 1)
-        if rows_odd:
-            input = F.pad(input, [0, int(rows_odd)])
-            out_padding = 0
-        else:
-            out_padding = 1
-        return F.conv_transpose1d(input, weight=filters, padding=(padding_rows // 2), stride=self.stride,
-                                  dilation=self.dilations, output_padding=out_padding)
+#     def conv1d_transpose_same_padding(self, input, filters):
+#         rows_odd, padding_rows = same_padding_deconvolution(input, filters, self.stride, 1)
+#         if rows_odd:
+#             input = F.pad(input, [0, int(rows_odd)])
+#             out_padding = 0
+#         else:
+#             out_padding = 1
+#         return F.conv_transpose1d(input, weight=filters, padding=(padding_rows // 2), stride=self.stride,
+#                                   dilation=self.dilations, output_padding=out_padding)
 
 
-def conv1d_transpose(
-    input, filters, output_shape, strides, padding='SAME', data_format='NWC', dilations=None, name=None
-):
-    """
-    The transpose of conv1d.
 
-    Parameters
-    ----------
-    input : tensor
-        A 3-D Tensor of type float and shape [batch, in_width, in_channels]
-        for NWC data format or [batch, in_channels, in_width] for NCW data format.
-    filters : tensor
-        A 3-D Tensor with the same type as value and shape [filter_width, output_channels, in_channels].
-        filter's in_channels dimension must match that of value.
-    output_shape : tensor
-        A 1-D Tensor, containing three elements, representing the output shape of the deconvolution op.
-    strides : list
-        An int or list of ints that has length 1 or 3. The number of entries by which the filter is moved right at each step.
-    padding : string
-        'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
-    data_format : string
-        'NWC' and 'NCW' are supported.
-    dilations : list
-         An int or list of ints that has length 1 or 3 which defaults to 1.
-         The dilation factor for each dimension of input. If set to k > 1,
-         there will be k-1 skipped cells between each filter element on that dimension.
-         Dilations in the batch and depth dimensions must be 1.
-    name : string
-        Optional name for the returned tensor.
+# def conv1d_transpose(
+#     input, filters, output_shape, strides, padding='SAME', data_format='NWC', dilations=None, name=None
+# ):
+#     """
+#     The transpose of conv1d.
 
-    Returns
-    -------
-        A Tensor with the same type as value.
-    """
+#     Parameters
+#     ----------
+#     input : tensor
+#         A 3-D Tensor of type float and shape [batch, in_width, in_channels]
+#         for NWC data format or [batch, in_channels, in_width] for NCW data format.
+#     filters : tensor
+#         A 3-D Tensor with the same type as value and shape [filter_width, output_channels, in_channels].
+#         filter's in_channels dimension must match that of value.
+#     output_shape : tensor
+#         A 1-D Tensor, containing three elements, representing the output shape of the deconvolution op.
+#     strides : list
+#         An int or list of ints that has length 1 or 3. The number of entries by which the filter is moved right at each step.
+#     padding : string
+#         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
+#     data_format : string
+#         'NWC' and 'NCW' are supported.
+#     dilations : list
+#          An int or list of ints that has length 1 or 3 which defaults to 1.
+#          The dilation factor for each dimension of input. If set to k > 1,
+#          there will be k-1 skipped cells between each filter element on that dimension.
+#          Dilations in the batch and depth dimensions must be 1.
+#     name : string
+#         Optional name for the returned tensor.
 
-    conv1d_transpose_obj = Conv1d_transpose(strides, padding, data_format, dilations)
-    return conv1d_transpose_obj(input, filters)
+#     Returns
+#     -------
+#         A Tensor with the same type as value.
+#     """
 
+#     conv1d_transpose_obj = Conv1d_transpose(strides, padding, data_format, dilations)
+#     return conv1d_transpose_obj(input, filters)
+
+def _ntuple(n, name="parse"):
+    def parse(x):
+        if isinstance(x, collections.abc.Iterable):
+            return tuple(x)
+        return tuple(repeat(x, n))
+
+    parse.__name__ = name
+    return parse
+
+
+_single = _ntuple(1, "_single")
 
 class Conv2d_transpose(object):
 
     def __init__(
-        self, strides, padding, data_format='NHWC', dilations=None, name=None, out_channel=None, k_size=None,
+        self, strides, padding, data_format='NHWC', dilations=None, name=None, out_channels=None, k_size=None,
         in_channels=None, groups = 1, output_padding = 0,
     ):
         self.strides = strides
@@ -1363,39 +1363,83 @@ class Conv2d_transpose(object):
         self.groups = groups
         self.output_padding = output_padding
 
+    def _output_padding(self, input, output_size,
+                        stride, padding, kernel_size,
+                        num_spatial_dims, dilation = None):
+        if output_size is None:
+            ret = _single(self.output_padding)  # converting to list if was not already
+        else:
+            has_batch_dim = input.dim() == num_spatial_dims + 2
+            num_non_spatial_dims = 2 if has_batch_dim else 1
+            if len(output_size) == num_non_spatial_dims + num_spatial_dims:
+                output_size = output_size[num_non_spatial_dims:]
+            if len(output_size) != num_spatial_dims:
+                raise ValueError(
+                    "ConvTranspose{}D: for {}D input, output_size must have {} or {} elements (got {})"
+                    .format(num_spatial_dims, input.dim(), num_spatial_dims,
+                            num_non_spatial_dims + num_spatial_dims, len(output_size)))
+
+            min_sizes = []
+            max_sizes = []
+            for d in range(num_spatial_dims):
+                dim_size = ((input.size(d + num_non_spatial_dims) - 1) * stride[d] -
+                            2 * padding[d] +
+                            (dilation[d] if dilation is not None else 1) * (kernel_size[d] - 1) + 1)
+                min_sizes.append(dim_size)
+                max_sizes.append(min_sizes[d] + stride[d] - 1)
+
+            for i in range(len(output_size)):
+                size = output_size[i]
+                min_size = min_sizes[i]
+                max_size = max_sizes[i]
+                if size < min_size or size > max_size:
+                    raise ValueError((
+                        "requested an output size of {}, but valid sizes range "
+                        "from {} to {} (for an input of {})").format(
+                            output_size, min_sizes, max_sizes, input.size()[2:]))
+
+            res = []
+            for d in range(num_spatial_dims):
+                res.append(output_size[d] - min_sizes[d])
+
+            ret = res
+        return ret
+
     def __call__(self, input, filters, output_size):
         if self.data_format == 'NHWC':
             input = nhwc_to_nchw(input)
         if self.padding == 'same':
             out = self.conv2d_transpore_same(input, filters)
         else:
-            out = F.conv_transpose2d(
+            out_padding = self._output_padding(input, output_size, self.strides, (0 if isinstance(self.padding, str) else self.padding),
+                                               filters.shape,
+                                               2, self.dilations)
+            out = nn.conv_transpose2d(
                 input,
                 weight=filters,
                 padding=(0 if isinstance(self.padding, str) else self.padding),
                 stride=self.strides,
-                dilation=self.dilations
+                dilation=self.dilations,
+                output_padding = out_padding,
+                groups = self.groups
             )
         if self.data_format == 'NHWC':
             out = nchw_to_nhwc(out)
         return out
 
-    def conv2d_transpore_same(self, input, filters):
-        rows_odd, cols_odd, padding_rows, padding_cols = same_padding_deconvolution(
-            input, filters, self.strides, (1, 1))
+    def conv2d_transpore_same(self,input, filters):
+        rows_odd, cols_odd, padding_rows, padding_cols = same_padding_deconvolution(input, filters, self.strides, (1, 1))
         if rows_odd or cols_odd:
-            input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd)])
+            input = nn.pad(input, [0, int(rows_odd), 0, int(cols_odd)])
             out_padding = 0
         else:
             out_padding = 1
-        out = F.conv_transpose2d(input, weight=filters, padding=(padding_rows // 2, padding_cols // 2), stride=self.strides,
-                                 dilation=self.dilations, output_padding=out_padding)
+        out = nn.conv_transpose2d(input, weight=filters, padding=(padding_rows // 2, padding_cols // 2), stride=self.strides,
+                                 dilation=self.dilations, output_padding=out_padding, groups=self.groups)
         return out
 
 
-def conv2d_transpose(
-    input, filters, output_shape, strides, padding='SAME', data_format='NHWC', dilations=None, name=None
-):
+def conv2d_transpose(x, weight, bias=None, stride=1, padding=0, output_padding=0, groups=1, dilation=1, data_format='NCHW', output_size=None):
     """
     The transpose of conv2d.
 
@@ -1427,9 +1471,71 @@ def conv2d_transpose(
     -------
         A Tensor with the same type as input.
     """
+    data_format, padding = preprocess_2d_format(data_format, padding)
+    if isinstance(padding, str):
+        raise ValueError("padding should be int or tuple of int.")
+    def _output_padding(input, output_size,
+                        stride, padding, kernel_size,
+                        num_spatial_dims, dilation = None):
+        if output_size is None:
+            ret = _single(output_padding)  # converting to list if was not already
+        else:
+            has_batch_dim = input.dim() == num_spatial_dims + 2
+            num_non_spatial_dims = 2 if has_batch_dim else 1
+            if len(output_size) == num_non_spatial_dims + num_spatial_dims:
+                output_size = output_size[num_non_spatial_dims:]
+            if len(output_size) != num_spatial_dims:
+                raise ValueError(
+                    "ConvTranspose{}D: for {}D input, output_size must have {} or {} elements (got {})"
+                    .format(num_spatial_dims, input.dim(), num_spatial_dims,
+                            num_non_spatial_dims + num_spatial_dims, len(output_size)))
 
-    raise NotImplementedError
+            min_sizes = []
+            max_sizes = []
+            for d in range(num_spatial_dims):
+                dim_size = ((input.size(d + num_non_spatial_dims) - 1) * stride[d] -
+                            2 * padding[d] +
+                            (dilation[d] if dilation is not None else 1) * (kernel_size[d] - 1) + 1)
+                min_sizes.append(dim_size)
+                max_sizes.append(min_sizes[d] + stride[d] - 1)
 
+            for i in range(len(output_size)):
+                size = output_size[i]
+                min_size = min_sizes[i]
+                max_size = max_sizes[i]
+                if size < min_size or size > max_size:
+                    raise ValueError((
+                        "requested an output size of {}, but valid sizes range "
+                        "from {} to {} (for an input of {})").format(
+                            output_size, min_sizes, max_sizes, input.size()[2:]))
+
+            res = []
+            for d in range(num_spatial_dims):
+                res.append(output_size[d] - min_sizes[d])
+
+            ret = res
+        return ret
+
+    if data_format == 'NHWC':
+        x = nhwc_to_nchw(x)
+
+    out_padding = _output_padding(x, output_size, stride,
+                                           padding,
+                                           weight.shape[2:],
+                                           2, dilation)
+    out = nn.conv_transpose2d(
+            x,
+            weight=weight,
+            bias = bias,
+            padding=padding,
+            stride=stride,
+            dilation=dilation,
+            output_padding=out_padding,
+            groups=groups
+        )
+    if data_format == 'NHWC':
+        out = nchw_to_nhwc(out)
+    return out
 
 class Conv3d_transpose(object):
 
@@ -1449,7 +1555,7 @@ class Conv3d_transpose(object):
         if self.padding == 'same':
             out = self.conv3d_transpore_same(input, filters)
         else:
-            out = F.conv_transpose3d(
+            out = nn.conv_transpose3d(
                 input,
                 weight=filters,
                 padding=(0 if isinstance(self.padding, str) else self.padding),
@@ -1460,7 +1566,7 @@ class Conv3d_transpose(object):
             out = nchw_to_nhwc(out)
         return out
 
-    def conv3d_transpore_same(self, input, filters):
+    def conv3d_transpore_same(self,input, filters):
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding_deconvolution(
             input, filters, self.strides, (1, 1, 1))
         if rows_odd or cols_odd or depth_odd:
@@ -1468,7 +1574,7 @@ class Conv3d_transpose(object):
             out_padding = 0
         else:
             out_padding = 1
-        out = F.conv_transpose3d(input, weight=filters, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2),
+        out = nn.conv_transpose3d(input, weight=filters, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2),
                                  stride=self.strides, dilation=self.dilations, output_padding=out_padding)
         return out
 
@@ -1524,7 +1630,7 @@ def _bias_add(x, b, data_format):
     """Alternative implementation of tf.nn.bias_add which is compatiable with tensorRT."""
     raise NotImplementedError
 
-
+# Batch norms exists for jittor but not added here
 def batch_normalization(x, mean, variance, offset, scale, variance_epsilon, data_format, name=None):
     """Data Format aware version of tf.nn.batch_normalization."""
     raise NotImplementedError
@@ -1590,7 +1696,7 @@ class BatchNorm(object):
         self, decay=0.9, epsilon=0.00001, beta=None, gamma=None, moving_mean=None, moving_var=None, num_features=None,
         data_format='channels_last', is_train=False
     ):
-        self.decay = 1 - decay
+        self.decay =  1-decay
         self.epsilon = epsilon
         self.data_format = data_format
         self.beta = beta
@@ -1604,25 +1710,17 @@ class BatchNorm(object):
         if self.decay < 0.0 or 1.0 < self.decay:
             raise ValueError("decay should be between 0 to 1")
 
-        self.bn = nn.BatchNorm2d(
-            num_features=self.num_features,
-            eps=self.epsilon,
-            momentum=self.decay,
-            affine=True,
-            track_running_stats=True,
-        )
-
     def __call__(self, inputs):
         if self.data_format == 'channels_last':
             inputs = nhwc_to_nchw(inputs)
 
-        out = _C.normalization(inputs,
-                               self.moving_mean,
-                               self.moving_var,
-                               self.gamma,
-                               self.beta,
-                               is_training=self.is_train,
-                               momentum=self.decay)
+        out = nn.batch_norm(inputs,
+                                             running_mean=self.moving_mean,
+                                             running_var=self.moving_var,
+                                             weight=self.gamma,
+                                             bias=self.beta,
+                                             training=self.is_train,
+                                             momentum=self.decay)
         if self.data_format == 'channels_last':
             out = nchw_to_nhwc(out)
         return out
@@ -1639,12 +1737,14 @@ class GroupConv2D(object):
         return self.conv2d(input, filters)
 
 
+
 class SeparableConv1D(object):
 
     def __init__(self, stride, padding, data_format, dilations, out_channel, k_size, in_channel, depth_multiplier):
         self.data_format, self.padding = preprocess_1d_format(data_format, padding)
         self.depthwise_conv = Conv1D(stride, self.padding, self.data_format, dilations, groups=in_channel)
         self.pointwise_conv = Conv1D(1, self.padding, self.data_format, 1)
+
 
     def __call__(self, inputs, depthwise_filters, pointwise_filters):
         depthwise_conv = self.depthwise_conv(inputs, depthwise_filters)
@@ -1659,6 +1759,7 @@ class SeparableConv2D(object):
         self.depthwise_conv = Conv2D(strides, self.padding, self.data_format, dilations, groups=in_channel)
         self.pointwise_conv = Conv2D((1, 1), self.padding, self.data_format, (1, 1))
 
+
     def __call__(self, input, filter, point_filter=None):
         depthwise_conv = self.depthwise_conv(input, filter)
         pointwise_conv = self.pointwise_conv(depthwise_conv, point_filter)
@@ -1667,75 +1768,81 @@ class SeparableConv2D(object):
 
 class AdaptiveMeanPool1D(object):
 
-    def __init__(self, output_size, data_format):
-        self.data_format, _ = preprocess_1d_format(data_format, None)
-        self.op = nn.AdaptiveAvgPool1d(output_size)
+    # def __init__(self, output_size, data_format):
+    #     self.data_format, _ = preprocess_1d_format(data_format, None)
+    #     self.op = nn.AdaptiveAvgPool1d(output_size=output_size)
 
-    def __call__(self, input):
-        if self.data_format == 'NLC':
-            input = nhwc_to_nchw(input)
-        output = self.op(input)
-        if self.data_format == 'NLC':
-            output = nchw_to_nhwc(output)
-        return output
+    def __call__():
+        raise NotImplementedError
+        # if self.data_format == 'NLC':
+        #     input = nhwc_to_nchw(input)
+        # output = self.op(input)
+        # if self.data_format == 'NLC':
+        #     output = nchw_to_nhwc(output)
+        # return output
 
 
 class AdaptiveMeanPool2D(object):
 
-    def __init__(self, output_size, data_format):
-        self.data_format, _ = preprocess_2d_format(data_format, None)
-        self.op = nn.AdaptiveAvgPool2d(output_size=output_size)
+    # def __init__(self, output_size, data_format):
+    #     self.data_format, _ = preprocess_2d_format(data_format, None)
+    #     self.op = nn.AdaptiveMeanPool2d(output_size=output_size)
 
-    def __call__(self, inputs):
-        if self.data_format == 'NHWC':
-            inputs = nhwc_to_nchw(inputs)
-        output = self.op(inputs)
-        if self.data_format == 'NHWC':
-            output = nchw_to_nhwc(output)
-        return output
+    def __call__():
+        raise NotImplementedError
+    #     if self.data_format == 'NHWC':
+    #         inputs = nhwc_to_nchw(inputs)
+    #     output = self.op(inputs)
+    #     if self.data_format == 'NHWC':
+    #         output = nchw_to_nhwc(output)
+    #     return output
 
 
 class AdaptiveMeanPool3D(object):
 
-    def __init__(self, output_size, data_format):
-        self.data_format, _ = preprocess_3d_format(data_format, None)
-        self.op = nn.AdaptiveAvgPool3d(output_size=output_size)
+    # def __init__(self, output_size, data_format):
+        # self.data_format, _ = preprocess_3d_format(data_format, None)
+        # self.op = torch.nn.AdaptiveAvgPool3d(output_size=output_size)
 
-    def __call__(self, inputs):
-        if self.data_format == 'NDHWC':
-            inputs = nhwc_to_nchw(inputs)
-        output = self.op(inputs)
-        if self.data_format == 'NDHWC':
-            output = nchw_to_nhwc(output)
-        return output
+    def __call__():
+        raise NotImplementedError
+        # if self.data_format == 'NDHWC':
+        #     inputs = nhwc_to_nchw(inputs)
+        # output = self.op(inputs)
+        # if self.data_format == 'NDHWC':
+        #     output = nchw_to_nhwc(output)
+        # return output
+
 
 def adaptive_avg_pool1d(input, output_size):
 
-    return F.adaptive_avg_pool1d(input, output_size)
+    raise NotImplementedError
 
 
 def adaptive_avg_pool2d(input, output_size):
 
-    return F.adaptive_avg_pool2d(input, output_size)
+    return nn.AdaptiveAvgPool2d(input, output_size)
 
 
 def adaptive_avg_pool3d(input, output_size):
 
-    return F.adaptive_avg_pool3d(input, output_size)
+    return nn.AdaptiveAvgPool3d(input, output_size)
+
 
 class AdaptiveMaxPool1D(object):
 
-    def __init__(self, output_size, data_format):
-        self.data_format, _ = preprocess_1d_format(data_format, None)
-        self.op = nn.AdaptiveMaxPool1d(output_size=output_size)
+    # def __init__(self, output_size, data_format):
+    #     self.data_format, _ = preprocess_1d_format(data_format, None)
+    #     self.op = torch.nn.AdaptiveMaxPool1d(output_size=output_size)
 
     def __call__(self, input):
-        if self.data_format == 'NLC':
-            input = nhwc_to_nchw(input)
-        output = self.op(input)
-        if self.data_format == 'NLC':
-            output = nchw_to_nhwc(output)
-        return output
+        raise NotImplementedError
+        # if self.data_format == 'NLC':
+        #     input = nhwc_to_nchw(input)
+        # output = self.op(input)
+        # if self.data_format == 'NLC':
+        #     output = nchw_to_nhwc(output)
+        # return output
 
 
 class AdaptiveMaxPool2D(object):
@@ -1758,7 +1865,6 @@ class AdaptiveMaxPool3D(object):
     def __init__(self, output_size, data_format):
         self.data_format, _ = preprocess_3d_format(data_format, None)
         self.op = nn.AdaptiveMaxPool3d(output_size=output_size)
-
     def __call__(self, inputs):
         if self.data_format == 'NDHWC':
             inputs = nhwc_to_nchw(inputs)
@@ -1768,16 +1874,16 @@ class AdaptiveMaxPool3D(object):
         return output
 
 def adaptive_max_pool1d(input, output_size, return_indices = False):
-
-    return F.adaptive_max_pool1d(input, output_size, return_indices)
-
+    raise NotImplementedError
+    
 def adaptive_max_pool2d(input, output_size, return_indices = False):
 
-    return F.adaptive_max_pool2d(input, output_size, return_indices)
+    return nn.AdaptiveMaxPool2d(input, output_size, return_indices)
 
 def adaptive_max_pool3d(input, output_size, return_indices=False):
 
-    return F.adaptive_max_pool3d(input, output_size, return_indices)
+    return nn.AdaptiveMaxPool3d(input, output_size, return_indices)
+
 
 class BinaryConv2D(object):
 
@@ -1820,53 +1926,44 @@ class DorefaConv2D(object):
 
 class rnncell(object):
 
-    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh, act):
-        self.weight_ih = weight_ih
-        self.weight_hh = weight_hh
-        self.bias_ih = bias_ih
-        self.bias_hh = bias_hh
-        self.act = act
+    def __init__(self,  input_size , hidden_size , bias = True, nonlinearity='tanh'):
+        self.input_size = input_size
+        self.hidden_size= hidden_size
+        self.bias = bias
+        self.act = nonlinearity
 
     def __call__(self, input, h):
         if self.act == 'tanh':
-            h = _C.rnn_tanh_cell(
+            h = nn.RNNCell(
                 input,
                 h,
-                self.weight_ih,
-                self.weight_hh,
-                self.bias_ih,
-                self.bias_hh,
+                bias=self.bias
+                nonlinearity='tanh'
             )
         else:
-            h = _C.rnn_relu_cell(
+            h = nn.RNNCell(
                 input,
                 h,
-                self.weight_ih,
-                self.weight_hh,
-                self.bias_ih,
-                self.bias_hh,
+                bias=self.bias
+                nonlinearity='relu'
             )
         return h, h
 
 
 class lstmcell(object):
 
-    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh, act=None):
-        self.weight_ih = weight_ih
-        self.weight_hh = weight_hh
-        self.bias_ih = bias_ih
-        self.bias_hh = bias_hh
+    def __init__(self,  input_size , hidden_size , bias = True, nonlinearity='tanh'):
+        self.input_size = input_size
+        self.hidden_size= hidden_size
+        self.bias = bias
 
     def __call__(self, input, h, c):
         h = (h, c)
-        h, c = _C.lstm_cell(
-            input,
-            h,
-            self.weight_ih,
-            self.weight_hh,
-            self.bias_ih,
-            self.bias_hh,
-        )
+        h, c = nn.LSTMCell(
+                input,
+                h,
+                bias=self.bias
+                )
         return h, h, c
 
 
@@ -1879,7 +1976,7 @@ class grucell(object):
         self.bias_hh = bias_hh
 
     def __call__(self, input, h):
-        h = _C.gru_cell(
+        h = _VF.gru_cell(
             input,
             h,
             self.weight_ih,
@@ -1929,15 +2026,17 @@ class rnnbase(Module):
         self.bidirectional = bidirectional
         self.num_directions = 2 if bidirectional else 1
         self.rnn_impls = {
-            'RNN_TANH': _C.rnn_tanh,
-            'RNN_RELU': _C.rnn_relu,
-            'GRU': _C.gru,
+            'RNN_TANH': _VF.rnn_tanh,
+            'RNN_RELU': _VF.rnn_relu,
+            'GRU': _VF.gru,
         }
         self.w_ih = w_ih
         self.w_hh = w_hh
         self.b_ih = b_ih
         self.b_hh = b_hh
 
+        # stdv = 1.0 / np.sqrt(self.hidden_size)
+        # _init = tf.random_uniform_initializer(minval=-stdv, maxval=stdv)
         self.proj_size = 0
         self.act_fn = None
         self._flat_weights_names = []
@@ -1966,19 +2065,34 @@ class rnnbase(Module):
         ]
         self.flatten_parameters()
 
-
     def flatten_parameters(self):
         if len(self._flat_weights) != len(self._flat_weights_names):
             return
 
         for w in self._flat_weights:
-            if not isinstance(w, flow.Tensor):
+            if not isinstance(w, torch.Tensor):
                 return
         first_fw = self._flat_weights[0]
         dtype = first_fw.dtype
         for fw in self._flat_weights:
-            if (not isinstance(fw.data, flow.Tensor) or not (fw.data.dtype == dtype) or not fw.data.is_cuda):
+            if (not isinstance(fw.data, torch.Tensor) or not (fw.data.dtype == dtype) or not fw.data.is_cuda or
+                    not torch.backends.cudnn.is_acceptable(fw.data)):
                 return
+        unique_data_ptrs = set(p.data_ptr() for p in self._flat_weights)
+        if len(unique_data_ptrs) != len(self._flat_weights):
+            return
+
+        with torch.cuda.device_of(first_fw):
+            import torch.backends.cudnn.rnn as rnn
+            with torch.no_grad():
+                if torch._use_cudnn_rnn_flatten_weight():
+                    num_weights = 4 if self.bias else 2
+                    if self.proj_size > 0:
+                        num_weights += 1
+                    torch._cudnn_rnn_flatten_weight(
+                        self._flat_weights, num_weights, self.input_size, rnn.get_cudnn_mode(self.mode),
+                        self.hidden_size, self.proj_size, self.num_layers, self.batch_first, bool(self.bidirectional)
+                    )
 
     def _apply(self, fn):
         ret = super(rnnbase, self)._apply(fn)
@@ -2009,11 +2123,11 @@ class rnnbase(Module):
         self.check_input(input_shape)
         if self.mode == 'LSTM':
             if states is None:
-                h = flow.zeros(
+                h = torch.zeros(
                     self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
                     device=input.device
                 )
-                c = flow.zeros(
+                c = torch.zeros(
                     self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
                     device=input.device
                 )
@@ -2022,14 +2136,14 @@ class rnnbase(Module):
                 h, c = states
                 self.check_hidden(h, batch_size)
                 self.check_hidden(c, batch_size)
-            result = _C.lstm(
+            result = _VF.lstm(
                 input, states, self._flat_weights, self.bias, self.num_layers, self.dropout, self.training,
                 self.bidirectional, self.batch_first
             )
             return result[0], result[1:]
         else:
             if states is None:
-                h = flow.zeros(
+                h = torch.zeros(
                     self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
                     device=input.device
                 )
@@ -2042,6 +2156,7 @@ class rnnbase(Module):
                 self.bidirectional, self.batch_first
             )
             return result[0], result[1]
+
 
 class layernorm(object):
 
@@ -2060,7 +2175,9 @@ class layernorm(object):
     def __call__(self, input):
         return F.layer_norm(input, self.normalized_shape, self.gamma, self.beta, self.eps)
 
+
 class multiheadattention(Module):
+
     def __init__(
         self,
         embed_dim,
@@ -2098,7 +2215,7 @@ class multiheadattention(Module):
         self.register_parameter('in_proj_weight', None)
 
         if q_bias is not None:
-            self.in_proj_bias = flow.cat((self.q_bias, self.k_bias, self.v_bias))
+            self.in_proj_bias = torch.cat((self.q_bias, self.k_bias, self.v_bias))
         else:
             self.register_parameter('in_proj_bias', None)
 
@@ -2121,6 +2238,7 @@ class multiheadattention(Module):
             return attn_output.transpose(1, 0), attn_output_weights
         else:
             return attn_output, attn_output_weights
+
 
 class BinaryDense(object):
 
@@ -2243,30 +2361,38 @@ class PReLU(object):
         self.data_format = data_format
 
     def __call__(self, input, weight):
-        # weight = weight.to(input.device)
-        return F.prelu(input, weight)
+        if self.data_format == 'channels_last' :
+            input = nhwc_to_nchw(input)
+        output = torch.prelu(input, weight)
+        if self.data_format == 'channels_last':
+            output = nchw_to_nhwc(output)
+        return output
 
 
 def prelu(input, weight, data_format):
-
-    return F.prelu(input, weight)
+    if data_format == 'channels_last':
+        input = nhwc_to_nchw(input)
+    output = torch.prelu(input, weight)
+    if data_format == 'channels_last':
+        output = nchw_to_nhwc(output)
+    return output
 
 def hardsigmoid(input):
 
-    return F.hardsigmoid(input)
+    return torch.nn.functional.hardsigmoid(input)
 
 def hardswish(input):
 
-    return F.hardswish(input)
+    return torch.nn.functional.hardswish(input)
 
 def swish(input):
 
-    return F.swish(input)
+    return torch.sigmoid(input) * input
 
 def linear(input, weight, bias = None):
 
-    return F.linear(input, weight, bias)
+    return torch.nn.functional.linear(input, weight, bias)
 
 def unfold(input, kernel_size, dilation = 1, padding = 0, stride = 1):
 
-    return F.unfold(input, kernel_size, stride=stride, padding=padding, dilation=dilation)
+
