@@ -9,6 +9,9 @@ import jittor as jt
 import jittor.nn as nn
 import collections
 from itertools import repeat
+from jittor import Module, init , flatten
+import math
+from abc import abstractmethod
 
 def padding_format(padding):
     """
@@ -629,7 +632,7 @@ class Conv2D(object):
     def conv2d_same_padding(self, input, weight, bias=None):
         rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, weight, self.strides, self.dilations)
         if rows_odd or cols_odd:
-            input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd)])
+            input = nn.pad(input, [0, int(cols_odd), 0, int(rows_odd)])
 
         return nn.conv2d(
             input, weight, bias, self.strides, padding=(padding_rows // 2, padding_cols // 2), dilation=self.dilations,
@@ -694,7 +697,7 @@ class Conv3D(object):
         if self.padding == 'same':
             out = self.conv3d_same_padding(input, weight=filters)
         else:
-            out = F.conv3d(input, weight=filters, stride=self._strides, padding=self.padding, dilation=self._dilations)
+            out = nn.conv3d(input, weight=filters, stride=self._strides, padding=self.padding, dilation=self._dilations)
 
         if self.data_format == 'NDHWC':
             out = nchw_to_nhwc(out)
@@ -705,7 +708,7 @@ class Conv3D(object):
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding(input, weight,
                                                                                                 self._strides, self._dilations)
         if rows_odd or cols_odd or depth_odd:
-            input = F.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)])
+            input = nn.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)])
 
         return nn.conv3d(
             input, weight, bias, self._strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth//2),
@@ -1570,7 +1573,7 @@ class Conv3d_transpose(object):
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding_deconvolution(
             input, filters, self.strides, (1, 1, 1))
         if rows_odd or cols_odd or depth_odd:
-            input = F.pad(input, [0, int(rows_odd), 0, int(cols_odd), 0, int(depth_odd)])
+            input = nn.pad(input, [0, int(rows_odd), 0, int(cols_odd), 0, int(depth_odd)])
             out_padding = 0
         else:
             out_padding = 1
@@ -1617,17 +1620,17 @@ def conv3d_transpose(
 
 
 def _to_channel_first_bias(b):
-    """Reshape [c] to [c, 1, 1]."""
+
     raise NotImplementedError
 
 
 def _bias_scale(x, b, data_format):
-    """The multiplication counter part of tf.nn.bias_add."""
+
     raise NotImplementedError
 
 
 def _bias_add(x, b, data_format):
-    """Alternative implementation of tf.nn.bias_add which is compatiable with tensorRT."""
+    
     raise NotImplementedError
 
 # Batch norms exists for jittor but not added here
@@ -1937,14 +1940,14 @@ class rnncell(object):
             h = nn.RNNCell(
                 input,
                 h,
-                bias=self.bias
+                bias=self.bias,
                 nonlinearity='tanh'
             )
         else:
             h = nn.RNNCell(
                 input,
                 h,
-                bias=self.bias
+                bias=self.bias,
                 nonlinearity='relu'
             )
         return h, h
@@ -1969,20 +1972,16 @@ class lstmcell(object):
 
 class grucell(object):
 
-    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh, act=None):
-        self.weight_ih = weight_ih
-        self.weight_hh = weight_hh
-        self.bias_ih = bias_ih
-        self.bias_hh = bias_hh
+    def __init__(self,  input_size , hidden_size , bias = True, nonlinearity='tanh'):
+        self.input_size = input_size
+        self.hidden_size= hidden_size
+        self.bias = bias
 
     def __call__(self, input, h):
-        h = _VF.gru_cell(
-            input,
-            h,
-            self.weight_ih,
-            self.weight_hh,
-            self.bias_ih,
-            self.bias_hh,
+        h = nn.GRUCell(
+                input,
+                h,
+                bias=self.bias
         )
         return h, h
 
@@ -1991,171 +1990,211 @@ class rnnbase(Module):
 
     def __init__(
         self,
-        mode,
-        input_size,
-        hidden_size,
-        num_layers,
-        bias,
-        batch_first,
-        dropout,
-        bidirectional,
-        is_train,
-        w_ih,
-        w_hh,
-        b_ih,
-        b_hh,
+            mode:str,  
+            input_size:int,
+            hidden_size:int,  
+            num_layers:int= 1,
+            bias:bool=True,
+            batch_first:bool=False ,  
+            dropout: float= 0,  
+            bidirectional:bool=False,  
+            proj_size : int = 0 ,  
+            nonlinearity: str = None
     ):
         super(rnnbase, self).__init__()
-        self.mode = mode
-        self.input_size = input_size
-        self.hidden_size = hidden_size
-        self.num_layers = num_layers
-        self.bias = bias
-        self.batch_first = batch_first
-        self.dropout = float(dropout)
-        self.train = is_train
-        if not 0 <= dropout < 1:
-            raise ValueError("dropout should be a number in range [0, 1).")
-        if dropout > 0 and num_layers == 1:
-            raise ValueError(
-                "dropout option adds dropout after all but last "
-                "recurrent layer, so non-zero dropout expects "
-                "num_layers greater than 1, but got dropout={} and "
-                "num_layers={}".format(dropout, num_layers)
-            )
-        self.bidirectional = bidirectional
-        self.num_directions = 2 if bidirectional else 1
-        self.rnn_impls = {
-            'RNN_TANH': _VF.rnn_tanh,
-            'RNN_RELU': _VF.rnn_relu,
-            'GRU': _VF.gru,
-        }
-        self.w_ih = w_ih
-        self.w_hh = w_hh
-        self.b_ih = b_ih
-        self.b_hh = b_hh
+        self.mode = mode 
+        self.input_size = input_size 
+        self.hidden_size = hidden_size 
+        self.num_layers = num_layers 
+        self.bias = bias 
+        self.batch_first = batch_first 
+        self.dropout = dropout 
+        self.bidirectional = bidirectional 
+        self.proj_size = proj_size 
+        self.nonlinearity = nonlinearity
 
-        # stdv = 1.0 / np.sqrt(self.hidden_size)
-        # _init = tf.random_uniform_initializer(minval=-stdv, maxval=stdv)
-        self.proj_size = 0
-        self.act_fn = None
-        self._flat_weights_names = []
-        self._all_weights = []
-        cur = 0
-        for layer in range(num_layers):
-            for direction in range(self.num_directions):
-                if bias:
-                    layer_params = (w_ih[cur], w_hh[cur], b_ih[cur], b_hh[cur])
-                else:
-                    layer_params = (w_ih[cur], w_hh[cur])
-
-                suffix = '_reverse' if direction == 1 else ''
-                param_names = ['weight_ih_l{}{}', 'weight_hh_l{}{}']
-                if bias:
-                    param_names += ['bias_ih_l{}{}', 'bias_hh_l{}{}']
-                param_names = [x.format(layer, suffix) for x in param_names]
-
-                for name, param in zip(param_names, layer_params):
-                    setattr(self, name, param)
-                self._flat_weights_names.extend(param_names)
-                self._all_weights.append(param_names)
-                cur += 1
-        self._flat_weights = [
-            (lambda wn: getattr(self, wn) if hasattr(self, wn) else None)(wn) for wn in self._flat_weights_names
-        ]
-        self.flatten_parameters()
-
-    def flatten_parameters(self):
-        if len(self._flat_weights) != len(self._flat_weights_names):
-            return
-
-        for w in self._flat_weights:
-            if not isinstance(w, torch.Tensor):
-                return
-        first_fw = self._flat_weights[0]
-        dtype = first_fw.dtype
-        for fw in self._flat_weights:
-            if (not isinstance(fw.data, torch.Tensor) or not (fw.data.dtype == dtype) or not fw.data.is_cuda or
-                    not torch.backends.cudnn.is_acceptable(fw.data)):
-                return
-        unique_data_ptrs = set(p.data_ptr() for p in self._flat_weights)
-        if len(unique_data_ptrs) != len(self._flat_weights):
-            return
-
-        with torch.cuda.device_of(first_fw):
-            import torch.backends.cudnn.rnn as rnn
-            with torch.no_grad():
-                if torch._use_cudnn_rnn_flatten_weight():
-                    num_weights = 4 if self.bias else 2
-                    if self.proj_size > 0:
-                        num_weights += 1
-                    torch._cudnn_rnn_flatten_weight(
-                        self._flat_weights, num_weights, self.input_size, rnn.get_cudnn_mode(self.mode),
-                        self.hidden_size, self.proj_size, self.num_layers, self.batch_first, bool(self.bidirectional)
-                    )
-
-    def _apply(self, fn):
-        ret = super(rnnbase, self)._apply(fn)
-        self._flat_weights = [
-            (lambda wn: getattr(self, wn) if hasattr(self, wn) else None)(wn) for wn in self._flat_weights_names
-        ]
-        self.flatten_parameters()
-        return ret
-
-    def check_input(self, input_shape):
-        if len(input_shape) != 3:
-            raise ValueError("input must have 3 dimensions. But got {}.".format(len(input_shape)))
-        if self.input_size != input_shape[-1]:
-            raise ValueError(
-                "The last dimension of input should be equal to input_size {}.But got {}".format(
-                    self.input_size, input_shape[-1]
-                )
-            )
-
-    def check_hidden(self, h, batch_size):
-        expected_hidden_size = (self.num_layers * self.num_directions, batch_size, self.hidden_size)
-        if h.shape != expected_hidden_size:
-            raise ValueError('Expected hidden size {}, got {}.'.format(expected_hidden_size, h.shape))
-
-    def forward(self, input, states):
-        batch_size = input.shape[0] if self.batch_first else input.shape[1]
-        input_shape = input.shape
-        self.check_input(input_shape)
-        if self.mode == 'LSTM':
-            if states is None:
-                h = torch.zeros(
-                    self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
-                    device=input.device
-                )
-                c = torch.zeros(
-                    self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
-                    device=input.device
-                )
-                states = (h, c)
-            else:
-                h, c = states
-                self.check_hidden(h, batch_size)
-                self.check_hidden(c, batch_size)
-            result = _VF.lstm(
-                input, states, self._flat_weights, self.bias, self.num_layers, self.dropout, self.training,
-                self.bidirectional, self.batch_first
-            )
-            return result[0], result[1:]
+        if mode == 'LSTM':
+            gate_size = 4 * hidden_size
+        elif mode == 'GRU':
+            gate_size = 3 * hidden_size
+        elif mode == 'RNN':
+            gate_size = hidden_size
         else:
-            if states is None:
-                h = torch.zeros(
-                    self.num_layers * self.num_directions, batch_size, self.hidden_size, dtype=input.dtype,
-                    device=input.device
-                )
-                states = h
+            raise ValueError("Unrecognized RNN mode: " + mode)
+
+        num_directions = 1 + bidirectional
+        k = math.sqrt(1 / hidden_size)
+
+        def build_unit(name, in_channels, out_channels=None):
+            if out_channels is not None:
+                shape = (in_channels, out_channels)
             else:
-                self.check_hidden(states, batch_size)
-            impl = self.rnn_impls[self.mode]
-            result = impl(
-                input, states, self._flat_weights, self.bias, self.num_layers, self.dropout, self.training,
-                self.bidirectional, self.batch_first
+                shape = (in_channels,)
+            setattr(self, name, init.uniform(shape, 'float32', -k, k))
+            if self.bidirectional:
+                setattr(self, name + '_reverse', init.uniform(shape, 'float32', -k, k))
+
+        for layer in range(num_layers):
+            if layer == 0:
+                build_unit(f'weight_ih_l{layer}', gate_size, input_size)
+            else:
+                if proj_size > 0:
+                    build_unit(f'weight_ih_l{layer}', gate_size, num_directions * proj_size)
+                else:
+                    build_unit(f'weight_ih_l{layer}', gate_size, num_directions * hidden_size)
+
+            if proj_size > 0:
+                build_unit(f'weight_hh_l{layer}', gate_size, proj_size)
+                build_unit(f'weight_hr_l{layer}', proj_size, hidden_size)
+            else:
+                build_unit(f'weight_hh_l{layer}', gate_size, hidden_size)
+
+            if bias:
+                build_unit(f'bias_ih_l{layer}', gate_size)
+                build_unit(f'bias_hh_l{layer}', gate_size)
+
+    def _cudnn_flatten_weights(self, cudnn_mode):
+        def copy_to_flatten_weight(param_name, offset_idx, num_gates):
+            def copy_to(param_name, offset_idx, idx):
+                cur_offset = self._cudnn_weight_offset[offset_idx]
+                param = getattr(self, param_name)
+                param = param[self.hidden_size * idx: self.hidden_size * (idx + 1)]
+                ft_weight[cur_offset:cur_offset + param.numel()] = param.flatten()
+                
+            if self.bias:
+                for idx in range(num_gates):
+                    copy_to('weight' + param_name, offset_idx + idx * 2, idx)
+                    copy_to('bias' + param_name, offset_idx + idx * 2 + 1, idx)
+                return num_gates * 2
+            else:
+                for idx in range(num_gates):
+                    copy_to('weight' + param_name, offset_idx + idx, idx)
+                return num_gates
+
+        if jt.flags.use_cuda and jt.cudnn and jt.compiler.is_cuda:
+            if getattr(self, '_cudnn_weight_size', None) is None:                
+                offset_array = jt.cudnn.cudnn_rnn_weight_offset(
+                    cudnn_mode,
+                    self.input_size,
+                    self.hidden_size, 
+                    self.num_layers,
+                    self.proj_size,
+                    self.bias,
+                    self.bidirectional
+                )
+                self._cudnn_weight_size = offset_array[0]
+                self._cudnn_weight_offset = offset_array[1:]
+            
+            num_gates = {
+                "RNN": 1, "LSTM": 4, "GRU": 3
+            }[self.mode]
+            ft_weight = jt.zeros(self._cudnn_weight_size, dtype=jt.float32)
+
+            cnt = 0
+            for layer in range(self.num_layers):
+                suffix = ''
+                cnt += copy_to_flatten_weight(f'_ih_l{layer}' + suffix, cnt, num_gates)
+                cnt += copy_to_flatten_weight(f'_hh_l{layer}' + suffix, cnt, num_gates)
+                if self.bidirectional:
+                    suffix = '_reverse'
+                    cnt += copy_to_flatten_weight(f'_ih_l{layer}' + suffix, cnt, num_gates)
+                    cnt += copy_to_flatten_weight(f'_hh_l{layer}' + suffix, cnt, num_gates)
+            return ft_weight
+        else:
+            raise RuntimeError("Not Cudnn found")
+
+    @abstractmethod
+    def call_rnn_cell(self, input, hidden, suffix):
+        pass
+
+    def call_rnn_sequence(self, input, hidden, suffix):
+        if 'reverse' in suffix:
+            input = input[::-1]
+
+        output = []
+        for s in range(input.shape[0]):
+            out, hidden = self.call_rnn_cell(input[s], hidden, suffix)
+            output.append(out)
+
+        if 'reverse' in suffix:
+            output = output[::-1]
+        output = jt.stack(output, dim=0)
+
+        return output, hidden
+
+    def _execute_cudnn_rnn(self, input, hx):
+        cudnn_mode = {
+            ('RNN', 'tanh'): 'tanh',
+            ('RNN', 'relu'): 'relu',
+            ('LSTM', None): 'lstm',
+            ('GRU', None): 'gru'
+        }[(self.mode, self.nonlinearity)]
+        ft_weight = self._cudnn_flatten_weights(cudnn_mode)
+
+        if self.mode == 'LSTM':
+            ret = jt.cudnn.ops.cudnn_rnn(input, hx[0], hx[1], ft_weight,
+                cudnn_mode, self.input_size, self.hidden_size, self.num_layers, 0,
+                self.dropout, self.bias, self.bidirectional, self.is_training()
             )
-            return result[0], result[1]
+            return ret[0], (ret[1], ret[2])
+        else:
+            ret = jt.cudnn.ops.cudnn_rnn(input, hx, ft_weight,
+                cudnn_mode, self.input_size, self.hidden_size, self.num_layers, 0,
+                self.dropout, self.bias, self.bidirectional, self.is_training()
+            )
+            return ret[0], ret[1]
+
+    def execute(self, input, hx=None):
+        if self.batch_first:
+            input = input.permute(1, 0, 2)
+
+        num_directions = 2 if self.bidirectional else 1
+
+        if hx is None:
+            if self.mode in ['RNN', 'GRU']:
+                hx = jt.zeros((num_directions * self.num_layers, input.shape[1], self.hidden_size), dtype=input.dtype)
+            elif self.mode == 'LSTM':
+                hx = (jt.zeros((num_directions * self.num_layers, input.shape[1], self.hidden_size), dtype=input.dtype),
+                      jt.zeros((num_directions * self.num_layers, input.shape[1], self.hidden_size), dtype=input.dtype))
+
+        if jt.flags.use_cuda and jt.cudnn and self.proj_size == 0 and jt.compiler.is_cuda:
+            return self._execute_cudnn_rnn(input, hx)
+        else:
+            hidden_n = []
+
+            for l in range(self.num_layers):
+                output = []
+
+                if isinstance(hx, tuple):
+                    hidden = [h[l * num_directions] for h in hx]
+                else:
+                    hidden = hx[l * num_directions]
+
+                output, _hidden = self.call_rnn_sequence(input, hidden, f'l{l}')
+                hidden_n.append(_hidden)
+
+                if self.bidirectional:
+                    if isinstance(hx, tuple):
+                        hidden = [h[l * num_directions + 1] for h in hx]
+                    else:
+                        hidden = hx[l * num_directions + 1]
+
+                    output_b, _hidden = self.call_rnn_sequence(input, hidden, f'l{l}_reverse')
+                    output = jt.concat([output, output_b], dim=-1)
+                    hidden_n.append(_hidden)
+
+                if self.dropout > 0:
+                    input = dropout(output, p=self.dropout)
+                else:
+                    input = output
+
+            if isinstance(hx, tuple):
+                hidden_n = tuple(jt.stack(hn, dim=0) for hn in zip(*hidden_n))
+            else:
+                hidden_n = jt.stack(hidden_n, dim=0)
+
+            return output, hidden_n
+
 
 
 class layernorm(object):
@@ -2173,72 +2212,180 @@ class layernorm(object):
             self.broadcast_shape[dim] = input_shape[dim]
 
     def __call__(self, input):
-        return F.layer_norm(input, self.normalized_shape, self.gamma, self.beta, self.eps)
+        return nn.layer_norm(input, self.normalized_shape, self.gamma, self.beta, self.eps)
 
 
 class multiheadattention(Module):
-
     def __init__(
         self,
         embed_dim,
         num_heads,
-        dropout,
-        batch_first,
-        need_weights,
-        q_weight,
-        k_weight,
-        v_weight,
-        out_weight,
-        q_bias,
-        k_bias,
-        v_bias,
-        out_bias,
-        train,
+        kdim=None,
+        vdim=None,
+        dropout=0.0,
+        bias=True,
+        add_bias_kv=False,
+        add_zero_attn=False,
+        self_attention=False,
+        encoder_decoder_attention=False,
+        q_noise=0.0,
+        qn_block_size=8,
     ):
-        super(multiheadattention, self).__init__()
-        self.embed_dim_check = embed_dim
+        super().__init__()
+        self.embed_dim = embed_dim
+        self.kdim = kdim if kdim is not None else embed_dim
+        self.vdim = vdim if vdim is not None else embed_dim
+        self.qkv_same_dim = self.kdim == embed_dim and self.vdim == embed_dim
+
         self.num_heads = num_heads
-        self.dropout = dropout
-        self.batch_first = batch_first
-        self.need_weights = need_weights
-        self.q_weight = q_weight
-        self.k_weight = k_weight
-        self.v_weight = v_weight
-        self.out_weight = out_weight
-        self.q_bias = q_bias
-        self.k_bias = k_bias
-        self.v_bias = v_bias
-        self.out_bias = out_bias
-        self.train = train
+        assert dropout==0, "TODO: dropout>0"
+
         self.head_dim = embed_dim // num_heads
-        assert self.head_dim * num_heads == self.embed_dim_check, 'embed_dim must be divisible by num_heads'
-        self.register_parameter('in_proj_weight', None)
+        assert (self.head_dim * num_heads == self.embed_dim), "embed_dim must be divisible by num_heads"
+        self.scaling = self.head_dim ** -0.5
 
-        if q_bias is not None:
-            self.in_proj_bias = torch.cat((self.q_bias, self.k_bias, self.v_bias))
-        else:
-            self.register_parameter('in_proj_bias', None)
+        self.self_attention = self_attention
+        self.encoder_decoder_attention = encoder_decoder_attention
 
+        assert not self.self_attention or self.qkv_same_dim, ("Self-attention requires query, key and " "value to be of the same size")
+
+        #TODO: quant_noise
+        self.k_proj = nn.Linear(self.kdim, embed_dim, bias=bias)
+        self.v_proj = nn.Linear(self.vdim, embed_dim, bias=bias)
+        self.q_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
+
+        self.out_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
+
+        assert not add_bias_kv, "TODO: add_bias_kv=True"
         self.bias_k = self.bias_v = None
-        self.add_zero_attn = False
 
-    def forward(self, q, k, v, attn_mask, key_padding_mask):
-        k = q if k is None else k
-        v = q if v is None else v
-        if self.batch_first:
-            q, k, v = [x.transpose(1, 0) for x in (q, k, v)]
-        attn_output, attn_output_weights = F.multi_head_attention_forward(
-            q, k, v, self.embed_dim_check, self.num_heads, self.in_proj_weight, self.in_proj_bias, self.bias_k,
-            self.bias_v, self.add_zero_attn, self.dropout, self.out_weight, self.out_bias, training=self.training,
-            key_padding_mask=key_padding_mask, need_weights=self.need_weights, attn_mask=attn_mask,
-            use_separate_proj_weight=True, q_proj_weight=self.q_weight, k_proj_weight=self.k_weight,
-            v_proj_weight=self.v_weight
-        )
-        if self.batch_first:
-            return attn_output.transpose(1, 0), attn_output_weights
+        self.add_zero_attn = add_zero_attn
+
+        self.reset_parameters()
+
+        self.onnx_trace = False
+        self.tpu = False
+
+    def reset_parameters(self):
+        '''
+        初始化参数
+
+            代码示例:
+                >>> multihead_attn = jt.attention.MultiheadAttention(embed_dim, num_heads)
+                >>> multihead_attn.reset_parameters()
+                
+        
+        '''
+        if self.qkv_same_dim:
+            # Empirically observed the convergence to be much better with
+            # the scaled initialization
+            init.xavier_uniform_(self.k_proj.weight, gain=1 / math.sqrt(2))
+            init.xavier_uniform_(self.v_proj.weight, gain=1 / math.sqrt(2))
+            init.xavier_uniform_(self.q_proj.weight, gain=1 / math.sqrt(2))
         else:
-            return attn_output, attn_output_weights
+            init.xavier_uniform_(self.k_proj.weight)
+            init.xavier_uniform_(self.v_proj.weight)
+            init.xavier_uniform_(self.q_proj.weight)
 
+        # init.xavier_uniform_(self.out_proj.weight)
+        if self.out_proj.bias is not None:
+            init.constant_(self.out_proj.bias, 0.)
+        if self.bias_k is not None:
+            init.xavier_normal_(self.bias_k)
+        if self.bias_v is not None:
+            init.xavier_normal_(self.bias_v)
+
+
+
+    def execute(
+        self,
+        query,
+        key = None,
+        value = None,
+        key_padding_mask = None,
+        incremental_state = None,
+        need_weights = True,
+        static_kv = False,
+        attn_mask = None,
+        before_softmax = False,
+        need_head_weights = False,
+    ):
+        if need_head_weights:
+            need_weights = True
+
+        tgt_len, bsz, embed_dim = query.shape
+        assert embed_dim == self.embed_dim
+        assert list(query.shape) == [tgt_len, bsz, embed_dim]
+
+        assert incremental_state is None, "TODO: incremental_state is not None"
+        saved_state = None
+
+        if self.self_attention:
+            q = self.q_proj(query)
+            k = self.k_proj(query)
+            v = self.v_proj(query)
+        elif self.encoder_decoder_attention:
+            # encoder-decoder attention
+            q = self.q_proj(query)
+            if key is None:
+                assert value is None
+                k = v = None
+            else:
+                k = self.k_proj(key)
+                v = self.v_proj(key)
+        else:
+            assert key is not None and value is not None
+            q = self.q_proj(query)
+            k = self.k_proj(key)
+            v = self.v_proj(value)
+        q = q*self.scaling
+
+        assert self.bias_k is None, "TODO: self.bias_k is not None:"
+
+        q = q.view(tgt_len, bsz * self.num_heads, self.head_dim).transpose(1, 0, 2)
+        if k is not None:
+            k = k.view(-1, bsz * self.num_heads, self.head_dim).transpose(1, 0, 2)
+        if v is not None:
+            v = v.view(-1, bsz * self.num_heads, self.head_dim).transpose(1, 0, 2)
+
+        assert saved_state is None, "TODO: saved_state is not None"
+        assert k is not None
+        src_len = k.shape[1]
+
+        assert key_padding_mask is None, "TODO: key_padding_mask is not None"
+        assert not self.add_zero_attn, "TODO: self.add_zero_attn=True"
+
+        attn_weights = nn.bmm(q, k.transpose(0, 2, 1))
+
+        assert list(attn_weights.shape) == [bsz * self.num_heads, tgt_len, src_len]
+
+        assert attn_mask is None, "TODO: attn_mask is not None"
+        assert key_padding_mask is None, "TODO: key_padding_mask is not None"
+        
+        if before_softmax:
+            return attn_weights, v
+        
+        attn_weights_float = nn.softmax(attn_weights, dim=-1)
+        attn_weights = attn_weights_float.type_as(attn_weights)
+
+        assert v is not None
+        attn = nn.bmm(attn_weights, v)
+        assert list(attn.shape) == [bsz * self.num_heads, tgt_len, self.head_dim]
+        if self.onnx_trace and attn.shape[1] == 1:
+            # when ONNX tracing a single decoder step (sequence length == 1)
+            # the transpose is a no-op copy before view, thus unnecessary
+            attn = attn.view(tgt_len, bsz, embed_dim)
+        else:
+            attn = attn.transpose(1, 0, 2).view(tgt_len, bsz, embed_dim)
+        attn = self.out_proj(attn)
+        attn_weights = None
+        if need_weights:
+            attn_weights = attn_weights_float.view(bsz, self.num_heads, tgt_len, src_len).transpose(1, 0, 2, 3)
+            if not need_head_weights:
+                # average attention weights over heads
+                attn_weights = attn_weights.mean(dims=[0])
+
+        return attn, attn_weights
 
 class BinaryDense(object):
 
@@ -2363,7 +2510,7 @@ class PReLU(object):
     def __call__(self, input, weight):
         if self.data_format == 'channels_last' :
             input = nhwc_to_nchw(input)
-        output = torch.prelu(input, weight)
+        output = nn.PReLU(input, weight)
         if self.data_format == 'channels_last':
             output = nchw_to_nhwc(output)
         return output
@@ -2372,27 +2519,28 @@ class PReLU(object):
 def prelu(input, weight, data_format):
     if data_format == 'channels_last':
         input = nhwc_to_nchw(input)
-    output = torch.prelu(input, weight)
+    output = nn.PReLU(input, weight)
     if data_format == 'channels_last':
         output = nchw_to_nhwc(output)
     return output
 
 def hardsigmoid(input):
 
-    return torch.nn.functional.hardsigmoid(input)
+    return NotImplementedError
 
 def hardswish(input):
 
-    return torch.nn.functional.hardswish(input)
+    return NotImplementedError
 
 def swish(input):
 
-    return torch.sigmoid(input) * input
+    return NotImplementedError
 
 def linear(input, weight, bias = None):
 
-    return torch.nn.functional.linear(input, weight, bias)
+    return nn.linear(input, weight, bias)
 
 def unfold(input, kernel_size, dilation = 1, padding = 0, stride = 1):
 
+    return nn.unfold(input, kernel_size, stride=stride, padding=padding, dilation=dilation)
 
