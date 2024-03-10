@@ -13,5 +13,8 @@ elif BACKEND == 'torch':
     from .torch_metric import *
 elif BACKEND == 'oneflow':
     from .oneflow_metric import *
+elif BACKEND == 'jittor':
+    from .jittor_metric import *
+
 else:
     raise NotImplementedError("This backend is not supported")

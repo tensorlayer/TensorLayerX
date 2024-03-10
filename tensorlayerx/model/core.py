@@ -23,7 +23,8 @@ if tlx.BACKEND == 'paddle':
     import paddle as pd
 if tlx.BACKEND == 'torch':
     import torch
-
+if tlx.BACKEND == 'jittor':
+    import torch
 __all__ = ['Model', 'WithLoss', 'WithGrad', 'TrainOneStep', 'TrainOneStepWithGradientClipping']
 
 

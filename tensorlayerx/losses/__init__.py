@@ -13,5 +13,7 @@ elif BACKEND == 'torch':
     from .torch_cost import *
 elif BACKEND == 'oneflow':
     from .oneflow_cost import *
+elif BACKEND == 'jittor':
+    from .jittor_cost import *
 else:
     raise NotImplementedError("This backend is not supported")

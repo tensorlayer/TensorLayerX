@@ -12,6 +12,8 @@ elif BACKEND == 'paddle':
 elif BACKEND == 'torch':
     from .torch_ops import *
 elif BACKEND == 'oneflow':
-    from .torch_ops import *#TODO 
+    from .torch_ops import *
+elif BACKEND == 'jittor':
+    from .jittor_ops import *#TODO 
 else:
     raise NotImplementedError("This backend is not supported")
