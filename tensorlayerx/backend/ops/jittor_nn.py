@@ -3,7 +3,7 @@
 
 
 # Unified nn API for TensorLayerX, using Jittor as backend.
-# Similar to file ./mindspore_nn.py and ./oneflow_nn.py
+# Similar to file ./torch_nn.py and ./oneflow_nn.py
 
 import jittor as jt
 import jittor.nn as nn
