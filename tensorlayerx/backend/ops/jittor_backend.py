@@ -23,6 +23,7 @@ _dtypeDict = {
     'uint32': None,
     'uint64': None,
     'bool': jt.bool,
+
 }
 
 DType = None
