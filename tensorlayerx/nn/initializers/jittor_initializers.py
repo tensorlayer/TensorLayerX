@@ -82,8 +82,8 @@ class Zeros(Initializer):
     """
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = jt.empty(size=shape, dtype=dtype)
-        return jt.zeros(_tensor)
+        _tensor = jt.empty(shape, dtype=dtype)
+        return jt.zeros_like(_tensor)
 
 
 class Ones(Initializer):
@@ -99,8 +99,7 @@ class Ones(Initializer):
     """
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = jt.empty(size=shape, dtype=dtype)
-        return jt.ones(_tensor)
+        return jt.ones(shape, dtype=dtype)
 
 
 class Constant(Initializer):
@@ -124,9 +123,9 @@ class Constant(Initializer):
         self.value = value
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = jt.empty(size=shape, dtype=dtype)
+        _tensor = jt.empty(shape, dtype=dtype)
         if isinstance(self.value, (int, float)):
-            return jt.init.constant_(_tensor, val=self.value)
+            return jt.init.constant_(_tensor, value=self.value)
         elif isinstance(self.value, (jt.array, list, np.ndarray)):
             _tensor.data = jittor.transform.ToTensor(self.value)
             return _tensor
@@ -162,7 +161,7 @@ class RandomUniform(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = jt.empty(size=shape, dtype=dtype)
+        _tensor = jt.empty(shape, dtype=dtype)
         return jt.nn.init.uniform_(_tensor, a=self.minval, b=self.maxval)
 
     def get_config(self):
@@ -198,8 +197,9 @@ class RandomNormal(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = jt.empty(size=shape)
-        return jt.normal(_tensor, mean=self.mean, std=self.stddev)
+        _tensor = jt.empty(shape)
+        return jt.init.gauss(_tensor.shape, _tensor.dtype, mean=self.mean, std=self.stddev)
+
 
     def get_config(self):
         return {"mean": self.mean, "stddev": self.stddev, "seed": self.seed}
@@ -238,18 +238,11 @@ class TruncatedNormal(Initializer):
         self.seed = seed
 
     def __call__(self, shape, dtype=tlx.float32):
-        _tensor = jt.empty(size=shape)
-        return self._truncated_normal(_tensor, self.mean, self.stddev)
-
-    def _truncated_normal(self, tensor, mean=0, std=0.09):
         with jt.no_grad():
-            size = tensor.shape
-            tmp = tensor.new_empty(size + (4, )).normal_()
-            valid = (tmp < 2) & (tmp > -2)
-            ind = valid.max(-1, keepdim=True)[1]
-            tensor.data.copy_(tmp.gather(-1, ind).squeeze(-1))
-            tensor.data.mul_(std).add_(mean)
-            return tensor
+            tensor = jt.randn(shape, dtype=dtype)
+            tensor *= self.stddev
+            tensor += self.mean
+        return tensor
 
     def get_config(self):
         return {"mean": self.mean, "stddev": self.stddev, "seed": self.seed}

@@ -120,7 +120,7 @@ class Module(T_Module):
                                     "Please check the layers name".format(name))
             self._check = True
 
-        result = self._call_impl(*input, **kwargs)
+        result = super().__call__(*input, **kwargs)
         return result
     # TODO RNN enabled after repair
     __call__: Callable[..., Any] = _call_impl_tlx

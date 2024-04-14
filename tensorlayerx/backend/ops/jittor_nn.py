@@ -320,7 +320,7 @@ class Tanh(object):
 # jittor.nn.hardtanh(x, min_val=-1, max_val=1)
     def __init__(self):
         super(Tanh, self).__init__()
-        self.tanh = nn.Sigmoid()
+        self.tanh = nn.Tanh()
 
     def __call__(self, x):
         return self.tanh(x)

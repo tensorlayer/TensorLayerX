@@ -128,6 +128,14 @@ class Model:
                 print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset,
             )
 
+        elif tlx.BACKEND == "jittor":
+            self.of_train(
+                n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
+                train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
+                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset,
+            )
+
+
     def eval(self, test_dataset):
         self.network.set_eval()
         test_loss, test_acc, n_iter = 0, 0, 0
@@ -660,6 +668,8 @@ class WithGrad(object):
             self.net_with_grad = WithGradMS(network, loss_fn, optimizer)
         elif tlx.BACKEND == 'paddle':
             self.net_with_grad = WithGradPD(network, loss_fn, optimizer)
+        elif tlx.BACKEND == 'jittor':
+            self.net_with_grad = WithGradPD(network, loss_fn, optimizer)            
         else:
             raise NotImplementedError("This backend is not supported")
 
@@ -705,6 +715,8 @@ class TrainOneStep(object):
         elif tlx.BACKEND == 'paddle':
             self.net_with_train = TrainOneStepWithPD(net_with_loss, optimizer, train_weights)
         elif tlx.BACKEND == 'torch':
+            self.net_with_train = TrainOneStepWithTH(net_with_loss, optimizer, train_weights)
+        elif tlx.BACKEND == 'jittor':
             self.net_with_train = TrainOneStepWithTH(net_with_loss, optimizer, train_weights)
         else:
             raise NotImplementedError("This backend is not supported")
@@ -757,6 +769,9 @@ class TrainOneStepWithGradientClipping(object):
             self.net_weith_train = TrainOneStepWithGradientClippingPD(
                 net_with_loss, optimizer, train_weights, gradient_clipping)
         elif tlx.BACKEND == 'torch':
+            self.net_weith_train = TrainOneStepWithGradientClippingTH(
+                net_with_loss, optimizer, train_weights, gradient_clipping)
+        elif tlx.BACKEND == 'jittor':
             self.net_weith_train = TrainOneStepWithGradientClippingTH(
                 net_with_loss, optimizer, train_weights, gradient_clipping)
         else:
