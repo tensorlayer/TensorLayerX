@@ -27,6 +27,7 @@ __all__ = [
 ]
 
 
+
 def softmax_cross_entropy_with_logits(output, target, reduction='mean'):
     """Softmax cross-entropy operation, returns the TensorFlow expression of cross-entropy for two distributions,
     it implements softmax internally. See ``tf.ops.sparse_softmax_cross_entropy_with_logits``.
@@ -49,8 +50,14 @@ def softmax_cross_entropy_with_logits(output, target, reduction='mean'):
     - The code is borrowed from: `<https://en.wikipedia.org/wiki/Cross_entropy>`__.
 
     """
+    loss = jt.nn.cross_entropy_loss(output, target)  # Use Jittor's cross-entropy loss function
 
-    return nn.CrossEntropyLoss(reduction=reduction)(output, target)
+    if reduction == 'mean':
+        return jt.mean(loss)
+    elif reduction == 'sum':
+        return jt.sum(loss)
+    else:
+        return loss
 
 
 def sigmoid_cross_entropy(output, target, reduction='mean'):
@@ -67,8 +74,13 @@ def sigmoid_cross_entropy(output, target, reduction='mean'):
 
     """
 
-    return nn.BCEWithLogitsLoss(reduction=reduction)(output, target)
-
+    loss = nn.BCEWithLogitsLoss()(output, target)
+    if reduction == 'mean':
+        return jt.mean(loss)
+    elif reduction == 'sum':
+        return jt.sum(loss)
+    else:
+        return loss
 
 def binary_cross_entropy(output, target, reduction='mean'):
     """Binary cross entropy operation.
@@ -86,8 +98,13 @@ def binary_cross_entropy(output, target, reduction='mean'):
 
     """
 
-    return nn.BCELoss(reduction=reduction)(output, target)
-
+    loss = nn.BCELoss()(output, target)
+    if reduction == 'mean':
+        return jt.mean(loss)
+    elif reduction == 'sum':
+        return jt.sum(loss)
+    else:
+        return loss
 
 def mean_squared_error(output, target, reduction='mean'):
     """Return the TensorFlow expression of mean-square-error (L2) of two batch of data.
@@ -104,8 +121,13 @@ def mean_squared_error(output, target, reduction='mean'):
     - `Wiki Mean Squared Error <https://en.wikipedia.org/wiki/Mean_squared_error>`__
 
     """
-
-    return nn.MSELoss(reduction=reduction)(output, target)
+    loss = nn.MSELoss()(output, target)
+    if reduction == 'mean':
+        return jt.mean(loss)
+    elif reduction == 'sum':
+        return jt.sum(loss)
+    else:
+        return loss
 
 
 def normalized_mean_square_error(output, target, reduction='mean'):

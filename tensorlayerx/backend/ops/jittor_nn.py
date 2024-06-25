@@ -535,7 +535,7 @@ def same_padding(input, weight, strides, dilations):
     #                     H(in) + 2* padding[0] - dilation[0] * (Ksize[0] - 1) - 1
     # H(out) = = floor( --------------------------------------------------------------   + 1 )
     #                                        stride[0]
-    if isinstance(weight, jt.array):
+    if isinstance(weight, jt.Var):
         if len(input.shape) == 3:
             filter_rows = weight.size(2)
         if len(input.shape) == 4:
@@ -1202,7 +1202,7 @@ def depthwise_conv2d(input, filter, strides, padding, data_format=None, dilation
 def same_padding_deconvolution(input, weight, strides, dilations):
     #H(out) = floor((H(in) - 1)*stride[0] - 2* padding[0] + dilation[0] * (ksize[0]-1) + 1)
 
-    if isinstance(weight, jt.array):
+    if isinstance(weight, jt.Var):
         if len(input.shape) == 3:
             filter_rows = weight.size(2)
         if len(input.shape) == 4:

@@ -159,13 +159,10 @@ def default_collate_torch(batch):
 
 def default_collate_jittor(batch):
     import jittor
-    import jittor.transform
     elem = batch[0]
     elem_type = type(elem)
     if isinstance(elem, jittor.Var):
-        out = None
-
-        return jittor.stack(batch, 0, out=out)
+        return jittor.stack(batch, 0)
     elif elem_type.__module__ == 'numpy' and elem_type.__name__ != 'str_' \
             and elem_type.__name__ != 'string_':
         if elem_type.__name__ == 'ndarray' or elem_type.__name__ == 'memmap':
@@ -173,13 +170,13 @@ def default_collate_jittor(batch):
             if np_str_obj_array_pattern.search(elem.dtype.str) is not None:
                 raise TypeError(default_collate_err_msg_format.format(elem.dtype))
 
-            return default_collate([jittor.transform.to_tensor(b) for b in batch])
+            return default_collate([jittor.array(b) for b in batch])
         elif elem.shape == ():  # scalars
-            return jittor.transform.to_tensor(batch)
+            return jittor.array(batch)
     elif isinstance(elem, float):
-        return jittor.transform.to_tensor(batch, dtype=jittor.float64)
+        return jittor.array(batch, dtype=jittor.float64)
     elif isinstance(elem, int):
-        return jittor.transform.to_tensor(batch)
+        return jittor.array(batch)
     elif isinstance(elem, string_classes):
         return batch
     elif isinstance(elem, collections.abc.Mapping):
