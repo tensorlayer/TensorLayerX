@@ -108,6 +108,15 @@ class Module(T_Module):
         self.var_name = var_name
         return param
 
+    def execute(self, *args, **kw):
+        ''' Executes the module computation. 
+        
+        Raises NotImplementedError if the subclass does not override the method.
+        '''
+        return self.forward(*args, **kw)
+        # raise NotImplementedError("Please implement 'execute' method of "+str(type(self)))
+    
+
     def _call_impl_tlx(self, *input, **kwargs):
         if self._check == False:
             _param_name = []
