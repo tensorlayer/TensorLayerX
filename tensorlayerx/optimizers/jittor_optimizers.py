@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, print_function
 import jittor.optim as optimizer
 import jittor as jt
+import jittor.nn as nn
 from tensorlayerx.optimizers.lr import LRScheduler
 
 __all__ = ['Adadelta', 'Adagrad', 'Adam', 'Adamax', 'Ftrl', 'Nadam', 'RMSprop', 'SGD', 'Momentum', 'Lamb', 'LARS']
@@ -26,107 +27,16 @@ class Adagrad(object):
     def app_gradients(self):
         raise Exception('Adagrad optimizer function not implemented')
 
+
 class Adam(object):
+    def __init__(self, params, lr=0.001, beta_1=0.9, beta_2=0.999, eps=1e-8, weight_decay=0.0):
+        self.optimizer = optimizer.Adam(params, lr=lr, eps=eps, betas=(beta_1, beta_2), weight_decay=weight_decay)
 
-    def __init__(
-        self,
-        lr=0.001,
-        beta_1=0.9,
-        beta_2=0.999,
-        eps=1e-8,
-        weight_decay=0.0,
-        grad_clip=None,
-    ):
-        self.lr = lr
-        self.beta_1 = beta_1
-        self.beta_2 = beta_2
-        self.eps = eps
-        self.init_optim = False
-        self.weight_decay = weight_decay
-        self.grad_clip = grad_clip
+    def step(self, loss=None):
+        self.optimizer.step(loss)
 
-    @jt.no_grad()
-    def apply_gradients(self, grads_and_vars=None, closure=None):
-        if not self.init_optim:
-            raise AttributeError("Can not apply gradients before zero_grad call.")
-        loss = None
-        if closure is not None:
-            with jt.enable_grad():
-                loss = closure()
-
-        for group in self.optimizer_adam.param_groups:
-            params_with_grad = []
-            grads = []
-            exp_avgs = []
-            exp_avg_sqs = []
-            max_exp_avg_sqs = []
-            state_steps = []
-            beta1, beta2 = group['betas']
-
-            for p in group['params']:
-                if p.grad is not None:
-                    params_with_grad.append(p)
-                    if p.grad.is_sparse:
-                        raise RuntimeError('Adam does not support sparse gradients, please consider SparseAdam instead')
-                    grads.append(p.grad)
-
-                    state = self.optimizer_adam.state[p]
-                    # Lazy state initialization
-                    if len(state) == 0:
-                        state['step'] = 0
-                        # Exponential moving average of gradient values
-                        state['exp_avg'] = jt.zeros_like(p)
-                        # Exponential moving average of squared gradient values
-                        state['exp_avg_sq'] = jt.zeros_like(p)
-                        if group['amsgrad']:
-                            # Maintains max of all exp. moving avg. of sq. grad. values
-                            state['max_exp_avg_sq'] = jt.zeros_like(p, memory_format=jt.preserve_format)
-
-                    exp_avgs.append(state['exp_avg'])
-                    exp_avg_sqs.append(state['exp_avg_sq'])
-
-                    if group['amsgrad']:
-                        max_exp_avg_sqs.append(state['max_exp_avg_sq'])
-
-                    # update the steps for each param group update
-                    state['step'] += 1
-                    # record the step after step update
-                    state_steps.append(state['step'])
-
-            optimizer.Adam(params_with_grad,
-                   grads,
-                   exp_avgs,
-                   exp_avg_sqs,
-                   max_exp_avg_sqs,
-                   state_steps,
-                   amsgrad=group['amsgrad'],
-                   beta1=beta1,
-                   beta2=beta2,
-                   lr=get_lr(self.lr),
-                   weight_decay=group['weight_decay'],
-                   eps=group['eps'])
-        return loss
-
-    def gradient(self, loss, weights=None, return_grad=True):
-        if weights is None:
-            raise AttributeError("Parameter train_weights must be entered.")
-        if not self.init_optim:
-            self.optimizer_adam = optimizer.Adam(
-                params=weights, lr=get_lr(self.lr), betas=(self.beta_1, self.beta_2), eps=self.eps,
-                weight_decay=self.weight_decay
-            )
-            self.init_optim = True
-        self.optimizer_adam.zero_grad()
-        loss.backward()
-
-        if self.grad_clip is not None:
-            self.grad_clip(weights)
-
-        if return_grad ==True:
-            return _grads(weights)
-        else:
-            return None
-
+    def zero_grad(self):
+        self.optimizer.zero_grad()
 
 class Adamax(object):
 
@@ -344,6 +254,7 @@ class SGD(object):
             return _grads(weights)
         else:
             return None
+
 
 
 class Momentum(object):
