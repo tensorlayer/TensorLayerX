@@ -5,9 +5,9 @@ from collections.abc import Iterable
 
 from tensorlayerx.nn.core.common import _save_weights, _load_weights, \
     _save_standard_weights_dict, _load_standard_weights_dict
-from .utils import WithLoss, WithGradPD, WithGradMS, WithGradTF, TrainOneStepWithPD, \
-    TrainOneStepWithMS, TrainOneStepWithTH, TrainOneStepWithTF, GradWrap, \
-    TrainOneStepWithGradientClippingTF, TrainOneStepWithGradientClippingPD, TrainOneStepWithGradientClippingTH
+from .utils import WithLoss, WithGradPD, WithGradMS, WithGradTF,WithGradJT, TrainOneStepWithPD, \
+    TrainOneStepWithMS, TrainOneStepWithTH,TrainOneStepWithJT, TrainOneStepWithTF, GradWrap, \
+    TrainOneStepWithGradientClippingTF,TrainOneStepWithGradientClippingJT, TrainOneStepWithGradientClippingPD, TrainOneStepWithGradientClippingTH
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 import numpy as np
@@ -669,7 +669,7 @@ class WithGrad(object):
         elif tlx.BACKEND == 'paddle':
             self.net_with_grad = WithGradPD(network, loss_fn, optimizer)
         elif tlx.BACKEND == 'jittor':
-            self.net_with_grad = WithGradPD(network, loss_fn, optimizer)            
+            self.net_with_grad = WithGradJT(network, loss_fn, optimizer)            
         else:
             raise NotImplementedError("This backend is not supported")
 
@@ -717,7 +717,7 @@ class TrainOneStep(object):
         elif tlx.BACKEND == 'torch':
             self.net_with_train = TrainOneStepWithTH(net_with_loss, optimizer, train_weights)
         elif tlx.BACKEND == 'jittor':
-            self.net_with_train = TrainOneStepWithTH(net_with_loss, optimizer, train_weights)
+            self.net_with_train = TrainOneStepWithJT(net_with_loss, optimizer, train_weights)
         else:
             raise NotImplementedError("This backend is not supported")
 
@@ -772,7 +772,7 @@ class TrainOneStepWithGradientClipping(object):
             self.net_weith_train = TrainOneStepWithGradientClippingTH(
                 net_with_loss, optimizer, train_weights, gradient_clipping)
         elif tlx.BACKEND == 'jittor':
-            self.net_weith_train = TrainOneStepWithGradientClippingTH(
+            self.net_weith_train = TrainOneStepWithGradientClippingJT(
                 net_with_loss, optimizer, train_weights, gradient_clipping)
         else:
             raise NotImplementedError("This backend is not supported")
