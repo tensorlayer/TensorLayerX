@@ -38,6 +38,28 @@ class Adam(object):
     def zero_grad(self):
         self.optimizer.zero_grad()
 
+class AdamW(object):
+    def __init__(self, params, lr=0.001, beta_1=0.9, beta_2=0.999, eps=1e-8, weight_decay=0.0):
+        self.optimizer = optimizer.AdamW(params, lr=lr, eps=eps, betas=(beta_1, beta_2), weight_decay=weight_decay)
+
+    def step(self, loss=None):
+        self.optimizer.step(loss)
+
+    def zero_grad(self):
+        self.optimizer.zero_grad()
+
+
+class Adan(object):
+    def __init__(self, params, lr=0.001, beta_1=0.9, beta_2=0.999, eps=1e-8, weight_decay=0.0):
+        self.optimizer = optimizer.Adan(params, lr=lr, eps=eps, betas=(beta_1, beta_2), weight_decay=weight_decay)
+
+    def step(self, loss=None):
+        self.optimizer.step(loss)
+
+    def zero_grad(self):
+        self.optimizer.zero_grad()
+
+
 class Adamax(object):
 
     def __init__(self):

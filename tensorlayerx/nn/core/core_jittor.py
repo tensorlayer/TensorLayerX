@@ -108,12 +108,12 @@ class Module(T_Module):
         self.var_name = var_name
         return param
 
-    def execute(self, *args, **kw):
+    def execute(self, *inputs, **kwargs):
         ''' Executes the module computation. 
         
         Raises NotImplementedError if the subclass does not override the method.
         '''
-        return self.forward(*args, **kw)
+        return self.forward(*inputs, **kwargs)
         # raise NotImplementedError("Please implement 'execute' method of "+str(type(self)))
     
 

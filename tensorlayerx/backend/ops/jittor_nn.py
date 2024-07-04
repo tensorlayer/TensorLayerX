@@ -1695,11 +1695,16 @@ class BatchNorm(object):
 
     """
 
+class BatchNorm:
+    """
+    The BatchNorm class for Jittor, supporting both training and inference modes.
+    """
+
     def __init__(
         self, decay=0.9, epsilon=0.00001, beta=None, gamma=None, moving_mean=None, moving_var=None, num_features=None,
         data_format='channels_last', is_train=False
     ):
-        self.decay =  1-decay
+        self.decay = 1 - decay
         self.epsilon = epsilon
         self.data_format = data_format
         self.beta = beta
@@ -1708,27 +1713,28 @@ class BatchNorm(object):
         self.moving_var = moving_var
         self.num_features = num_features
         self.is_train = is_train
-        self.axes = None
 
         if self.decay < 0.0 or 1.0 < self.decay:
             raise ValueError("decay should be between 0 to 1")
+
+    def set_train(self):
+        self.is_train = True
+
+    def set_eval(self):
+        self.is_train = False
 
     def __call__(self, inputs):
         if self.data_format == 'channels_last':
             inputs = nhwc_to_nchw(inputs)
 
-        out = nn.batch_norm(inputs,
-                                             running_mean=self.moving_mean,
-                                             running_var=self.moving_var,
-                                             weight=self.gamma,
-                                             bias=self.beta,
-                                             training=self.is_train,
-                                             momentum=self.decay)
+        if self.is_train:
+            out = nn.BatchNorm(self.num_features, eps=self.epsilon, momentum=self.decay, affine=True, is_train=True)(inputs)
+        else:
+            out = nn.BatchNorm(self.num_features, eps=self.epsilon, momentum=self.decay, affine=True, is_train=False)(inputs)
+        
         if self.data_format == 'channels_last':
             out = nchw_to_nhwc(out)
         return out
-
-
 class GroupConv2D(object):
 
     def __init__(self, strides, padding, data_format, dilations, out_channel, k_size, groups=1):

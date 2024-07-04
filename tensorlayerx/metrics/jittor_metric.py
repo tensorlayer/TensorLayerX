@@ -34,26 +34,28 @@ class Metric(object):
         raise NotImplementedError("function 'reset' not implemented in {}.".format(self.__class__.__name__))
 
 
-class Accuracy(Metric):
 
+
+
+class Accuracy(Metric):
     def __init__(self, topk=1):
         super(Accuracy, self).__init__()
-        self.topk = topk
+        self.topk = int(topk)  # Ensure topk is an integer
         self.reset()
 
     def update(self, y_pred, y_true):
+        y_pred = jt.argsort(y_pred, dim=-1, descending=True)[0]
 
-        y_pred = jt.argsort(y_pred, dim=-1, descending=True)
-        y_pred = y_pred[:, :self.topk]
         if (len(y_true.shape) == 1) or (len(y_true.shape) == 2 and y_true.shape[-1] == 1):
             y_true = jt.reshape(y_true, (-1, 1))
         elif y_true.shape[-1] != 1:
             y_true = jt.argmax(y_true, dim=-1, keepdim=True)
+
         correct = y_pred == y_true
         correct = correct.to(jt.float32)
-        correct = correct.cpu().numpy()
+        correct = correct.numpy()
         num_samples = np.prod(np.array(correct.shape[:-1]))
-        num_corrects = correct[..., :self.topk].sum()
+        num_corrects = correct.sum()
         self.total += num_corrects
         self.count += num_samples
 
@@ -63,7 +65,6 @@ class Accuracy(Metric):
     def reset(self):
         self.total = 0.0
         self.count = 0.0
-
 
 class Auc(object):
 
