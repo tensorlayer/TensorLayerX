@@ -405,6 +405,7 @@ class Dropout(object):
     def __call__(self, inputs):
         return nn.dropout(inputs, p=self.p, is_train=self.is_train)
 
+
 def dropout(x, p=0.5, is_train=False):
     return nn.dropout(x , p=p, is_train=is_train)
 
@@ -468,6 +469,7 @@ def bias_add(x, bias, data_format=None):
 
 
 
+
 class Conv1D(object):
 
     def __init__(self, stride, padding, data_format='NWC', dilations=None, out_channel=None, k_size=None, groups=1):
@@ -475,16 +477,24 @@ class Conv1D(object):
         self.dilations = dilations
         self.groups = groups
         self.data_format, self.padding = preprocess_1d_format(data_format, padding)
-        # self.conv1d = nn.Conv1d()
+        # Initialize Conv1d layer here
+        self.conv1d = nn.Conv1d
+
     def __call__(self, input, filters):
         if self.data_format == 'NLC':
             input = nhwc_to_nchw(input)
         if self.padding == 'same':
             out = self.conv1d_same_padding(input, filters)
         else:
-            
-            out = nn.Conv1d(input, filters, stride=self.stride, padding=self.padding,
-                           dilation=self.dilations, groups=self.groups)
+            out = self.conv1d(
+                in_channels=input.shape[1],
+                out_channels=filters.shape[0],
+                kernel_size=filters.shape[2],
+                stride=self.stride,
+                padding=self.padding,
+                dilation=self.dilations,
+                groups=self.groups
+            )(input)
         if self.data_format == 'NLC':
             out = nchw_to_nhwc(out)
 
@@ -494,8 +504,14 @@ class Conv1D(object):
         rows_odd, padding_rows = same_padding(input, filters, self.stride, 1)
         if rows_odd:
             input = nn.pad(input, [0, int(rows_odd)], 'replicate')
-        
-        return nn.Conv1d(input, filters, stride=self.stride, padding=(padding_rows // 2), groups=self.groups)
+        return nn.Conv1d(
+            in_channels=input.shape[1],
+            out_channels=filters.shape[0],
+            kernel_size=filters.shape[2],
+            stride=self.stride,
+            padding=(padding_rows // 2),
+            groups=self.groups
+        )(input)
 
 
 
@@ -535,10 +551,12 @@ def same_padding(input, weight, strides, dilations):
     #                     H(in) + 2* padding[0] - dilation[0] * (Ksize[0] - 1) - 1
     # H(out) = = floor( --------------------------------------------------------------   + 1 )
     #                                        stride[0]
+
+    print(type(weight))
     if isinstance(weight, jt.Var):
         if len(input.shape) == 3:
             filter_rows = weight.size(2)
-        if len(input.shape) == 4:
+        elif len(input.shape) == 4:
             filter_rows = weight.size(2)
             filter_cols = weight.size(3)
         elif len(input.shape) == 5:
@@ -557,7 +575,7 @@ def same_padding(input, weight, strides, dilations):
             filter_depth = weight[2]
 
     if len(input.shape) == 3:
-        input_rows = input.size(2)
+        input_rows = input.size(1)
         out_rows = (input_rows + strides - 1) // strides
         padding_rows = max(0, (out_rows - 1) * strides + (filter_rows - 1) * dilations + 1 - input_rows)
         rows_odd = (padding_rows % 2 != 0)
@@ -566,18 +584,37 @@ def same_padding(input, weight, strides, dilations):
     if len(input.shape) == 4:
         input_rows = input.size(2)
         input_cols = input.size(3)
-
-        # filter_rows = weight.size(2)
-        # filter_cols = weight.size(3)
-
+        if isinstance(weight, jt.Var):
+            filter_rows = weight.shape[2]  # Changed from weight.size(2)
+            filter_cols = weight.shape[3]  # Changed from weight.size(3)
+        else:
+            filter_rows = weight[0]  # Changed from weight.size(2)
+            filter_cols = weight[1]  # Changed from weight.size(3)
         out_rows = (input_rows + strides[0] - 1) // strides[0]
         out_cols = (input_cols + strides[1] - 1) // strides[1]
+
+
+        # print(f"4D output rows: {out_rows}, output cols: {out_cols}")
+        # print(f"4D dilations: {dilations}")
+
 
         padding_rows = max(0, (out_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - input_rows)
         padding_cols = max(0, (out_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - input_cols)
 
         rows_odd = (padding_rows % 2 != 0)
         cols_odd = (padding_cols % 2 != 0)
+        # if rows_odd:
+        #     padding_rows += 1
+   
+        # if cols_odd:
+        #     padding_cols += 1
+        
+        # print(f"Filter Rows: {filter_rows}, Filter Cols: {filter_cols}")
+        # print(f"Input Rows: {input_rows}, Input Cols: {input_cols}")
+        # print(f"Output Rows: {out_rows}, Output Cols: {out_cols}")
+        # print(f"Padding Rows: {padding_rows}, Padding Cols: {padding_cols}")
+        # print(f"Rows Odd: {rows_odd}, Cols Odd: {cols_odd}")
+
         return rows_odd, cols_odd, padding_rows, padding_cols
 
     if len(input.shape) == 5:
@@ -593,6 +630,8 @@ def same_padding(input, weight, strides, dilations):
         out_cols = (input_cols + strides[1] - 1) // strides[1]
         out_depth = (input_depth + strides[2] - 1) // strides[2]
 
+
+
         padding_rows = max(0, (out_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - input_rows)
         padding_cols = max(0, (out_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - input_cols)
         padding_depth = max(0, (out_depth - 1) * strides[2] + (filter_depth - 1) * dilations[2] + 1 - input_depth)
@@ -607,22 +646,30 @@ class Conv2D(object):
 
     def __init__(self, strides, padding, data_format='NHWC', dilations=None, out_channel=None, k_size=None, groups=1):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        if self.data_format is 'NHWC':
+        if self.data_format == 'NHWC':
+            self.strides = (strides[1], strides[2])
+            self.dilations = (dilations[0], dilations[1])
+        elif self.data_format == 'NCHW':
             self.strides = (strides[1], strides[2])
             self.dilations = (dilations[1], dilations[2])
-        elif self.data_format is 'NCHW':
-            self.strides = (strides[2], strides[3])
-            self.dilations = (dilations[2], dilations[3])
         self.groups = groups
+        # print(f"strides =  {strides}")
 
     def __call__(self, input, filters):
+        # print(f"Conv2D_Input shape: {input.shape}")
+        # print(f"Conv2D_Filters shape: {filters.shape}")
+        # print(f"Conv2D_Strides: {self.strides}")
+        # print(f"Conv2D_Padding: {self.padding}")
+        # print(f"Conv2D_Dilations: {self.dilations}")
+        # print(f"Conv2D_Groups: {self.groups}")
+
         if self.data_format == 'NHWC':
             input = nhwc_to_nchw(input)
 
         if self.padding == 'same':
             output = self.conv2d_same_padding(input, filters)
         else:
-            output = nn.conv2d(input, filters, stride=self.strides, padding=self.padding,
+            output = nn.conv2d(input, filters, stride=self.strides, padding=(0 if isinstance(self.padding, str) else self.padding),
                               dilation=self.dilations, groups=self.groups)
 
         if self.data_format == 'NHWC':
@@ -631,6 +678,7 @@ class Conv2D(object):
 
     def conv2d_same_padding(self, input, weight, bias=None):
         rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, weight, self.strides, self.dilations)
+        # print(f"Padding rows: {padding_rows}, Padding cols: {padding_cols}")
         if rows_odd or cols_odd:
             input = nn.pad(input, [0, int(cols_odd), 0, int(rows_odd)])
 
@@ -682,10 +730,10 @@ class Conv3D(object):
 
     def __init__(self, strides, padding, data_format='NDHWC', dilations=None, out_channel=None, k_size=None):
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
-        if self.data_format is 'NDHWC':
+        if self.data_format == 'NDHWC':
             self._strides = (strides[1], strides[2], strides[3])
             self._dilations = (dilations[1], dilations[2], dilations[3])
-        elif self.data_format is 'NCDHW':
+        elif self.data_format == 'NCDHW':
             self._strides = (strides[2], strides[3], strides[4])
             self._dilations = (dilations[2], dilations[3], dilations[4])
 
@@ -804,8 +852,12 @@ def moments(x, axes, shift=None, keepdims=False):
 
 class MaxPool1d(object):
 
-    def __call__():
-        return NotImplementedError
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError("MaxPool1d is not implemented in Jittor backend")
 
 
 class MaxPool(object):
@@ -919,8 +971,13 @@ def max_pool3d(input, kernel_size, stride=None, padding=0, return_mask=False, da
 
 class AvgPool1d(object):
 
-    def __call__(inputs):
-        raise NotImplementedError
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError("AvgPool1d is not implemented in Jittor backend")
+    
 
 
 class AvgPool(object):
@@ -973,9 +1030,14 @@ class AvgPool(object):
         )
         if rows_odd or cols_odd or depth_odd:
             input = nn.pad(input, [0, int(cols_odd), 0, int(rows_odd), 0, int(depth_odd)], mode='replicate')
-        return nn.AvgPool3d(
-                input, self.ksize, self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2)
-        )
+        
+        out = nn.AvgPool3d(kernel_size=self.ksize, stride=self.strides, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2))(input)
+        return nchw_to_nhwc(out)
+
+        # return nn.AvgPool3d(
+        #     input, self.ksize, self.strides, (padding_rows // 2, padding_cols // 2, padding_depth // 2)
+        # )
+
 
 
 def avg_pool(input, ksize, strides, padding):
@@ -1030,37 +1092,37 @@ class MaxPool3d(object):
         return self.max_pool3d(inputs)
 
 
-# def max_pool3d(input, ksize, strides, padding, data_format=None):
-#     """
-#     Performs the max pooling on the input.
-#
-#     Parameters
-#     ----------
-#     input : tensor
-#          A 5-D Tensor of the format specified by data_format.
-#     ksize : int or list of ints
-#         An int or list of ints that has length 1, 3 or 5.
-#         The size of the window for each dimension of the input tensor.
-#     strides : int or list of ints
-#         An int or list of ints that has length 1, 3 or 5.
-#         The stride of the sliding window for each dimension of the input tensor.
-#     padding : string
-#         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
-#     data_format : string
-#          "NDHWC", "NCDHW". Defaults to "NDHWC". The data format of the input and output data.
-#          With the default format "NDHWC", the data is stored in the order of: [batch, in_depth, in_height, in_width, in_channels].
-#          Alternatively, the format could be "NCDHW", the data storage order is: [batch, in_channels, in_depth, in_height, in_width].
-#     name : string
-#          A name for the operation (optional).
-#
-#     Returns
-#     -------
-#         A Tensor of format specified by data_format. The max pooled output tensor.
-#     """
-#
-#     data_format, padding = preprocess_3d_format(data_format, padding)
-#     max_pool3d_obj = MaxPool(ksize, strides, padding, data_format)
-#     return max_pool3d_obj(input)
+    # def max_pool3d(input, ksize, strides, padding, data_format=None):
+    #     """
+    #     Performs the max pooling on the input.
+    #
+    #     Parameters
+    #     ----------
+    #     input : tensor
+    #          A 5-D Tensor of the format specified by data_format.
+    #     ksize : int or list of ints
+    #         An int or list of ints that has length 1, 3 or 5.
+    #         The size of the window for each dimension of the input tensor.
+    #     strides : int or list of ints
+    #         An int or list of ints that has length 1, 3 or 5.
+    #         The stride of the sliding window for each dimension of the input tensor.
+    #     padding : string
+    #         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
+    #     data_format : string
+    #          "NDHWC", "NCDHW". Defaults to "NDHWC". The data format of the input and output data.
+    #          With the default format "NDHWC", the data is stored in the order of: [batch, in_depth, in_height, in_width, in_channels].
+    #          Alternatively, the format could be "NCDHW", the data storage order is: [batch, in_channels, in_depth, in_height, in_width].
+    #     name : string
+    #          A name for the operation (optional).
+    #
+    #     Returns
+    #     -------
+    #         A Tensor of format specified by data_format. The max pooled output tensor.
+    #     """
+    #
+    #     data_format, padding = preprocess_3d_format(data_format, padding)
+    #     max_pool3d_obj = MaxPool(ksize, strides, padding, data_format)
+    #     return max_pool3d_obj(input)
 
 
 class AvgPool3d(object):
@@ -1073,33 +1135,33 @@ class AvgPool3d(object):
         return self.avg_pool3d_obj(inputs)
 
 
-# def avg_pool3d(input, ksize, strides, padding, data_format=None):
-#     """
-#     Performs the average pooling on the input.
-#
-#     Parameters
-#     ----------
-#     input : tensor
-#         A 5-D Tensor of shape [batch, height, width, channels] and type float32, float64, qint8, quint8, or qint32.
-#     ksize : int or list of ints
-#         An int or list of ints that has length 1, 3 or 5. The size of the window for each dimension of the input tensor.
-#     strides : int or list of ints
-#         An int or list of ints that has length 1, 3 or 5.
-#         The stride of the sliding window for each dimension of the input tensor.
-#     padding : string
-#         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
-#     data_format : string
-#         'NDHWC' and 'NCDHW' are supported.
-#     name : string
-#         Optional name for the operation.
-#
-#     Returns
-#     -------
-#         A Tensor with the same type as value. The average pooled output tensor.
-#     """
-#
-#     avg_pool_obj = AvgPool(ksize, strides, padding, data_format)
-#     return avg_pool_obj(input)
+    # def avg_pool3d(input, ksize, strides, padding, data_format=None):
+    #     """
+    #     Performs the average pooling on the input.
+    #
+    #     Parameters
+    #     ----------
+    #     input : tensor
+    #         A 5-D Tensor of shape [batch, height, width, channels] and type float32, float64, qint8, quint8, or qint32.
+    #     ksize : int or list of ints
+    #         An int or list of ints that has length 1, 3 or 5. The size of the window for each dimension of the input tensor.
+    #     strides : int or list of ints
+    #         An int or list of ints that has length 1, 3 or 5.
+    #         The stride of the sliding window for each dimension of the input tensor.
+    #     padding : string
+    #         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
+    #     data_format : string
+    #         'NDHWC' and 'NCDHW' are supported.
+    #     name : string
+    #         Optional name for the operation.
+    #
+    #     Returns
+    #     -------
+    #         A Tensor with the same type as value. The average pooled output tensor.
+    #     """
+    #
+    #     avg_pool_obj = AvgPool(ksize, strides, padding, data_format)
+    #     return avg_pool_obj(input)
 
 
 def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_format=None, dilations=None, name=None):
@@ -1150,10 +1212,10 @@ class DepthwiseConv2d(object):
 
     def __init__(self, strides, padding, data_format=None, dilations=None, ksize=None, channel_multiplier=1, in_channels=None):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        if self.data_format is 'NHWC':
+        if self.data_format == 'NHWC':
             self.strides = (1, strides[0], strides[1], 1)
             self.dilations = (1, dilations[0], dilations[1], 1)
-        elif self.data_format is 'NCHW':
+        elif self.data_format == 'NCHW':
             self.strides = (1, 1, strides[0], strides[1])
             self.dilations = (1, 1, dilations[0], dilations[1])
         self.depthwise = Conv2D(padding=self.padding, strides=self.strides, data_format=self.data_format,
@@ -1200,8 +1262,7 @@ def depthwise_conv2d(input, filter, strides, padding, data_format=None, dilation
 
 
 def same_padding_deconvolution(input, weight, strides, dilations):
-    #H(out) = floor((H(in) - 1)*stride[0] - 2* padding[0] + dilation[0] * (ksize[0]-1) + 1)
-
+    # Calculate the dimensions of the filter
     if isinstance(weight, jt.Var):
         if len(input.shape) == 3:
             filter_rows = weight.size(2)
@@ -1226,7 +1287,7 @@ def same_padding_deconvolution(input, weight, strides, dilations):
     if len(input.shape) == 3:
         input_rows = input.size(2)
         out_rows = input_rows * strides - strides + 1
-        padding_rows = max(0, (input_rows-1) * strides + (filter_rows - 1) * dilations + 1 - out_rows)
+        padding_rows = max(0, (input_rows - 1) * strides + (filter_rows - 1) * dilations + 1 - out_rows)
         rows_odd = (padding_rows % 2 != 0)
         return rows_odd, padding_rows
 
@@ -1237,12 +1298,12 @@ def same_padding_deconvolution(input, weight, strides, dilations):
         out_rows = input_rows * strides[0] - strides[0] + 1
         out_cols = input_cols * strides[1] - strides[1] + 1
 
-
         padding_rows = max(0, (input_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - out_rows)
         padding_cols = max(0, (input_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - out_cols)
 
         rows_odd = (padding_rows % 2 != 0)
         cols_odd = (padding_cols % 2 != 0)
+
         return rows_odd, cols_odd, padding_rows, padding_cols
 
     if len(input.shape) == 5:
@@ -1250,9 +1311,16 @@ def same_padding_deconvolution(input, weight, strides, dilations):
         input_cols = input.size(3)
         input_depth = input.size(4)
 
-        out_rows = input_rows * strides[0] - strides[0] + 1
-        out_cols = input_cols * strides[1] - strides[1] + 1
-        out_depth = input_depth * strides[2] - strides[2] + 1
+        
+        out_rows = (input_rows - 1) * strides[0] + filter_rows
+        out_cols = (input_cols - 1) * strides[1] + filter_cols
+        out_depth = (input_depth - 1) * strides[2] + filter_depth
+
+        # print(f"SAME_PADDING_Stride : {strides}")
+        # print(f"out_rows = {input_rows} * {strides[0]} - {strides[0]} + 1")
+        # print(f"out_cols = {input_cols} * {strides[1]} - {strides[1]} + 1")
+        # print(f"out_depth = {input_depth} * {strides[2]} - {strides[2]} + 1")
+
 
         padding_rows = max(0, (input_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - out_rows)
         padding_cols = max(0, (input_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - out_cols)
@@ -1261,7 +1329,16 @@ def same_padding_deconvolution(input, weight, strides, dilations):
         rows_odd = (padding_rows % 2 != 0)
         cols_odd = (padding_cols % 2 != 0)
         depth_odd = (padding_depth % 2 != 0)
+
+        # print(f"SAME_PADDING_Filter: {filter_rows}, {filter_cols}, {filter_depth if 'filter_depth' in locals() else 'N/A'}")
+        # print(f"SAME_PADDING_Input : {input_rows}, {input_cols}, {input_depth}")
+        # print(f"SAME_PADDING_Output : {out_rows}, {out_cols}, {out_depth}")
+
+        # print(f"SAME_PADDING_Padding: {padding_rows}, {padding_cols},  {padding_depth}")
+        # print(f"SAME_PADDING_Rows Odd: {rows_odd}, Cols Odd: {cols_odd}, Depth Odd: {depth_odd}")
+
         return rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth
+
 
 
 class Conv1d_transpose(object):
@@ -1273,73 +1350,77 @@ class Conv1d_transpose(object):
     #     self.dilations = dilations
     #     self.data_format, self.padding = preprocess_1d_format(data_format, padding)
 
-    def __call__(self, input, filters):
-        raise NotImplementedError
-#         if self.data_format == 'NLC':
-#             input = nhwc_to_nchw(input)
-#         if self.padding == 'same':
-#             out = self.conv1d_transpose_same_padding(input, filters)
-#         else:
-#             out = F.conv_transpose1d(
-#                 input,
-#                 weight=filters,
-#                 padding=(0 if isinstance(self.padding, str) else self.padding),
-#                 stride=self.stride,
-#                 dilation=self.dilations
-#             )
-#         if self.data_format == 'NLC':
-#             out = nchw_to_nhwc(out)
-#         return out
 
-#     def conv1d_transpose_same_padding(self, input, filters):
-#         rows_odd, padding_rows = same_padding_deconvolution(input, filters, self.stride, 1)
-#         if rows_odd:
-#             input = F.pad(input, [0, int(rows_odd)])
-#             out_padding = 0
-#         else:
-#             out_padding = 1
-#         return F.conv_transpose1d(input, weight=filters, padding=(padding_rows // 2), stride=self.stride,
-#                                   dilation=self.dilations, output_padding=out_padding)
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError(" Conv1d_transpose is not implemented in Jittor backend")
+    #         if self.data_format == 'NLC':
+    #             input = nhwc_to_nchw(input)
+    #         if self.padding == 'same':
+    #             out = self.conv1d_transpose_same_padding(input, filters)
+    #         else:
+    #             out = F.conv_transpose1d(
+    #                 input,
+    #                 weight=filters,
+    #                 padding=(0 if isinstance(self.padding, str) else self.padding),
+    #                 stride=self.stride,
+    #                 dilation=self.dilations
+    #             )
+    #         if self.data_format == 'NLC':
+    #             out = nchw_to_nhwc(out)
+    #         return out
+
+    #     def conv1d_transpose_same_padding(self, input, filters):
+    #         rows_odd, padding_rows = same_padding_deconvolution(input, filters, self.stride, 1)
+    #         if rows_odd:
+    #             input = F.pad(input, [0, int(rows_odd)])
+    #             out_padding = 0
+    #         else:
+    #             out_padding = 1
+    #         return F.conv_transpose1d(input, weight=filters, padding=(padding_rows // 2), stride=self.stride,
+    #                                   dilation=self.dilations, output_padding=out_padding)
 
 
 
-# def conv1d_transpose(
-#     input, filters, output_shape, strides, padding='SAME', data_format='NWC', dilations=None, name=None
-# ):
-#     """
-#     The transpose of conv1d.
+    # def conv1d_transpose(
+    #     input, filters, output_shape, strides, padding='SAME', data_format='NWC', dilations=None, name=None
+    # ):
+    #     """
+    #     The transpose of conv1d.
 
-#     Parameters
-#     ----------
-#     input : tensor
-#         A 3-D Tensor of type float and shape [batch, in_width, in_channels]
-#         for NWC data format or [batch, in_channels, in_width] for NCW data format.
-#     filters : tensor
-#         A 3-D Tensor with the same type as value and shape [filter_width, output_channels, in_channels].
-#         filter's in_channels dimension must match that of value.
-#     output_shape : tensor
-#         A 1-D Tensor, containing three elements, representing the output shape of the deconvolution op.
-#     strides : list
-#         An int or list of ints that has length 1 or 3. The number of entries by which the filter is moved right at each step.
-#     padding : string
-#         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
-#     data_format : string
-#         'NWC' and 'NCW' are supported.
-#     dilations : list
-#          An int or list of ints that has length 1 or 3 which defaults to 1.
-#          The dilation factor for each dimension of input. If set to k > 1,
-#          there will be k-1 skipped cells between each filter element on that dimension.
-#          Dilations in the batch and depth dimensions must be 1.
-#     name : string
-#         Optional name for the returned tensor.
+    #     Parameters
+    #     ----------
+    #     input : tensor
+    #         A 3-D Tensor of type float and shape [batch, in_width, in_channels]
+    #         for NWC data format or [batch, in_channels, in_width] for NCW data format.
+    #     filters : tensor
+    #         A 3-D Tensor with the same type as value and shape [filter_width, output_channels, in_channels].
+    #         filter's in_channels dimension must match that of value.
+    #     output_shape : tensor
+    #         A 1-D Tensor, containing three elements, representing the output shape of the deconvolution op.
+    #     strides : list
+    #         An int or list of ints that has length 1 or 3. The number of entries by which the filter is moved right at each step.
+    #     padding : string
+    #         'VALID' or 'SAME'. The padding algorithm. See the "returns" section of tf.ops.convolution for details.
+    #     data_format : string
+    #         'NWC' and 'NCW' are supported.
+    #     dilations : list
+    #          An int or list of ints that has length 1 or 3 which defaults to 1.
+    #          The dilation factor for each dimension of input. If set to k > 1,
+    #          there will be k-1 skipped cells between each filter element on that dimension.
+    #          Dilations in the batch and depth dimensions must be 1.
+    #     name : string
+    #         Optional name for the returned tensor.
 
-#     Returns
-#     -------
-#         A Tensor with the same type as value.
-#     """
+    #     Returns
+    #     -------
+    #         A Tensor with the same type as value.
+    #     """
 
-#     conv1d_transpose_obj = Conv1d_transpose(strides, padding, data_format, dilations)
-#     return conv1d_transpose_obj(input, filters)
+    #     conv1d_transpose_obj = Conv1d_transpose(strides, padding, data_format, dilations)
+    #     return conv1d_transpose_obj(input, filters)
 
 def _ntuple(n, name="parse"):
     def parse(x):
@@ -1551,10 +1632,15 @@ class Conv3d_transpose(object):
         self.name = name
         self.out_channel = out_channel
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
+        
+        # print(f'__init__Conv3D_TRANSPOSE_Stride = {self.strides}' )
+        # print(f'__init__SAME_PADDING_Dialation = {self.dilations}' )      
 
     def __call__(self, input, filters):
+        # print(f"conv3D_Transpose_Call: input shape={input.shape}, filters shape={filters.shape}")
         if self.data_format == 'NDHWC':
             input = nhwc_to_nchw(input)
+
         if self.padding == 'same':
             out = self.conv3d_transpore_same(input, filters)
         else:
@@ -1565,20 +1651,28 @@ class Conv3d_transpose(object):
                 stride=self.strides,
                 dilation=self.dilations
             )
+
         if self.data_format == 'NDHWC':
             out = nchw_to_nhwc(out)
         return out
 
-    def conv3d_transpore_same(self,input, filters):
+    def conv3d_transpore_same(self, input, filters):
+
+        # print(f'conv3d_transpore_same_Conv3D_TRANSPOSE_Stride = {self.strides}' )
+        # print(f'conv3d_transpore_same_SAME_PADDING_Dialation = {self.dilations}' )    
+        
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding_deconvolution(
             input, filters, self.strides, (1, 1, 1))
-        if rows_odd or cols_odd or depth_odd:
-            input = nn.pad(input, [0, int(rows_odd), 0, int(cols_odd), 0, int(depth_odd)])
-            out_padding = 0
-        else:
-            out_padding = 1
+        
+
+        # if rows_odd or cols_odd or depth_odd:
+        #     input = nn.pad(input, [0, int(rows_odd), 0, int(cols_odd), 0, int(depth_odd)])
+        #     out_padding = 0
+        # else:
+        #     out_padding = 1
+
         out = nn.conv_transpose3d(input, weight=filters, padding=(padding_rows // 2, padding_cols // 2, padding_depth // 2),
-                                 stride=self.strides, dilation=self.dilations, output_padding=out_padding)
+                                  stride=self.strides, dilation=self.dilations, output_padding=0)
         return out
 
 
@@ -1735,6 +1829,8 @@ class BatchNorm:
         if self.data_format == 'channels_last':
             out = nchw_to_nhwc(out)
         return out
+    
+
 class GroupConv2D(object):
 
     def __init__(self, strides, padding, data_format, dilations, out_channel, k_size, groups=1):
@@ -1765,13 +1861,21 @@ class SeparableConv2D(object):
 
     def __init__(self, strides, padding, data_format, dilations, out_channel, k_size, in_channel, depth_multiplier):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        # print(f"SeparableConv2D-_strides = {strides}")
+        dilations = dilations[1:] + [dilations[0]]
+
+        # print(f"SeparableConv2D-_dilations = {dilations}")
         self.depthwise_conv = Conv2D(strides, self.padding, self.data_format, dilations, groups=in_channel)
-        self.pointwise_conv = Conv2D((1, 1), self.padding, self.data_format, (1, 1))
+        self.strides = (0,1,1,0)
+        self.dialations = (1,1)
+        self.pointwise_conv = Conv2D(self.strides, self.padding, self.data_format, self.dialations)
 
 
     def __call__(self, input, filter, point_filter=None):
+
         depthwise_conv = self.depthwise_conv(input, filter)
         pointwise_conv = self.pointwise_conv(depthwise_conv, point_filter)
+        # print(f'pointwise_conv  = {pointwise_conv.shape}' )
         return pointwise_conv
 
 
@@ -1780,9 +1884,11 @@ class AdaptiveMeanPool1D(object):
     # def __init__(self, output_size, data_format):
     #     self.data_format, _ = preprocess_1d_format(data_format, None)
     #     self.op = nn.AdaptiveAvgPool1d(output_size=output_size)
+    def __init__(self, *args, **kwargs):
+        pass
 
-    def __call__():
-        raise NotImplementedError
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError(" AdaptiveMeanPool1D is not implemented in Jittor backend")
         # if self.data_format == 'NLC':
         #     input = nhwc_to_nchw(input)
         # output = self.op(input)
@@ -1797,8 +1903,11 @@ class AdaptiveMeanPool2D(object):
     #     self.data_format, _ = preprocess_2d_format(data_format, None)
     #     self.op = nn.AdaptiveMeanPool2d(output_size=output_size)
 
-    def __call__():
-        raise NotImplementedError
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError("AdaptiveMeanPool2D is not implemented in Jittor backend")
     #     if self.data_format == 'NHWC':
     #         inputs = nhwc_to_nchw(inputs)
     #     output = self.op(inputs)
@@ -1809,18 +1918,13 @@ class AdaptiveMeanPool2D(object):
 
 class AdaptiveMeanPool3D(object):
 
-    # def __init__(self, output_size, data_format):
-        # self.data_format, _ = preprocess_3d_format(data_format, None)
-        # self.op = torch.nn.AdaptiveAvgPool3d(output_size=output_size)
 
-    def __call__():
-        raise NotImplementedError
-        # if self.data_format == 'NDHWC':
-        #     inputs = nhwc_to_nchw(inputs)
-        # output = self.op(inputs)
-        # if self.data_format == 'NDHWC':
-        #     output = nchw_to_nhwc(output)
-        # return output
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError(" AdaptiveMeanPool3D is not implemented in Jittor backend")
 
 
 def adaptive_avg_pool1d(input, output_size):
@@ -1844,8 +1948,12 @@ class AdaptiveMaxPool1D(object):
     #     self.data_format, _ = preprocess_1d_format(data_format, None)
     #     self.op = torch.nn.AdaptiveMaxPool1d(output_size=output_size)
 
-    def __call__(self, input):
-        raise NotImplementedError
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError(" AdaptiveMaxPool1D is not implemented in Jittor backend")
         # if self.data_format == 'NLC':
         #     input = nhwc_to_nchw(input)
         # output = self.op(input)
@@ -1875,12 +1983,25 @@ class AdaptiveMaxPool3D(object):
         self.data_format, _ = preprocess_3d_format(data_format, None)
         self.op = nn.AdaptiveMaxPool3d(output_size=output_size)
     def __call__(self, inputs):
-        if self.data_format == 'NDHWC':
-            inputs = nhwc_to_nchw(inputs)
-        output = self.op(inputs)
-        if self.data_format == 'NDHWC':
-            output = nchw_to_nhwc(output)
-        return output
+
+        raise NotImplementedError
+    #     if self.data_format == 'NDHWC':
+    #         inputs = nhwc_to_nchw(inputs)
+        
+    #     # Debugging print statements
+    #     print(f"Input shape before pooling: {inputs.shape}")
+    #     print(f"Input type before pooling: {type(inputs)}")
+
+    #     output = self.op(inputs)
+
+    #     # Debugging print statements
+    #     print(f"Output shape after pooling: {output.shape}")
+    #     print(f"Output type after pooling: {type(output)}")
+        
+    #     if self.data_format == 'NDHWC':
+    #         output = nchw_to_nhwc(output)
+        # return output
+
 
 def adaptive_max_pool1d(input, output_size, return_indices = False):
     raise NotImplementedError
@@ -1896,118 +2017,138 @@ def adaptive_max_pool3d(input, output_size, return_indices=False):
 
 class BinaryConv2D(object):
 
-    def __init__(self, strides, padding, data_format, dilations, out_channel, k_size, in_channel):
-        self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        self.strides = strides
-        self.dilations = dilations
+    def __init__(self, *args, **kwargs):
+        pass
 
-    def quantize(self, x):
-        raise NotImplementedError
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError(" BinaryConv2D is not implemented in Jittor backend")
 
-    def __call__(self, inputs, filters):
-        raise NotImplementedError
 
 
 class DorefaConv2D(object):
 
-    def __init__(self, bitW, bitA, strides, padding, data_format, dilations, out_channel, k_size, in_channel):
-        self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        self.strides = strides
-        self.dilations = dilations
-        self.bitW = bitW
-        self.bitA = bitA
+    def __init__(self, *args, **kwargs):
+        pass
 
-    def _quantize_dorefa(self, x, k):
-        raise NotImplementedError
-
-    def cabs(self, x):
-        raise NotImplementedError
-
-    def quantize_active(self, x, bitA):
-        raise NotImplementedError
-
-    def quantize_weight(self, x, bitW, force_quantization=False):
-        raise NotImplementedError
-
-    def __call__(self, inputs, filters):
-        raise NotImplementedError
-
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError(" DorefaConv2D is not implemented in Jittor backend")
+    
 
 class rnncell(object):
+    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh, act):
+        self.weight_ih = weight_ih
+        self.weight_hh = weight_hh
+        self.bias_ih = bias_ih
+        self.bias_hh = bias_hh
+        self.act = act
 
-    def __init__(self,  input_size , hidden_size , bias = True, nonlinearity='tanh'):
-        self.input_size = input_size
-        self.hidden_size= hidden_size
-        self.bias = bias
-        self.act = nonlinearity
-
-    def __call__(self, input, h):
+    def execute(self, input, hx=None):
+        if hx is None:
+            hx = jt.zeros((input.shape[0], self.weight_hh.shape[0]), dtype=input.dtype)
+        
+        y = jt.matmul(input, self.weight_ih.transpose()) + jt.matmul(hx, self.weight_hh.transpose())
+        
+        if self.bias_ih is not None:
+            y += self.bias_ih + self.bias_hh
+        
         if self.act == 'tanh':
-            h = nn.RNNCell(
-                input,
-                h,
-                bias=self.bias,
-                nonlinearity='tanh'
-            )
+            y = jt.tanh(y)
+        elif self.act == 'relu':
+            y = jt.relu(y)
         else:
-            h = nn.RNNCell(
-                input,
-                h,
-                bias=self.bias,
-                nonlinearity='relu'
-            )
-        return h, h
+            raise RuntimeError("Unknown nonlinearity: {}".format(self.act))
+        
+        return y, y
+
+    def __call__(self, input, hx=None):
+        return self.execute(input, hx)
+    
 
 
 class lstmcell(object):
-
-    def __init__(self,  input_size , hidden_size , bias = True, nonlinearity='tanh'):
-        self.input_size = input_size
-        self.hidden_size= hidden_size
-        self.bias = bias
+    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh):
+        self.weight_ih = weight_ih
+        self.weight_hh = weight_hh
+        self.bias_ih = bias_ih
+        self.bias_hh = bias_hh
 
     def __call__(self, input, h, c):
-        h = (h, c)
-        h, c = nn.LSTMCell(
-                input,
-                h,
-                bias=self.bias
-                )
-        return h, h, c
+        gates = jt.matmul(input, jt.transpose(self.weight_ih)) + jt.matmul(h, jt.transpose(self.weight_hh))
+        if self.bias_ih is not None:
+            gates += self.bias_ih + self.bias_hh
+
+        i, f, g, o = jt.chunk(gates, 4, dim=1)
+        i = jt.sigmoid(i)
+        f = jt.sigmoid(f)
+        g = jt.tanh(g)
+        o = jt.sigmoid(o)
+
+        c_new = f * c + i * g
+        h_new = o * jt.tanh(c_new)
+        return h_new, h_new, c_new
 
 
-class grucell(object):
+class grucell(Module):
+    def __init__(self, weight_ih, weight_hh, bias_ih=None, bias_hh=None):
+        super(grucell, self).__init__()
+        self.weight_ih = weight_ih
+        self.weight_hh = weight_hh
+        self.bias_ih = bias_ih
+        self.bias_hh = bias_hh
+        self.hidden_size = weight_hh.shape[1]
 
-    def __init__(self,  input_size , hidden_size , bias = True, nonlinearity='tanh'):
-        self.input_size = input_size
-        self.hidden_size= hidden_size
-        self.bias = bias
+    def execute(self, inputs, states):
+        hx = states[0] if isinstance(states, (tuple, list)) else states
+        gates = jt.matmul(inputs, self.weight_ih.t()) + jt.matmul(hx, self.weight_hh.t())
+        if self.bias_ih is not None and self.bias_hh is not None:
+            gates += self.bias_ih + self.bias_hh
+        
+        # Separate the gates
+        r, z, n = jt.chunk(gates, 3, dim=1)
 
-    def __call__(self, input, h):
-        h = nn.GRUCell(
-                input,
-                h,
-                bias=self.bias
-        )
-        return h, h
+        r = jt.sigmoid(r)
+        z = jt.sigmoid(z)
+        n = jt.tanh(n + r * (jt.matmul(hx, self.weight_hh[2 * self.hidden_size:].t()) + (self.bias_hh[2 * self.hidden_size:] if self.bias_hh is not None else 0)))
+        hy = (1 - z) * n + z * hx
+        
+        return hy, hy
+
+
+
+
 
 
 class rnnbase(Module):
 
     def __init__(
         self,
-            mode:str,  
-            input_size:int,
-            hidden_size:int,  
-            num_layers:int= 1,
-            bias:bool=True,
-            batch_first:bool=False ,  
-            dropout: float= 0,  
-            bidirectional:bool=False,  
-            proj_size : int = 0 ,  
-            nonlinearity: str = None
+        mode: str,  
+        input_size: int,
+        hidden_size: int,  
+        num_layers: int = 1,
+        bias: bool = True,
+        batch_first: bool = False,  
+        dropout: float = 0,  
+        bidirectional: bool = False,  
+        proj_size: int = 0,  
+        nonlinearity: str = None,
+        is_train: bool = True,  # Additional parameter
+        w_ih=None,  # Additional parameter
+        w_hh=None,  # Additional parameter
+        b_ih=None,  # Additional parameter
+        b_hh=None   # Additional parameter
     ):
         super(rnnbase, self).__init__()
+
+        if mode == 'RNN_TANH':
+            mode = 'RNN'
+            self.nonlinearity = 'tanh'
+        elif mode == 'RNN_RELU':
+            mode = 'RNN'
+            self.nonlinearity = 'relu'
+        else:
+            self.nonlinearity = nonlinearity
+        
         self.mode = mode 
         self.input_size = input_size 
         self.hidden_size = hidden_size 
@@ -2016,8 +2157,13 @@ class rnnbase(Module):
         self.batch_first = batch_first 
         self.dropout = dropout 
         self.bidirectional = bidirectional 
-        self.proj_size = proj_size 
-        self.nonlinearity = nonlinearity
+        self.proj_size = proj_size
+
+        self.is_train = is_train
+        self.w_ih = w_ih
+        self.w_hh = w_hh
+        self.b_ih = b_ih
+        self.b_hh = b_hh
 
         if mode == 'LSTM':
             gate_size = 4 * hidden_size
@@ -2042,18 +2188,18 @@ class rnnbase(Module):
 
         for layer in range(num_layers):
             if layer == 0:
-                build_unit(f'weight_ih_l{layer}', gate_size, input_size)
+                build_unit(f'weight_ih_l{layer}', input_size, gate_size)
             else:
                 if proj_size > 0:
-                    build_unit(f'weight_ih_l{layer}', gate_size, num_directions * proj_size)
+                    build_unit(f'weight_ih_l{layer}', num_directions * proj_size, gate_size)
                 else:
-                    build_unit(f'weight_ih_l{layer}', gate_size, num_directions * hidden_size)
+                    build_unit(f'weight_ih_l{layer}', num_directions * hidden_size, gate_size)
 
             if proj_size > 0:
-                build_unit(f'weight_hh_l{layer}', gate_size, proj_size)
+                build_unit(f'weight_hh_l{layer}', proj_size, gate_size)
                 build_unit(f'weight_hr_l{layer}', proj_size, hidden_size)
             else:
-                build_unit(f'weight_hh_l{layer}', gate_size, hidden_size)
+                build_unit(f'weight_hh_l{layer}', hidden_size, gate_size)
 
             if bias:
                 build_unit(f'bias_ih_l{layer}', gate_size)
@@ -2109,9 +2255,80 @@ class rnnbase(Module):
         else:
             raise RuntimeError("Not Cudnn found")
 
-    @abstractmethod
     def call_rnn_cell(self, input, hidden, suffix):
-        pass
+        if self.mode == 'RNN':
+            weight_ih = getattr(self, f'weight_ih_{suffix}')
+            weight_hh = getattr(self, f'weight_hh_{suffix}')
+            bias_ih = getattr(self, f'bias_ih_{suffix}', None)
+            bias_hh = getattr(self, f'bias_hh_{suffix}', None)
+
+													 
+            preact = jt.matmul(input, weight_ih) + jt.matmul(hidden, weight_hh)
+            if self.bias:
+                preact += bias_ih + bias_hh
+
+            if self.nonlinearity == 'tanh':
+                hidden_new = jt.tanh(preact)
+            elif self.nonlinearity == 'relu':
+                hidden_new = jt.relu(preact)
+            return hidden_new, hidden_new
+
+        elif self.mode == 'LSTM':
+            weight_ih = getattr(self, f'weight_ih_{suffix}')
+            weight_hh = getattr(self, f'weight_hh_{suffix}')
+            bias_ih = getattr(self, f'bias_ih_{suffix}', None)
+            bias_hh = getattr(self, f'bias_hh_{suffix}', None)
+
+
+            # Adjust the dimensions to match the expected shapes
+            gates_input = jt.matmul(input, weight_ih)
+
+            gates_hidden = jt.matmul(hidden[0], weight_hh)
+
+            gates = gates_input + gates_hidden
+
+            if self.bias:
+                gates += bias_ih + bias_hh
+
+            i, f, g, o = jt.chunk(gates, 4, dim=1)
+            i = jt.sigmoid(i)
+            f = jt.sigmoid(f)
+            g = jt.tanh(g)
+            o = jt.sigmoid(o)
+
+
+            c_new = f * hidden[1] + i * g
+            h_new = o * jt.tanh(c_new)
+
+
+            return h_new, (h_new, c_new)
+
+        elif self.mode == 'GRU':
+            weight_ih = getattr(self, f'weight_ih_{suffix}')
+            weight_hh = getattr(self, f'weight_hh_{suffix}')
+            bias_ih = getattr(self, f'bias_ih_{suffix}', None)
+            bias_hh = getattr(self, f'bias_hh_{suffix}', None)
+
+            gates_input = jt.matmul(input, weight_ih)
+
+            gates_hidden = jt.matmul(hidden, weight_hh)
+
+            gates = gates_input + gates_hidden
+
+            if self.bias:
+                gates += bias_ih + bias_hh
+
+            r, z, n = jt.chunk(gates, 3, dim=1)
+            r = jt.sigmoid(r)
+            z = jt.sigmoid(z)
+            n = jt.tanh(n + r * (jt.matmul(hidden, weight_hh[:, 2 * self.hidden_size:])))
+
+            h_new = (1 - z) * n + z * hidden
+            return h_new, h_new
+
+
+        else:
+            raise ValueError("Unrecognized RNN mode: " + self.mode)
 
     def call_rnn_sequence(self, input, hidden, suffix):
         if 'reverse' in suffix:
@@ -2221,6 +2438,7 @@ class layernorm(object):
         return nn.layer_norm(input, self.normalized_shape, self.gamma, self.beta, self.eps)
 
 
+
 class multiheadattention(Module):
     def __init__(
         self,
@@ -2230,10 +2448,21 @@ class multiheadattention(Module):
         vdim=None,
         dropout=0.0,
         bias=True,
+        batch_first=False,
+        need_weights=True,
         add_bias_kv=False,
         add_zero_attn=False,
         self_attention=False,
         encoder_decoder_attention=False,
+        q_weight=None,
+        k_weight=None,
+        v_weight=None,
+        out_weight=None,
+        q_bias=None,
+        k_bias=None,
+        v_bias=None,
+        out_bias=None,
+        train=True,
         q_noise=0.0,
         qn_block_size=8,
     ):
@@ -2244,7 +2473,7 @@ class multiheadattention(Module):
         self.qkv_same_dim = self.kdim == embed_dim and self.vdim == embed_dim
 
         self.num_heads = num_heads
-        assert dropout==0, "TODO: dropout>0"
+        self.dropout = dropout
 
         self.head_dim = embed_dim // num_heads
         assert (self.head_dim * num_heads == self.embed_dim), "embed_dim must be divisible by num_heads"
@@ -2252,17 +2481,31 @@ class multiheadattention(Module):
 
         self.self_attention = self_attention
         self.encoder_decoder_attention = encoder_decoder_attention
+        self.batch_first = batch_first
+        self.need_weights = need_weights
+        self.is_train = train
 
-        assert not self.self_attention or self.qkv_same_dim, ("Self-attention requires query, key and " "value to be of the same size")
+        assert not self.self_attention or self.qkv_same_dim, (
+            "Self-attention requires query, key and value to be of the same size")
 
-        #TODO: quant_noise
-        self.k_proj = nn.Linear(self.kdim, embed_dim, bias=bias)
-        self.v_proj = nn.Linear(self.vdim, embed_dim, bias=bias)
-        self.q_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
+        self.q_weight = q_weight
+        self.k_weight = k_weight
+        self.v_weight = v_weight
+        self.out_weight = out_weight
+        self.q_bias = q_bias
+        self.k_bias = k_bias
+        self.v_bias = v_bias
+        self.out_bias = out_bias
 
-        self.out_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
+        self.k_proj = nn.Linear(self.kdim, embed_dim, bias=bias) if k_weight is None else None
+        self.v_proj = nn.Linear(self.vdim, embed_dim, bias=bias) if v_weight is None else None
+        self.q_proj = nn.Linear(embed_dim, embed_dim, bias=bias) if q_weight is None else None
+        self.out_proj = nn.Linear(embed_dim, embed_dim, bias=bias) if out_weight is None else None
+
+        self.dropout_layer = nn.Dropout(dropout)
 
         assert not add_bias_kv, "TODO: add_bias_kv=True"
+
         self.bias_k = self.bias_v = None
 
         self.add_zero_attn = add_zero_attn
@@ -2273,51 +2516,50 @@ class multiheadattention(Module):
         self.tpu = False
 
     def reset_parameters(self):
-        '''
-        初始化参数
-
-            代码示例:
-                >>> multihead_attn = jt.attention.MultiheadAttention(embed_dim, num_heads)
-                >>> multihead_attn.reset_parameters()
-                
-        
-        '''
         if self.qkv_same_dim:
-            # Empirically observed the convergence to be much better with
-            # the scaled initialization
-            init.xavier_uniform_(self.k_proj.weight, gain=1 / math.sqrt(2))
-            init.xavier_uniform_(self.v_proj.weight, gain=1 / math.sqrt(2))
-            init.xavier_uniform_(self.q_proj.weight, gain=1 / math.sqrt(2))
+            if self.q_proj is not None:
+                init.xavier_uniform_(self.q_proj.weight, gain=1 / math.sqrt(2))
+            if self.k_proj is not None:
+                init.xavier_uniform_(self.k_proj.weight, gain=1 / math.sqrt(2))
+            if self.v_proj is not None:
+                init.xavier_uniform_(self.v_proj.weight, gain=1 / math.sqrt(2))
         else:
-            init.xavier_uniform_(self.k_proj.weight)
-            init.xavier_uniform_(self.v_proj.weight)
-            init.xavier_uniform_(self.q_proj.weight)
+            if self.q_proj is not None:
+                init.xavier_uniform_(self.q_proj.weight)
+            if self.k_proj is not None:
+                init.xavier_uniform_(self.k_proj.weight)
+            if self.v_proj is not None:
+                init.xavier_uniform_(self.v_proj.weight)
 
-        # init.xavier_uniform_(self.out_proj.weight)
-        if self.out_proj.bias is not None:
+        if self.out_proj is not None and self.out_proj.bias is not None:
             init.constant_(self.out_proj.bias, 0.)
         if self.bias_k is not None:
             init.xavier_normal_(self.bias_k)
         if self.bias_v is not None:
             init.xavier_normal_(self.bias_v)
 
-
-
     def execute(
         self,
         query,
-        key = None,
-        value = None,
-        key_padding_mask = None,
-        incremental_state = None,
-        need_weights = True,
-        static_kv = False,
-        attn_mask = None,
-        before_softmax = False,
-        need_head_weights = False,
+        key=None,
+        value=None,
+        key_padding_mask=None,
+        incremental_state=None,
+        need_weights=True,
+        static_kv=False,
+        attn_mask=None,
+        before_softmax=False,
+        need_head_weights=False,
     ):
         if need_head_weights:
             need_weights = True
+
+        if self.batch_first:
+            query = query.transpose(1, 0, 2)
+            if key is not None:
+                key = key.transpose(1, 0, 2)
+            if value is not None:
+                value = value.transpose(1, 0, 2)
 
         tgt_len, bsz, embed_dim = query.shape
         assert embed_dim == self.embed_dim
@@ -2326,25 +2568,11 @@ class multiheadattention(Module):
         assert incremental_state is None, "TODO: incremental_state is not None"
         saved_state = None
 
-        if self.self_attention:
-            q = self.q_proj(query)
-            k = self.k_proj(query)
-            v = self.v_proj(query)
-        elif self.encoder_decoder_attention:
-            # encoder-decoder attention
-            q = self.q_proj(query)
-            if key is None:
-                assert value is None
-                k = v = None
-            else:
-                k = self.k_proj(key)
-                v = self.v_proj(key)
-        else:
-            assert key is not None and value is not None
-            q = self.q_proj(query)
-            k = self.k_proj(key)
-            v = self.v_proj(value)
-        q = q*self.scaling
+        q = jt.matmul(query, self.q_weight) + self.q_bias if self.q_weight is not None else self.q_proj(query)
+        k = jt.matmul(query, self.k_weight) + self.k_bias if self.k_weight is not None else self.k_proj(query)
+        v = jt.matmul(query, self.v_weight) + self.v_bias if self.v_weight is not None else self.v_proj(query)
+
+        q = q * self.scaling
 
         assert self.bias_k is None, "TODO: self.bias_k is not None:"
 
@@ -2358,84 +2586,85 @@ class multiheadattention(Module):
         assert k is not None
         src_len = k.shape[1]
 
-        assert key_padding_mask is None, "TODO: key_padding_mask is not None"
         assert not self.add_zero_attn, "TODO: self.add_zero_attn=True"
 
         attn_weights = nn.bmm(q, k.transpose(0, 2, 1))
 
         assert list(attn_weights.shape) == [bsz * self.num_heads, tgt_len, src_len]
 
-        assert attn_mask is None, "TODO: attn_mask is not None"
-        assert key_padding_mask is None, "TODO: key_padding_mask is not None"
+        # Apply the attention mask if provided
+        if attn_mask is not None:
+            attn_weights = attn_weights.view(bsz, self.num_heads, tgt_len, src_len)
+            attn_weights = attn_weights.masked_fill(attn_mask.unsqueeze(1).unsqueeze(2), float('-inf'))
+            attn_weights = attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
         
+        # Apply key padding mask
+        if key_padding_mask is not None:
+            key_padding_mask = key_padding_mask[:bsz, :]
+            key_padding_mask = key_padding_mask.unsqueeze(1).unsqueeze(2)
+            key_padding_mask = key_padding_mask.expand(bsz, self.num_heads, 1, src_len)
+            key_padding_mask = key_padding_mask.reshape(bsz * self.num_heads, 1, src_len)
+            attn_weights = attn_weights.masked_fill(key_padding_mask, float('-inf'))
+
         if before_softmax:
             return attn_weights, v
-        
+
         attn_weights_float = nn.softmax(attn_weights, dim=-1)
         attn_weights = attn_weights_float.type_as(attn_weights)
 
         assert v is not None
         attn = nn.bmm(attn_weights, v)
         assert list(attn.shape) == [bsz * self.num_heads, tgt_len, self.head_dim]
+        if self.dropout > 0.0:
+            attn = self.dropout_layer(attn)
         if self.onnx_trace and attn.shape[1] == 1:
-            # when ONNX tracing a single decoder step (sequence length == 1)
-            # the transpose is a no-op copy before view, thus unnecessary
             attn = attn.view(tgt_len, bsz, embed_dim)
         else:
             attn = attn.transpose(1, 0, 2).view(tgt_len, bsz, embed_dim)
-        attn = self.out_proj(attn)
+        attn = jt.matmul(attn, self.out_weight) + self.out_bias if self.out_weight is not None else self.out_proj(attn)
         attn_weights = None
         if need_weights:
             attn_weights = attn_weights_float.view(bsz, self.num_heads, tgt_len, src_len).transpose(1, 0, 2, 3)
             if not need_head_weights:
-                # average attention weights over heads
                 attn_weights = attn_weights.mean(dims=[0])
 
         return attn, attn_weights
 
+
 class BinaryDense(object):
 
-    def __init__(self, weights, bias):
-        self.weights = weights
-        self.bias = bias
+    def __init__(self, *args, **kwargs):
+        pass
 
-    def __call__(self, inputs):
-        raise NotImplementedError
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError(" BinaryDense is not implemented in Jittor backend")
 
 
 class DorefaDense(object):
 
-    def __init__(self, weights, bias, bitW, bitA):
-        self.weights = weights
-        self.bias = bias
-        self.bitW = bitW
-        self.bitA = bitA
+    def __init__(self, *args, **kwargs):
+        pass
 
-    def __call__(self, inputs):
-        raise NotImplementedError
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError(" DorefaDense is not implemented in Jittor backend")
 
 
 class TernaryDense(object):
 
-    def __init__(self, weights, bias):
-        self.weights = weights
-        self.bias = bias
+    def __init__(self, *args, **kwargs):
+        pass
 
-    def __call__(self, inputs):
-        raise NotImplementedError
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError(" TernaryDense is not implemented in Jittor backend")
 
 
 class QuanDense(object):
 
-    def __init__(self, weights, bias, bitW, bitA):
-        self.weights = weights
-        self.bias = bias
-        self.bitW = bitW
-        self.bitA = bitA
+    def __init__(self, *args, **kwargs):
+        pass
 
-    def __call__(self, inputs):
-        raise NotImplementedError
-
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError(" QuanDense is not implemented in Jittor backend")
 
 class QuanDenseBn(object):
 
@@ -2507,25 +2736,42 @@ class QuanConvBn(object):
         raise NotImplementedError
 
 
+class Swish(object):
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError(" Swish is not implemented in Jittor backend")
+    
+
 class PReLU(object):
-
-    def __init__(self, data_format):
-
+    def __init__(self, data_format='channels_last'):
         self.data_format = data_format
 
     def __call__(self, input, weight):
-        if self.data_format == 'channels_last' :
+        if self.data_format == 'channels_last':
             input = nhwc_to_nchw(input)
-        output = nn.PReLU(input, weight)
+        
+        if weight.shape[0] > 1:
+            raise  NotImplementedError("num_parameters > 1 is not yet functional in Jittor. Only use this function if num_parameters are < 2")
+        
+        else:
+            prelu_layer = nn.PReLU(num_parameters=weight.shape[0])
+            prelu_layer.weight = weight
+            output = prelu_layer(input)
+            
         if self.data_format == 'channels_last':
             output = nchw_to_nhwc(output)
+        
         return output
 
 
 def prelu(input, weight, data_format):
     if data_format == 'channels_last':
-        input = nhwc_to_nchw(input)
-    output = nn.PReLU(input, weight)
+        input = nhwc_to_nchw(input)    
+    num_parameters = weight.shape[0]
+    output = nn.PReLU(input, num_parameters)
     if data_format == 'channels_last':
         output = nchw_to_nhwc(output)
     return output

@@ -12,6 +12,7 @@ from itertools import islice
 from collections import OrderedDict, abc as container_abcs
 import warnings
 import tensorlayerx as tlx
+from tensorlayerx.nn.initializers import xavier_uniform
 
 _global_layer_name_dict = {}
 _global_layer_node = []
@@ -88,10 +89,16 @@ class Module(T_Module):
     def forward(self, *inputs, **kwargs):
         raise Exception("The forward method must be implemented by inherited class")
 
-    def _get_weights(self, var_name, shape, init=None, trainable=True, transposed=None, order=False):
+    def _get_weights(self, var_name, shape, init=xavier_uniform(), trainable=True, transposed=None, order=False):
+        
+        if isinstance(shape, int):
+            shape = (shape,)      
+
+
         if order:
-            w_tmp = Parameter(init(shape), requires_grad=trainable)
+            w_tmp = jt.nn.Parameter(init(shape), requires_grad=trainable)
             return w_tmp
+        
 
         if len(shape) == 3:
             shape = shape[::-1]
@@ -104,7 +111,7 @@ class Module(T_Module):
             shape = (shape[4], shape[3], shape[0], shape[1], shape[2])
         # TODO paramters name should be add
         _param = init(shape)
-        param = Parameter(_param, requires_grad=trainable)
+        param = jt.nn.Parameter(_param, requires_grad=trainable)
         self.var_name = var_name
         return param
 
@@ -598,12 +605,13 @@ class ModuleDict(Module):
 
 
 class ParameterList(Module):
-
     def __init__(self, parameters=None):
         super(ParameterList, self).__init__()
+        self._initialized = False
+        self._param_list = []  # Use a different internal attribute name
         self._initialized = True
         if parameters is not None:
-            self += parameters
+            self.extend(parameters)
 
     def __setstate__(self, state):
         state['_initialized'] = False
@@ -616,30 +624,30 @@ class ParameterList(Module):
             raise IndexError('index {} is out of range'.format(idx))
         if idx < 0:
             idx += len(self)
-        return str(idx)
+        return idx
 
     def __getitem__(self, idx):
         if isinstance(idx, slice):
-            return self.__class__(list(self._parameters.values())[idx])
+            return self.__class__(self._param_list[idx])
         else:
             idx = self._get_abs_string_index(idx)
-            return self._parameters[str(idx)]
+            return self._param_list[idx]
 
     def __setitem__(self, idx, param):
         idx = self._get_abs_string_index(idx)
-        return self.register_parameter(str(idx), param)
+        self._param_list[idx] = param
 
     def __setattr__(self, key, value):
         if getattr(self, "_initialized", False):
-            if not hasattr(self, key) and not isinstance(value, jt.nn.Parameter):
+            if not hasattr(self, key) and not isinstance(value, jt.Var):
                 warnings.warn("Setting attributes on ParameterList is not supported.")
         super(ParameterList, self).__setattr__(key, value)
 
     def __len__(self):
-        return len(self._parameters)
+        return len(self._param_list)
 
     def __iter__(self):
-        return iter(self._parameters.values())
+        return iter(self._param_list)
 
     def __iadd__(self, parameters):
         return self.extend(parameters)
@@ -650,8 +658,7 @@ class ParameterList(Module):
         return keys
 
     def append(self, parameter):
-
-        self.register_parameter(str(len(self)), parameter)
+        self._param_list.append(parameter)
         return self
 
     def extend(self, parameters):
@@ -660,13 +667,14 @@ class ParameterList(Module):
                 "ParameterList.extend should be called with an "
                 "iterable, but got " + type(parameters).__name__
             )
-        offset = len(self)
-        for i, param in enumerate(parameters):
-            self.register_parameter(str(offset + i), param)
+        for param in parameters:
+            self.append(param)
         return self
 
     def __call__(self, input):
         raise RuntimeError('ParameterList should not be called.')
+
+
 
 
 class ParameterDict(Module):

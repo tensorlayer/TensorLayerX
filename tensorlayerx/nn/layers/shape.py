@@ -209,7 +209,7 @@ class Shuffle(Module):
             self.reshape2 = tlx.ops.Reshape([-1, h, w, in_channel])
 
     def forward(self, inputs):
-        if tlx.BACKEND in ['tensorflow', 'paddle', 'torch']:
+        if tlx.BACKEND in ['tensorflow', 'paddle', 'torch', 'jittor']:
             in_shape = tlx.get_tensor_shape(inputs)
             h, w, in_channel = in_shape[1:]
             reshape1 = tlx.ops.Reshape([-1, h, w, in_channel // self.group, self.group])

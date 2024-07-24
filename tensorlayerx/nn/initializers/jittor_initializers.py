@@ -162,7 +162,7 @@ class RandomUniform(Initializer):
 
     def __call__(self, shape, dtype=tlx.float32):
         _tensor = jt.empty(shape, dtype=dtype)
-        return jt.nn.init.uniform_(_tensor, a=self.minval, b=self.maxval)
+        return jt.nn.init.uniform_(_tensor, low=self.minval, high=self.maxval)
 
     def get_config(self):
         return {"minval": self.minval, "maxval": self.maxval, "seed": self.seed}

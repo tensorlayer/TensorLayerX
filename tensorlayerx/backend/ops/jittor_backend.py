@@ -7,6 +7,7 @@ import jittor as jt
 # import jittor.nn.functional as F
 import numpy as np
 import random
+import jittor.nn as nn 
 
 
 _dtypeDict = {
@@ -71,7 +72,7 @@ def zeros(shape, dtype=None, device = None):
     if device == 'gpu':
         jt.flags.use_cuda = 1
     
-    return jt.zeros(size=shape, dtype=dtype)
+    return jt.zeros(shape=shape, dtype=dtype)
 
 
 def ones(shape, dtype=None, device = None):
@@ -93,8 +94,16 @@ def ones(shape, dtype=None, device = None):
     if device == 'gpu':
         jt.flags.use_cuda = 1
         
-    return jt.ones(size=shape, dtype=dtype)
-
+    # Check if dtype is None, if so, set it to 'float32' by default
+    if dtype is None:
+        dtype = 'float32'
+        
+    # Ensure shape is passed as a tuple
+    if isinstance(shape, list):
+        shape = tuple(shape)
+    
+    # Call Jittor's ones function
+    return jt.ones(shape, dtype=dtype)
 
 def constant(value, dtype=None, shape=None, device =None):
     """
@@ -116,7 +125,7 @@ def constant(value, dtype=None, shape=None, device =None):
     """
     if device == 'gpu':
         jt.flags.use_cuda = 1
-    w = jt.empty(size=shape, dtype=dtype)
+    w = jt.empty(shape, dtype=dtype)
     return jt.nn.init.constant_(w, value)
 
 
@@ -174,12 +183,10 @@ def random_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
 
     """
 
-    if seed is None:
-        jt.random.seed()
-    else:
-        jt.random.manual_seed(seed)
-    w = jt.randn(size=shape, dtype=dtype)
-    out = w.normal_(mean=mean, std=stddev)
+    if seed is not None:
+        jt.set_global_seed(seed)
+    w = jt.randn(shape, dtype)
+    out = w * stddev + mean
     return out
 
 
@@ -206,7 +213,10 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
 
     """
 
-    tensor = jt.empty(size=shape, dtype=dtype)
+    if dtype is None:
+        dtype = jt.float32
+    tensor = jt.empty(shape, dtype=dtype)
+
     out = jt.nn.init.trunc_normal_(tensor, mean=mean, std=stddev)
     return out
 
@@ -229,23 +239,25 @@ def he_normal(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype=No
         A tensor of the specified shape filled with he normal values.
     """
 
-    tensor = jt.empty(size=shape, dtype=dtype)
+    tensor = jt.empty(shape, dtype=dtype)
     out = jt.nn.init.kaiming_normal_(tensor, a=a, mode = mode, nonlinearity = nonlinearity)
     return out
 
 def he_uniform(shape, a = 0, mode = 'fan_in', nonlinearity='leaky_relu', dtype=None, seed=None):
 
-    tensor = jt.empty(size=shape, dtype=dtype)
+    tensor = jt.empty(shape, dtype=dtype)
     out = jt.nn.init.kaiming_uniform_(tensor, a=a, mode = mode, nonlinearity = nonlinearity)
     return out
 
-def xavier_normal(shape, gain = 1.0, dtype=None, seed=None):
-    _tensor = jt.empty(size=shape, dtype=dtype)
-    return jt.nn.init.xavier_normal_(_tensor, gain)
+def xavier_normal(shape, gain=1.0, dtype='float32', seed=None):
+    if seed is not None:
+        jt.set_global_seed(seed)
+    stddev = gain * np.sqrt(2.0 / (shape[-2] + shape[-1]))
+    return jt.init.gauss(std=stddev, shape=shape, dtype=dtype)
 
 
 def xavier_uniform(shape, gain = 1.0, dtype=None, seed=None):
-    _tensor = jt.empty(size=shape, dtype=dtype)
+    _tensor = jt.empty(shape, dtype=dtype)
     return jt.nn.init.xavier_uniform_(_tensor, gain)
 
 
@@ -387,6 +399,11 @@ class Reshape(object):
         self.shape = shape
 
     def __call__(self, tensor):
+        if not self.shape:
+            raise ValueError("The target shape of reshape can't be empty.")
+        if -1 in self.shape and len([s for s in self.shape if s == -1]) > 1:
+            raise ValueError("Only one dimension can be inferred when using -1 in reshape.")
+
         return jt.reshape(tensor, self.shape)
 
 
@@ -415,7 +432,7 @@ class Concat(object):
         self.axis = axis
 
     def __call__(self, values):
-        return jt.concat(tensors=values, dim=self.axis)
+        return jt.concat(values, dim=self.axis)
 
 
 def concat(values, axis=0):
@@ -489,9 +506,9 @@ class ReduceSum(object):
 
     def __call__(self, input):
         if self.axis is not None:
-            return jt.sum(input=input, dim=self.axis)
+            return jt.sum(input, dim=self.axis)
         else:
-            return jt.sum(input=input)
+            return jt.sum(input)
 
 
 class ReduceMean(object):
@@ -502,7 +519,7 @@ class ReduceMean(object):
 
     def __call__(self, inputs):
         if self.axis is not None:
-            return jt.mean(input=inputs, dim=self.axis, keepdim=self.keepdims)
+            return jt.mean(inputs, self.axis, self.keepdims)
         else:
             return jt.mean(inputs)
 
@@ -525,11 +542,13 @@ def reduce_mean(input_tensor, axis=None, keepdims=False):
     -------
         The reduced tensor.
     """
-
     if axis is not None:
-        return jt.mean(input_tensor, dim=axis, keepdim=keepdims)
+        if isinstance(axis, (tuple, list)):
+            axis = tuple(axis)
+        return jt.mean(input_tensor, dims=axis, keepdims=keepdims)
     else:
         return jt.mean(input_tensor)
+
 
 
 class ReduceMax(object):
@@ -538,18 +557,18 @@ class ReduceMax(object):
         self.axis = axis
         self.keepdims = keepdims
 
-
     def __call__(self, inputs):
         if self.axis is not None:
             if isinstance(self.axis, (list, tuple)):
                 out = inputs
                 for dim in self.axis[::-1]:
-                    out = jt.max(out, dim=dim, keepdim=self.keepdims).values
+                    out = jt.max(out, dim=dim, keepdims=self.keepdims)
                 return out
             else:
-                return jt.max(inputs, dim=self.axis, keepdim=self.keepdims).values
+                return jt.max(inputs, dim=self.axis, keepdims=self.keepdims)
         else:
             return jt.max(inputs)
+
 
 
 def reduce_max(input_tensor, axis=None, keepdims=False):
@@ -572,7 +591,7 @@ def reduce_max(input_tensor, axis=None, keepdims=False):
     """
 
     if axis is not None:
-        return jt.max(input_tensor, dim=axis, keepdim=keepdims).values
+        return jt.max(input_tensor, dim=axis, keepdims=keepdims)
     else:
         return jt.max(input_tensor)
 
@@ -597,7 +616,7 @@ def reduce_min(input_tensor, axis=None, keepdims=False):
     """
 
     if axis is not None:
-        return jt.min(input_tensor, dim=axis, keepdim=keepdims).values
+        return jt.min(input_tensor, dim=axis, keepdims=keepdims)
     else:
         return jt.min(input_tensor)
 
@@ -642,7 +661,7 @@ class Pad(object):
             else:
                 raise NotImplementedError("Only constant padding is implemented for arbitrary dimensions.")
 
-        out = jt.nn.functional.pad(x, self.paddings, mode=self.mode, value=self.constant_values)
+        out = jt.nn.pad(x, self.paddings, mode=self.mode, value=self.constant_values)
 
         if self.mode in ['symmetric', 'reflect']:
             if len(x.shape) == 3:
@@ -787,7 +806,7 @@ class ExpandDims(object):
         self.axis = axis
 
     def __call__(self, input):
-        return jt.unsqueeze(input=input, dim=self.axis)
+        return jt.unsqueeze(input, dim=self.axis)
 
 
 def expand_dims(input, axis):
@@ -816,8 +835,19 @@ class Tile(object):
         pass
 
     def __call__(self, input, multiples):
-        return jt.tile(input, dims=multiples)
+        input_shape = list(input.shape)
+        reps = multiples
+        # Ensure reps is the same length as input shape
+        while len(reps) < len(input_shape):
+            reps.insert(0, 1)
 
+        # Repeat the input tensor along each dimension
+        tiled_tensor = input
+        for axis, rep in enumerate(reps):
+            if rep != 1:
+                tiled_tensor = jt.concat([tiled_tensor] * rep, dim=axis)
+
+        return tiled_tensor
 
 def tile(input, multiples):
     """
@@ -835,8 +865,8 @@ def tile(input, multiples):
     -------
         A Tensor. Has the same type as input.
     """
-
-    return jt.tile(input, multiples)
+    tile_op = Tile()
+    return tile_op(input, multiples)
 
 
 class Cast(object):
@@ -845,7 +875,7 @@ class Cast(object):
         self.dtype = dtype
 
     def __call__(self, x):
-        return x.type(self.dtype)
+        return x.cast(self.dtype)
 
 
 def cast(x, dtype=None):
@@ -865,7 +895,7 @@ def cast(x, dtype=None):
         A Tensor or SparseTensor or IndexedSlices with same shape as x and same type as dtype.
     """
 
-    return x.type(dtype)
+    return x.cast(dtype)
 
 
 class Transpose(object):
@@ -880,35 +910,35 @@ class Transpose(object):
 
 def transpose(a, perm=None, conjugate=False):
     """
-    Transposes a.
+    Transposes a tensor.
 
     Parameters
     ----------
-    a : tensor
-        A Tensor.
-    perm : list / int
+    a : jt.Var
+        A Jittor tensor.
+    perm : list / int, optional
         A permutation of the dimensions of a.
-    conjugate : bool
-        Setting it to True is mathematically equivalent to tf.math.conj(tf.transpose(input)).
 
     Returns
     -------
-        A transposed Tensor.
+    jt.Var
+        A transposed Jittor tensor.
     """
-    if perm == None:
-        if len(a.shape) <= 2:
-            return jt.t(a)
-        if len(a.shape) == 3:
-            perm = [2, 1, 0]
-        if len(a.shape) == 4:
-            perm = [3, 2, 1, 0]
-        if len(a.shape) == 5:
-            perm = [4, 3, 2, 1, 0]
-    out = jt.permute(a, perm)
-    if conjugate:
-        out = jt.conj_physical(out)
-    return out
+    if not isinstance(a, jt.Var):
+        raise TypeError("Input must be a Jittor tensor.")
 
+    if perm is None:
+        perm = list(range(len(a.shape)))[::-1]
+    elif not isinstance(perm, jt.NanoVector):
+        perm = jt.NanoVector(perm)
+
+
+    out = jt.transpose(a, perm)
+
+    if conjugate:
+        raise NotImplementedError("Conjugate transpose is not supported in Jittor.")
+    
+    return out
 
 def gather_nd(params, indices, batch_dims=0):
     """
@@ -927,19 +957,19 @@ def gather_nd(params, indices, batch_dims=0):
     -------
         A Tensor. Has the same type as params.
     """
+    raise NotImplementedError
+    # out_shape = indices.shape[:-1]
+    # indices = indices.unsqueeze(0).transpose(0, -1)
+    # ndim = indices.shape[0]
+    # indices = indices.long()
+    # idx = jt.zeros_like(indices[0], device=indices.device).long()
+    # m = 1
 
-    out_shape = indices.shape[:-1]
-    indices = indices.unsqueeze(0).transpose(0, -1)
-    ndim = indices.shape[0]
-    indices = indices.long()
-    idx = jt.zeros_like(indices[0], device=indices.device).long()
-    m = 1
-
-    for i in range(ndim)[::-1]:
-        idx += indices[i] * m
-        m *= params.size(i)
-    out = jt.take(params, idx)
-    return out.view(out_shape)
+    # for i in range(ndim)[::-1]:
+    #     idx += indices[i] * m
+    #     m *= params.size(i)
+    # out = jt.take(params, idx)
+    # return out.view(out_shape)
 
 def scatter_nd(indices, updates, shape):
     raise NotImplementedError
@@ -951,7 +981,8 @@ class ClipGradByValue(object):
         self.max = clip_max
 
     def __call__(self, inputs):
-        jt.nn.utils.clip_grad_value_(inputs, clip_value=self.max)
+        raise NotImplementedError
+        # jt.nn.utils.clip_grad_value_(inputs, clip_value=self.max)
 
 
 class ClipGradByNorm(object):
@@ -959,7 +990,8 @@ class ClipGradByNorm(object):
         self.clip_norm = clip_norm
 
     def __call__(self, inputs):
-        jt.nn.utils.clip_grad_norm_(inputs, max_norm=self.clip_norm, norm_type=2)
+        raise NotImplementedError
+        # jt.nn.utils.clip_grad_norm_(inputs, max_norm=self.clip_norm, norm_type=2)
 
 
 class ClipByGlobalNorm(object):
@@ -1088,13 +1120,13 @@ class OneHot(object):
 
     def __call__(self, inputs):
         if [self.on_value, self.off_value] == [None, None]:
-            return jt.nn.functional.one_hot(inputs, self.depth)
+            return jt.nn.one_hot(inputs, self.depth)
         else:
-            out = jt.nn.functional.one_hot(inputs, self.depth)
+            out = jt.nn.one_hot(inputs, self.depth)
             out = cast(out, jt.float64)
             out = jt.where(out == 1, self.on_value, out)
             out = jt.where(out == 0, self.off_value, out)
-            out = cast(out, jt.int)
+            out = cast(out, jt.Var.int64)
             return out
 
 
@@ -1106,7 +1138,7 @@ class L2Normalize(object):
 
     def __call__(self, input, *args, **kwargs):
 
-        return jt.nn.functional.normalize(input, p = 2, dim=self.axis, eps=self.epsilon)
+        return jt.misc.normalize(input, p = 2, dim=self.axis, eps=self.epsilon)
 
 
 
@@ -1126,14 +1158,13 @@ class EmbeddingLookup(object):
 
 
 class NCELoss(object):
-
     def __init__(self, num_true=1, sampled_values=None, remove_accidental_hits=False):
         self.num_true = num_true
         self.sampled_values = sampled_values
         self.remove_accidental_hits = remove_accidental_hits
 
     def __call__(self, weights, biases, labels, inputs, num_sampled, num_classes):
-        raise NotImplementedError
+        raise NotImplementedError("NCELoss is not implemented for the Jittor backend")
 
 
 class NotEqual(object):
@@ -1142,7 +1173,8 @@ class NotEqual(object):
         pass
 
     def __call__(self, x, y):
-        return jt.ne(x, y)
+        return jt.Var.not_equal(x, y)
+
 
 
 class CountNonzero(object):
@@ -1152,12 +1184,14 @@ class CountNonzero(object):
         self.dtype = dtype
 
     def __call__(self, input, axis=None):
+        # Calculate the count of non-zero elements along the specified axis
+        if axis is None:
+            return (input != 0).sum().cast(self.dtype)
+        else:
+            return (input != 0).sum(dim=axis, keepdims=self.keepdims).cast(self.dtype)
 
-        return jt.count_nonzero(input, dim=axis)
 
-
-class Resize:
-
+class Resize(object):
     def __init__(self, scale, method, antialias=False, data_format='channels_last'):
         self.method = method
         self.antialias = antialias
@@ -1167,11 +1201,25 @@ class Resize:
     def __call__(self, inputs):
         if self.data_format == "channels_last":
             inputs = nhwc_to_nchw(inputs)
-        outputs = jt.nn.interpolate(inputs, scale_factor=self.scale, mode=self.method, align_corners=self.antialias)
+        
+        # Ensure scale is handled correctly
+        if isinstance(self.scale, (tuple, list)):
+            if len(self.scale) == 1:
+                scale_factor = self.scale[0]
+            else:
+                scale_factor = self.scale
+        else:
+            scale_factor = self.scale
+        
+        # Convert scale_factor to a single value if it's a tuple/list of same values
+        if isinstance(scale_factor, (tuple, list)) and len(set(scale_factor)) == 1:
+            scale_factor = scale_factor[0]
+        
+        outputs = jt.nn.interpolate(inputs, scale_factor=scale_factor, mode=self.method, align_corners=self.antialias)
+        
         if self.data_format == "channels_last":
             outputs = nchw_to_nhwc(outputs)
         return outputs
-
 
 def resize(inputs, output_size, method, antialias):
     return jt.nn.interpolate(inputs, size=output_size, mode=method, align_corners=antialias)
@@ -1228,7 +1276,7 @@ class Sign(object):
         pass
 
     def __call__(self, x):
-        return jt.sign(x)
+        return jt.nn.sign(x)
 
 
 class Ceil(object):
@@ -1301,7 +1349,8 @@ def acosh(x):
 
 
 def angle(x):
-    return jt.angle(x)
+    raise NotImplementedError
+    # return jt.angle(x)
 
 
 def argmax(x, axis=None, keepdim=False, dtype='int64'):
@@ -1337,7 +1386,8 @@ def cosh(x):
 
 
 def count_nonzero(x, axis=None, keepdims=None, dtype="int64"):
-    return jt.count_nonzero(x, dim=axis)
+    raise NotImplementedError
+    # return jt.count_nonzero(x, dim=axis)
 
 
 def cumprod(x, axis=0, exclusive=False, reverse=False):
@@ -1361,7 +1411,8 @@ def floordiv(x, y):
 
 
 def floormod(x, y):
-    return jt.fmod(x, y)
+    raise NotImplementedError
+    # return jt.fmod(x, y)
 
 
 def greater(x, y):
@@ -1492,7 +1543,7 @@ def sigmoid(x):
 
 
 def sign(x):
-    return jt.sign(x)
+    return jt.nn.sign(x)
 
 
 def sin(x):
@@ -1522,11 +1573,11 @@ def softplus(x):
 
 
 def square(x):
-    return jt.square(x)
+    return jt.sqr(x)
 
 
 def squared_difference(x, y):
-    return jt.square(x-y)
+    return jt.sqr(x-y)
 
 
 def subtract(x, y):
@@ -1703,7 +1754,8 @@ def mask_select(x, mask, axis = 0):
     if axis < 0:
         axis = len(x.shape) + axis
     if x.shape == mask.shape:
-        return jt.masked_select(x, mask)
+        raise NotImplementedError
+        # return jt.masked_select(x, mask)
     if axis == 0:
         return x[mask]
     elif axis == 1:
@@ -1729,25 +1781,27 @@ class Einsum(object):
         self.equation = equation
 
     def __call__(self, *args):
-        return jt.einsum(self.equation, *args)
+        return jt.linalg.einsum(self.equation, *args)
 
 def set_device(device = 'GPU', id = 0):
     if device == 'GPU':
         jt.flags.use_cuda = 1
 
 def distributed_init(backend="cncl"):
-    jt.distributed.init_process_group(backend=backend)
+    raise NotImplementedError
+    # jt.distributed.init_process_group(backend=backend)
 
 def distributed_model(module, device_ids=None, output_device=None, 
                     dim=0, broadcast_buffers=True, process_group=None, bucket_cap_mb=25, 
                     find_unused_parameters=False, check_reduction=False, gradient_as_bucket_view=False):
-    return jt.nn.parallel.DistributedDataParallel(module, device_ids=device_ids,
-                                                     output_device=output_device,
-                                                     dim=dim, broadcast_buffers=broadcast_buffers,
-                                                     process_group=process_group, bucket_cap_mb=bucket_cap_mb,
-                                                     find_unused_parameters=find_unused_parameters,
-                                                     check_reduction=check_reduction, 
-                                                     gradient_as_bucket_view=gradient_as_bucket_view)
+    return NotImplementedError
+    # return jt.nn.parallel.DistributedDataParallel(module, device_ids=device_ids,
+    #                                                  output_device=output_device,
+    #                                                  dim=dim, broadcast_buffers=broadcast_buffers,
+    #                                                  process_group=process_group, bucket_cap_mb=bucket_cap_mb,
+    #                                                  find_unused_parameters=find_unused_parameters,
+    #                                                  check_reduction=check_reduction, 
+    #                                                  gradient_as_bucket_view=gradient_as_bucket_view)
 
 def scatter_update(tensor, indices, updates):
     tensor = jt.array(tensor)
