@@ -77,7 +77,10 @@ class Module(T_Module):
             raise ValueError("training mode is expected to be boolean")
         self.is_train = mode
         for module in self.children():
-            module.set_train(mode)
+            if hasattr(module, 'set_train'):
+                module.set_train(mode)
+            else:
+                module.is_train = mode
         return self
 
     def set_eval(self):

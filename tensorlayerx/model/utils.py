@@ -228,10 +228,11 @@ class TrainOneStepWithJT(object):
         self.train_weights = train_weights
 
     def __call__(self, data, label, *args, **kwargs):
-        loss = self.net_with_loss(data, label, *args, **kwargs)
-        grads = self.optimizer.gradient(loss, self.train_weights)
-        self.optimizer.apply_gradients(zip(grads, self.train_weights))
-        return loss.numpy()
+        # loss = self.net_with_loss(data, label, *args, **kwargs)
+        # grads = self.optimizer.gradient(loss, self.train_weights)
+        # self.optimizer.apply_gradients(zip(grads, self.train_weights))
+        # return loss.numpy()
+        return NotImplementedError('TrainOneStep With jittor is not Implemented')
     
 
 class TrainOneStepWithGradientClippingTF(object):

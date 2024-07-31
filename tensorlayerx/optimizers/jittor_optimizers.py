@@ -29,8 +29,117 @@ class Adagrad(object):
 
 
 class Adam(object):
-    def __init__(self, params, lr=0.001, beta_1=0.9, beta_2=0.999, eps=1e-8, weight_decay=0.0):
-        self.optimizer = optimizer.Adam(params, lr=lr, eps=eps, betas=(beta_1, beta_2), weight_decay=weight_decay)
+    def __init__(
+            self,
+            params, 
+            lr=0.001, 
+            beta_1=0.9, 
+            beta_2=0.999, 
+            eps=1e-8, 
+            weight_decay=0.0,
+            momentum = 0.0,
+            grad_clip=None                    
+
+            ):
+        
+        self.optimizer = optimizer.Adam(
+            params, 
+            lr=lr, 
+            eps=eps, 
+            betas=(beta_1, beta_2), 
+            weight_decay=weight_decay)
+
+        self.lr = lr
+        self.beta_1 = beta_1
+        self.beta_2 = beta_2
+        self.eps = eps
+        self.init_optim = False
+        self.weight_decay = weight_decay
+        self.grad_clip = grad_clip
+
+
+    @jt.no_grad()
+    def apply_gradients(self, grads_and_vars=None, closure=None):
+        if not self.init_optim:
+            raise AttributeError("Can not apply gradients before zero_grad call.")
+        loss = None
+        if closure is not None:
+            with jt.enable_grad():
+                loss = closure()
+
+        for group in self.optimizer_adam.param_groups:
+            params_with_grad = []
+            grads = []
+            exp_avgs = []
+            exp_avg_sqs = []
+            max_exp_avg_sqs = []
+            state_steps = []
+            beta1, beta2 = group['betas']
+
+            for p in group['params']:
+                if p.grad is not None:
+                    params_with_grad.append(p)
+                    if p.grad.is_sparse:
+                        raise RuntimeError('Adam does not support sparse gradients, please consider SparseAdam instead')
+                    grads.append(p.grad)
+
+                    state = self.optimizer_adam.state[p]
+                    # Lazy state initialization
+                    if len(state) == 0:
+                        state['step'] = 0
+                        # Exponential moving average of gradient values
+                        state['exp_avg'] = jt.zeros_like(p)
+                        # Exponential moving average of squared gradient values
+                        state['exp_avg_sq'] = jt.zeros_like(p)
+                        if group['amsgrad']:
+                            # Maintains max of all exp. moving avg. of sq. grad. values
+                            state['max_exp_avg_sq'] = jt.zeros_like(p)
+
+                    exp_avgs.append(state['exp_avg'])
+                    exp_avg_sqs.append(state['exp_avg_sq'])
+
+                    if group['amsgrad']:
+                        max_exp_avg_sqs.append(state['max_exp_avg_sq'])
+
+                    # update the steps for each param group update
+                    state['step'] += 1
+                    # record the step after step update
+                    state_steps.append(state['step'])
+
+            jt.optim.Adam(params_with_grad,
+                   grads,
+                   exp_avgs,
+                   exp_avg_sqs,
+                   max_exp_avg_sqs,
+                   state_steps,
+                   amsgrad=group['amsgrad'],
+                   beta1=beta1,
+                   beta2=beta2,
+                   lr=get_lr(self.lr),
+                   weight_decay=group['weight_decay'],
+                   eps=group['eps'])
+        return loss
+
+    def gradient(self, loss, weights=None, return_grad=True):
+        if weights is None:
+            raise AttributeError("Parameter train_weights must be entered.")
+        if not self.init_optim:
+            self.optimizer_adam = optimizer.Adam(
+                params=weights, lr=get_lr(self.lr), betas=(self.beta_1, self.beta_2), eps=self.eps,
+                weight_decay=self.weight_decay
+            )
+            self.init_optim = True
+        self.optimizer_adam.zero_grad()
+        self.optimizer_adam.step(loss)
+
+        if self.grad_clip is not None:
+            self.grad_clip(weights)
+
+        if return_grad ==True:
+            return _grads(weights)
+        else:
+            return None
+
 
     def step(self, loss=None):
         self.optimizer.step(loss)
@@ -283,62 +392,62 @@ class Momentum(object):
 
     def __init__(
         self,
+        params,  # Add params to the constructor
         lr=0.001,
-        momentum=0,
+        momentum=0.9,
         weight_decay=0.0,
         nesterov=False,
         grad_clip=None,
     ):
         self.lr = lr
         self.momentum = momentum
-        self.init_optim = False
         self.weight_decay = weight_decay
         self.nesterov = nesterov
         self.grad_clip = grad_clip
+        self.init_optim = False
+
+        self.optimizer = optimizer.SGD(  # Initialize the Jittor SGD optimizer
+            params, lr=lr, momentum=momentum, weight_decay=weight_decay, nesterov=nesterov
+        )
 
     @jt.no_grad()
     def apply_gradients(self, grads_and_vars=None, closure=None):
         if not self.init_optim:
-            raise AttributeError("Can not apply gradients before zero_grad call.")
+            raise AttributeError("Cannot apply gradients before zero_grad call.")
 
         loss = None
         if closure is not None:
             with jt.enable_grad():
                 loss = closure()
 
-        for group in self.optimizer_momentum.param_groups:
+        for group in self.optimizer.param_groups:
             params_with_grad = []
             d_p_list = []
             momentum_buffer_list = []
-            weight_decay = group['weight_decay']
-            momentum = group['momentum']
-            dampening = group['dampening']
-            nesterov = group['nesterov']
-            lr = get_lr(self.lr)
 
             for p in group['params']:
                 if p.grad is not None:
                     params_with_grad.append(p)
                     d_p_list.append(p.grad)
 
-                    state = self.optimizer_momentum.state[p]
+                    state = self.optimizer.state[p]
                     if 'momentum_buffer' not in state:
                         momentum_buffer_list.append(None)
                     else:
                         momentum_buffer_list.append(state['momentum_buffer'])
 
             optimizer.SGD(params_with_grad,
-                  d_p_list,
-                  momentum_buffer_list,
-                  weight_decay=weight_decay,
-                  momentum=momentum,
-                  lr=lr,
-                  dampening=dampening,
-                  nesterov=nesterov)
+                          d_p_list,
+                          momentum_buffer_list,
+                          weight_decay=group['weight_decay'],
+                          momentum=group['momentum'],
+                          lr=self.lr,
+                          dampening=group['dampening'],
+                          nesterov=group['nesterov'])
 
-            # update momentum_buffers in state
+            # Update momentum_buffers in state
             for p, momentum_buffer in zip(params_with_grad, momentum_buffer_list):
-                state = self.optimizer_momentum.state[p]
+                state = self.optimizer.state[p]
                 state['momentum_buffer'] = momentum_buffer
 
         return loss
@@ -347,20 +456,27 @@ class Momentum(object):
         if weights is None:
             raise AttributeError("Parameter train_weights must be entered.")
         if not self.init_optim:
-            self.optimizer_momentum = optimizer.SGD(
-                params=weights, lr=get_lr(self.lr), momentum=self.momentum, weight_decay=self.weight_decay, nesterov=self.nesterov
+            self.optimizer = optimizer.SGD(
+                params=weights, lr=self.lr, momentum=self.momentum, weight_decay=self.weight_decay, nesterov=self.nesterov
             )
             self.init_optim = True
-        self.optimizer_momentum.zero_grad()
+        self.optimizer.zero_grad()
         loss.backward()
 
         if self.grad_clip is not None:
             self.grad_clip(weights)
 
-        if return_grad ==True:
+        if return_grad:
             return _grads(weights)
         else:
             return None
+
+    def step(self, loss=None):
+        self.optimizer.step(loss)
+
+    def zero_grad(self):
+        self.optimizer.zero_grad()
+
 
 
 def Lamb(**kwargs):
@@ -371,11 +487,12 @@ def LARS(**kwargs):
     raise Exception('LARS optimizer function not implemented')
 
 
-def _grads(weights):
+def _grads(weights, optimizer_adam):
     grads = []
     for w in weights:
-        grads.append(w.grad)
+        grads.append(w.opt_grad(optimizer_adam))
     return grads
+
 
 def get_lr(lr):
     if isinstance(lr, LRScheduler):
