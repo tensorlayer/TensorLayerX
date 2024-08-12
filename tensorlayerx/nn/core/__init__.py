@@ -13,5 +13,7 @@ elif BACKEND == 'torch':
     from .core_torch import *
 elif BACKEND == 'oneflow':
     from .core_oneflow import *
+elif BACKEND == 'jittor':
+    from .core_jittor import *
 else:
     raise ("Unsupported backend:", BACKEND)

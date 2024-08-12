@@ -1,39 +1,46 @@
-################################ TensorLayerX and TensorFlow can be mixed programming. #################################
+################################ TensorLayerX and Jittor can be mixed programming. #################################
+
 import os
-os.environ['TL_BACKEND'] = 'tensorflow'
-
-import numpy as np
 import time
-
-import tensorflow as tf
+import numpy as np
 import tensorlayerx as tlx
-from tensorlayerx.nn import Module
-from tensorlayerx.nn import Linear, Dropout
+import jittor as jt
+from jittor import nn, optim
+from tensorlayerx.nn import Module, Linear, Dropout
+from tensorlayerx.dataflow import Dataset, DataLoader
+from tqdm import tqdm
+
+# Enable debug logging
+tlx.logging.set_verbosity(tlx.logging.DEBUG)
+
+# Set the backend environment variable
+os.environ['TL_BACKEND'] = 'jittor'
 
 # Load MNIST data by TensorLayerX
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
 
-def generator_train():
-    inputs = X_train
-    targets = y_train
-    if len(inputs) != len(targets):
-        raise AssertionError("The length of inputs and targets should be equal")
-    for _input, _target in zip(inputs, targets):
-        yield _input, _target
+# Define the MNIST dataset using TensorLayerX
+class MNISTDataset(Dataset):
+    def __init__(self, data, label):
+        self.data = data
+        self.label = label
 
-# Make Dataset by TensorFlow
-train_ds = tf.data.Dataset.from_generator(generator_train, output_types=(tf.float32, tf.int32))
-shuffle_buffer_size = 128
-batch_size = 128
-train_ds = train_ds.shuffle(shuffle_buffer_size)
-train_ds = train_ds.batch(batch_size)
+    def __getitem__(self, index):
+        data = self.data[index].astype('float32')
+        label = self.label[index].astype('int64')
+        return data, label
 
+    def __len__(self):
+        return len(self.data)
 
-# Define the network through tensorlayerx
-class CustomModel(Module):
+# Create DataLoaders for training and testing
+train_dataset = MNISTDataset(data=X_train, label=y_train)
+train_dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True)
 
+# Define a simple MLP model using TensorLayerX
+class MLP(Module):
     def __init__(self):
-        super(CustomModel, self).__init__()
+        super(MLP, self).__init__()
         self.dropout1 = Dropout(p=0.2)
         self.linear1 = Linear(out_features=800, in_features=784)
         self.dropout2 = Dropout(p=0.2)
@@ -50,48 +57,160 @@ class CustomModel(Module):
         out = self.linear3(z)
         return out
 
+# Instantiate the model
+model = MLP()
 
-MLP = CustomModel()
+# Define the loss function
+loss_fn = tlx.losses.softmax_cross_entropy_with_logits
+
+# Define the optimizer using Jittor
+optimizer = optim.Adam(model.trainable_weights, lr=0.0001)
+
+# Custom training loop
 n_epoch = 50
-batch_size = 500
 print_freq = 1
-train_weights = MLP.trainable_weights
-# Define the optimizer through tensorlayerx
-optimizer = tlx.optimizers.Adam(lr=0.0001)
 
-for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
+for epoch in range(n_epoch):
     start_time = time.time()
-    ## iterate over the entire training set once (shuffle the data via training)
-    for X_batch, y_batch in train_ds :
-        MLP.set_train()  # enable dropout
-        with tf.GradientTape() as tape: # use tf.GradientTape() to record gradient
-            ## compute outputs
-            _logits = MLP(X_batch)
-            ## compute loss and update model
-            _loss = tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch)
-        grad = tape.gradient(_loss, train_weights)
-        optimizer.apply_gradients(zip(grad, train_weights))
+    model.set_train()
+    train_loss, train_acc, n_iter = 0, 0, 0
 
-    ## use training and evaluation sets to evaluate the model every print_freq epoch
-    if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
-        print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
-        train_loss, train_acc, n_iter = 0, 0, 0
-        for X_batch, y_batch in train_ds :
-            _logits = MLP(X_batch)
-            train_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch)
-            train_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
-            n_iter += 1
-        print("   train loss: {}".format(train_loss / n_iter))
-        print("   train acc:  {}".format(train_acc / n_iter))
+    with tqdm(total=len(train_dataloader), desc=f"Epoch {epoch + 1}/{n_epoch}", unit="batch") as pbar:
+        for X_batch, y_batch in train_dataloader:
+            X_batch = tlx.convert_to_tensor(X_batch)
+            y_batch = tlx.convert_to_tensor(y_batch)
 
-        val_loss, val_acc, n_iter = 0, 0, 0
-        for X_batch, y_batch in train_ds:
-            _logits = MLP(X_batch)  # is_train=False, disable dropout
-            val_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch)
-            val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
+            # Forward pass
+            _logits = model(X_batch)
+            # Compute loss
+            _loss = loss_fn(_logits, y_batch)
+            # Backward pass and optimization
+            optimizer.step(_loss)
+
+            train_loss += _loss.item()
+            train_acc += np.mean(np.equal(np.argmax(_logits, axis=1), y_batch))
             n_iter += 1
-        print("   val loss: {}".format(val_loss / n_iter))
-        print("   val acc:  {}".format(val_acc / n_iter))
+
+            pbar.set_postfix({'loss': train_loss / n_iter, 'acc': train_acc / n_iter})
+            pbar.update(1)
+
+    # Print training progress
+    print("Epoch {} of {} took {:.2f}s".format(epoch + 1, n_epoch, time.time() - start_time))
+    print("   train loss: {:.6f}".format(train_loss / n_iter))
+    print("   train acc:  {:.6f}".format(train_acc / n_iter))
+
+    # Validation (optional, using training data as a placeholder for validation)
+    val_loss, val_acc, n_iter = 0, 0, 0
+    with tqdm(total=len(train_dataloader), desc="Validation", unit="batch") as pbar:
+        for X_batch, y_batch in train_dataloader:
+            X_batch = tlx.convert_to_tensor(X_batch)
+            y_batch = tlx.convert_to_tensor(y_batch)
+            _logits = model(X_batch)
+            val_loss += loss_fn(_logits, y_batch).item()
+            val_acc += np.mean(np.equal(np.argmax(_logits, axis=1), y_batch))
+            n_iter += 1
+
+            pbar.set_postfix({'val_loss': val_loss / n_iter, 'val_acc': val_acc / n_iter})
+            pbar.update(1)
+    print("   val loss: {:.6f}".format(val_loss / n_iter))
+    print("   val acc:  {:.6f}".format(val_acc / n_iter))
+
+
+
+################################ TensorLayerX and TensorFlow can be mixed programming. #################################
+# import os
+# os.environ['TL_BACKEND'] = 'tensorflow'
+
+# import numpy as np
+# import time
+
+# import tensorflow as tf
+# import tensorlayerx as tlx
+# from tensorlayerx.nn import Module
+# from tensorlayerx.nn import Linear, Dropout
+
+# # Load MNIST data by TensorLayerX
+# X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
+
+# def generator_train():
+#     inputs = X_train
+#     targets = y_train
+#     if len(inputs) != len(targets):
+#         raise AssertionError("The length of inputs and targets should be equal")
+#     for _input, _target in zip(inputs, targets):
+#         yield _input, _target
+
+# # Make Dataset by TensorFlow
+# train_ds = tf.data.Dataset.from_generator(generator_train, output_types=(tf.float32, tf.int32))
+# shuffle_buffer_size = 128
+# batch_size = 128
+# train_ds = train_ds.shuffle(shuffle_buffer_size)
+# train_ds = train_ds.batch(batch_size)
+
+
+# # Define the network through tensorlayerx
+# class CustomModel(Module):
+
+#     def __init__(self):
+#         super(CustomModel, self).__init__()
+#         self.dropout1 = Dropout(p=0.2)
+#         self.linear1 = Linear(out_features=800, in_features=784)
+#         self.dropout2 = Dropout(p=0.2)
+#         self.linear2 = Linear(out_features=800, act=tlx.nn.ReLU, in_features=800)
+#         self.dropout3 = Dropout(p=0.2)
+#         self.linear3 = Linear(out_features=10, act=tlx.nn.ReLU, in_features=800)
+
+#     def forward(self, x):
+#         z = self.dropout1(x)
+#         z = self.linear1(z)
+#         z = self.dropout2(z)
+#         z = self.linear2(z)
+#         z = self.dropout3(z)
+#         out = self.linear3(z)
+#         return out
+
+
+# MLP = CustomModel()
+# n_epoch = 50
+# batch_size = 500
+# print_freq = 1
+# train_weights = MLP.trainable_weights
+# # Define the optimizer through tensorlayerx
+# optimizer = tlx.optimizers.Adam(lr=0.0001)
+
+# for epoch in range(n_epoch):  ## iterate the dataset n_epoch times
+#     start_time = time.time()
+#     ## iterate over the entire training set once (shuffle the data via training)
+#     for X_batch, y_batch in train_ds :
+#         MLP.set_train()  # enable dropout
+#         with tf.GradientTape() as tape: # use tf.GradientTape() to record gradient
+#             ## compute outputs
+#             _logits = MLP(X_batch)
+#             ## compute loss and update model
+#             _loss = tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch)
+#         grad = tape.gradient(_loss, train_weights)
+#         optimizer.apply_gradients(zip(grad, train_weights))
+
+#     ## use training and evaluation sets to evaluate the model every print_freq epoch
+#     if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+#         print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+#         train_loss, train_acc, n_iter = 0, 0, 0
+#         for X_batch, y_batch in train_ds :
+#             _logits = MLP(X_batch)
+#             train_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch)
+#             train_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
+#             n_iter += 1
+#         print("   train loss: {}".format(train_loss / n_iter))
+#         print("   train acc:  {}".format(train_acc / n_iter))
+
+#         val_loss, val_acc, n_iter = 0, 0, 0
+#         for X_batch, y_batch in train_ds:
+#             _logits = MLP(X_batch)  # is_train=False, disable dropout
+#             val_loss += tlx.losses.softmax_cross_entropy_with_logits(_logits, y_batch)
+#             val_acc += np.mean(np.equal(np.argmax(_logits, 1), y_batch))
+#             n_iter += 1
+#         print("   val loss: {}".format(val_loss / n_iter))
+#         print("   val acc:  {}".format(val_acc / n_iter))
 
 ################################ TensorLayerX and MindSpore can be mixed programming. #################################
 # import os

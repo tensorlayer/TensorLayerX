@@ -4,10 +4,14 @@
 # TensorlayerX目前支持包括TensorFlow、Pytorch、PaddlePaddle、MindSpore作为计算后端，指定计算后端的方法也非常简单，只需要设置环境变量即可
 
 import os
-os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'paddle'
+
+os.environ['TL_BACKEND'] = 'jittor'
 # os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'torch'
+
+
 
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
@@ -54,6 +58,7 @@ class CNN(Module):
         z = self.linear1(z)
         z = self.linear2(z)
         return z
+        
 
 
 # get the network
@@ -70,7 +75,7 @@ shuffle_buffer_size = 128
 
 # 定义损失函数、优化器等
 loss_fn=tlx.losses.softmax_cross_entropy_with_logits
-optimizer = tlx.optimizers.Adam(learning_rate)
+optimizer = tlx.optimizers.Adam(lr=learning_rate)
 metrics = tlx.metrics.Accuracy()
 
 

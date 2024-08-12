@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-os.environ['TL_BACKEND'] = 'tensorflow'
+# os.environ['TL_BACKEND'] = 'tensorflow'
+os.environ['TL_BACKEND'] = 'jittor'
 # os.environ['TL_BACKEND'] = 'paddle'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'torch'
@@ -61,11 +62,11 @@ class CNN(Module):
         z = self.conv1(x)
         print("conv1 outputs:", z[1, :, :, 1])
         z = self.maxpool1(z)
-        print("maxpool outputs:", z[1, :, :, 1])
+        # print("maxpool outputs:", z[1, :, :, 1])
         z = self.conv2(z)
-        print("conv2 outputs:", z[1, :, :, 1])
+        # print("conv2 outputs:", z[1, :, :, 1])
         z = self.maxpool2(z)
-        print("max2 outputs:", z[1, :, :, 1])
+        # print("max2 outputs:", z[1, :, :, 1])
         z = self.flatten(z)
         z = self.linear1(z)
         z = self.linear2(z)
@@ -87,7 +88,7 @@ class CNN(Module):
 #  and imported into TensorFlow/PyTorch/PaddlePaddle/MindSpore.
 cnn = CNN()
 # cnn.save_standard_weights('./cnn.npz')
-cnn.load_standard_weights('./cnn.npz', weights_from='torch', weights_to='tensorflow')
+cnn.load_standard_weights('./cnn.npz', weights_from='torch', weights_to='tensorflow', skip= True)
 cnn.set_eval()
 
 inputs = tlx.nn.Input(shape=(10, 28, 28, 3), dtype=tlx.float32)

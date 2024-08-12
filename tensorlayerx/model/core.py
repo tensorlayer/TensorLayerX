@@ -5,9 +5,9 @@ from collections.abc import Iterable
 
 from tensorlayerx.nn.core.common import _save_weights, _load_weights, \
     _save_standard_weights_dict, _load_standard_weights_dict
-from .utils import WithLoss, WithGradPD, WithGradMS, WithGradTF, TrainOneStepWithPD, \
-    TrainOneStepWithMS, TrainOneStepWithTH, TrainOneStepWithTF, GradWrap, \
-    TrainOneStepWithGradientClippingTF, TrainOneStepWithGradientClippingPD, TrainOneStepWithGradientClippingTH
+from .utils import WithLoss, WithGradPD, WithGradMS, WithGradTF,WithGradJT, TrainOneStepWithPD, \
+    TrainOneStepWithMS, TrainOneStepWithTH,TrainOneStepWithJT, TrainOneStepWithTF, GradWrap, \
+    TrainOneStepWithGradientClippingTF,TrainOneStepWithGradientClippingJT, TrainOneStepWithGradientClippingPD, TrainOneStepWithGradientClippingTH
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module
 import numpy as np
@@ -23,7 +23,8 @@ if tlx.BACKEND == 'paddle':
     import paddle as pd
 if tlx.BACKEND == 'torch':
     import torch
-
+if tlx.BACKEND == 'jittor':
+    import jittor as jt
 __all__ = ['Model', 'WithLoss', 'WithGrad', 'TrainOneStep', 'TrainOneStepWithGradientClipping']
 
 
@@ -126,6 +127,14 @@ class Model:
                 train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
                 print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset,
             )
+
+        elif tlx.BACKEND == "jittor":
+            self.jt_train(
+                n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
+                train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
+                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset,
+            )
+
 
     def eval(self, test_dataset):
         self.network.set_eval()
@@ -628,6 +637,84 @@ class Model:
                 progress.advance(epoch_tqdm, advance=1)
                 progress.reset(batch_tqdm)
 
+
+    def jt_train(
+        self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
+        print_freq, test_dataset
+    ):
+        # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        # network = network.to(device)
+        with Progress(TextColumn("[progress.description]{task.description}"),
+                      BarColumn(),
+                      TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                      TimeRemainingColumn(),
+                      TimeElapsedColumn()) as progress:
+
+            n_batch = len(train_dataset)
+            epoch_tqdm = progress.add_task(description="[red]Epoch progress 0/{}".format(n_epoch), total=n_epoch)
+            batch_tqdm = progress.add_task(description="[green]Batch progress 0/{}".format(n_batch), total=n_batch)
+
+            for epoch in range(n_epoch):
+                start_time = time.time()
+
+                train_loss, train_acc, n_iter = 0, 0, 0
+                for batch, (X_batch, y_batch) in enumerate(train_dataset):
+                    network.set_train()
+                    output = network(X_batch)
+                    loss = loss_fn(output, y_batch)
+                    # optimizer.apply_gradients(loss, train_weights)
+                    # grads = optimizer.gradient(loss, train_weights)
+                    # optimizer.apply_gradients(zip(grads, train_weights))
+
+                    optimizer.set(train_weights)
+                    optimizer.zero_grad()
+                    optimizer.step(loss)
+                    train_loss += loss.item()
+               
+                    if metrics:
+                        metrics.update(y_pred=output,y_true= y_batch)
+                        train_acc += metrics.result() 
+                        metrics.reset()
+                    else:
+                        train_acc += np.mean(np.equal(np.argmax(output, axis=1), y_batch))
+                    n_iter += 1
+
+                    if print_train_batch:
+                        print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                        print("   train loss: {}".format(train_loss / n_iter))
+                        print("   train acc:  {}".format(train_acc / n_iter))
+                    progress.advance(batch_tqdm, advance=1)
+                    progress.update(batch_tqdm, description="[green]Batch progress {}/{}".format(batch + 1, n_batch))
+
+                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+
+                    print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                    print("   train loss: {}".format(train_loss / n_iter))
+                    print("   train acc:  {}".format(train_acc / n_iter))
+
+                if test_dataset:
+                    # use training and evaluation sets to evaluate the model every print_freq epoch
+                    if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+                        network.set_eval()
+                        val_loss, val_acc, n_iter = 0, 0, 0
+                        for X_batch, y_batch in test_dataset:
+                            _logits = network(X_batch)  # is_train=False, disable dropout
+                            val_loss += loss_fn(_logits, y_batch)
+                            if metrics:
+                                metrics.update(_logits, y_batch)
+                                val_acc += metrics.result()
+                                metrics.reset()
+                            else:
+                                val_acc += (_logits.argmax(1) == y_batch).type(jt.float).mean().item()
+                            n_iter += 1
+                        print("   val loss: {}".format(val_loss / n_iter))
+                        print("   val acc:  {}".format(val_acc / n_iter))
+                progress.update(epoch_tqdm, description="[red]Epoch progress {}/{}".format(epoch + 1, n_epoch))
+                progress.advance(epoch_tqdm, advance=1)
+                progress.reset(batch_tqdm)
+
+
+
 class WithGrad(object):
     """Module that returns the gradients.
 
@@ -659,6 +746,8 @@ class WithGrad(object):
             self.net_with_grad = WithGradMS(network, loss_fn, optimizer)
         elif tlx.BACKEND == 'paddle':
             self.net_with_grad = WithGradPD(network, loss_fn, optimizer)
+        elif tlx.BACKEND == 'jittor':
+            self.net_with_grad = WithGradJT(network, loss_fn, optimizer)            
         else:
             raise NotImplementedError("This backend is not supported")
 
@@ -705,6 +794,8 @@ class TrainOneStep(object):
             self.net_with_train = TrainOneStepWithPD(net_with_loss, optimizer, train_weights)
         elif tlx.BACKEND == 'torch':
             self.net_with_train = TrainOneStepWithTH(net_with_loss, optimizer, train_weights)
+        elif tlx.BACKEND == 'jittor':
+            self.net_with_train = TrainOneStepWithJT(net_with_loss, optimizer, train_weights)
         else:
             raise NotImplementedError("This backend is not supported")
 
@@ -757,6 +848,9 @@ class TrainOneStepWithGradientClipping(object):
                 net_with_loss, optimizer, train_weights, gradient_clipping)
         elif tlx.BACKEND == 'torch':
             self.net_weith_train = TrainOneStepWithGradientClippingTH(
+                net_with_loss, optimizer, train_weights, gradient_clipping)
+        elif tlx.BACKEND == 'jittor':
+            self.net_weith_train = TrainOneStepWithGradientClippingJT(
                 net_with_loss, optimizer, train_weights, gradient_clipping)
         else:
             raise NotImplementedError("This backend is not supported")

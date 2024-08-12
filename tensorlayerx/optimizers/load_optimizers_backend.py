@@ -14,5 +14,7 @@ elif BACKEND == 'torch':
     from .torch_optimizers import *
 elif BACKEND == 'oneflow':
     from .oneflow_optimizers import *
+elif BACKEND == 'jittor':
+    from .jittor_optimizers import *
 else:
     raise NotImplementedError("This backend is not supported")

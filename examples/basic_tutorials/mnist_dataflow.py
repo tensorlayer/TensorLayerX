@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-os.environ['TL_BACKEND'] = 'tensorflow'
+# os.environ['TL_BACKEND'] = 'tensorflow'
+os.environ['TL_BACKEND'] = 'jittor'
+
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
 

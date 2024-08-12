@@ -75,6 +75,10 @@ if tlx.BACKEND == 'paddle':
 if tlx.BACKEND == 'torch':
     import torch
 
+if tlx.BACKEND == 'jittor':
+    import jittor
+
+
 if sys.version_info[0] == 2:
     from urllib import urlretrieve
 else:
@@ -1805,6 +1809,8 @@ def save_npz(save_list=None, name='model.npz'):
         save_list_var = ms_variables_to_numpy(save_list)
     elif tlx.BACKEND == 'paddle':
         save_list_var = pd_variables_to_numpy(save_list)
+    elif tlx.BACKEND == 'jittor':
+        save_list_var = jt_variables_to_numpy(save_list)        
     elif tlx.BACKEND == 'torch':
         save_list_var = th_variables_to_numpy(save_list)
     else:
@@ -1904,6 +1910,10 @@ def assign_weights(weights, network):
     elif tlx.BACKEND == 'torch':
         for idx, param in enumerate(weights):
             assign_th_variable(network.all_weights[idx], param)
+    elif tlx.BACKEND == 'jittor':
+        for idx, param in enumerate(weights):
+            assign_jt_variable(network.all_weights[idx], param)
+
 
     else:
         raise NotImplementedError("This backend is not supported")
@@ -1959,6 +1969,8 @@ def save_npz_dict(save_list=None, name='model.npz'):
         save_list_var = tf_variables_to_numpy(save_list)
     elif tlx.BACKEND == 'mindspore':
         save_list_var = ms_variables_to_numpy(save_list)
+    elif tlx.BACKEND == 'jittor':
+        save_list_var = jt_variables_to_numpy(save_list)
     elif tlx.BACKEND == 'paddle':
         save_list_var = pd_variables_to_numpy(save_list)
     elif tlx.BACKEND == 'torch':
@@ -1969,8 +1981,16 @@ def save_npz_dict(save_list=None, name='model.npz'):
             save_list_var.append(values.cpu().detach().numpy())
     else:
         raise NotImplementedError('Not implemented')
+    
+    
     save_var_dict = {save_list_names[idx]: val for idx, val in enumerate(save_list_var)}
-    np.savez(name, **save_var_dict)
+
+    if isinstance(save_var_dict, dict):
+        save_var_dict = {str(k): v for k, v in save_var_dict.items()}
+        np.savez(name, **save_var_dict)
+    else:
+        raise ValueError("save_var_dict must be a dictionary")
+
     save_list_var = None
     save_var_dict = None
     del save_list_var
@@ -1978,7 +1998,8 @@ def save_npz_dict(save_list=None, name='model.npz'):
     logging.info("[*] Model saved in npz_dict %s" % name)
 
 
-def load_and_assign_npz_dict(name='model.npz', network=None, skip=False):
+def load_and_assign_npz_dict(name='model.npz', network=None, skip=False, name_map=None):
+
     """Restore the parameters saved by ``tlx.files.save_npz_dict()``.
 
     Parameters
@@ -2003,16 +2024,20 @@ def load_and_assign_npz_dict(name='model.npz', network=None, skip=False):
     if tlx.BACKEND == 'torch':
         net_weights_name = [n for n, v in network.named_parameters()]
         torch_weights_dict = {n: v for n, v in network.named_parameters()}
+    elif tlx.BACKEND == 'jittor':
+        net_weights_name = [w.name() for w in network.all_weights]
+																		 
     else:
         net_weights_name = [w.name for w in network.all_weights]
 
     for key in weights.keys():
+																		
         if key not in net_weights_name:
             if skip:
                 logging.warning("Weights named '%s' not found in network. Skip it." % key)
             else:
                 raise RuntimeError(
-                    "Weights named '%s' not found in network. Hint: set argument skip=Ture "
+                    "Weights named '%s' not found in network. Hint: set argument skip=True "
                     "if you want to skip redundant or mismatch weights." % key
                 )
         else:
@@ -2025,6 +2050,8 @@ def load_and_assign_npz_dict(name='model.npz', network=None, skip=False):
                 assign_pd_variable(network.all_weights[net_weights_name.index(key)], weights[key])
             elif tlx.BACKEND == 'torch':
                 assign_th_variable(torch_weights_dict[key], weights[key])
+            elif tlx.BACKEND == 'jittor':
+                network.all_weights[net_weights_name.index(key)].update(weights[key])
             else:
                 raise NotImplementedError('Not implemented')
 
@@ -2493,6 +2520,16 @@ def th_variables_to_numpy(variables):
     return results
 
 
+def jt_variables_to_numpy(variables):
+    if not isinstance(variables, list):
+        var_list = [variables]
+    else:
+        var_list = variables
+    results = [v.cpu().detach().numpy() for v in var_list]
+    return results
+
+
+
 def assign_tf_variable(variable, value):
     """Assign value to a TF variable"""
     variable.assign(value)
@@ -2522,6 +2559,10 @@ def assign_th_variable(variable, value):
     variable.data = torch.as_tensor(value)
 
 
+def assign_jt_variable(variable, value):
+    variable.set_value(value)
+
+
 def _save_weights_to_hdf5_group(f, save_list):
     """
     Save layer/model weights into hdf5 group recursively.
@@ -2546,6 +2587,9 @@ def _save_weights_to_hdf5_group(f, save_list):
         save_list_var = ms_variables_to_numpy(save_list)
     elif tlx.BACKEND == 'paddle':
         save_list_var = pd_variables_to_numpy(save_list)
+    elif tlx.BACKEND == 'jittor':
+        save_list_var = jt_variables_to_numpy(save_list)
+
     elif tlx.BACKEND == 'torch':
         save_list_names = []
         save_list_var = []
@@ -2716,7 +2760,9 @@ def load_hdf5_to_weights_in_order(filepath, network, skip=False):
                 assign_param = Tensor(weights[key], dtype=ms.float32)
                 assign_ms_variable(network.all_weights[net_weights_name.index(key_t)], assign_param)
             elif tlx.BACKEND == 'paddle':
-                assign_pd_variable(network.all_weights[net_weights_name.index(key_t)], weights[key])
+                assign_pd_variable(network.all_weights[net_weights_name.index(key_t)], weights[key])   
+            elif tlx.BACKEND == 'jittor':
+                assign_jt_variable(network.all_weights[net_weights_name.index(key_t)], weights[key])                    
             elif tlx.BACKEND == 'torch':
                 assign_th_variable(torch_weights_dict[key_t], weights[key])
             else:

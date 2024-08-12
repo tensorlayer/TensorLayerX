@@ -3,7 +3,8 @@
 import os
 # os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
-os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'paddle'
+os.environ['TL_BACKEND'] = 'jittor'
 
 from tensorlayerx.nn import Sequential
 from tensorlayerx.nn import Linear
@@ -51,4 +52,4 @@ model = tlx.model.Model(
 )
 model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=False)
 model.save_weights('./model.npz', format='npz_dict')
-model.load_weights('./model.npz', format='npz_dict')
+model.load_weights('./model.npz', format='npz_dict', skip = True)
