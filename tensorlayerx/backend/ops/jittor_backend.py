@@ -72,7 +72,7 @@ def zeros(shape, dtype=None, device = None):
     if device == 'gpu':
         jt.flags.use_cuda = 1
     
-    return jt.zeros(shape=shape, dtype=dtype)
+    return jt.zeros(shape, dtype)
 
 
 def ones(shape, dtype=None, device = None):
@@ -545,7 +545,7 @@ def reduce_mean(input_tensor, axis=None, keepdims=False):
     if axis is not None:
         if isinstance(axis, (tuple, list)):
             axis = tuple(axis)
-        return jt.mean(input_tensor, dims=axis, keepdims=keepdims)
+        return jt.mean(input_tensor, dim=axis, keepdims=keepdims)
     else:
         return jt.mean(input_tensor)
 

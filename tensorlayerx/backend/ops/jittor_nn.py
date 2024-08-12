@@ -552,7 +552,7 @@ def same_padding(input, weight, strides, dilations):
     # H(out) = = floor( --------------------------------------------------------------   + 1 )
     #                                        stride[0]
 
-    print(type(weight))
+
     if isinstance(weight, jt.Var):
         if len(input.shape) == 3:
             filter_rows = weight.size(2)
@@ -594,9 +594,6 @@ def same_padding(input, weight, strides, dilations):
         out_cols = (input_cols + strides[1] - 1) // strides[1]
 
 
-        # print(f"4D output rows: {out_rows}, output cols: {out_cols}")
-        # print(f"4D dilations: {dilations}")
-
 
         padding_rows = max(0, (out_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - input_rows)
         padding_cols = max(0, (out_cols - 1) * strides[1] + (filter_cols - 1) * dilations[1] + 1 - input_cols)
@@ -609,11 +606,6 @@ def same_padding(input, weight, strides, dilations):
         # if cols_odd:
         #     padding_cols += 1
         
-        # print(f"Filter Rows: {filter_rows}, Filter Cols: {filter_cols}")
-        # print(f"Input Rows: {input_rows}, Input Cols: {input_cols}")
-        # print(f"Output Rows: {out_rows}, Output Cols: {out_cols}")
-        # print(f"Padding Rows: {padding_rows}, Padding Cols: {padding_cols}")
-        # print(f"Rows Odd: {rows_odd}, Cols Odd: {cols_odd}")
 
         return rows_odd, cols_odd, padding_rows, padding_cols
 
@@ -653,15 +645,10 @@ class Conv2D(object):
             self.strides = (strides[1], strides[2])
             self.dilations = (dilations[1], dilations[2])
         self.groups = groups
-        # print(f"strides =  {strides}")
+
 
     def __call__(self, input, filters):
-        # print(f"Conv2D_Input shape: {input.shape}")
-        # print(f"Conv2D_Filters shape: {filters.shape}")
-        # print(f"Conv2D_Strides: {self.strides}")
-        # print(f"Conv2D_Padding: {self.padding}")
-        # print(f"Conv2D_Dilations: {self.dilations}")
-        # print(f"Conv2D_Groups: {self.groups}")
+ 
 
         if self.data_format == 'NHWC':
             input = nhwc_to_nchw(input)
@@ -678,7 +665,6 @@ class Conv2D(object):
 
     def conv2d_same_padding(self, input, weight, bias=None):
         rows_odd, cols_odd, padding_rows, padding_cols = same_padding(input, weight, self.strides, self.dilations)
-        # print(f"Padding rows: {padding_rows}, Padding cols: {padding_cols}")
         if rows_odd or cols_odd:
             input = nn.pad(input, [0, int(cols_odd), 0, int(rows_odd)])
 
@@ -1316,10 +1302,7 @@ def same_padding_deconvolution(input, weight, strides, dilations):
         out_cols = (input_cols - 1) * strides[1] + filter_cols
         out_depth = (input_depth - 1) * strides[2] + filter_depth
 
-        # print(f"SAME_PADDING_Stride : {strides}")
-        # print(f"out_rows = {input_rows} * {strides[0]} - {strides[0]} + 1")
-        # print(f"out_cols = {input_cols} * {strides[1]} - {strides[1]} + 1")
-        # print(f"out_depth = {input_depth} * {strides[2]} - {strides[2]} + 1")
+
 
 
         padding_rows = max(0, (input_rows - 1) * strides[0] + (filter_rows - 1) * dilations[0] + 1 - out_rows)
@@ -1330,12 +1313,6 @@ def same_padding_deconvolution(input, weight, strides, dilations):
         cols_odd = (padding_cols % 2 != 0)
         depth_odd = (padding_depth % 2 != 0)
 
-        # print(f"SAME_PADDING_Filter: {filter_rows}, {filter_cols}, {filter_depth if 'filter_depth' in locals() else 'N/A'}")
-        # print(f"SAME_PADDING_Input : {input_rows}, {input_cols}, {input_depth}")
-        # print(f"SAME_PADDING_Output : {out_rows}, {out_cols}, {out_depth}")
-
-        # print(f"SAME_PADDING_Padding: {padding_rows}, {padding_cols},  {padding_depth}")
-        # print(f"SAME_PADDING_Rows Odd: {rows_odd}, Cols Odd: {cols_odd}, Depth Odd: {depth_odd}")
 
         return rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth
 
@@ -1632,12 +1609,9 @@ class Conv3d_transpose(object):
         self.name = name
         self.out_channel = out_channel
         self.data_format, self.padding = preprocess_3d_format(data_format, padding)
-        
-        # print(f'__init__Conv3D_TRANSPOSE_Stride = {self.strides}' )
-        # print(f'__init__SAME_PADDING_Dialation = {self.dilations}' )      
+
 
     def __call__(self, input, filters):
-        # print(f"conv3D_Transpose_Call: input shape={input.shape}, filters shape={filters.shape}")
         if self.data_format == 'NDHWC':
             input = nhwc_to_nchw(input)
 
@@ -1658,9 +1632,6 @@ class Conv3d_transpose(object):
 
     def conv3d_transpore_same(self, input, filters):
 
-        # print(f'conv3d_transpore_same_Conv3D_TRANSPOSE_Stride = {self.strides}' )
-        # print(f'conv3d_transpore_same_SAME_PADDING_Dialation = {self.dilations}' )    
-        
         rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth = same_padding_deconvolution(
             input, filters, self.strides, (1, 1, 1))
         
@@ -1861,10 +1832,8 @@ class SeparableConv2D(object):
 
     def __init__(self, strides, padding, data_format, dilations, out_channel, k_size, in_channel, depth_multiplier):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
-        # print(f"SeparableConv2D-_strides = {strides}")
         dilations = dilations[1:] + [dilations[0]]
 
-        # print(f"SeparableConv2D-_dilations = {dilations}")
         self.depthwise_conv = Conv2D(strides, self.padding, self.data_format, dilations, groups=in_channel)
         self.strides = (0,1,1,0)
         self.dialations = (1,1)
@@ -1875,7 +1844,6 @@ class SeparableConv2D(object):
 
         depthwise_conv = self.depthwise_conv(input, filter)
         pointwise_conv = self.pointwise_conv(depthwise_conv, point_filter)
-        # print(f'pointwise_conv  = {pointwise_conv.shape}' )
         return pointwise_conv
 
 
@@ -1987,17 +1955,7 @@ class AdaptiveMaxPool3D(object):
         raise NotImplementedError
     #     if self.data_format == 'NDHWC':
     #         inputs = nhwc_to_nchw(inputs)
-        
-    #     # Debugging print statements
-    #     print(f"Input shape before pooling: {inputs.shape}")
-    #     print(f"Input type before pooling: {type(inputs)}")
 
-    #     output = self.op(inputs)
-
-    #     # Debugging print statements
-    #     print(f"Output shape after pooling: {output.shape}")
-    #     print(f"Output type after pooling: {type(output)}")
-        
     #     if self.data_format == 'NDHWC':
     #         output = nchw_to_nhwc(output)
         # return output

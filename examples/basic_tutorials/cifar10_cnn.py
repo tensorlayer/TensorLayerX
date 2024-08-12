@@ -1,15 +1,16 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
 
+################################ TensorLayerX and Jittor. #################################
+
 import os
 import time
-import numpy as np
 import tensorlayerx as tlx
 from tensorlayerx.dataflow import Dataset, DataLoader
 from tensorlayerx.vision.transforms import (
     Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop
 )
-from tensorlayerx.nn import Conv2d, Linear, Flatten, Module
+from tensorlayerx.nn import Conv2d, Linear, Flatten, Module, MaxPool2d, BatchNorm2d
 from tensorlayerx.optimizers import Adam
 from tqdm import tqdm
 
@@ -18,9 +19,7 @@ tlx.logging.set_verbosity(tlx.logging.DEBUG)
 
 os.environ['TL_BACKEND'] = 'jittor'
 
-
-
-# Download and prepare the CIFAR10 dataset with progress bar
+# Download and prepare the CIFAR10 dataset
 print("Downloading CIFAR10 dataset...")
 X_train, y_train, X_test, y_test = tlx.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
 
@@ -59,58 +58,54 @@ test_dataset = CIFAR10Dataset(data=X_test, label=y_test, transforms=test_transfo
 train_dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True)
 test_dataloader = DataLoader(test_dataset, batch_size=128)
 
-# Define a simple CNN model
+
 class SimpleCNN(Module):
     def __init__(self):
         super(SimpleCNN, self).__init__()
         self.conv1 = Conv2d(16, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=3)
+        self.conv2 = Conv2d(32, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=16)
+        self.maxpool1 = MaxPool2d((2, 2), (2, 2), padding='SAME')
+        self.conv3 = Conv2d(64, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=32)
+        self.bn1 = BatchNorm2d(num_features=64, act=tlx.nn.ReLU)
+        self.conv4 = Conv2d(128, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=64)
+        self.maxpool2 = MaxPool2d((2, 2), (2, 2), padding='SAME')
         self.flatten = Flatten()
-        self.fc1 = Linear(out_features=64, act=tlx.nn.ReLU, in_features=16 * 24 * 24)
-        self.fc2 = Linear(out_features=10, act=None, in_features=64)
+        self.fc1 = Linear(out_features=128, act=tlx.nn.ReLU, in_features=128 * 6 * 6)
+        self.fc2 = Linear(out_features=64, act=tlx.nn.ReLU, in_features=128)
+        self.fc3 = Linear(out_features=10, act=None, in_features=64)
 
     def forward(self, x):
         z = self.conv1(x)
+        z = self.conv2(z)
+        z = self.maxpool1(z)
+        z = self.conv3(z)
+        z = self.bn1(z)
+        z = self.conv4(z)
+        z = self.maxpool2(z)
         z = self.flatten(z)
         z = self.fc1(z)
         z = self.fc2(z)
+        z = self.fc3(z)
         return z
+
 
 # Instantiate the model
 model = SimpleCNN()
 
 # Define the optimizer
-optimizer = Adam(model.trainable_weights, lr=0.001)
+optimizer = Adam(lr=0.001)
+# optimizer = Adam(lr=0.001, params=model.trainable_weights )
 
 # Define the loss function
 loss_fn = tlx.losses.softmax_cross_entropy_with_logits
 
-# Training loop
-n_epoch = 2
-for epoch in range(n_epoch):
-    start_time = time.time()
-    model.set_train()
-    train_loss, n_iter = 0, 0
-
-    with tqdm(total=len(train_dataloader), desc=f"Epoch {epoch + 1}/{n_epoch}", unit="batch") as pbar:
-        for X_batch, y_batch in train_dataloader:
-            X_batch = tlx.convert_to_tensor(X_batch)
-            y_batch = tlx.convert_to_tensor(y_batch)
-            _logits = model(X_batch)
-            loss = loss_fn(_logits, y_batch)
-            
-            optimizer.zero_grad()
-            optimizer.step(loss)
-            
-            train_loss += loss.item()
-            n_iter += 1
-            pbar.update(1)
-
-    print(f"Epoch {epoch + 1} of {n_epoch} took {time.time() - start_time:.2f}s")
-    print(f"   train loss: {train_loss / n_iter:.4f}")
+# Use the built-in training method
+metric = tlx.metrics.Recall()
+tlx_model = tlx.model.Model(network=model, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
+tlx_model.train(n_epoch=2, train_dataset=train_dataloader, print_freq=1, print_train_batch=True)
 
 
-
-################################ TensorLayerX and Jittor can be mixed programming. #################################
+################################ TensorLayerX and Torch. #################################
 
 
 

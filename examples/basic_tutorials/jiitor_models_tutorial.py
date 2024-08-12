@@ -1,142 +1,123 @@
 
+# """"
+# Here we have a Tutorial of Jittor backend being used with several different models, which includes:
 
+# """
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +++++++++++++++++++++++++++++++++++++ Jittor CNN ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++ Jittor CIFAR CNN ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# import os
-# import time
-# import tensorlayerx as tlx
-# from tensorlayerx.dataflow import Dataset, DataLoader
-# from tensorlayerx.vision.transforms import (
-#     Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop
-# )
-# from tensorlayerx.nn import Conv2d, Linear, Flatten, Module, MaxPool2d, BatchNorm2d
-# from tensorlayerx.optimizers import Adam
-# from tqdm import tqdm
+import os
+import time
+import tensorlayerx as tlx
+from tensorlayerx.dataflow import Dataset, DataLoader
+from tensorlayerx.vision.transforms import (
+    Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop
+)
+from tensorlayerx.nn import Conv2d, Linear, Flatten, Module, MaxPool2d, BatchNorm2d
+from tensorlayerx.optimizers import Adam
+from tqdm import tqdm
 
-# # Enable debug logging
-# tlx.logging.set_verbosity(tlx.logging.DEBUG)
+# Enable debug logging
+tlx.logging.set_verbosity(tlx.logging.DEBUG)
 
-# os.environ['TL_BACKEND'] = 'jittor'
+os.environ['TL_BACKEND'] = 'jittor'
 
-# # Download and prepare the CIFAR10 dataset
-# print("Downloading CIFAR10 dataset...")
-# X_train, y_train, X_test, y_test = tlx.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
+# Download and prepare the CIFAR10 dataset
+print("Downloading CIFAR10 dataset...")
+X_train, y_train, X_test, y_test = tlx.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
 
-# # Define the CIFAR10 dataset
-# class CIFAR10Dataset(Dataset):
-#     def __init__(self, data, label, transforms):
-#         self.data = data
-#         self.label = label
-#         self.transforms = transforms
+# Define the CIFAR10 dataset
+class CIFAR10Dataset(Dataset):
+    def __init__(self, data, label, transforms):
+        self.data = data
+        self.label = label
+        self.transforms = transforms
 
-#     def __getitem__(self, idx):
-#         x = self.data[idx].astype('uint8')
-#         y = self.label[idx].astype('int64')
-#         x = self.transforms(x)
-#         return x, y
+    def __getitem__(self, idx):
+        x = self.data[idx].astype('uint8')
+        y = self.label[idx].astype('int64')
+        x = self.transforms(x)
+        return x, y
 
-#     def __len__(self):
-#         return len(self.label)
+    def __len__(self):
+        return len(self.label)
 
-# # Define the CIFAR10 images preprocessing pipeline
-# train_transforms = Compose([
-#     RandomCrop(size=[24, 24]),
-#     RandomFlipHorizontal(),
-#     RandomBrightness(brightness_factor=(0.5, 1.5)),
-#     RandomContrast(contrast_factor=(0.5, 1.5)),
-#     StandardizePerImage()
-# ])
+# Define the CIFAR10 images preprocessing pipeline
+train_transforms = Compose([
+    RandomCrop(size=[24, 24]),
+    RandomFlipHorizontal(),
+    RandomBrightness(brightness_factor=(0.5, 1.5)),
+    RandomContrast(contrast_factor=(0.5, 1.5)),
+    StandardizePerImage()
+])
 
-# test_transforms = Compose([Resize(size=(24, 24)), StandardizePerImage()])
+test_transforms = Compose([Resize(size=(24, 24)), StandardizePerImage()])
 
-# # Create DataLoaders for training and testing
-# print("Processing CIFAR10 dataset...")
-# train_dataset = CIFAR10Dataset(data=X_train, label=y_train, transforms=train_transforms)
-# test_dataset = CIFAR10Dataset(data=X_test, label=y_test, transforms=test_transforms)
+# Create DataLoaders for training and testing
+print("Processing CIFAR10 dataset...")
+train_dataset = CIFAR10Dataset(data=X_train, label=y_train, transforms=train_transforms)
+test_dataset = CIFAR10Dataset(data=X_test, label=y_test, transforms=test_transforms)
 
-# train_dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True)
-# test_dataloader = DataLoader(test_dataset, batch_size=128)
-
-
-# class SimpleCNN(Module):
-#     def __init__(self):
-#         super(SimpleCNN, self).__init__()
-#         self.conv1 = Conv2d(16, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=3)
-#         self.conv2 = Conv2d(32, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=16)
-#         self.maxpool1 = MaxPool2d((2, 2), (2, 2), padding='SAME')
-#         self.conv3 = Conv2d(64, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=32)
-#         self.bn1 = BatchNorm2d(num_features=64, act=tlx.nn.ReLU)
-#         self.conv4 = Conv2d(128, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=64)
-#         self.maxpool2 = MaxPool2d((2, 2), (2, 2), padding='SAME')
-#         self.flatten = Flatten()
-#         self.fc1 = Linear(out_features=128, act=tlx.nn.ReLU, in_features=128 * 6 * 6)
-#         self.fc2 = Linear(out_features=64, act=tlx.nn.ReLU, in_features=128)
-#         self.fc3 = Linear(out_features=10, act=None, in_features=64)
-
-#     def forward(self, x):
-#         z = self.conv1(x)
-#         z = self.conv2(z)
-#         z = self.maxpool1(z)
-#         z = self.conv3(z)
-#         z = self.bn1(z)
-#         z = self.conv4(z)
-#         z = self.maxpool2(z)
-#         z = self.flatten(z)
-#         z = self.fc1(z)
-#         z = self.fc2(z)
-#         z = self.fc3(z)
-#         return z
+train_dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True)
+test_dataloader = DataLoader(test_dataset, batch_size=128)
 
 
+class SimpleCNN(Module):
+    def __init__(self):
+        super(SimpleCNN, self).__init__()
+        self.conv1 = Conv2d(16, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=3)
+        self.conv2 = Conv2d(32, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=16)
+        self.maxpool1 = MaxPool2d((2, 2), (2, 2), padding='SAME')
+        self.conv3 = Conv2d(64, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=32)
+        self.bn1 = BatchNorm2d(num_features=64, act=tlx.nn.ReLU)
+        self.conv4 = Conv2d(128, (3, 3), (1, 1), padding='SAME', act=tlx.nn.ReLU, in_channels=64)
+        self.maxpool2 = MaxPool2d((2, 2), (2, 2), padding='SAME')
+        self.flatten = Flatten()
+        self.fc1 = Linear(out_features=128, act=tlx.nn.ReLU, in_features=128 * 6 * 6)
+        self.fc2 = Linear(out_features=64, act=tlx.nn.ReLU, in_features=128)
+        self.fc3 = Linear(out_features=10, act=None, in_features=64)
+
+    def forward(self, x):
+        z = self.conv1(x)
+        z = self.conv2(z)
+        z = self.maxpool1(z)
+        z = self.conv3(z)
+        z = self.bn1(z)
+        z = self.conv4(z)
+        z = self.maxpool2(z)
+        z = self.flatten(z)
+        z = self.fc1(z)
+        z = self.fc2(z)
+        z = self.fc3(z)
+        return z
 
 
-# # Instantiate the model
-# model = SimpleCNN()
+# Instantiate the model
+model = SimpleCNN()
 
-# # Define the optimizer
-# optimizer = Adam(model.trainable_weights, lr=0.001)
+# Define the optimizer
+optimizer = Adam(lr=0.001)
+# optimizer = Adam(lr=0.001, params=model.trainable_weights )
 
-# # Define the loss function
-# loss_fn = tlx.losses.softmax_cross_entropy_with_logits
+# Define the loss function
+loss_fn = tlx.losses.softmax_cross_entropy_with_logits
 
-# # Training loop
-# n_epoch = 2
-# for epoch in range(n_epoch):
-#     start_time = time.time()
-#     model.set_train()
-#     train_loss, n_iter = 0, 0
-
-#     with tqdm(total=len(train_dataloader), desc=f"Epoch {epoch + 1}/{n_epoch}", unit="batch") as pbar:
-#         for X_batch, y_batch in train_dataloader:
-            
-#             X_batch = tlx.convert_to_tensor(X_batch)
-#             y_batch = tlx.convert_to_tensor(y_batch)
-#             _logits = model(X_batch)
-#             loss = loss_fn(_logits, y_batch)
-#             optimizer.zero_grad()
-#             optimizer.step(loss)
-            
-#             train_loss += loss.item()  # Using .item() to get the scalar value
-#             n_iter += 1
-#             pbar.update(1)
-
-#     print(f"Epoch {epoch + 1} of {n_epoch} took {time.time() - start_time:.2f}s")
-#     print(f"   train loss: {train_loss / n_iter:.4f}")
-
-
+# Use the built-in training method
+metric = tlx.metrics.Accuracy()
+tlx_model = tlx.model.Model(network=model, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
+tlx_model.train(n_epoch=2, train_dataset=train_dataloader, print_freq=1, print_train_batch=True)
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +++++++++++++++++++++++++++++++++++++ Jittor LSTM ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++ Jittor IMDB LSTM ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 # import os
 # import sys
 # import tensorlayerx as tlx
-# from tensorlayerx.nn import Module, Linear, LSTM, Embedding
+# from tensorlayerx.nn import Module, LSTM, Embedding, Linear
 # from tensorlayerx.dataflow import Dataset
-# from keras.datasets import imdb
-# from keras.preprocessing import sequence
 # import numpy as np
+
 # os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 # os.environ['TL_BACKEND'] = 'jittor'
 # sys.setrecursionlimit(10000)  # Increase recursion limit
@@ -144,15 +125,9 @@
 # # Set parameters
 # max_features = 20000
 # maxlen = 200
-
 # prev_h = np.random.random([1, 200, 64]).astype(np.float32)
 # prev_h = tlx.convert_to_tensor(prev_h)
-
-# # Load and preprocess the IMDB dataset
-# (X_train, y_train), (X_test, y_test) = imdb.load_data(num_words=max_features)
-# X_train = sequence.pad_sequences(X_train, maxlen=maxlen)
-# X_test = sequence.pad_sequences(X_test, maxlen=maxlen)
-
+# X_train, y_train, X_test, y_test = tlx.files.load_imdb_dataset('data', nb_words=20000, test_split=0.2)
 # vocab_size = max_features
 # seq_Len = 200
 
@@ -209,7 +184,7 @@
 # print(net)
 
 # # Define optimizer, metric, and loss function using TLX functions
-# optimizer = tlx.optimizers.Adam(lr=1e-3, params=net.trainable_weights)
+# optimizer = tlx.optimizers.Adam(lr=1e-3)
 # metric = tlx.metrics.Accuracy()
 # loss_fn = tlx.losses.softmax_cross_entropy_with_logits
 
@@ -217,11 +192,8 @@
 # model = tlx.model.Model(network=net, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
 # model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=True)
 
-
-
-
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# +++++++++++++++++++++++++++++++++++++ Jittor MLP ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++ Jittor MNIST MLP ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # # ! /usr/bin/python
 # # -*- coding: utf-8 -*-
@@ -296,7 +268,7 @@
 # # Get training parameters
 # train_weights = MLP.trainable_weights
 # # Define the optimizer, use the Momentum optimizer, and set the learning rate to 0.05, momentum to 0.9
-# optimizer = tlx.optimizers.Momentum(lr=0.05, momentum= 0.9, params = train_weights )
+# optimizer = tlx.optimizers.Momentum(lr=0.05, momentum= 0.9 )
 # # Define evaluation metrics.
 # metric = tlx.metrics.Accuracy()
 # # Define loss function, this operator implements the cross entropy loss function with softmax. This function
@@ -315,11 +287,12 @@
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++++++++++++++++++++++++++++++++++++ Jittor MNIST Sequential ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#! /usr/bin/python
+# ! /usr/bin/python
 # -*- coding: utf-8 -*-
 # import os
 # os.environ['TL_BACKEND'] = 'jittor'
 
+# # os.environ['TL_BACKEND'] = 'torch'
 
 # from tensorlayerx.nn import Sequential
 # from tensorlayerx.nn import Linear
@@ -358,7 +331,7 @@
 # shuffle_buffer_size = 128
 
 # train_weights = MLP.trainable_weights
-# optimizer = tlx.optimizers.Momentum(lr=0.05,momentum= 0.9, params=train_weights)
+# optimizer = tlx.optimizers.Momentum(lr=0.05,momentum= 0.9)
 # train_dataset = mnistdataset(data=X_train, label=y_train)
 # train_loader = tlx.dataflow.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 # metric = tlx.metrics.Accuracy()
@@ -367,14 +340,14 @@
 # )
 # model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=False)
 # model.save_weights('./model.npz', format='npz_dict')
-# model.load_weights('./model.npz', format='npz_dict')
+# model.load_weights('./model.npz', format='npz_dict', skip=True)
 
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++++++++++++++++++++++++++++++++++++ Jittor MNIST GAN ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# #! /usr/bin/python
-# # -*- coding: utf-8 -*-
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
 
 # import os
 # os.environ['TL_BACKEND'] = 'jittor'
@@ -487,22 +460,18 @@
 # # loss_fn = tlx.losses.sigmoid_cross_entropy
 # # optimizer = tlx.optimizers.Momentum(learning_rate=5e-4, momentum=0.5)
 # loss_fn = tlx.losses.mean_squared_error
-
+# # Define the optimizers, use the Adam optimizer.
+# optimizer_g = tlx.optimizers.Adam(lr=3e-4, beta_1=0.5, beta_2=0.999)
+# optimizer_d = tlx.optimizers.Adam(lr=3e-4)
 # # Get training parameters
 # g_weights = G.trainable_weights
 # d_weights = D.trainable_weights
-
 # net_with_loss_G = WithLossG(G, D, loss_fn)
 # net_with_loss_D = WithLossD(G, D, loss_fn)
-
-# # Define the optimizers, use the Adam optimizer.
-# optimizer_g = tlx.optimizers.Adam(lr=3e-4, beta_1=0.5, beta_2=0.999, params= g_weights)
-# optimizer_d = tlx.optimizers.Adam(lr=3e-4, params= d_weights)
-
 # # Initialize one-step training
 # train_one_step_g = TrainOneStep(net_with_loss_G, optimizer_g, g_weights)
 # train_one_step_d = TrainOneStep(net_with_loss_D, optimizer_d, d_weights)
-# n_epoch = 50
+# n_epoch = 2
 
 
 # def plot_fake_image(fake_image, num):
@@ -535,3 +504,96 @@
 #         print("   g loss:  {}".format(g_loss / n_iter))
 #     fake_image = G(tlx.convert_to_tensor(np.random.random(size=(36, 100)), dtype=tlx.float32))
 #     plot_fake_image(fake_image, 36)
+
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++ Jittor IMDB RNN +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+# import os
+# import sys
+# import tensorlayerx as tlx
+# from tensorlayerx.nn import Module, RNN, Embedding, Linear
+# from tensorlayerx.dataflow import Dataset
+# import numpy as np
+					 
+
+# os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+# os.environ['TL_BACKEND'] = 'jittor'
+# sys.setrecursionlimit(10000)  # Increase recursion limit
+
+# # Set parameters
+# max_features = 20000
+# maxlen = 200
+# prev_h = np.random.random([1, 200, 64]).astype(np.float32)
+# prev_h = tlx.convert_to_tensor(prev_h)
+# X_train, y_train, X_test, y_test = tlx.files.load_imdb_dataset('data', nb_words=20000, test_split=0.2)
+# vocab_size = max_features
+# seq_Len = 200
+
+		
+# class ImdbDataset(Dataset):
+					   
+#     def __init__(self, X, y):
+#         self.X = X
+#         self.y = y
+
+#     def __getitem__(self, index):
+#         data = self.X[index]
+#         data = np.concatenate([data[:seq_Len], [0] * (seq_Len - len(data))]).astype('int64')  # set
+#         label = self.y[index].astype('int64')
+#         return data, label
+
+#     def __len__(self):
+#         return len(self.y)
+
+
+# class ImdbNet(Module):
+
+#     def __init__(self):
+#         super(ImdbNet, self).__init__()
+#         self.embedding = Embedding(num_embeddings=vocab_size, embedding_dim=64)
+#         self.rnn = RNN(input_size=64, hidden_size=64)
+#         self.linear1 = Linear(in_features=64, out_features=64, act=tlx.nn.ReLU)
+#         self.linear2 = Linear(in_features=64, out_features=2)
+
+#     def forward(self, x):
+#         x = self.embedding(x)
+#         x, _ = self.rnn(x)
+#         x = tlx.reduce_mean(x, axis=1)
+#         x = self.linear1(x)
+#         x = self.linear2(x)
+#         return x
+
+#     def __repr__(self):
+#         return "ImdbNet(embedding_dim=64, hidden_size=64, num_classes=2)"
+
+#     def __str__(self):
+#         return self.__repr__()
+
+# # Training settings
+# n_epoch = 1
+# batch_size = 64
+# print_freq = 2
+
+# # Create DataLoader
+# train_dataset = ImdbDataset(X=X_train, y=y_train)
+# train_loader = tlx.dataflow.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+
+# # Initialize the network
+# net = ImdbNet()
+# print(net)
+
+# # Define optimizer, metric, and loss function using TLX functions
+# optimizer = tlx.optimizers.Adam(lr=1e-3)
+# metric = tlx.metrics.Accuracy()
+# loss_fn = tlx.losses.softmax_cross_entropy_with_logits
+
+# # Create and train the model
+# model = tlx.model.Model(network=net, loss_fn=loss_fn, optimizer=optimizer, metrics=metric)
+# model.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=True)
+# Optionally, you could now dump the network weights to a file like this:
+# model.save_weights('./rnn_model.npz', format='npz_dict')
+# model.load_weights('./rnn_model.npz', format='npz_dict', skip= True)
+

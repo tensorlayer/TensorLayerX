@@ -35,67 +35,66 @@ class Metric(object):
 
 
 
-
-
-class Accuracy(Metric):
-    def __init__(self, topk=1):
-        super(Accuracy, self).__init__()
-        self.topk = int(topk)  # Ensure topk is an integer
-        self.reset()
+class Accuracy:
+    def __init__(self):
+        self.correct = 0
+        self.total = 0
 
     def update(self, y_pred, y_true):
-        y_pred = jt.argsort(y_pred, dim=-1, descending=True)[0]
-
-        if (len(y_true.shape) == 1) or (len(y_true.shape) == 2 and y_true.shape[-1] == 1):
-            y_true = jt.reshape(y_true, (-1, 1))
-        elif y_true.shape[-1] != 1:
-            y_true = jt.argmax(y_true, dim=-1, keepdim=True)
-
-        correct = y_pred == y_true
-        correct = correct.to(jt.float32)
-        correct = correct.numpy()
-        num_samples = np.prod(np.array(correct.shape[:-1]))
-        num_corrects = correct.sum()
-        self.total += num_corrects
-        self.count += num_samples
+        # Step 1: Get the predicted class labels using argmax
+        y_pred = jt.argmax(y_pred, dim=-1)
+        
+        # Step 2: Ensure y_true is reshaped to match y_pred
+        y_true = np.reshape(y_true, (-1,))
+        
+        # Step 3: Compare the predicted labels to the true labels
+        correct_predictions = np.equal(y_pred, y_true)
+        
+        # Step 4: Count the number of correct predictions
+        num_correct_predictions = np.sum(correct_predictions).item()
+        
+        # Update the running totals
+        self.correct += num_correct_predictions
+        self.total += y_true.shape[0]
 
     def result(self):
-        return float(self.total) / self.count if self.count > 0 else 0.
+        # Calculate the accuracy
+        return self.correct / self.total if self.total > 0 else 0.0
 
     def reset(self):
-        self.total = 0.0
-        self.count = 0.0
+        # Reset the counters
+        self.correct = 0
+        self.total = 0
 
-class Auc(object):
 
-    def __init__(
-        self,
-        curve='ROC',
-        num_thresholds=4095,
-    ):
-        self.curve = curve
+class Auc:
+    def __init__(self, num_thresholds=4095):
         self.num_thresholds = num_thresholds
         self.reset()
 
     def update(self, y_pred, y_true):
-        if isinstance(y_true, jt.array()):
-            y_true = y_true.cpu().numpy()
-        elif not isinstance(y_pred, np.ndarray):
-            raise TypeError("The y_true must be a numpy array or Tensor.")
+        # Convert Jittor tensors to NumPy arrays if necessary
+        if isinstance(y_true, jt.Var):
+            y_true = y_true.numpy()
+        if isinstance(y_pred, jt.Var):
+            y_pred = y_pred.numpy()
 
-        if isinstance(y_pred, jt.array):
-            y_pred = y_pred.cpu().numpy()
-        elif not isinstance(y_pred, np.ndarray):
-            raise TypeError("The y_pred must be a numpy array or Tensor.")
+        # Flatten y_true to ensure it's 1-dimensional
+        y_true = np.reshape(y_true, (-1,))
+        
+        # Get the positive class probabilities
+        pos_prob = y_pred[:, 1]
 
+        # Bin the predictions into thresholds
+        bin_idx = np.floor(pos_prob * self.num_thresholds).astype(int)
+        bin_idx = np.clip(bin_idx, 0, self.num_thresholds)
+
+        # Update the histogram bins
         for i, label in enumerate(y_true):
-            value = y_pred[i, 1]  # positive probability
-            bin_idx = int(value * self.num_thresholds)
-            assert bin_idx <= self.num_thresholds
             if label:
-                self._stat_pos[bin_idx] += 1.0
+                self._stat_pos[bin_idx[i]] += 1
             else:
-                self._stat_neg[bin_idx] += 1.0
+                self._stat_neg[bin_idx[i]] += 1
 
     @staticmethod
     def trapezoid_area(x1, x2, y1, y2):
@@ -105,91 +104,80 @@ class Auc(object):
         tot_pos = 0.0
         tot_neg = 0.0
         auc = 0.0
-        idx = self.num_thresholds
-        while idx > 0:
+
+        for idx in range(self.num_thresholds, 0, -1):
             tot_pos_prev = tot_pos
             tot_neg_prev = tot_neg
             tot_pos += self._stat_pos[idx]
             tot_neg += self._stat_neg[idx]
             auc += self.trapezoid_area(tot_neg, tot_neg_prev, tot_pos, tot_pos_prev)
-            idx -= 1
 
-        return auc / tot_pos / tot_neg if tot_pos > 0.0 and tot_neg > 0.0 else 0.0
+        return auc / (tot_pos * tot_neg) if tot_pos > 0.0 and tot_neg > 0.0 else 0.0
 
     def reset(self):
-        """
-        Reset states and result
-        """
-        _num_pred_buckets = self.num_thresholds + 1
-        self._stat_pos = np.zeros(_num_pred_buckets)
-        self._stat_neg = np.zeros(_num_pred_buckets)
+        self._stat_pos = np.zeros(self.num_thresholds + 1)
+        self._stat_neg = np.zeros(self.num_thresholds + 1)
 
 
-class Precision(object):
-
+class Precision:
     def __init__(self):
         self.reset()
 
     def update(self, y_pred, y_true):
-        if isinstance(y_true, jt.array):
-            y_true = y_true.cpu().numpy()
-        elif not isinstance(y_pred, np.ndarray):
-            raise TypeError("The y_true must be a numpy array or Tensor.")
+        # Convert Jittor tensors to NumPy arrays if necessary
+        if isinstance(y_true, jt.Var):
+            y_true = y_true.numpy()
+        if isinstance(y_pred, jt.Var):
+            y_pred = y_pred.numpy()
 
-        if isinstance(y_pred, jt.array):
-            y_pred = y_pred.cpu().numpy()
-        elif not isinstance(y_pred, np.ndarray):
-            raise TypeError("The y_pred must be a numpy array or Tensor.")
+        # Ensure y_true is reshaped to match y_pred
+        y_true = np.reshape(y_true, (-1,))
+        
+        # Convert probabilities to class predictions
+        y_pred = np.argmax(y_pred, axis=1)
 
-        sample_num = y_true.shape[0]
-        y_pred = np.rint(y_pred).astype('int32')
-
-        for i in range(sample_num):
-            pred = y_pred[i]
-            label = y_true[i]
-            if pred == 1:
-                if pred == label:
-                    self.tp += 1
-                else:
-                    self.fp += 1
+        # Update true positives (tp) and false positives (fp)
+        self.tp += np.sum((y_pred == 1) & (y_true == 1))
+        self.fp += np.sum((y_pred == 1) & (y_true == 0))
 
     def result(self):
-
         ap = self.tp + self.fp
-        return float(self.tp) / ap if ap != 0 else .0
+        return float(self.tp) / ap if ap != 0 else 0.0
 
     def reset(self):
         self.tp = 0
         self.fp = 0
 
 
-class Recall(object):
-
+class Recall:
     def __init__(self):
         self.reset()
 
     def update(self, y_pred, y_true):
-        if isinstance(y_true, jt.array):
-            y_true = y_true.cpu().numpy()
-        elif not isinstance(y_pred, np.ndarray):
-            raise TypeError("The y_true must be a numpy array or Tensor.")
+        # Convert Jittor tensors to NumPy arrays if necessary
+        if isinstance(y_true, jt.Var):
+            y_true = y_true.numpy()
+        if isinstance(y_pred, jt.Var):
+            y_pred = y_pred.numpy()
 
-        if isinstance(y_pred, jt.array):
-            y_pred = y_pred.cpu().numpy()
-        elif not isinstance(y_pred, np.ndarray):
-            raise TypeError("The y_pred must be a numpy array or Tensor.")
+        # Ensure y_true is reshaped to match y_pred
+        y_true = np.reshape(y_true, (-1,))
 
-        sample_num = y_true.shape[0]
-        y_pred = np.rint(y_pred).astype('int32')
+        # Convert probabilities to class predictions
+        y_pred = np.argmax(y_pred, axis=1)
 
-        for i in range(sample_num):
-            pred = y_pred[i]
-            label = y_true[i]
-            if label == 1:
-                if pred == label:
-                    self.tp += 1
-                else:
-                    self.fn += 1
+        # Update true positives (tp) and false negatives (fn)
+        self.tp += np.sum((y_pred == 1) & (y_true == 1))
+        self.fn += np.sum((y_true == 1) & (y_pred == 0))
+
+    def result(self):
+        recall = self.tp + self.fn
+        return float(self.tp) / recall if recall != 0 else 0.0
+
+    def reset(self):
+        self.tp = 0
+        self.fn = 0
+
 
     def result(self):
 

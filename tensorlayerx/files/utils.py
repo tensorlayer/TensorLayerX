@@ -1981,8 +1981,16 @@ def save_npz_dict(save_list=None, name='model.npz'):
             save_list_var.append(values.cpu().detach().numpy())
     else:
         raise NotImplementedError('Not implemented')
+    
+    
     save_var_dict = {save_list_names[idx]: val for idx, val in enumerate(save_list_var)}
-    np.savez(name, **save_var_dict)
+
+    if isinstance(save_var_dict, dict):
+        save_var_dict = {str(k): v for k, v in save_var_dict.items()}
+        np.savez(name, **save_var_dict)
+    else:
+        raise ValueError("save_var_dict must be a dictionary")
+
     save_list_var = None
     save_var_dict = None
     del save_list_var
@@ -1990,7 +1998,8 @@ def save_npz_dict(save_list=None, name='model.npz'):
     logging.info("[*] Model saved in npz_dict %s" % name)
 
 
-def load_and_assign_npz_dict(name='model.npz', network=None, skip=False):
+def load_and_assign_npz_dict(name='model.npz', network=None, skip=False, name_map=None):
+
     """Restore the parameters saved by ``tlx.files.save_npz_dict()``.
 
     Parameters
@@ -2015,16 +2024,20 @@ def load_and_assign_npz_dict(name='model.npz', network=None, skip=False):
     if tlx.BACKEND == 'torch':
         net_weights_name = [n for n, v in network.named_parameters()]
         torch_weights_dict = {n: v for n, v in network.named_parameters()}
+    elif tlx.BACKEND == 'jittor':
+        net_weights_name = [w.name() for w in network.all_weights]
+																		 
     else:
         net_weights_name = [w.name for w in network.all_weights]
 
     for key in weights.keys():
+																		
         if key not in net_weights_name:
             if skip:
                 logging.warning("Weights named '%s' not found in network. Skip it." % key)
             else:
                 raise RuntimeError(
-                    "Weights named '%s' not found in network. Hint: set argument skip=Ture "
+                    "Weights named '%s' not found in network. Hint: set argument skip=True "
                     "if you want to skip redundant or mismatch weights." % key
                 )
         else:
@@ -2037,6 +2050,8 @@ def load_and_assign_npz_dict(name='model.npz', network=None, skip=False):
                 assign_pd_variable(network.all_weights[net_weights_name.index(key)], weights[key])
             elif tlx.BACKEND == 'torch':
                 assign_th_variable(torch_weights_dict[key], weights[key])
+            elif tlx.BACKEND == 'jittor':
+                network.all_weights[net_weights_name.index(key)].update(weights[key])
             else:
                 raise NotImplementedError('Not implemented')
 

@@ -24,7 +24,7 @@ if tlx.BACKEND == 'paddle':
 if tlx.BACKEND == 'torch':
     import torch
 if tlx.BACKEND == 'jittor':
-    import torch
+    import jittor as jt
 __all__ = ['Model', 'WithLoss', 'WithGrad', 'TrainOneStep', 'TrainOneStepWithGradientClipping']
 
 
@@ -662,17 +662,21 @@ class Model:
                     network.set_train()
                     output = network(X_batch)
                     loss = loss_fn(output, y_batch)
+                    # optimizer.apply_gradients(loss, train_weights)
                     # grads = optimizer.gradient(loss, train_weights)
                     # optimizer.apply_gradients(zip(grads, train_weights))
+
+                    optimizer.set(train_weights)
                     optimizer.zero_grad()
                     optimizer.step(loss)
-                    train_loss += loss
+                    train_loss += loss.item()
+               
                     if metrics:
-                        metrics.update(output, y_batch)
-                        train_acc += metrics.result()
+                        metrics.update(y_pred=output,y_true= y_batch)
+                        train_acc += metrics.result() 
                         metrics.reset()
                     else:
-                        train_acc += (output.argmax(1) == y_batch).type(torch.float).mean().item()
+                        train_acc += np.mean(np.equal(np.argmax(output, axis=1), y_batch))
                     n_iter += 1
 
                     if print_train_batch:
@@ -701,7 +705,7 @@ class Model:
                                 val_acc += metrics.result()
                                 metrics.reset()
                             else:
-                                val_acc += (_logits.argmax(1) == y_batch).type(torch.float).mean().item()
+                                val_acc += (_logits.argmax(1) == y_batch).type(jt.float).mean().item()
                             n_iter += 1
                         print("   val loss: {}".format(val_loss / n_iter))
                         print("   val acc:  {}".format(val_acc / n_iter))

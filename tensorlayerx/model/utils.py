@@ -144,9 +144,10 @@ class WithGradJT(object):
         self.network.set_train()
 
     def __call__(self, inputs, label):
-        loss = self.network_with_loss(inputs, label)
-        grads = self.optimizer.gradient(loss, self.train_weights)
-        return grads
+        raise NotImplementedError("WithGradJT not Implemented")
+        # loss = self.network_with_loss(inputs, label)
+        # grads = self.optimizer.gradient(loss, self.train_weights)
+        # return grads
     
 
 
@@ -227,12 +228,14 @@ class TrainOneStepWithJT(object):
         self.optimizer = optimizer
         self.train_weights = train_weights
 
-    def __call__(self, data, label, *args, **kwargs):
-        # loss = self.net_with_loss(data, label, *args, **kwargs)
-        # grads = self.optimizer.gradient(loss, self.train_weights)
-        # self.optimizer.apply_gradients(zip(grads, self.train_weights))
-        # return loss.numpy()
-        return NotImplementedError('TrainOneStep With jittor is not Implemented')
+    def __call__(self, data, label):
+        loss = self.net_with_loss(data, label)
+        self.optimizer.set(self.train_weights)
+        self.optimizer.zero_grad()
+        # if self.grad_clip is not None:
+        #     self.grad_clip(self.train_weights)
+        self.optimizer.step(loss)
+        return loss.numpy()
     
 
 class TrainOneStepWithGradientClippingTF(object):
@@ -296,7 +299,7 @@ class TrainOneStepWithGradientClippingTH(object):
     
 
 class TrainOneStepWithGradientClippingJT(object):
-    def __init__(self, net_with_loss, optimizer, train_weights, gradient_clipping):
+    def __init__(self, net_with_loss, optimizer, train_weights, gradient_clipping=None):
         self.net_with_loss = net_with_loss
         self.optimizer = optimizer
         self.train_weights = train_weights
@@ -304,7 +307,11 @@ class TrainOneStepWithGradientClippingJT(object):
 
     def __call__(self, data, label):
         loss = self.net_with_loss(data, label)
-        grads = self.optimizer.gradient(loss, self.train_weights, grad_clip=self.gradient_clipping)
-        self.optimizer.apply_gradients(zip(grads, self.train_weights))
+        self.optimizer.set(self.train_weights)
+        self.optimizer.zero_grad()
+        
+        if self.gradient_clipping is not None:
+            self.gradient_clipping(self.train_weights)
+            
+        self.optimizer.step()
         return loss.numpy()
-    
