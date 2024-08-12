@@ -89,8 +89,15 @@ class DeformableConv2d(Module):
         self.in_channels = in_channels
 
         self.kernel_n = kernel_size[0] * kernel_size[1]
-        if self.offset_layer.get_shape()[-1] != 2 * self.kernel_n:
-            raise AssertionError("offset.get_shape()[-1] is not equal to: %d" % 2 * self.kernel_n)
+
+        # Check if offset_layer has get_shape method, if not use reshape
+        if hasattr(self.offset_layer, 'get_shape'):
+            offset_shape = self.offset_layer.get_shape()[-1]
+        else:
+            offset_shape = self.offset_layer.shape[-1]
+
+        if offset_shape != 2 * self.kernel_n:
+            raise AssertionError("offset shape[-1] is not equal to: %d" % (2 * self.kernel_n))
 
         logging.info(
             "DeformableConv2d %s: out_channels: %d, kernel_size: %s act: %s" % (

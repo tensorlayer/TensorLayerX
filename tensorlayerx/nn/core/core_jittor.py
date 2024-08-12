@@ -406,7 +406,7 @@ class Sequential(Module):
     #         tensor._info = (new_node, idx)
 
 
-class ModuleList(Module):
+class ModuleList():
     """
     Holds Modules in a list.
 
@@ -448,8 +448,26 @@ class ModuleList(Module):
 
     def __init__(self, modules=None):
         super(ModuleList, self).__init__()
+
+        # Force _modules to be an OrderedDict right after parent's __init__
+        self._modules = OrderedDict()
+
         if modules is not None:
             self.extend(modules)
+        
+    def extend(self, layers):
+        """
+        Appends layers from a Python iterable to the end of the list.
+        """
+        if not isinstance(layers, list):
+            raise TypeError('Modules should be a list of sublayers')
+
+        for layer in layers:
+            if _valid_module(layer):
+                self._modules[str(len(self._modules))] = layer
+                # print(f"self._modules after layers added: {self._modules}")        
+
+        return self
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -503,18 +521,7 @@ class ModuleList(Module):
             length -= 1
         self._modules[str(idx)] = layer
 
-    def extend(self, layers):
-        """
-            Appends layers from a Python iterable to the end of the list.
 
-        """
-
-        if not isinstance(layers, list):
-            raise TypeError('Modules {} should be list of sublayers'.format(layers))
-        for layer in layers:
-            if _valid_module(layer):
-                self._modules[str(len(self))] = layer
-        return self
 
     def append(self, layer):
         """
@@ -527,6 +534,8 @@ class ModuleList(Module):
 
     def forward(self, *inputs):
         raise NotImplementedError
+
+
 
 
 class ModuleDict(Module):
@@ -680,11 +689,14 @@ class ParameterList(Module):
 
 
 
-class ParameterDict(Module):
-
+class ParameterDict():
     def __init__(self, parameters=None):
         super(ParameterDict, self).__init__()
         self._initialized = True
+
+        # Bypass the __setattr__ method's restriction by directly setting _parameters
+        self.__dict__['_parameters'] = OrderedDict()
+        
         if parameters is not None:
             self.update(parameters)
 
@@ -699,12 +711,21 @@ class ParameterDict(Module):
     def __setitem__(self, key, parameter):
         self.register_parameter(key, parameter)
 
+    def register_parameter(self, key, parameter):
+        # Ensure that parameter is of type jt.Var or jt.nn.Parameter
+        if not isinstance(parameter, (jt.Var, jt.nn.Parameter)):
+            raise TypeError(f"Expected jt.nn.Parameter or jt.Var, but got {type(parameter)} for key '{key}'")
+        
+        # Add the parameter to the _parameters dictionary
+        self._parameters[key] = parameter
+        print(f"Registered parameter: {key} -> type: {type(parameter)}, shape: {parameter.shape}")
+
     def __delitem__(self, key):
         del self._parameters[key]
 
     def __setattr__(self, key, value):
         if getattr(self, "_initialized", False):
-            if not hasattr(self, key) and not isinstance(value, jt.nn.Parameter):
+            if not hasattr(self, key) and not isinstance(value, (jt.nn.Parameter, jt.Var)):
                 warnings.warn("Setting attributes on ParameterDict is not supported.")
         super(ParameterDict, self).__setattr__(key, value)
 
@@ -718,7 +739,6 @@ class ParameterDict(Module):
         return reversed(list(self._parameters.keys()))
 
     def copy(self):
-
         return ParameterDict(self._parameters.copy())
 
     def __contains__(self, key):
@@ -742,63 +762,42 @@ class ParameterDict(Module):
         return self._parameters.popitem()
 
     def get(self, key, default=None):
-
         return self._parameters.get(key, default)
 
     def fromkeys(self, keys, default=None):
-
-        return ParameterDict(self._parameters.fromkeys(keys, default))  # type: ignore[arg-type]
+        return ParameterDict(self._parameters.fromkeys(keys, default))
 
     def keys(self):
-
         return self._parameters.keys()
 
     def items(self):
-
         return self._parameters.items()
 
     def values(self):
-
         return self._parameters.values()
 
     def update(self, parameters):
-        if not isinstance(parameters, container_abcs.Iterable):
-            raise TypeError(
-                "ParametersDict.update should be called with an "
-                "iterable of key/value pairs, but got " + type(parameters).__name__
-            )
-
-        if isinstance(parameters, (OrderedDict, ParameterDict)):
-            for key, parameter in parameters.items():
-                self[key] = parameter
-        elif isinstance(parameters, container_abcs.Mapping):
-            for key, parameter in sorted(parameters.items()):
-                self[key] = parameter
-        else:
-            for j, p in enumerate(parameters):
-                if not isinstance(p, container_abcs.Iterable):
-                    raise TypeError(
-                        "ParameterDict update sequence element "
-                        "#" + str(j) + " should be Iterable; is" + type(p).__name__
-                    )
-                if not len(p) == 2:
-                    raise ValueError(
-                        "ParameterDict update sequence element "
-                        "#" + str(j) + " has length " + str(len(p)) + "; 2 is required"
-                    )
-                # parameters as length-2 list too cumbersome to type, see ModuleDict.update comment
-                self[p[0]] = p[1]  # type: ignore[assignment]
+        if not isinstance(parameters, dict):
+            raise TypeError("ParametersDict.update should be called with a dictionary.")
+        
+        for key, parameter in parameters.items():
+            self[key] = parameter
 
     def __call__(self, input):
         raise RuntimeError('ParameterDict should not be called.')
+    
 
+    
 
 def _valid_index(layer_num, index):
+
     if not isinstance(index, int):
         raise TypeError("Index {} is not int type")
     if not -layer_num <= index < layer_num:
         raise IndexError("Index should be a number in range [{}, {}), but got {}".format(-layer_num, layer_num, index))
     return index % layer_num
+
+
 
 
 def _valid_module(layer):

@@ -1,8 +1,10 @@
 # TensorlayerX目前支持包括TensorFlow、Pytorch、PaddlePaddle、MindSpore作为计算后端，指定计算后端的方法也非常简单，只需要设置环境变量即可
 import os
-os.environ['TL_BACKEND'] = 'tensorflow'
+# os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'jittor'
+os.environ['TL_BACKEND'] = 'torch'
 
 
 import tensorlayerx as tlx
@@ -30,35 +32,34 @@ class CNN(Module):
 
     def __init__(self):
         super(CNN, self).__init__()
-        # weights init
         W_init = tlx.nn.initializers.truncated_normal(stddev=5e-2)
         W_init2 = tlx.nn.initializers.truncated_normal(stddev=0.04)
+        b_init = tlx.nn.initializers.constant(value=0.1)
         b_init2 = tlx.nn.initializers.constant(value=0.1)
 
-        self.conv1 = Conv2d(64, (5, 5), (1, 1), padding='SAME', W_init=W_init, b_init=None, name='conv1', in_channels=3)
-        self.bn = BatchNorm2d(num_features=64, act=tlx.ReLU)
-        self.maxpool1 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool1')
+        self.conv1 = Conv2d(32, (5, 5), (1, 1), padding='SAME', W_init=W_init, b_init=b_init, name='conv1', in_channels=3)
+        self.bn1 = BatchNorm2d(num_features=32, act=tlx.nn.ReLU)
+        self.maxpool1 = MaxPool2d((2, 2), (2, 2), padding='SAME', name='pool1')
 
-        self.conv2 = Conv2d(
-            64, (5, 5), (1, 1), padding='SAME', act=tlx.ReLU, W_init=W_init, name='conv2', in_channels=64
-        )
-        self.maxpool2 = MaxPool2d((3, 3), (2, 2), padding='SAME', name='pool2')
+        self.conv2 = Conv2d(64, (5, 5), (1, 1), padding='SAME', act=tlx.nn.ReLU, W_init=W_init, b_init=b_init, name='conv2', in_channels=32)
+        self.bn2 = BatchNorm2d(num_features=64, act=tlx.nn.ReLU)
+        self.maxpool2 = MaxPool2d((2, 2), (2, 2), padding='SAME', name='pool2')
 
         self.flatten = Flatten(name='flatten')
-        self.linear1 = Linear(384, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_features=2304)
-        self.linear2 = Linear(192, act=tlx.ReLU, W_init=W_init2, b_init=b_init2, name='linear2relu', in_features=384)
-        self.linear3 = Linear(10, act=None, W_init=W_init2, name='output', in_features=192)
+        self.linear1 = Linear(1024, act=tlx.nn.ReLU, W_init=W_init2, b_init=b_init2, name='linear1relu', in_features=2304)
+																													   
+        self.linear2 = Linear(10, act=None, W_init=W_init2, b_init=b_init2, name='output', in_features=1024)
 
     def forward(self, x):
         z = self.conv1(x)
-        z = self.bn(z)
+        z = self.bn1(z)
         z = self.maxpool1(z)
         z = self.conv2(z)
+        z = self.bn2(z)
         z = self.maxpool2(z)
         z = self.flatten(z)
         z = self.linear1(z)
-        z = self.linear2(z)
-        z = self.linear3(z)
+        z = self.linear2(z)						   
         return z
 
 X_train, y_train, X_test, y_test = tlx.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
