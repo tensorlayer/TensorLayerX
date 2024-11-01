@@ -12,7 +12,7 @@ from tensorlayerx.files.utils import maybe_download_and_extract
 __all__ = ["_load_mnist_dataset"]
 
 
-def _load_mnist_dataset(shape, path, name='mnist', url='http://yann.lecun.com/exdb/mnist/'):
+def _load_mnist_dataset(shape, path, name='mnist', url='https://ossci-datasets.s3.amazonaws.com/mnist/'):
     """A generic function to load mnist-like dataset.
 
     Parameters:
@@ -24,7 +24,7 @@ def _load_mnist_dataset(shape, path, name='mnist', url='http://yann.lecun.com/ex
     name : str
         The dataset name you want to use(the default is 'mnist').
     url : str
-        The url of dataset(the default is 'http://yann.lecun.com/exdb/mnist/').
+        The url of dataset(the default is 'https://ossci-datasets.s3.amazonaws.com/mnist/').
     """
     path = os.path.join(path, name)
 
