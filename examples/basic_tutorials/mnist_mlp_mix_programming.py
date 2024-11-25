@@ -1,27 +1,22 @@
-################################ TensorLayerX and Jittor can be mixed programming. #################################
-
+################################## TensorLayerX and Torch can be mixed programming. ##################################
 import os
-import time
-import numpy as np
-import tensorlayerx as tlx
-import jittor as jt
-from jittor import nn, optim
+os.environ['TL_BACKEND'] = 'torch'
+
+import torch
 from tensorlayerx.nn import Module, Linear, Dropout
+import tensorlayerx as tlx
 from tensorlayerx.dataflow import Dataset, DataLoader
-from tqdm import tqdm
 
-# Enable debug logging
-tlx.logging.set_verbosity(tlx.logging.DEBUG)
+# Get cpu or gpu device for training.
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print("Using {} device".format(device))
 
-# Set the backend environment variable
-os.environ['TL_BACKEND'] = 'jittor'
-
-# Load MNIST data by TensorLayerX
+# Load MNIST data and make Dataset by TensorLayerX
 X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
 
-# Define the MNIST dataset using TensorLayerX
-class MNISTDataset(Dataset):
-    def __init__(self, data, label):
+class mnistdataset(Dataset):
+
+    def __init__(self, data=X_train, label=y_train):
         self.data = data
         self.label = label
 
@@ -33,16 +28,16 @@ class MNISTDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-# Create DataLoaders for training and testing
-train_dataset = MNISTDataset(data=X_train, label=y_train)
-train_dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True)
+train_dataset = mnistdataset(data=X_train, label=y_train)
+train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)
 
-# Define a simple MLP model using TensorLayerX
+# Define the network through TensorLayerX
 class MLP(Module):
+
     def __init__(self):
         super(MLP, self).__init__()
         self.dropout1 = Dropout(p=0.2)
-        self.linear1 = Linear(out_features=800, in_features=784)
+        self.linear1 = Linear(out_features=800, act=tlx.nn.ReLU, in_features=784)
         self.dropout2 = Dropout(p=0.2)
         self.linear2 = Linear(out_features=800, act=tlx.nn.ReLU, in_features=800)
         self.dropout3 = Dropout(p=0.2)
@@ -57,64 +52,35 @@ class MLP(Module):
         out = self.linear3(z)
         return out
 
-# Instantiate the model
-model = MLP()
 
-# Define the loss function
+model = MLP().to(device)
+
+# Define the loss fucntion through TensorLayerX
 loss_fn = tlx.losses.softmax_cross_entropy_with_logits
+# Define the optimizer through torch
+optimizer = torch.optim.SGD(lr=0.05, momentum=0.9, params=model.trainable_weights)
 
-# Define the optimizer using Jittor
-optimizer = optim.Adam(model.trainable_weights, lr=0.0001)
-
-# Custom training loop
 n_epoch = 50
-print_freq = 1
+size = len(train_loader.dataset)
+model.train()
 
+# We use tlx's Model, loss function, Dataset and torch's optimizer to train the network
 for epoch in range(n_epoch):
-    start_time = time.time()
-    model.set_train()
-    train_loss, train_acc, n_iter = 0, 0, 0
+    for batch, (X, y) in enumerate(train_loader):
+        X, y = X.to(device), y.to(device)
 
-    with tqdm(total=len(train_dataloader), desc=f"Epoch {epoch + 1}/{n_epoch}", unit="batch") as pbar:
-        for X_batch, y_batch in train_dataloader:
-            X_batch = tlx.convert_to_tensor(X_batch)
-            y_batch = tlx.convert_to_tensor(y_batch)
+        # Compute prediction error
+        pred = model(X)
+        loss = loss_fn(pred, y)
+        acc = tlx.metrics.acc(pred, y)
+        # Backpropagation
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-            # Forward pass
-            _logits = model(X_batch)
-            # Compute loss
-            _loss = loss_fn(_logits, y_batch)
-            # Backward pass and optimization
-            optimizer.step(_loss)
-
-            train_loss += _loss.item()
-            train_acc += np.mean(np.equal(np.argmax(_logits, axis=1), y_batch))
-            n_iter += 1
-
-            pbar.set_postfix({'loss': train_loss / n_iter, 'acc': train_acc / n_iter})
-            pbar.update(1)
-
-    # Print training progress
-    print("Epoch {} of {} took {:.2f}s".format(epoch + 1, n_epoch, time.time() - start_time))
-    print("   train loss: {:.6f}".format(train_loss / n_iter))
-    print("   train acc:  {:.6f}".format(train_acc / n_iter))
-
-    # Validation (optional, using training data as a placeholder for validation)
-    val_loss, val_acc, n_iter = 0, 0, 0
-    with tqdm(total=len(train_dataloader), desc="Validation", unit="batch") as pbar:
-        for X_batch, y_batch in train_dataloader:
-            X_batch = tlx.convert_to_tensor(X_batch)
-            y_batch = tlx.convert_to_tensor(y_batch)
-            _logits = model(X_batch)
-            val_loss += loss_fn(_logits, y_batch).item()
-            val_acc += np.mean(np.equal(np.argmax(_logits, axis=1), y_batch))
-            n_iter += 1
-
-            pbar.set_postfix({'val_loss': val_loss / n_iter, 'val_acc': val_acc / n_iter})
-            pbar.update(1)
-    print("   val loss: {:.6f}".format(val_loss / n_iter))
-    print("   val acc:  {:.6f}".format(val_acc / n_iter))
-
+        if batch % 100 == 0:
+            loss, current = loss.item(), batch * len(X)
+            print(f"loss: {loss:>7f} acc: {acc:>7f}  [{current:>5d}/{size:>5d}] [{epoch} / {n_epoch}epoch]")
 
 
 ################################ TensorLayerX and TensorFlow can be mixed programming. #################################
@@ -379,86 +345,3 @@ for epoch in range(n_epoch):
 #         print("   train acc:  {}".format(acc.numpy()))
 
 
-################################## TensorLayerX and Torch can be mixed programming. ##################################
-# import os
-# os.environ['TL_BACKEND'] = 'torch'
-#
-# import torch
-# from tensorlayerx.nn import Module, Linear, Dropout
-# import tensorlayerx as tlx
-# from tensorlayerx.dataflow import Dataset, DataLoader
-#
-# # Get cpu or gpu device for training.
-# device = "cuda" if torch.cuda.is_available() else "cpu"
-# print("Using {} device".format(device))
-#
-# # Load MNIST data and make Dataset by TensorLayerX
-# X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 784))
-#
-# class mnistdataset(Dataset):
-#
-#     def __init__(self, data=X_train, label=y_train):
-#         self.data = data
-#         self.label = label
-#
-#     def __getitem__(self, index):
-#         data = self.data[index].astype('float32')
-#         label = self.label[index].astype('int64')
-#         return data, label
-#
-#     def __len__(self):
-#         return len(self.data)
-#
-# train_dataset = mnistdataset(data=X_train, label=y_train)
-# train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)
-#
-# # Define the network through TensorLayerX
-# class MLP(Module):
-#
-#     def __init__(self):
-#         super(MLP, self).__init__()
-#         self.dropout1 = Dropout(p=0.2)
-#         self.linear1 = Linear(out_features=800, act=tlx.nn.ReLU, in_features=784)
-#         self.dropout2 = Dropout(p=0.2)
-#         self.linear2 = Linear(out_features=800, act=tlx.nn.ReLU, in_features=800)
-#         self.dropout3 = Dropout(p=0.2)
-#         self.linear3 = Linear(out_features=10, act=tlx.nn.ReLU, in_features=800)
-#
-#     def forward(self, x):
-#         z = self.dropout1(x)
-#         z = self.linear1(z)
-#         z = self.dropout2(z)
-#         z = self.linear2(z)
-#         z = self.dropout3(z)
-#         out = self.linear3(z)
-#         return out
-#
-#
-# model = MLP().to(device)
-#
-# # Define the loss fucntion through TensorLayerX
-# loss_fn = tlx.losses.softmax_cross_entropy_with_logits
-# # Define the optimizer through torch
-# optimizer = torch.optim.SGD(lr=0.05, momentum=0.9, params=model.trainable_weights)
-#
-# n_epoch = 50
-# size = len(train_loader.dataset)
-# model.train()
-#
-# # We use tlx's Model, loss function, Dataset and torch's optimizer to train the network
-# for epoch in range(n_epoch):
-#     for batch, (X, y) in enumerate(train_loader):
-#         X, y = X.to(device), y.to(device)
-#
-#         # Compute prediction error
-#         pred = model(X)
-#         loss = loss_fn(pred, y)
-#         acc = tlx.metrics.acc(pred, y)
-#         # Backpropagation
-#         optimizer.zero_grad()
-#         loss.backward()
-#         optimizer.step()
-#
-#         if batch % 100 == 0:
-#             loss, current = loss.item(), batch * len(X)
-#             print(f"loss: {loss:>7f} acc: {acc:>7f}  [{current:>5d}/{size:>5d}] [{epoch} / {n_epoch}epoch]")

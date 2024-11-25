@@ -3,10 +3,11 @@
 
 import os
 # os.environ['TL_BACKEND'] = 'tensorflow'
-os.environ['TL_BACKEND'] = 'jittor'
-
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'jittor'
+os.environ['TL_BACKEND'] = 'torch'
+
 
 import tensorlayerx as tlx
 from tensorlayerx.nn import Module

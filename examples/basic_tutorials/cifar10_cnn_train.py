@@ -5,11 +5,11 @@
 
 import os
 # os.environ['TL_BACKEND'] = 'paddle'
-
-os.environ['TL_BACKEND'] = 'jittor'
 # os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
-# os.environ['TL_BACKEND'] = 'torch'
+# os.environ['TL_BACKEND'] = 'jittor'
+
+os.environ['TL_BACKEND'] = 'torch'
 
 
 
@@ -75,7 +75,7 @@ shuffle_buffer_size = 128
 
 # 定义损失函数、优化器等
 loss_fn=tlx.losses.softmax_cross_entropy_with_logits
-optimizer = tlx.optimizers.Adam(lr=learning_rate)
+optimizer = tlx.optimizers.Adam(learning_rate)
 metrics = tlx.metrics.Accuracy()
 
 

@@ -1,10 +1,10 @@
 # TensorlayerX目前支持包括TensorFlow、Pytorch、PaddlePaddle、MindSpore作为计算后端，指定计算后端的方法也非常简单，只需要设置环境变量即可
 import os
 # os.environ['TL_BACKEND'] = 'tensorflow'
-os.environ['TL_BACKEND'] = 'jittor'
-# os.environ['TL_BACKEND'] = 'torch'
 # os.environ['TL_BACKEND'] = 'mindspore'
 # os.environ['TL_BACKEND'] = 'paddle'
+# os.environ['TL_BACKEND'] = 'jittor'
+os.environ['TL_BACKEND'] = 'torch'
 
 
 import tensorlayerx as tlx
