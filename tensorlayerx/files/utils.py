@@ -280,7 +280,7 @@ def load_mnist_dataset(shape=(-1, 784), path='data'):
     >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1,784), path='datasets')
     >>> X_train, y_train, X_val, y_val, X_test, y_test = tlx.files.load_mnist_dataset(shape=(-1, 28, 28, 1))
     """
-    return _load_mnist_dataset(shape, path, name='mnist', url='http://yann.lecun.com/exdb/mnist/')
+    return _load_mnist_dataset(shape, path, name='mnist', url='https://ossci-datasets.s3.amazonaws.com/mnist/')
 
 
 def load_fashion_mnist_dataset(shape=(-1, 784), path='data'):
@@ -310,7 +310,7 @@ def load_fashion_mnist_dataset(shape=(-1, 784), path='data'):
     )
 
 
-def _load_mnist_dataset(shape, path, name='mnist', url='http://yann.lecun.com/exdb/mnist/'):
+def _load_mnist_dataset(shape, path, name='mnist', url='https://ossci-datasets.s3.amazonaws.com/mnist/'):
     """A generic function to load mnist-like dataset.
 
     Parameters:
@@ -322,7 +322,7 @@ def _load_mnist_dataset(shape, path, name='mnist', url='http://yann.lecun.com/ex
     name : str
         The dataset name you want to use(the default is 'mnist').
     url : str
-        The url of dataset(the default is 'http://yann.lecun.com/exdb/mnist/').
+        The url of dataset(the default is 'https://ossci-datasets.s3.amazonaws.com/mnist/').
     """
     path = os.path.join(path, name)
 
@@ -2375,7 +2375,7 @@ def maybe_download_and_extract(filename, working_directory, url_source, extract=
     --------
     >>> down_file = tlx.files.maybe_download_and_extract(filename='train-images-idx3-ubyte.gz',
     ...                                            working_directory='data/',
-    ...                                            url_source='http://yann.lecun.com/exdb/mnist/')
+    ...                                            url_source='https://ossci-datasets.s3.amazonaws.com/mnist/')
     >>> tlx.files.maybe_download_and_extract(filename='ADEChallengeData2016.zip',
     ...                                             working_directory='data/',
     ...                                             url_source='http://sceneparsing.csail.mit.edu/data/',

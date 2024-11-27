@@ -31,6 +31,6 @@ def load_mnist_dataset(shape=(-1, 784), path='data'):
     """
     logging.info("If can't download this dataset automatically, "
                   "please download it from the official website manually."
-                  "mnist Dataset <http://yann.lecun.com/exdb/mnist/>."
+                  "mnist Dataset <https://ossci-datasets.s3.amazonaws.com/mnist/>."
                   "Please place dataset under 'data/mnist/' by default.")
-    return _load_mnist_dataset(shape, path, name='mnist', url='http://yann.lecun.com/exdb/mnist/')
+    return _load_mnist_dataset(shape, path, name='mnist', url='https://ossci-datasets.s3.amazonaws.com/mnist/')
