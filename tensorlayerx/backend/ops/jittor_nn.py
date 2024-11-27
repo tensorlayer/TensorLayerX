@@ -88,11 +88,17 @@ def preprocess_1d_format(data_format, padding):
         data_format = "NLC"
     elif data_format in ["channels_first", "NCW", "NCL"]:
         data_format = "NCL"
-    elif data_format == None:
+    elif data_format is None:
         data_format = None
     else:
         raise Exception("Unsupported data format: " + str(data_format))
+
     padding = padding_format(padding)
+    # Convert padding to numerical representation for arithmetic operations
+    if padding == "same":
+        padding = 1
+    elif padding == "valid":
+        padding = 0
     return data_format, padding
 
 
@@ -634,18 +640,25 @@ def same_padding(input, weight, strides, dilations):
         return rows_odd, cols_odd, depth_odd, padding_rows, padding_cols, padding_depth
 
 
+
 class Conv2D(object):
 
     def __init__(self, strides, padding, data_format='NHWC', dilations=None, out_channel=None, k_size=None, groups=1):
         self.data_format, self.padding = preprocess_2d_format(data_format, padding)
+        
+        # Ensure strides is a tuple/list of length 2 with non-zero values
+        if len(strides) != 2 or strides[0] == 0 or strides[1] == 0:
+            raise ValueError("Stride values must be greater than zero and of length 2")
+
+        # Adjust the strides and dilations for the data format
         if self.data_format == 'NHWC':
-            self.strides = (strides[1], strides[2])
+            self.strides = (strides[0], strides[1])
             self.dilations = (dilations[0], dilations[1])
         elif self.data_format == 'NCHW':
-            self.strides = (strides[1], strides[2])
-            self.dilations = (dilations[1], dilations[2])
-        self.groups = groups
+            self.strides = (strides[0], strides[1])
+            self.dilations = (dilations[0], dilations[1])
 
+        self.groups = groups
 
     def __call__(self, input, filters):
  
@@ -847,8 +860,7 @@ class MaxPool1d(object):
 
 
 class MaxPool(object):
-
-    def __init__(self, ksize, strides, padding, return_mask = False, data_format=None):
+    def __init__(self, ksize, strides, padding, return_mask=False, data_format=None):
         self.ksize = ksize
         self.strides = strides
         self.return_mask = return_mask
@@ -863,6 +875,7 @@ class MaxPool(object):
     def __call__(self, inputs):
         if self.data_format == 'channels_last':
             inputs = nhwc_to_nchw(inputs)
+
         if len(inputs.shape) == 2 or len(inputs.shape) == 3:
             raise NotImplementedError
         
@@ -872,12 +885,14 @@ class MaxPool(object):
             else:
                 out = nn.max_pool2d(inputs, self.ksize, self.strides, padding=self.padding,
                             return_indices=self.return_mask)
+        
         if len(inputs.shape) == 5:
             if self.padding in ['SAME', 'same']:
                 out = self.maxpool3d_same_padding(inputs)
             else:
                 out = nn.max_pool3d(inputs, self.ksize, self.strides, padding=self.padding,
                             return_indices=self.return_mask)
+
 
         if self.data_format == 'channels_last':
             if self.return_mask:
@@ -889,6 +904,7 @@ class MaxPool(object):
                 return nchw_to_nhwc(out)
         else:
             return out
+
 
 
     def maxpool2d_same_padding(self, input):
@@ -965,7 +981,6 @@ class AvgPool1d(object):
         raise NotImplementedError("AvgPool1d is not implemented in Jittor backend")
     
 
-
 class AvgPool(object):
 
     def __init__(self, ksize, strides, padding, data_format=None):
@@ -994,12 +1009,13 @@ class AvgPool(object):
             if self.padding in ['SAME', 'same']:
                 out = self.avgpool3d_same_padding(inputs)
             else:
-                out = nn.AvgPool2d(inputs, self.ksize, self.strides, padding=self.padding)
+                out = nn.AvgPool3d(inputs, self.ksize, self.strides, padding=self.padding)
 
         if self.data_format == 'channels_last':
             return nchw_to_nhwc(out)
         else:
             return out
+
 
 
     def avgpool2d_same_padding(self, input):
@@ -1065,7 +1081,7 @@ def avg_pool2d(input, kernel_size, stride=None, padding=0, data_format='NCHW'):
 
 def avg_pool3d(input, kernel_size, stride=None, padding=0, data_format='NCDHW'):
     data_format, padding = preprocess_3d_format(data_format, padding)
-    avg_pool_obj = AvgPool(kernel_size, stride, padding, data_format)
+    avg_pool_obj = AvgPool3d(kernel_size, stride, padding)
     return avg_pool_obj(input)
 
 class MaxPool3d(object):
@@ -1149,7 +1165,6 @@ class AvgPool3d(object):
     #     avg_pool_obj = AvgPool(ksize, strides, padding, data_format)
     #     return avg_pool_obj(input)
 
-
 def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_format=None, dilations=None, name=None):
     """
     Performs an N-D pooling operation.
@@ -1158,8 +1173,6 @@ def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_
     ----------
     input : tensor
         Tensor of rank N+2, of shape [batch_size] + input_spatial_shape + [num_channels]
-        if data_format does not start with "NC" (default), or [batch_size, num_channels] + input_spatial_shape
-        if data_format starts with "NC". Pooling happens over the spatial dimensions only.
     window_shape : int
         Sequence of N ints >= 1.
     pooling_type : string
@@ -1168,12 +1181,9 @@ def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_
         Sequence of N ints >= 1. Defaults to [1]*N. If any value of strides is > 1, then all values of dilation_rate must be 1.
     padding : string
         The padding algorithm, must be "SAME" or "VALID". Defaults to "SAME".
-        See the "returns" section of tf.ops.convolution for details.
     data_format : string
         Specifies whether the channel dimension of the input and output is the last dimension (default, or if data_format does not start with "NC"),
         or the second dimension (if data_format starts with "NC").
-        For N=1, the valid values are "NWC" (default) and "NCW". For N=2, the valid values are "NHWC" (default) and "NCHW".
-        For N=3, the valid values are "NDHWC" (default) and "NCDHW".
     dilations : list of ints
         Dilation rate. List of N ints >= 1. Defaults to [1]*N. If any value of dilation_rate is > 1, then all values of strides must be 1.
     name : string
@@ -1192,7 +1202,6 @@ def pool(input, window_shape, pooling_type, strides=None, padding='VALID', data_
         raise ValueError('Unsupported pool_mode: ' + str(pooling_type))
 
     return pool_obj(input)
-
 
 class DepthwiseConv2d(object):
 
@@ -2023,58 +2032,97 @@ class rnncell(object):
     
 
 
-class lstmcell(object):
-    def __init__(self, weight_ih, weight_hh, bias_ih, bias_hh):
-        self.weight_ih = weight_ih
-        self.weight_hh = weight_hh
-        self.bias_ih = bias_ih
-        self.bias_hh = bias_hh
 
-    def __call__(self, input, h, c):
-        gates = jt.matmul(input, jt.transpose(self.weight_ih)) + jt.matmul(h, jt.transpose(self.weight_hh))
+class lstmcell(Module):
+    def __init__(self, weight_ih, weight_hh, bias_ih=None, bias_hh=None):
+        super(lstmcell, self).__init__()
+
+        self.weight_ih = weight_ih  # Shape: [input_size, 4 * hidden_size]
+        self.weight_hh = weight_hh  # Shape: [hidden_size, 4 * hidden_size]
+        self.bias_ih = bias_ih if bias_ih is not None else jt.ones(4 * weight_ih.shape[1])  # Bias for input-to-hidden
+        self.bias_hh = bias_hh if bias_hh is not None else jt.ones(4 * weight_hh.shape[1])  # Bias for hidden-to-hidden
+
+        # Extract input_size and hidden_size from the weight shapes
+        self.input_size = weight_ih.shape[0]
+        self.hidden_size = weight_hh.shape[0]
+    
+    def execute(self, input, h, c):
+
+        gates_input = jt.matmul(input, self.weight_ih)  # [batch_size, 4 * hidden_size]
+        gates_hidden = jt.matmul(h, self.weight_hh)     # [batch_size, 4 * hidden_size]
+
+        gates = gates_input + gates_hidden
+
+        # Add bias terms if provided
         if self.bias_ih is not None:
             gates += self.bias_ih + self.bias_hh
 
         i, f, g, o = jt.chunk(gates, 4, dim=1)
-        i = jt.sigmoid(i)
-        f = jt.sigmoid(f)
-        g = jt.tanh(g)
-        o = jt.sigmoid(o)
 
-        c_new = f * c + i * g
-        h_new = o * jt.tanh(c_new)
-        return h_new, h_new, c_new
+        # Apply activations to the gates
+        i = jt.sigmoid(i)  # Input gate
+        f = jt.sigmoid(f)  # Forget gate
+        g = jt.tanh(g)     # Cell gate (candidate cell state)
+        o = jt.sigmoid(o)  # Output gate
+
+        # Compute new cell state
+        c_new = f * c + i * g  # Cell state update
+
+        # Compute new hidden state
+        h_new = o * jt.tanh(c_new)  # Hidden state
+
+        return h_new, h_new, c_new  # Return hidden state and cell state
+
+
+
 
 
 class grucell(Module):
     def __init__(self, weight_ih, weight_hh, bias_ih=None, bias_hh=None):
         super(grucell, self).__init__()
-        self.weight_ih = weight_ih
-        self.weight_hh = weight_hh
-        self.bias_ih = bias_ih
-        self.bias_hh = bias_hh
-        self.hidden_size = weight_hh.shape[1]
 
-    def execute(self, inputs, states):
-        hx = states[0] if isinstance(states, (tuple, list)) else states
-        gates = jt.matmul(inputs, self.weight_ih.t()) + jt.matmul(hx, self.weight_hh.t())
-        if self.bias_ih is not None and self.bias_hh is not None:
-            gates += self.bias_ih + self.bias_hh
+        # Initialize the weights and biases
+        self.weight_ih = weight_ih  # Shape: [input_size, 3 * hidden_size]
+        self.weight_hh = weight_hh  # Shape: [hidden_size, 3 * hidden_size]
+        self.bias_ih = bias_ih if bias_ih is not None else jt.ones(weight_ih.shape[1])  # Bias for input-to-hidden
+        self.bias_hh = bias_hh if bias_hh is not None else jt.ones(weight_hh.shape[1])  # Bias for hidden-to-hidden
+
+        # Extract input_size and hidden_size from weight shapes
+        self.input_size = weight_ih.shape[0]
+        self.hidden_size = weight_hh.shape[0]
+
+    def execute(self, inputs, hx):
+        """
+        Args:
+        - inputs: Input tensor [batch_size, input_size]
+        - hx: Previous hidden state [batch_size, hidden_size]
         
-        # Separate the gates
-        r, z, n = jt.chunk(gates, 3, dim=1)
-
-        r = jt.sigmoid(r)
-        z = jt.sigmoid(z)
-        n = jt.tanh(n + r * (jt.matmul(hx, self.weight_hh[2 * self.hidden_size:].t()) + (self.bias_hh[2 * self.hidden_size:] if self.bias_hh is not None else 0)))
-        hy = (1 - z) * n + z * hx
+        Returns:
+        - hy: New hidden state [batch_size, hidden_size]
+        - hy_new: New hidden state (same as hy) for consistency
+        """
         
-        return hy, hy
+        # Split the weights for the gates (GRU uses 3 * hidden_size)
+        weight_ih_r, weight_ih_z, weight_ih_h = jt.split(self.weight_ih, 3, dim=1)
+        weight_hh_r, weight_hh_z, weight_hh_h = jt.split(self.weight_hh, 3, dim=1)
+        
+        # Bias terms for reset, update, and candidate hidden states
+        bias_ih_r, bias_ih_z, bias_ih_h = jt.split(self.bias_ih, 3)
+        bias_hh_r, bias_hh_z, bias_hh_h = jt.split(self.bias_hh, 3)
 
+        # 1. Compute the reset gate (r)
+        r = jt.sigmoid(jt.matmul(inputs, weight_ih_r) + bias_ih_r + jt.matmul(hx, weight_hh_r) + bias_hh_r)
 
+        # 2. Compute the update gate (z)
+        z = jt.sigmoid(jt.matmul(inputs, weight_ih_z) + bias_ih_z + jt.matmul(hx, weight_hh_z) + bias_hh_z)
 
+        # 3. Compute the candidate hidden state (h')
+        h_hat = jt.tanh(jt.matmul(inputs, weight_ih_h) + bias_ih_h + r * (jt.matmul(hx, weight_hh_h) + bias_hh_h))
 
+        # 4. Compute the new hidden state (h)
+        hy = (1 - z) * hx + z * h_hat
 
+        return hy, hy  # Return the new hidden state as both outputs (for consistency)
 
 class rnnbase(Module):
 
@@ -2746,9 +2794,22 @@ def swish(input):
 
     return NotImplementedError
 
-def linear(input, weight, bias = None):
+def linear(input, weight, bias=None):
+    ''' Custom Linear Layer Implementation '''
+    
+    # Perform matrix multiplication (input * weight^T)
+    x = jt.matmul(input, weight)  # input is of shape [batch, in_features], weight is of shape [in_features, out_features]
+    
+    if bias is not None:
+        # Ensure the bias is correctly reshaped for broadcasting
+        if bias.ndim == 1:
+            # Bias should be broadcasted across the batch dimension
+            bias = bias.reshape(1, -1)  # Shape: [1, out_features]
+        
+        # Add bias to the result
+        x = x + bias  # Broadcasting bias to match the result shape
 
-    return nn.linear(input, weight, bias)
+    return x
 
 def unfold(input, kernel_size, dilation = 1, padding = 0, stride = 1):
 
