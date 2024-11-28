@@ -179,7 +179,7 @@ def random_uniform(shape, minval=0, maxval=1, dtype=None, seed=None):
     if seed is not None:
         flow.manual_seed(seed)
     else:
-        flow.manual_seed(flow.random.gen_seed())
+        flow.manual_seed(flow.initial_seed())
 
     w = flow.randn(shape, dtype=_dtypeDict[dtype])
     out = w.uniform_(minval, maxval)
@@ -211,7 +211,7 @@ def random_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
     if seed is not None:
         flow.manual_seed(seed)
     else:
-        flow.manual_seed(flow.random.gen_seed())
+        flow.manual_seed(flow.initial_seed())
 
     return flow.normal(shape, mean=mean, std=stddev, dtype=_dtypeDict[dtype])
 
@@ -241,7 +241,7 @@ def truncated_normal(shape, mean=0.0, stddev=1.0, dtype=None, seed=None):
     if seed is not None:
         flow.manual_seed(seed)
     else:
-        flow.manual_seed(flow.random.gen_seed())
+        flow.manual_seed(flow.initial_seed())
 
     w = flow.empty(shape, dtype=_dtypeDict[dtype])
     out = nn.init.truncated_normal_(w, mean=mean, std=stddev)
@@ -271,7 +271,7 @@ def he_normal(shape, dtype=None, seed=None):
     if seed is not None:
         flow.manual_seed(seed)
     else:
-        flow.manual_seed(flow.random.gen_seed())
+        flow.manual_seed(flow.initial_seed())
 
     w = flow.empty(shape, dtype=_dtypeDict[dtype])
     out = nn.init.kaiming_normal_(w)
@@ -301,7 +301,7 @@ def he_uniform(shape, dtype=None, seed=None):
     if seed is not None:
         flow.manual_seed(seed)
     else:
-        flow.manual_seed(flow.random.gen_seed())
+        flow.manual_seed(flow.initial_seed())
 
     w = flow.empty(shape, dtype=_dtypeDict[dtype])
     out = nn.init.kaiming_uniform_(w)
@@ -331,7 +331,7 @@ def xavier_normal(shape, dtype=None, seed=None):
     if seed is not None:
         flow.manual_seed(seed)
     else:
-        flow.manual_seed(flow.random.gen_seed())
+        flow.manual_seed(flow.initial_seed())
 
     w = flow.empty(shape, dtype=_dtypeDict[dtype])
     out = nn.init.xavier_normal_(w)
@@ -363,7 +363,7 @@ def xavier_uniform(shape, gain=1.0, dtype=None, seed=None):
     if seed is not None:
         flow.manual_seed(seed)
     else:
-        flow.manual_seed(flow.random.gen_seed())
+        flow.manual_seed(flow.initial_seed())
 
     w = flow.empty(shape, dtype=_dtypeDict[dtype])
     out = nn.init.xavier_uniform_(w, gain=gain)
@@ -674,7 +674,7 @@ def reduce_mean(input_tensor, axis=None, keepdims=False):
     if axis is not None:
         return flow.mean(input_tensor, dim=axis, keepdim=keepdims)
     else:
-        return flow.mean(input_tensor, keepdim=keepdims)
+        return flow.mean(input_tensor)
 
 
 class ReduceMax(object):
@@ -718,7 +718,7 @@ def reduce_max(input_tensor, axis=None, keepdims=False):
     if axis is not None:
         return flow.max(input_tensor, dim=axis, keepdim=keepdims)
     else:
-        return flow.max(input_tensor, keepdim=keepdims)
+        return flow.max(input_tensor)
 
 
 def reduce_min(input_tensor, axis=None, keepdims=False):
@@ -1582,11 +1582,11 @@ def count_nonzero(x, axis=None, keepdims=None, dtype="int64"):
     return convert_to_tensor(non_zero)
 
 
-def cumprod(x, axis=None, dtype=None, out=None):
+def cumprod(x, axis=0, dtype=None, out=None):
     return flow.cumprod(x, dim=axis)
 
 
-def cumsum(x, axis=None, dtype=None, out=None):
+def cumsum(x, axis=0, dtype=None, out=None):
     return flow.cumsum(x, dim=axis)
 
 def equal(x, y):
@@ -1892,7 +1892,7 @@ def mask_select(x, mask, axis = 0):
     elif axis == 3:
         return x[:,:,:, mask]
 
-def eye(n, m=None, dtype=None):
+def eye(n, m=None, dtype=flow.float32):
     if m is None:
         m = n
     return flow.eye(n, m, dtype=dtype)
@@ -2015,4 +2015,3 @@ def flip(x, axis):
 def mv(x, vec):
 
     raise NotImplementedError
-
