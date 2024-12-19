@@ -88,7 +88,7 @@ if __name__ == '__main__':
     # Step1: save pytorch model parameters to a.pth
     # On the first run, uncomment lines 90 and 91.
     # b = B()
-    # torch.save(a.state_dict(), 'a.pth')
+    # torch.save(b.state_dict(), 'a.pth')
 
     a = A()
     # Step2: Converts pytorch a.pth to the model parameter format of tensorlayerx
