@@ -209,6 +209,7 @@ from .load_backend import einsum
 from .load_backend import set_device
 from .load_backend import distributed_init
 from .load_backend import distributed_model
+# from .load_backend import distributed_optimizer
 from .load_backend import get_device
 from .load_backend import scatter_update
 from .load_backend import to_device
@@ -235,7 +236,7 @@ from .load_backend import (
 # backend
 from .load_backend import BACKEND
 from .load_backend import BACKEND_VERSION
-
+from .load_backend import is_distributed
 from .load_backend import Reshape
 from .load_backend import ReduceSum
 from .load_backend import ReduceMax
