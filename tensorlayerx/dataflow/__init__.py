@@ -18,10 +18,14 @@ class DataLoader:
         worker_init_fn=None,
         prefetch_factor=2,
         persistent_workers=False,
+        pin_memory=False,
         ):
         if BACKEND == 'paddle':
             from paddle.io import DataLoader
             return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, drop_last=drop_last, batch_sampler=batch_sampler, num_workers=num_workers, collate_fn=collate_fn, timeout=time_out, worker_init_fn=worker_init_fn, prefetch_factor=prefetch_factor, persistent_workers=persistent_workers)
+        elif BACKEND == 'torch':
+            from torch.utils.data import DataLoader
+            return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, drop_last=drop_last, sampler=sampler, batch_sampler=batch_sampler, num_workers=num_workers, collate_fn=collate_fn, pin_memory=pin_memory)
         else:
             from .dataloader import DataLoader
             return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, drop_last=drop_last, sampler=sampler, batch_sampler=batch_sampler, num_workers=num_workers, collate_fn=collate_fn, persistent_workers=persistent_workers)

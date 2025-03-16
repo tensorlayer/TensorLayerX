@@ -366,22 +366,40 @@ class DistributedBatchSampler(BatchSampler):
         self.shuffle = shuffle
         assert isinstance(drop_last, bool), \
                 "drop_last should be a boolean number"
-
-        from paddle.fluid.dygraph.parallel import ParallelEnv
-
-        if num_replicas is not None:
-            assert isinstance(num_replicas, int) and num_replicas > 0, \
-                    "num_replicas should be a positive integer"
+        
+        from ..backend import BACKEND
+        if BACKEND == 'torch':
+            from torch import distributed as dist
+            if num_replicas is None:
+                if not dist.is_available():
+                    raise RuntimeError("Requires distributed package to be available")
+                num_replicas = dist.get_world_size()
+            if rank is None:
+                if not dist.is_available():
+                    raise RuntimeError("Requires distributed package to be available")
+                rank = dist.get_rank()
+            if rank >= num_replicas or rank < 0:
+                raise ValueError(
+                    "Invalid rank {}, rank should be in the interval"
+                    " [0, {}]".format(rank, num_replicas - 1))
             self.nranks = num_replicas
-        else:
-            self.nranks = ParallelEnv().nranks
-
-        if rank is not None:
-            assert isinstance(rank, int) and rank >= 0, \
-                    "rank should be a non-negative integer"
             self.local_rank = rank
-        else:
-            self.local_rank = ParallelEnv().local_rank
+        elif BACKEND == 'paddle':
+            from paddle.fluid.dygraph.parallel import ParallelEnv
+
+            if num_replicas is not None:
+                assert isinstance(num_replicas, int) and num_replicas > 0, \
+                        "num_replicas should be a positive integer"
+                self.nranks = num_replicas
+            else:
+                self.nranks = ParallelEnv().nranks
+
+            if rank is not None:
+                assert isinstance(rank, int) and rank >= 0, \
+                        "rank should be a non-negative integer"
+                self.local_rank = rank
+            else:
+                self.local_rank = ParallelEnv().local_rank
 
         self.drop_last = drop_last
         self.epoch = 0
