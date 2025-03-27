@@ -390,7 +390,7 @@ class Model:
                       TimeRemainingColumn(),
                       TimeElapsedColumn()) as progress:
 
-            n_batch = len(train_dataset)
+            n_batch = len(list(train_dataset))
             epoch_tqdm = progress.add_task(description="[red]Epoch progress 0/{}".format(n_epoch), total=n_epoch)
             batch_tqdm = progress.add_task(description="[green]Batch progress 0/{}".format(n_batch), total=n_batch)
 

@@ -26,8 +26,12 @@ class DataLoader:
         elif BACKEND == 'torch':
             from torch.utils.data import DataLoader
             return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, drop_last=drop_last, sampler=sampler, batch_sampler=batch_sampler, num_workers=num_workers, collate_fn=collate_fn, pin_memory=pin_memory)
-        else:
-            from .dataloader import DataLoader
-            return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, drop_last=drop_last, sampler=sampler, batch_sampler=batch_sampler, num_workers=num_workers, collate_fn=collate_fn, persistent_workers=persistent_workers)
+        elif BACKEND == 'mindspore':
+            from tensorlayerx import is_distributed
+            if is_distributed():
+                from .dataloader import MS_DataLoader
+                return MS_DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, drop_last=drop_last, batch_sampler=batch_sampler, num_workers=num_workers)
+        from .dataloader import DataLoader
+        return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle, drop_last=drop_last, sampler=sampler, batch_sampler=batch_sampler, num_workers=num_workers, collate_fn=collate_fn, persistent_workers=persistent_workers)
 from .sampler import *
 from .dataset import *

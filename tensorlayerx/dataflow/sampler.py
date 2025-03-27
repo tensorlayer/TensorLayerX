@@ -367,8 +367,13 @@ class DistributedBatchSampler(BatchSampler):
         assert isinstance(drop_last, bool), \
                 "drop_last should be a boolean number"
         
+        self.drop_last = drop_last
+        self.epoch = 0
+
         from ..backend import BACKEND
-        if BACKEND == 'torch':
+        if BACKEND == 'mindspore':
+            return
+        elif BACKEND == 'torch':
             from torch import distributed as dist
             if num_replicas is None:
                 if not dist.is_available():
@@ -401,8 +406,6 @@ class DistributedBatchSampler(BatchSampler):
             else:
                 self.local_rank = ParallelEnv().local_rank
 
-        self.drop_last = drop_last
-        self.epoch = 0
         self.num_samples = int(math.ceil(len(self.data) * 1.0 / self.nranks))
         self.total_size = self.num_samples * self.nranks
 
