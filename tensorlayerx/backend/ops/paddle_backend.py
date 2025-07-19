@@ -72,6 +72,8 @@ else:
     complex64 = paddle.complex64
     complex128 = paddle.complex128
 
+IS_DISTRIBUTED = False
+
 def _npairs(x, n):
     if isinstance(x, (paddle.Tensor, list, tuple)):
         return x
@@ -1926,19 +1928,32 @@ class Einsum(object):
         return einsum(self.equation, *args)
 
 
-def set_device(device = 'GPU', id = 0):
+def set_device(device = 'GPU', id = None):
     device = device.lower()
-    if device == 'gpu':
+    if id is not None:
         device = device + ':' + str(id)
     paddle.device.set_device(device)
 
 def distributed_init(backend="cncl"):
-    raise NotImplementedError("Distributed for this backend is not supported")
+    from paddle.distributed import fleet
+    if get_device() == "cpu":
+        fleet.init(is_collective=False)
+    else:
+        fleet.init(is_collective=True)
+    global IS_DISTRIBUTED
+    IS_DISTRIBUTED = True
+
+def is_distributed():
+    return IS_DISTRIBUTED
 
 def distributed_model(module, device_ids=None, output_device=None, 
                     dim=0, broadcast_buffers=True, process_group=None, bucket_cap_mb=25, 
                     find_unused_parameters=False, check_reduction=False, gradient_as_bucket_view=False):
-    raise NotImplementedError("Distributed for this backend is not supported")
+    from paddle.distributed import fleet
+    return fleet.distributed_model(module)
+
+# def distributed_optimizer(optimizer):
+#     optimizer.enable_distribution()
 
 def scatter_update(tensor, indices, updates):
 

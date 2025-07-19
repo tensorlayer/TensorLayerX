@@ -1751,13 +1751,20 @@ class Einsum(object):
     def __call__(self, *args):
         return torch.einsum(self.equation, *args)
 
-def set_device(device = 'GPU', id = 0):
+def set_device(device = 'GPU', id = None):
+    device = device.upper()
+    if id is None:
+        import os
+        id = int(os.environ["LOCAL_RANK"])
     if device == 'GPU':
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        # torch.set_default_tensor_type('torch.cuda.FloatTensor')
         torch.cuda.set_device(id)
     if device == 'MLU':
-        torch.set_default_tensor_type('torch.mlu.FloatTensor')
+        # torch.set_default_tensor_type('torch.mlu.FloatTensor')
         torch.mlu.set_device(id)
+
+def is_distributed():
+    return torch.distributed.is_initialized()
 
 def distributed_init(backend="cncl"):
     torch.distributed.init_process_group(backend=backend)
@@ -1765,6 +1772,10 @@ def distributed_init(backend="cncl"):
 def distributed_model(module, device_ids=None, output_device=None, 
                     dim=0, broadcast_buffers=True, process_group=None, bucket_cap_mb=25, 
                     find_unused_parameters=False, check_reduction=False, gradient_as_bucket_view=False):
+    if device_ids is None:
+        import os
+        device_ids = [int(os.environ["LOCAL_RANK"])]
+    module = module.to(device_ids[0])
     return torch.nn.parallel.DistributedDataParallel(module, device_ids=device_ids,
                                                      output_device=output_device,
                                                      dim=dim, broadcast_buffers=broadcast_buffers,
@@ -1783,15 +1794,13 @@ def scatter_update(tensor, indices, updates):
 def get_device():
     try:
         id = torch.cuda.current_device()
-        device = 'GPU:' + str(id)    
+        device = 'GPU:' + str(id)
     except:
-        device = 'CPU'
-        
-    try:
-        id = torch.mlu.current_device()
-        device = 'MLU:' + str(id)    
-    except:
-        device = 'CPU'    
+        try:
+            id = torch.mlu.current_device()
+            device = 'MLU:' + str(id)
+        except:
+            device = 'CPU'
     return device
 
 def to_device(tensor, device='MLU', id=0):
