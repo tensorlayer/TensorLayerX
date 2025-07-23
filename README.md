@@ -109,8 +109,8 @@ More official resources can be found [here](https://github.com/tensorlayer)
 
 | TensorLayerX | TensorFlow | MindSpore | PaddlePaddle | PyTorch | OneFlow | Jittor|
 | :-----:| :----: | :----: |:-----:|:----:|:----:|:----:|
-|  v0.5.8  | v2.4.0 | v1.8.1 | v2.2.0 | v1.10.0 | -- | v1.3.8.5 |
-| v0.5.7 | v2.0.0 | v1.6.1 | v2.0.2 | v1.10.0 | -- | -- |
+|  v0.5.8  | v2.4.0 | v1.8.1 | v2.2.0 | v1.10.0 | latest | v1.3.8.5 |
+| v0.5.7 | v2.0.0 | v1.6.1 | v2.0.2 | v1.10.0 | latest | -- |
 
 - via pip for the stable version
 ```bash
