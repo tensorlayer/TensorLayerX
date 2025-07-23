@@ -868,7 +868,6 @@ def save_vocab(count=None, name='vocab.txt'):
 
 # Functions for translation
 
-
 def basic_tokenizer(sentence, _WORD_SPLIT=re.compile(b"([.,!?\"':;)(])")):
     """Very basic tokenizer: split the sentence into a list of tokens.
 
