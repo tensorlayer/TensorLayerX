@@ -1046,6 +1046,21 @@ def expand_dims(input, axis):
 
 
 class Tile(object):
+    """
+    Tile a tensor with a given number of multiplication
+
+    Parameters
+    ----------
+    input : tensor
+        A Tensor. 1-D or higher.
+    multiples : tensor
+        Must be one of the following types: int32, int64. 1-D.
+        Length must be the same as the number of dimensions in input
+
+    Returns
+    -------
+        A Tensor has the same type as input. Check tile function for usage.
+    """
 
     def __init__(self):
         pass
