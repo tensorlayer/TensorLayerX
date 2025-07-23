@@ -7,7 +7,6 @@ import sys as _sys
 import threading
 import time as _time
 from logging import DEBUG, ERROR, FATAL, INFO, WARN
-
 import six
 
 from tensorlayerx.decorators import deprecated
