@@ -2,10 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-
 import imageio
 import numpy as np
-
 import tensorlayerx as tlx
 from tensorlayerx.utils.lazy_imports import LazyImport
 import colorsys, random
