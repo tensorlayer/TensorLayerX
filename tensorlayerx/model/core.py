@@ -135,7 +135,6 @@ class Model:
                 print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset,
             )
 
-
     def eval(self, test_dataset):
         self.network.set_eval()
         test_loss, test_acc, n_iter = 0, 0, 0
