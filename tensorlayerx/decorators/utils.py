@@ -5,7 +5,7 @@ NOTE: DO NOT REMOVE THESE FILES. They are copied from Tensorflow repository and 
 
 Source: https://github.com/tensorflow/tensorflow/tree/master/tensorflow/python/util
 
-They replace the following imports:
+They replace the following imports: (tensorflow for example)
 >>> from tensorflow.python.util import decorator_utils
 >>> from tensorflow.python.util.deprecation import _validate_deprecation_args
 """
