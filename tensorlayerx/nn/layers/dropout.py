@@ -51,7 +51,6 @@ class Dropout(Module):
     def build(self, inputs_shape=None):
         self.dropout = tlx.ops.Dropout(p=self.p, seed=self.seed)
 
-    # @tf.function
     def forward(self, inputs):
         if self.is_train:
             outputs = self.dropout(inputs)
