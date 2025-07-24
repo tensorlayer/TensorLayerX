@@ -1,7 +1,7 @@
 License
 =======
 
-Copyright (c) 2016~2020 The TensorLayer contributors.  All rights reserved.
+Copyright (c) 2016~2025 The TensorLayer contributors.  All rights reserved.
 
                                  Apache License
                            Version 2.0, January 2004
