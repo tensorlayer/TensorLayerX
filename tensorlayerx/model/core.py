@@ -89,8 +89,15 @@ class Model:
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.metrics = metrics
-        self.all_weights = network.all_weights
-        self.train_weights = self.network.trainable_weights
+        if tlx.BACKEND == 'paddle' and tlx.is_distributed():
+            self.all_weights = network.parameters()
+            self.train_weights = network.parameters()
+        elif tlx.BACKEND == 'torch' and tlx.is_distributed():
+            self.all_weights = network.parameters()
+            self.train_weights = network.parameters()
+        else:
+            self.all_weights = network.all_weights
+            self.train_weights = self.network.trainable_weights
 
     def train(self, n_epoch, train_dataset=None, test_dataset=False, print_train_batch=False, print_freq=5):
         if not isinstance(train_dataset, Iterable):
@@ -109,18 +116,33 @@ class Model:
                 print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
             )
         elif tlx.BACKEND == 'paddle':
-            self.pd_train(
-                n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
-                train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
-                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
-            )
+            if tlx.is_distributed():
+                print("Distributed training is enabled.")
+                self.pd_dist_train(
+                    n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
+                    train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
+                    print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
+                )
+            else:
+                self.pd_train(
+                    n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
+                    train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
+                    print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
+                )
         elif tlx.BACKEND == 'torch':
-            self.th_train(
-                n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
-                train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
-                print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
-            )
-
+            if tlx.is_distributed():
+                print("Distributed training is enabled.")
+                self.th_dist_train(
+                    n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
+                    train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
+                    print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
+                )
+            else:
+                self.th_train(
+                    n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
+                    train_weights=self.train_weights, optimizer=self.optimizer, metrics=self.metrics,
+                    print_train_batch=print_train_batch, print_freq=print_freq, test_dataset=test_dataset
+                )
         elif tlx.BACKEND == "oneflow":
             self.of_train(
                 n_epoch=n_epoch, train_dataset=train_dataset, network=self.network, loss_fn=self.loss_fn,
@@ -367,7 +389,7 @@ class Model:
                       TimeRemainingColumn(),
                       TimeElapsedColumn()) as progress:
 
-            n_batch = len(train_dataset)
+            n_batch = len(list(train_dataset))
             epoch_tqdm = progress.add_task(description="[red]Epoch progress 0/{}".format(n_epoch), total=n_epoch)
             batch_tqdm = progress.add_task(description="[green]Batch progress 0/{}".format(n_batch), total=n_batch)
 
@@ -495,6 +517,88 @@ class Model:
                 progress.advance(epoch_tqdm, advance=1)
                 progress.reset(batch_tqdm)
 
+    def pd_dist_train(
+        self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
+        print_freq, test_dataset
+    ):
+        with Progress(TextColumn("[progress.description]{task.description}"),
+                      BarColumn(),
+                      TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                      TimeRemainingColumn(),
+                      TimeElapsedColumn()) as progress:
+            
+            n_batch = len(train_dataset)
+            epoch_tqdm = progress.add_task(description="[red]Epoch progress 0/{}".format(n_epoch), total=n_epoch)
+            batch_tqdm = progress.add_task(description="[green]Batch progress 0/{}".format(n_batch), total=n_batch)
+
+            for epoch in range(n_epoch):
+                start_time = time.time()
+                train_loss, train_acc, n_iter = 0, 0, 0
+                network.train()
+                for batch, (X_batch, y_batch) in enumerate(train_dataset):
+                    output = network(X_batch)
+                    loss = loss_fn(output, y_batch)
+                    loss_ce = loss.numpy()
+                    # loss.backward()
+                    # optimizer.step()
+                    # optimizer.clear_grad()
+
+                    grads = optimizer.gradient(loss, train_weights)
+                    optimizer.apply_gradients(zip(grads, train_weights))
+
+                    train_loss += loss_ce
+                    if metrics:
+                        metrics.update(output, y_batch)
+                        train_acc += metrics.result()
+                        metrics.reset()
+                    else:
+                        train_acc += pd.metric.accuracy(output, y_batch)
+                    n_iter += 1
+
+                    if print_train_batch:
+                        print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                        print("   train loss: {}".format(train_loss / n_iter))
+                        print("   train acc:  {}".format(train_acc / n_iter))
+                    progress.advance(batch_tqdm, advance=1)
+                    progress.update(batch_tqdm, description="[green]Batch progress {}/{}".format(batch + 1, n_batch))
+                
+                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+
+                    print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                    print("   train loss: {}".format(train_loss / n_iter))
+                    print("   train acc:  {}".format(train_acc / n_iter))
+
+                if test_dataset:
+                    # use training and evaluation sets to evaluate the model every print_freq epoch
+                    val_acc_history = []
+                    val_loss_history = []
+                    network.eval()
+                    accuracies = []
+                    losses = []
+                    val_loss, val_acc, n_iter = 0, 0, 0
+                    for batch_id, data in enumerate(test_dataset):
+                        x_data = data[0]
+                        y_data = data[1]
+                        # y_data = paddle.unsqueeze(y_data, 1)
+
+                        logits = network(x_data)
+                        loss = loss_fn(logits, y_data)
+                        if metrics:
+                            metrics.update(logits, y_data)
+                            val_acc += metrics.result()
+                            metrics.reset()
+                        else:
+                            val_acc += np.mean(np.equal(np.argmax(logits, 1), y_data))
+                        accuracies.append(val_acc.numpy())
+                        losses.append(loss.numpy())
+
+                    avg_acc, avg_loss = np.mean(accuracies), np.mean(losses)
+                    print("[validation] accuracy/loss: {}/{}".format(avg_acc, avg_loss))
+                    val_acc_history.append(avg_acc)
+                    val_loss_history.append(avg_loss)
+                progress.update(epoch_tqdm, description="[red]Epoch progress {}/{}".format(epoch + 1, n_epoch))
+                progress.advance(epoch_tqdm, advance=1)
+                progress.reset(batch_tqdm)
 
     def th_train(
         self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
@@ -566,6 +670,83 @@ class Model:
                 progress.advance(epoch_tqdm, advance=1)
                 progress.reset(batch_tqdm)
 
+    def th_dist_train(
+        self, n_epoch, train_dataset, network, loss_fn, train_weights, optimizer, metrics, print_train_batch,
+        print_freq, test_dataset
+    ):
+        # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        # network = network.to(device)
+        with Progress(TextColumn("[progress.description]{task.description}"),
+                      BarColumn(),
+                      TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                      TimeRemainingColumn(),
+                      TimeElapsedColumn()) as progress:
+
+            n_batch = len(train_dataset)
+            epoch_tqdm = progress.add_task(description="[red]Epoch progress 0/{}".format(n_epoch), total=n_epoch)
+            batch_tqdm = progress.add_task(description="[green]Batch progress 0/{}".format(n_batch), total=n_batch)
+            import os
+            gpu_id = int(os.environ["LOCAL_RANK"])
+            
+            for epoch in range(n_epoch):
+                start_time = time.time()
+                train_loss, train_acc, n_iter = 0, 0, 0
+                # print(f"[GPU{self.gpu_id}] Epoch {epoch} | Batchsize: {b_sz} | Steps: {len(self.train_data)}")
+                # train_dataset.sampler.set_epoch(epoch)
+                for batch, (X_batch, y_batch) in enumerate(train_dataset):
+                # for source, targets in train_dataset:
+                    X_batch = X_batch.to(gpu_id)
+                    y_batch = y_batch.to(gpu_id)
+                    # optimizer.zero_grad()
+                    output = network(X_batch)
+                    loss = loss_fn(output, y_batch)
+                    # loss.backward()
+                    # self.optimizer.step()
+                    grads = optimizer.gradient(loss, train_weights)
+                    optimizer.apply_gradients(zip(grads, train_weights))
+                    
+                    train_loss += loss
+                    if metrics:
+                        metrics.update(output, y_batch)
+                        train_acc += metrics.result()
+                        metrics.reset()
+                    else:
+                        train_acc += (output.argmax(1) == y_batch).type(torch.float).mean().item()
+                    n_iter += 1
+
+                    if print_train_batch:
+                        print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                        print("   train loss: {}".format(train_loss / n_iter))
+                        print("   train acc:  {}".format(train_acc / n_iter))
+                    progress.advance(batch_tqdm, advance=1)
+                    progress.update(batch_tqdm, description="[green]Batch progress {}/{}".format(batch + 1, n_batch))
+                
+                if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+
+                    print("Epoch {} of {} took {}".format(epoch + 1, n_epoch, time.time() - start_time))
+                    print("   train loss: {}".format(train_loss / n_iter))
+                    print("   train acc:  {}".format(train_acc / n_iter))
+
+                # if test_dataset:
+                #     # use training and evaluation sets to evaluate the model every print_freq epoch
+                #     if epoch + 1 == 1 or (epoch + 1) % print_freq == 0:
+                #         network.set_eval()
+                #         val_loss, val_acc, n_iter = 0, 0, 0
+                #         for X_batch, y_batch in test_dataset:
+                #             _logits = network(X_batch)  # is_train=False, disable dropout
+                #             val_loss += loss_fn(_logits, y_batch)
+                #             if metrics:
+                #                 metrics.update(_logits, y_batch)
+                #                 val_acc += metrics.result()
+                #                 metrics.reset()
+                #             else:
+                #                 val_acc += (_logits.argmax(1) == y_batch).type(torch.float).mean().item()
+                #             n_iter += 1
+                #         print("   val loss: {}".format(val_loss / n_iter))
+                #         print("   val acc:  {}".format(val_acc / n_iter))
+                progress.update(epoch_tqdm, description="[red]Epoch progress {}/{}".format(epoch + 1, n_epoch))
+                progress.advance(epoch_tqdm, advance=1)
+                progress.reset(batch_tqdm)
 
 
     def of_train(

@@ -13,6 +13,7 @@ from mindspore.common.initializer import (
     _calculate_fan_in_and_fan_out, _calculate_correct_fan
 )
 from mindspore.common.tensor import Tensor
+from mindspore.communication import init, get_group_size
 from mindspore.ops import operations as P
 from mindspore.ops import functional as F
 from mindspore.ops import composite as C
@@ -58,6 +59,8 @@ uint64 = mstype.uint64
 bool = mstype.bool_
 complex64 = None
 complex128 = None
+
+IS_DISTRIBUTED = False
 
 # isinstance input output
 # TensorLike = Tensor_
@@ -1839,19 +1842,33 @@ class Einsum(Cell):
     def __call__(self, *args):
         return self.einsum(tuple(args))
 
-def set_device(device = 'GPU', id = 0):
+def set_device(device = 'GPU', id = None):
+    device = device.upper()
     if device not in ['GPU', 'CPU', 'Ascend']:
         raise ValueError ("In mindspore, only support 'CPU', 'GPU' and 'Ascend'.")
     ms.context.set_context(device_target=device)
-    ms.context.set_context(device_id = id)
+    if id is not None:
+        ms.context.set_context(device_id = id)
 
-def distributed_init(backend="cncl"):
-    raise NotImplementedError("Distributed for this backend is not supported")
+def is_distributed():
+    return IS_DISTRIBUTED
+
+def distributed_init(backend="nccl"):
+    init(backend)  # GPU 使用 nccl，Ascend 使用 hccl
+    device_num = get_group_size()
+    context.set_auto_parallel_context(
+        parameter_broadcast=True,
+        parallel_mode=context.ParallelMode.DATA_PARALLEL,
+        gradients_mean=True,
+        device_num=device_num
+    )
+    global IS_DISTRIBUTED
+    IS_DISTRIBUTED = True
 
 def distributed_model(module, device_ids=None, output_device=None, 
                     dim=0, broadcast_buffers=True, process_group=None, bucket_cap_mb=25, 
                     find_unused_parameters=False, check_reduction=False, gradient_as_bucket_view=False):
-    raise NotImplementedError("Distributed for this backend is not supported")
+    return module
 
 
 def scatter_update(tensor, indices, updates):
