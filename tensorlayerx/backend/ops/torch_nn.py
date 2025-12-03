@@ -2404,3 +2404,468 @@ def linear(input, weight, bias = None):
 def unfold(input, kernel_size, dilation = 1, padding = 0, stride = 1):
 
     return torch.nn.functional.unfold(input, kernel_size, stride=stride, padding=padding, dilation=dilation)
+
+
+class SELU(object):
+    """
+    Scaled Exponential Linear Unit (SELU).
+    
+    SELU is a self-normalizing activation function that has the property of
+    self-normalizing the output to have zero mean and unit variance.
+    
+    Parameters
+    ----------
+    alpha : float
+        The alpha parameter. Default is 1.673263242354377284817042991.
+    scale : float
+        The scale parameter. Default is 1.050700987355480493419334985.
+    """
+    
+    def __init__(self, alpha=1.673263242354377284817042991, scale=1.050700987355480493419334985):
+        self.alpha = alpha
+        self.scale = scale
+    
+    def __call__(self, x):
+        return F.selu(x, alpha=self.alpha, scale=self.scale)
+
+
+def selu(x, alpha=1.673263242354377284817042991, scale=1.050700987355480493419334985):
+    """
+    Scaled Exponential Linear Unit (SELU).
+    
+    SELU is a self-normalizing activation function that has the property of
+    self-normalizing the output to have zero mean and unit variance.
+    
+    Parameters
+    ----------
+    x : tensor
+        Input tensor
+    alpha : float
+        The alpha parameter. Default is 1.673263242354377284817042991.
+    scale : float
+        The scale parameter. Default is 1.050700987355480493419334985.
+        
+    Returns
+    -------
+        tensor
+        The SELU activation of x
+    """
+    return F.selu(x, alpha=alpha, scale=scale)
+
+
+class CELU(object):
+    """
+    Continuously Differentiable Exponential Linear Unit (CELU).
+    
+    CELU is similar to ELU but with a smooth gradient at the origin.
+    
+    Parameters
+    ----------
+    alpha : float
+        The alpha parameter controlling the saturation point. Default is 1.0.
+    """
+    
+    def __init__(self, alpha=1.0):
+        self.alpha = alpha
+    
+    def __call__(self, x):
+        return F.celu(x, alpha=self.alpha)
+
+
+def celu(x, alpha=1.0):
+    """
+    Continuously Differentiable Exponential Linear Unit (CELU).
+    
+    CELU is similar to ELU but with a smooth gradient at the origin.
+    
+    Parameters
+    ----------
+    x : tensor
+        Input tensor
+    alpha : float
+        The alpha parameter controlling the saturation point. Default is 1.0.
+        
+    Returns
+    -------
+        tensor
+        The CELU activation of x
+    """
+    return F.celu(x, alpha=alpha)
+
+
+class Mish(object):
+    """
+    Mish Activation Function.
+    
+    Mish is a smooth, non-monotonic activation function that is
+    self-regularized and non-saturating.
+    
+    Parameters
+    ----------
+    """
+    
+    def __init__(self):
+        pass
+    
+    def __call__(self, x):
+        return x * torch.tanh(F.softplus(x))
+
+
+def mish(x):
+    """
+    Mish Activation Function.
+    
+    Mish is a smooth, non-monotonic activation function that is
+    self-regularized and non-saturating.
+    
+    Parameters
+    ----------
+    x : tensor
+        Input tensor
+        
+    Returns
+    -------
+        tensor
+        The Mish activation of x
+    """
+    return x * torch.tanh(F.softplus(x))
+
+
+class DropBlock2D(object):
+    """
+    DropBlock2D layer.
+    
+    DropBlock is a form of structured dropout where blocks of features are dropped
+    rather than individual elements.
+    
+    Parameters
+    ----------
+    drop_rate : float
+        Probability of dropping a block. Default is 0.1.
+    block_size : int
+        Size of the block to drop. Default is 7.
+    data_format : str
+        'channels_first' or 'channels_last'. Default is 'channels_last'.
+    """
+    
+    def __init__(self, drop_rate=0.1, block_size=7, data_format='channels_last'):
+        self.drop_rate = drop_rate
+        self.block_size = block_size
+        if data_format in ['channels_first', 'NCHW']:
+            self.data_format = 'channels_first'
+        elif data_format in ['channels_last', 'NHWC']:
+            self.data_format = 'channels_last'
+        else:
+            raise ValueError("Unsupported data format: " + str(data_format))
+    
+    def __call__(self, x):
+        if self.data_format == 'channels_last':
+            x = nhwc_to_nchw(x)
+        
+        if not self.training or self.drop_rate == 0.0:
+            if self.data_format == 'channels_last':
+                x = nchw_to_nhwc(x)
+            return x
+        
+        batch_size, channels, height, width = x.shape
+        
+        # Create gamma mask
+        gamma = torch.rand(batch_size, channels, height, width, device=x.device) < self.drop_rate
+        
+        # Compute block mask
+        block_mask = F.max_pool2d(
+            gamma,
+            kernel_size=self.block_size,
+            stride=1,
+            padding=self.block_size // 2
+        )
+        
+        # Normalize block mask
+        block_mask = 1 - block_mask
+        
+        # Apply mask
+        out = x * block_mask
+        
+        # Scale to maintain expected value
+        out = out * (block_mask.numel() / block_mask.sum())
+        
+        if self.data_format == 'channels_last':
+            out = nchw_to_nhwc(out)
+        
+        return out
+
+
+class StochasticDepth(object):
+    """
+    Stochastic Depth layer.
+    
+    Stochastic Depth randomly drops entire residual branches during training.
+    
+    Parameters
+    ----------
+    drop_rate : float
+        Probability of dropping the branch. Default is 0.1.
+    """
+    
+    def __init__(self, drop_rate=0.1):
+        self.drop_rate = drop_rate
+    
+    def __call__(self, x):
+        if not self.training or self.drop_rate == 0.0:
+            return x
+        
+        keep_prob = 1.0 - self.drop_rate
+        shape = (x.shape[0],) + (1,) * (len(x.shape) - 1)
+        random_tensor = keep_prob + torch.rand(shape, dtype=x.dtype, device=x.device)
+        binary_tensor = torch.floor(random_tensor)
+        output = x / keep_prob * binary_tensor
+        
+        return output
+
+
+class GlobalAvgPool2D(object):
+    """
+    Global Average Pooling 2D layer.
+    
+    Global Average Pooling computes the average of all features in each channel.
+    
+    Parameters
+    ----------
+    data_format : str
+        'channels_first' or 'channels_last'. Default is 'channels_last'.
+    """
+    
+    def __init__(self, data_format='channels_last'):
+        if data_format in ['channels_first', 'NCHW']:
+            self.data_format = 'channels_first'
+        elif data_format in ['channels_last', 'NHWC']:
+            self.data_format = 'channels_last'
+        else:
+            raise ValueError("Unsupported data format: " + str(data_format))
+    
+    def __call__(self, inputs):
+        if self.data_format == 'channels_last':
+            inputs = nhwc_to_nchw(inputs)
+        
+        output = F.adaptive_avg_pool2d(inputs, output_size=(1, 1))
+        
+        if self.data_format == 'channels_last':
+            output = nchw_to_nhwc(output)
+        
+        return output
+
+
+def global_avg_pool2d(inputs, data_format='channels_last'):
+    """
+    Global Average Pooling 2D function.
+    
+    Global Average Pooling computes the average of all features in each channel.
+    
+    Parameters
+    ----------
+    inputs : tensor
+        Input tensor
+    data_format : str
+        'channels_first' or 'channels_last'. Default is 'channels_last'.
+        
+    Returns
+    -------
+        tensor
+        The globally pooled tensor
+    """
+    global_avg_pool = GlobalAvgPool2D(data_format=data_format)
+    return global_avg_pool(inputs)
+
+
+class GlobalMaxPool2D(object):
+    """
+    Global Max Pooling 2D layer.
+    
+    Global Max Pooling computes the maximum of all features in each channel.
+    
+    Parameters
+    ----------
+    data_format : str
+        'channels_first' or 'channels_last'. Default is 'channels_last'.
+    """
+    
+    def __init__(self, data_format='channels_last'):
+        if data_format in ['channels_first', 'NCHW']:
+            self.data_format = 'channels_first'
+        elif data_format in ['channels_last', 'NHWC']:
+            self.data_format = 'channels_last'
+        else:
+            raise ValueError("Unsupported data format: " + str(data_format))
+    
+    def __call__(self, inputs):
+        if self.data_format == 'channels_last':
+            inputs = nhwc_to_nchw(inputs)
+        
+        output = F.adaptive_max_pool2d(inputs, output_size=(1, 1))
+        
+        if self.data_format == 'channels_last':
+            output = nchw_to_nhwc(output)
+        
+        return output
+
+
+def global_max_pool2d(inputs, data_format='channels_last'):
+    """
+    Global Max Pooling 2D function.
+    
+    Global Max Pooling computes the maximum of all features in each channel.
+    
+    Parameters
+    ----------
+    inputs : tensor
+        Input tensor
+    data_format : str
+        'channels_first' or 'channels_last'. Default is 'channels_last'.
+        
+    Returns
+    -------
+        tensor
+        The globally pooled tensor
+    """
+    global_max_pool = GlobalMaxPool2D(data_format=data_format)
+    return global_max_pool(inputs)
+
+
+class Flatten(object):
+    """
+    Flatten layer.
+    
+    Flatten reshapes the input tensor to a 2D tensor.
+    
+    Parameters
+    ----------
+    """
+    
+    def __init__(self):
+        pass
+    
+    def __call__(self, inputs):
+        return inputs.view(inputs.size(0), -1)
+
+
+def flatten(inputs):
+    """
+    Flatten function.
+    
+    Flatten reshapes the input tensor to a 2D tensor.
+    
+    Parameters
+    ----------
+    inputs : tensor
+        Input tensor
+        
+    Returns
+    -------
+        tensor
+        The flattened tensor
+    """
+    return inputs.view(inputs.size(0), -1)
+
+
+class Reshape(object):
+    """
+    Reshape layer.
+    
+    Reshape reshapes the input tensor to the specified shape.
+    
+    Parameters
+    ----------
+    target_shape : tuple
+        The target shape for the output tensor.
+    """
+    
+    def __init__(self, target_shape):
+        self.target_shape = target_shape
+    
+    def __call__(self, inputs):
+        return inputs.view(inputs.size(0), *self.target_shape)
+
+
+def reshape(inputs, target_shape):
+    """
+    Reshape function.
+    
+    Reshape reshapes the input tensor to the specified shape.
+    
+    Parameters
+    ----------
+    inputs : tensor
+        Input tensor
+    target_shape : tuple
+        The target shape for the output tensor.
+        
+    Returns
+    -------
+        tensor
+        The reshaped tensor
+    """
+    return inputs.view(inputs.size(0), *target_shape)
+
+
+class PixelShuffle2D(object):
+    """
+    Pixel Shuffle 2D layer.
+    
+    Pixel Shuffle is an operation that rearranges elements in a tensor of shape
+    (N, C, H, W) to a tensor of shape (N, C/r^2, H*r, W*r), where r is the upscale factor.
+    
+    Parameters
+    ----------
+    upscale_factor : int
+        The upscale factor.
+    data_format : str
+        'channels_first' or 'channels_last'. Default is 'channels_first'.
+    """
+    
+    def __init__(self, upscale_factor, data_format='channels_first'):
+        self.upscale_factor = upscale_factor
+        if data_format in ['channels_first', 'NCHW']:
+            self.data_format = 'channels_first'
+        elif data_format in ['channels_last', 'NHWC']:
+            self.data_format = 'channels_last'
+        else:
+            raise ValueError("Unsupported data format: " + str(data_format))
+    
+    def __call__(self, inputs):
+        if self.data_format == 'channels_last':
+            inputs = nhwc_to_nchw(inputs)
+        
+        batch_size, channels, height, width = inputs.shape
+        channels //= (self.upscale_factor ** 2)
+        
+        output = F.pixel_shuffle(inputs, upscale_factor=self.upscale_factor)
+        
+        if self.data_format == 'channels_last':
+            output = nchw_to_nhwc(output)
+        
+        return output
+
+
+def pixel_shuffle2d(inputs, upscale_factor, data_format='channels_first'):
+    """
+    Pixel Shuffle 2D function.
+    
+    Pixel Shuffle is an operation that rearranges elements in a tensor of shape
+    (N, C, H, W) to a tensor of shape (N, C/r^2, H*r, W*r), where r is the upscale factor.
+    
+    Parameters
+    ----------
+    inputs : tensor
+        Input tensor
+    upscale_factor : int
+        The upscale factor.
+    data_format : str
+        'channels_first' or 'channels_last'. Default is 'channels_first'.
+        
+    Returns
+    -------
+        tensor
+        The pixel shuffled tensor
+    """
+    pixel_shuffle = PixelShuffle2D(upscale_factor, data_format)
+    return pixel_shuffle(inputs)

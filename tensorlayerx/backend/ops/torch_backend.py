@@ -1832,11 +1832,86 @@ def numel(input):
 
 
 def histogram(input, bins=100, min=0, max=0, name=None):
-    raise NotImplementedError
+    """
+    计算输入张量的直方图。
+
+    Parameters
+    ----------
+    input : tensor
+        输入张量
+    bins : int
+        直方图的bin数量，默认为100
+    min : float
+        直方图的最小值，默认为0
+    max : float
+        直方图的最大值，默认为0
+    name : str
+        操作的名称（可选）
+
+    Returns
+    -------
+        Tensor
+        包含直方图值的张量
+    """
+    if torch.min(input) < min:
+        min = torch.min(input).item()
+    if torch.max(input) > max or max == 0:
+        max = torch.max(input).item()
+    
+    # PyTorch没有直接的histogram函数，我们使用torch.histc然后调整结果
+    # torch.histc只支持2D输入，所以需要先展平输入
+    flat_input = input.flatten()
+    hist = torch.histc(flat_input, bins=bins, min=min, max=max)
+    return hist
 
 
 def flatten(x, start_axis=0, stop_axis=-1, name=None):
-    raise NotImplementedError
+    """
+    展平张量的指定维度范围。
+
+    Parameters
+    ----------
+    x : tensor
+        输入张量
+    start_axis : int
+        开始展平的轴，默认为0
+    stop_axis : int
+        停止展平的轴，默认为-1（最后一维）
+    name : str
+        操作的名称（可选）
+
+    Returns
+    -------
+        Tensor
+        展平后的张量
+    """
+    # 获取输入张量的形状
+    shape = x.shape
+    
+    # 处理负数索引
+    if start_axis < 0:
+        start_axis = len(shape) + start_axis
+    if stop_axis < 0:
+        stop_axis = len(shape) + stop_axis
+    
+    # 计算展平后的形状
+    new_shape = []
+    
+    # 添加start_axis之前的维度
+    for i in range(0, start_axis):
+        new_shape.append(shape[i])
+    
+    # 计算展平维度的大小
+    flatten_size = 1
+    for i in range(start_axis, stop_axis + 1):
+        flatten_size *= shape[i]
+    new_shape.append(flatten_size)
+    
+    # 添加stop_axis之后的维度
+    for i in range(stop_axis + 1, len(shape)):
+        new_shape.append(shape[i])
+    
+    return torch.reshape(x, new_shape)
 
 
 def interpolate(x,
@@ -1847,15 +1922,103 @@ def interpolate(x,
                 align_mode=0,
                 data_format='NCHW',
                 name=None):
-    raise NotImplementedError
+    """
+    对输入张量进行插值缩放。
+
+    Parameters
+    ----------
+    x : tensor
+        输入张量
+    size : tuple or list
+        输出大小
+    scale_factor : float or tuple or list
+        缩放因子
+    mode : str
+        插值模式，默认为'nearest'
+    align_corners : bool
+        是否对齐角点，默认为False
+    align_mode : int
+        对齐模式，默认为0
+    data_format : str
+        数据格式，默认为'NCHW'
+    name : str
+        操作的名称（可选）
+
+    Returns
+    -------
+        Tensor
+        插值后的张量
+    """
+    # 处理数据格式
+    if data_format == 'channels_first':
+        # NCHW格式，不需要转换
+        pass
+    elif data_format == 'channels_last':
+        # NHWC格式，需要转换为NCHW
+        x = nhwc_to_nchw(x)
+    
+    # 调用PyTorch的interpolate函数
+    if size is not None:
+        output = F.interpolate(x, size=size, mode=mode, align_corners=align_corners)
+    elif scale_factor is not None:
+        output = F.interpolate(x, scale_factor=scale_factor, mode=mode, align_corners=align_corners)
+    else:
+        raise ValueError("必须提供size或scale_factor参数")
+    
+    # 转换回原始数据格式
+    if data_format == 'channels_last':
+        output = nchw_to_nhwc(output)
+    
+    return output
 
 
 def index_select(x, index, axis=0, name=None):
-    raise NotImplementedError
+    """
+    沿指定轴选择张量中的元素。
+
+    Parameters
+    ----------
+    x : tensor
+        输入张量
+    index : tensor
+        索引张量
+    axis : int
+        选择轴，默认为0
+    name : str
+        操作的名称（可选）
+
+    Returns
+    -------
+        Tensor
+        选择后的张量
+    """
+    return torch.index_select(x, dim=axis, index=index)
 
 
 def dot(x, y, name=None):
-    raise NotImplementedError
+    """
+    计算两个张量的点积。
+
+    Parameters
+    ----------
+    x : tensor
+        第一个输入张量
+    y : tensor
+        第二个输入张量
+    name : str
+        操作的名称（可选）
+
+    Returns
+    -------
+        Tensor
+        点积结果
+    """
+    # 如果是1D张量，使用torch.dot
+    if x.dim() == 1 and y.dim() == 1:
+        return torch.dot(x, y)
+    # 如果是更高维度的张量，使用torch.matmul
+    else:
+        return torch.matmul(x, y)
 
 
 class Swish(object):
@@ -1863,23 +2026,265 @@ class Swish(object):
         pass
 
     def __call__(self, x):
-        raise NotImplementedError
+        """
+        应用Swish激活函数。
+
+        Parameters
+        ----------
+        x : tensor
+            输入张量
+
+        Returns
+        -------
+            Tensor
+            应用Swish后的张量
+        """
+        return x * torch.sigmoid(x)
+
 
 def expand(x, shape):
+    """
+    扩展张量的形状。
 
+    Parameters
+    ----------
+    x : tensor
+        输入张量
+    shape : tuple or list
+        目标形状
+
+    Returns
+    -------
+        Tensor
+        扩展后的张量
+    """
     return x.expand(shape)
 
-def unique(x, return_index=False, return_inverse=False, return_counts=False, axis=None, dtype='int64'):
 
-    raise NotImplementedError
+def unique(x, return_index=False, return_inverse=False, return_counts=False, axis=None, dtype='int64'):
+    """
+    返回输入张量的唯一元素。
+
+    Parameters
+    ----------
+    x : tensor
+        输入张量
+    return_index : bool
+        是否返回索引，默认为False
+    return_inverse : bool
+        是否返回逆索引，默认为False
+    return_counts : bool
+        是否返回计数，默认为False
+    axis : int
+        沿哪个轴计算唯一值，默认为None
+    dtype : str
+        输出数据类型，默认为'int64'
+
+    Returns
+    -------
+        Tensor or tuple of Tensors
+        唯一元素或包含唯一元素、索引、逆索引和计数的元组
+    """
+    if isinstance(dtype, str):
+        dtype = _dtypeDict[dtype]
+    
+    # 调用PyTorch的unique函数
+    output = torch.unique(x, sorted=True, return_inverse=return_inverse, return_counts=return_counts, dim=axis)
+    
+    # 处理返回值
+    if return_index or return_inverse or return_counts:
+        # PyTorch返回的顺序与TensorFlow不同，需要调整
+        unique_values = output[0]
+        outputs = [unique_values]
+        
+        if return_index:
+            # PyTorch不直接返回原始索引，需要计算
+            indices = torch.zeros_like(unique_values, dtype=torch.long)
+            for i, val in enumerate(unique_values):
+                indices[i] = (x == val).nonzero(as_tuple=False)[0]
+            outputs.append(indices)
+        
+        if return_inverse:
+            outputs.append(output[1])  # 逆索引
+        
+        if return_counts:
+            outputs.append(output[2])  # 计数
+        
+        return tuple(outputs)
+    else:
+        return output
 
 
 def flip(x, axis):
+    """
+    沿指定轴翻转张量。
 
+    Parameters
+    ----------
+    x : tensor
+        输入张量
+    axis : int or list or tuple
+        翻转轴
+
+    Returns
+    -------
+        Tensor
+        翻转后的张量
+    """
     return torch.flip(x, axis)
 
 
 def mv(x, vec):
+    """
+    计算矩阵与向量的乘积。
 
+    Parameters
+    ----------
+    x : tensor
+        输入矩阵，形状为[M, N]
+    vec : tensor
+        输入向量，形状为[N]
+
+    Returns
+    -------
+        Tensor
+        矩阵与向量的乘积，形状为[M]
+    """
     return torch.mv(x, vec)
 
+
+def narrow(input, dim, start, length):
+    """
+    返回一个新的张量，它是输入张量在指定维度上的一个窄视图。
+
+    Parameters
+    ----------
+    input : tensor
+        输入张量
+    dim : int
+        要缩小的维度
+    start : int
+        起始索引
+    length : int
+        要选择的距离
+
+    Returns
+    -------
+        Tensor
+        输入张量的窄视图
+    """
+    return torch.narrow(input, dim, start, length)
+
+
+def heaviside(input, values):
+    """
+    计算海维赛德阶跃函数。
+
+    Parameters
+    ----------
+    input : tensor
+        输入张量
+    values : tensor
+        当输入为0时返回的值
+
+    Returns
+    -------
+        Tensor
+        海维赛德阶跃函数的结果
+    """
+    return torch.heaviside(input, values)
+
+
+def nextafter(x, y):
+    """
+    返回x方向上y的下一个浮点值。
+
+    Parameters
+    ----------
+    x : tensor
+        起始值
+    y : tensor
+        目标值方向
+
+    Returns
+    -------
+        Tensor
+        x方向上y的下一个浮点值
+    """
+    return torch.nextafter(x, y)
+
+
+def logaddexp(x, y):
+    """
+    计算log(exp(x) + exp(y))，数值稳定。
+
+    Parameters
+    ----------
+    x : tensor
+        第一个输入张量
+    y : tensor
+        第二个输入张量
+
+    Returns
+    -------
+        Tensor
+        log(exp(x) + exp(y))的结果
+    """
+    return torch.logaddexp(x, y)
+
+
+def logaddexp2(x, y):
+    """
+    计算log2(2^x + 2^y)，数值稳定。
+
+    Parameters
+    ----------
+    x : tensor
+        第一个输入张量
+    y : tensor
+        第二个输入张量
+
+    Returns
+    -------
+        Tensor
+        log2(2^x + 2^y)的结果
+    """
+    return torch.logaddexp2(x, y)
+
+
+def gcd(x, y):
+    """
+    计算两个张量的元素wise最大公约数。
+
+    Parameters
+    ----------
+    x : tensor
+        第一个输入张量
+    y : tensor
+        第二个输入张量
+
+    Returns
+    -------
+        Tensor
+        元素wise最大公约数
+    """
+    return torch.gcd(x, y)
+
+
+def lcm(x, y):
+    """
+    计算两个张量的元素wise最小公倍数。
+
+    Parameters
+    ----------
+    x : tensor
+        第一个输入张量
+    y : tensor
+        第二个输入张量
+
+    Returns
+    -------
+        Tensor
+        元素wise最小公倍数
+    """
+    return torch.lcm(x, y)

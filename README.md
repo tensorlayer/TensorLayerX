@@ -137,7 +137,7 @@ docker pull tensorlayer/tensorlayerx:tagname
 ```
 
 # Contributing
-Join our community as a code contributor, find out more in our [Help wanted list](https://github.com/tensorlayer/TensorLayerX/issues/5) and [Contributing](https://tensorlayerx.readthedocs.io/en/latest/user/contributing.html) guide!
+TensorLayerX is continuously evolving, and we welcome contributions from the community! If you'd like to contribute code or help improve the library, please check our [Help wanted list](https://github.com/tensorlayer/TensorLayerX/issues/5) and follow our [Contributing](https://tensorlayerx.readthedocs.io/en/latest/user/contributing.html) guide.
 
 
 # Getting Involved
