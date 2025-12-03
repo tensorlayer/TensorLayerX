@@ -4,6 +4,7 @@
 # ops
 from .ops import BACKEND
 from .ops import BACKEND_VERSION
+from .ops import is_distributed
 from .ops import padding_format
 from .ops import preprocess_1d_format
 from .ops import preprocess_2d_format

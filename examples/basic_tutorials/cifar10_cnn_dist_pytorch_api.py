@@ -3,38 +3,46 @@
 
 import os
 # os.environ['TL_BACKEND'] = 'paddle'
-# os.environ['TL_BACKEND'] = 'jittor'
 # os.environ['TL_BACKEND'] = 'tensorflow'
 # os.environ['TL_BACKEND'] = 'mindspore'
 os.environ['TL_BACKEND'] = 'torch'
 
-from tensorlayerx.dataflow import Dataset, DataLoader, DistributedBatchSampler
+import time
 from tensorlayerx.vision.transforms import (
     Compose, Resize, RandomFlipHorizontal, RandomContrast, RandomBrightness, StandardizePerImage, RandomCrop
 )
 from tensorlayerx.nn import Module
 import tensorlayerx as tlx
 from tensorlayerx.nn import (Conv2d, Linear, Flatten, MaxPool2d, BatchNorm2d)
+import torch
+import torch.nn.functional as F
+from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.distributed import DistributedSampler
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.distributed import init_process_group, destroy_process_group
+
 # enable debug logging
 tlx.logging.set_verbosity(tlx.logging.DEBUG)
 
-tlx.ops.set_device('gpu')
-print(tlx.ops.get_device())
-tlx.ops.distributed_init(backend="nccl")
-print(tlx.is_distributed())
+
+local_rank = int(os.environ["LOCAL_RANK"])
+torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
+init_process_group(backend="nccl")
+print(f"Process {local_rank} using GPU: {torch.cuda.get_device_name(local_rank)}")
+
 # ################## Download and prepare the CIFAR10 dataset ##################
 # This is just some way of getting the CIFAR10 dataset from an online location
 # and loading it into numpy arrays with shape [32,32,3]
 X_train, y_train, X_test, y_test = tlx.files.load_cifar10_dataset(shape=(-1, 32, 32, 3), plotable=False)
 
 # training settings
-batch_size = 128
 n_epoch = 5
 learning_rate = 0.0001
 print_freq = 5
-n_step_epoch = int(len(y_train) / batch_size)
+n_step_epoch = int(len(y_train) / 128)
 n_step = n_epoch * n_step_epoch
 shuffle_buffer_size = 128
+batch_size = 128
 
 # ################## CIFAR10 dataset ##################
 # We define a Dataset class for Loading CIFAR10 images and labels.
@@ -72,12 +80,72 @@ test_transforms = Compose([Resize(size=(24, 24)), StandardizePerImage()])
 # We use DataLoader to batch and shuffle data, and make data into iterators.
 train_dataset = make_dataset(data=X_train, label=y_train, transforms=train_transforms)
 test_dataset = make_dataset(data=X_test, label=y_test, transforms=test_transforms)
+train_dataset = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        pin_memory=True,
+        shuffle=False,
+        sampler=DistributedSampler(train_dataset)
+    )
 
-train_sampler = DistributedBatchSampler(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
-valid_sampler = DistributedBatchSampler(test_dataset, batch_size=batch_size, drop_last=True)
+class Trainer:
+    def __init__(
+        self,
+        model: torch.nn.Module,
+        train_data: DataLoader,
+        optimizer: torch.optim.Optimizer,
+        # save_every: int,
+        # snapshot_path: str,
+    ) -> None:
+        self.gpu_id = int(os.environ["LOCAL_RANK"])
+        self.model = model.to(self.gpu_id)
+        self.train_data = train_data
+        self.optimizer = optimizer
+        # self.save_every = save_every
+        self.epochs_run = 0
+        # self.snapshot_path = snapshot_path
+        # if os.path.exists(snapshot_path):
+        #     print("Loading snapshot")
+        #     self._load_snapshot(snapshot_path)
 
-train_loader = DataLoader(train_dataset, pin_memory=True, batch_sampler=train_sampler, num_workers=2)
-valid_loader = DataLoader(test_dataset, pin_memory=True, batch_sampler=valid_sampler, num_workers=2)
+        self.model = DDP(self.model, device_ids=[self.gpu_id])
+
+    def _load_snapshot(self, snapshot_path):
+        loc = f"cuda:{self.gpu_id}"
+        snapshot = torch.load(snapshot_path, map_location=loc)
+        self.model.load_state_dict(snapshot["MODEL_STATE"])
+        self.epochs_run = snapshot["EPOCHS_RUN"]
+        print(f"Resuming training from snapshot at Epoch {self.epochs_run}")
+
+    def _run_batch(self, source, targets):
+        self.optimizer.zero_grad()
+        output = self.model(source)
+        loss = F.cross_entropy(output, targets)
+        loss.backward()
+        self.optimizer.step()
+
+    def _run_epoch(self, epoch):
+        b_sz = len(next(iter(self.train_data))[0])
+        print(f"[GPU{self.gpu_id}] Epoch {epoch} | Batchsize: {b_sz} | Steps: {len(self.train_data)}")
+        self.train_data.sampler.set_epoch(epoch)
+        for source, targets in self.train_data:
+            source = source.to(self.gpu_id)
+            targets = targets.to(self.gpu_id)
+            self._run_batch(source, targets)
+
+    def _save_snapshot(self, epoch):
+        snapshot = {
+            "MODEL_STATE": self.model.module.state_dict(),
+            "EPOCHS_RUN": epoch,
+        }
+        torch.save(snapshot, self.snapshot_path)
+        print(f"Epoch {epoch} | Training snapshot saved at {self.snapshot_path}")
+
+    def train(self, max_epochs: int):
+        for epoch in range(self.epochs_run, max_epochs):
+            self._run_epoch(epoch)
+            # if self.gpu_id == 0 and epoch % self.save_every == 0:
+            #     self._save_snapshot(epoch)
 
 
 # ################## CNN network ##################
@@ -120,31 +188,21 @@ class CNN(Module):
         z = self.linear2(z)
         z = self.linear3(z)
         return z
-        
 
 
 # get the network
 net = CNN()
 
-# Define the loss function, use the softmax cross entropy loss.
-loss_fn = tlx.losses.softmax_cross_entropy_with_logits
+# Get training parameters
+train_weights = net.trainable_weights
 # Define the optimizer, use the Adam optimizer.
-optimizer = tlx.optimizers.Adam(learning_rate)
-metrics = tlx.metrics.Accuracy()
+optimizer = torch.optim.Adam(net.parameters(), lr=1e-3)
+trainer = Trainer(net, train_dataset, optimizer)
 
-# Wrap the network with distributed_model
-dp_layer = tlx.ops.distributed_model(net)
-
-print("模型已转换为分布式")
-
-# 使用高级 API 构建可训练模型
-net_with_train = tlx.model.Model(network=dp_layer, loss_fn=loss_fn, optimizer=optimizer, metrics=metrics)
-
-#执行训练
-import time
+# Custom training loops
 t0 = time.time()
 
-net_with_train.train(n_epoch=n_epoch, train_dataset=train_loader, print_freq=print_freq, print_train_batch=False)
+trainer.train(n_epoch)
 
 t1 = time.time()
 training_time = t1 - t0
@@ -155,3 +213,5 @@ def format_time(time):
     return str(datetime.timedelta(seconds=elapsed_rounded))
 training_time = format_time(training_time)
 print(training_time)
+
+destroy_process_group()

@@ -170,3 +170,46 @@ class DataLoader(object):
             return length
         else:
             return len(self._index_sampler)
+
+
+from tensorlayerx.backend import BACKEND
+if BACKEND == 'mindspore':
+    __all__.append('MS_DataLoader')
+
+def MS_DataLoader(dataset,
+        batch_size=1,
+        shuffle=False,
+        drop_last=False,
+        batch_sampler=None,
+        num_workers=0,):
+    if batch_sampler is not None:
+            assert batch_size == 1 and not shuffle and not drop_last, (
+                "batch_size/shuffle/drop_last should not be set when "
+                "batch_sampler is given"
+            )
+            batch_size = batch_sampler.batch_size
+            drop_last = batch_sampler.drop_last
+            shuffle = batch_sampler.shuffle
+    else:
+        assert batch_size > 0, (
+            "batch_size should be None or a positive value when "
+            "batch_sampler is not given"
+        )
+    if num_workers == 0:
+        num_workers = 1
+    
+    from mindspore.communication import get_rank, get_group_size
+    import mindspore as ms
+    ms_dataset = ms.dataset.GeneratorDataset(
+        source=list(dataset),
+        column_names=["image", "label"],
+        shuffle=shuffle,
+        num_parallel_workers=num_workers,
+        num_shards=get_group_size(),
+        shard_id=get_rank()
+    )
+    ms_dataset = ms_dataset.batch(
+        batch_size, 
+        drop_remainder=True
+    )
+    return ms_dataset
