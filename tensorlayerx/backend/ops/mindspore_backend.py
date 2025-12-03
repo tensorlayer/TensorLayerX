@@ -422,7 +422,7 @@ def matmul(a, b, transpose_a=False, transpose_b=False):
         A Tensor of the same type as a and b
     """
     matmul = ms.ops.MatMul(transpose_a=transpose_a, transpose_b=transpose_b)
-    outputs = ms.ops.matmul(a, b)
+    outputs = matmul(a, b)
     return outputs
 
 
