@@ -32,10 +32,10 @@ else:
     path = os.path.join(tl_dir, 'tl_backend.json')
     with open(path, 'r') as load_f:
         load_dict = json.load(load_f)
-    if load_dict['backend'] is not config['backend']:
-        BACKEND = config['backend']
-    else:
+    if load_dict.get('backend') != config['backend']:
         BACKEND = load_dict['backend']
+    else:
+        BACKEND = config['backend']
 
 # Set backend based on TL_BACKEND.
 if 'TL_BACKEND' in os.environ:
